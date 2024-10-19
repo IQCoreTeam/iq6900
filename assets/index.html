@@ -1,89 +1,121 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="css/index.css?ver=20241013">
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/10.14.1/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/10.14.1/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/10.14.1/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/10.14.1/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/10.14.1/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/10.14.1/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/10.14.1/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/10.14.1/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/10.14.1/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/10.14.1/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+    <title>IQ6900</title>
+    <link rel="icon" href="img/coinlogo.png">
 
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
+</head>
+<body>
+<nav class="nav_bar">
+    <img style=" margin-left:2rem;width:4rem; filter: invert(64%) sepia(27%) saturate(5621%) hue-rotate(86deg) brightness(118%) contrast(128%);" src="img/logo.png">
+
+    <div class="nav_btn">
+        <a href="https://x.com/iq6900">Twitter</a>
+        <a href="javascript:alert('coming soon')">Telegram</a>
+        <a href="javascript:alert('coming soon')">DEX</a>
     </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+</nav>
+<hr >
+    <div class="main_div">
+    <div>
+        <div style="display: flex; margin: 2rem; justify-content: center; align-items: center">
 
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
-    </script>
-  </body>
-</html>
+            <div style="display: flex; flex-direction:column;justify-content: center; align-items: center;">
+<!--                <h1 style="font-size:1.9rem; text-align: center;">:3:3:3:3:3</h1>-->
+<!--                <video style=" width: 40rem" , controls  autoplay>-->
+<!--                    <source src="./assets/img/iq6900.mp4" type="video/mp4" >-->
+<!--                </video>-->
+                <img  style="width: 30rem" src="img/buy.gif">
+                <h1 style="font-size: 0.7rem; text-align: center;">($IQ EXPLAINER FOR BUYER IQ)</h1>
+            </div>
+            <div class="v-line" style=" margin: 0 0 0 9rem; height: 25rem;"></div>
+
+
+            <div style="margin: auto;justify-content: center;align-items: center;">
+                <h1 style="font-size: 1.8rem; text-align: center;">Welcome to IQ</h1>
+                <p class="welcome" style="font-size: 0.9rem;margin-top: 4rem;">
+                    This is because we can solve everything <br>
+                    beyond the universe with our intelligence. <br>
+                    Manual mining with our brain, <br>
+                    trading predictions, etc. <br>
+                    <br>
+                    1110111 1100101 100000 1101100 1101111 1110110 <br>
+                    1100101 100000 1101111 1110101 1110010 100000  <br>
+                    1100010 1110010 1100001 1101001 1101110 <br>
+
+                    1100010 1110101 1111001 100000 1101001 1110100 <br>
+                    100000 1101001 1100110 100000 1111001 1101111 <br>
+                    1110101 100111 1110010 1100101 100000 1101110 1101111 <br>
+                    1110100 100000 1100100 1110101 1101101 1100010 1101111
+                </p>
+                <img src="img/Lucky.gif" style="margin-top:0.5rem;width:20rem">
+            </div>
+
+
+
+        </div>
+        <hr>
+        <div style="display: flex; margin: 2rem">
+
+            <div style="display: flex;">
+                <img src="img/brain.gif" style=" width:20rem; height: auto">
+                <div style="display: flex; flex-direction: column">
+                    <p style="margin-left: 2rem; font-size: 1rem">7J246rCE7J2YIOuHjOuhnOuKlCDsoJXsnZjrpbwg7JWMIOyImCDsl4bri6QuIOygleydmOulvCDslYTr<br>
+                        ipTqsoPsnYAg6rOnIOyngOq1rOydmCDqt6DtmJXsnYQg66y064SI65yo66as64qUIOuwqeuyleydhCD<br>
+                        slYzslYTrs7TripTqsoMuIOqyjOycvOultOqzoCDrmrHrmrHtlZjqs6Ag7Y+t66Cl7KCB7J24IOyekO<br>
+                        uKlCDsnbTsoITsnZgg7KCV7J2YIOu2gOyngOufsO2VnCDsnpDripQg6re87Iuc64yA7J2YIOygleydmC<br>
+                        Dri6TsnYzsnZgg7KCV7J2Y64qUIOuwlOuhnCDrrLTsl4c/IA==</p>
+                    <div style="display: flex; margin-left: 3rem;">
+                        <img src="img/hand.gif" style=" width:10rem; height: auto">
+                        <img src="img/hand.gif" style=" width:10rem; height: auto">
+                        <img src="img/hand.gif" style=" width:10rem; height: auto">
+                        <img src="img/hand.gif" style=" width:10rem; height: auto">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <hr>
+        <div style="display: flex; margin: 2rem">
+            <div style="text-align: center;  justify-content: center; margin-left: 5rem;align-items: center;">
+
+                <h1 style="font-size: 1.6rem; text-align: left;align-items: center;">Pretty self-explanatory:3</h1>
+                <p style="font-size: 1rem; margin-top: 2rem; text-align: left;">
+                    6rOg7KeA64ql7JeQ6rKMIOyEpOuqheydgCDtlYTsmpQg <br>
+                    7JeG64ukIOuLueyLoOydgCBpcSBjb2lu7J2EIOyCsOuLpAo<br>
+                    <br>
+                    Kɛji otsɔɔ sɛɛnamɔi ni obaaná wɔsɛɛ lɛ mli kɛtsɔ hiɛ lɛ, <br>
+                    nɔ ni baajɛ mli aba lɛ mlijaa 90.6 baafee eŋɔli. <br>
+
+                    dan en loptik les, ou personnalite <br>
+                    i enn ki tay deryer dopamin <br>
+                    i annan en sans 70% ki ou napa lanplwa.<br>
+                    <br>
+                    커뮤니티에 합류하세요 커뮤니티에 합류하세요 <br>
+                    커뮤니티에 합류하세요 커뮤니티에 합류하세요 <br>
+                </p>
+                <div style="display: flex; margin-top: 3rem ;flex-direction: column; align-items: center;">
+                    <img style="width: 10rem;" src="img/brain2.gif">
+                    <a style="margin-top: 2rem;"href="javascript:alert('coming soon')">JOIN TG</a>
+                </div>
+            </div>
+            <hr>
+        <div>
+
+            <img style="width: 35rem" src="img/logo.gif">
+        </div>
+        </div>
+
+    </div>
+
+</div>
+<div style="align-items: center;text-align: center">
+    <img style=" width:7rem;filter: invert(64%) sepia(27%) saturate(5621%) hue-rotate(86deg) brightness(118%) contrast(128%);" src="img/logo.png">
+    <p style="padding:0;font-size: 0.8rem; margin: 0 0  2rem 0;">@Copyright Team IQ6900</p>
+</div>
+</body>
