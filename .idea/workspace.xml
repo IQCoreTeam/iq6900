@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/assets/img/girl.gif" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
     </list>
@@ -50,7 +51,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/sumin/IdeaProjects/iq3600",
+    "last_opened_file_path": "/Users/sumin/IdeaProjects/iq3600/assets/img",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -61,8 +62,8 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/assets/img" />
+      <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/assets" />
@@ -88,7 +89,7 @@
       <workItem from="1728816752226" duration="14704000" />
       <workItem from="1728840246508" duration="3642000" />
       <workItem from="1728917774653" duration="3408000" />
-      <workItem from="1729233225516" duration="18474000" />
+      <workItem from="1729233225516" duration="19521000" />
     </task>
     <servers />
   </component>
