@@ -1,12 +1,47 @@
-function Generate_image() {
-    // $(".game_image").attr("src", "./img/gameui.gif");
-    // $(".gen_btn").attr("disabled", true);
-    // // 서버 과부하 방지를 위해 여기서부터  gif인지, 크기는 어떤지등 확인하고 alert 해도 좋음
-    //
-    // setTimeout(() => console.log("after"), 1000); // 호출한다음 값을 받으면
-    //
-    // // $(".game_image").attr("src", "./img/gameimg.png");
-    // // $(".gen_btn").attr("disabled", false);
+document.getElementById("imageUpload").addEventListener("change", function () {
+  var fileName = this.files[0].name;
+  var fileNameElement = document.querySelector(
+    ".custom-file-upload .file-name",
+  );
+  if (fileNameElement) {
+    fileNameElement.textContent = fileName;
+  }
+});
 
-    alert("coming soon")
+function Generate_image() {
+  const fileInput = document.getElementById("imageUpload");
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert("Please select an image file.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  $(".game_image").attr("src", "./img/gameui.gif");
+  $(".gen_btn").attr("disabled", true);
+
+  fetch("https://iq.hoakhoithethao.com/convert", {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.blob();
+    })
+    .then((blob) => {
+      const url = URL.createObjectURL(blob);
+      $(".game_image").attr("src", url);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
+    })
+    .finally(() => {
+      $(".gen_btn").attr("disabled", false);
+    });
 }
