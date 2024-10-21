@@ -69,17 +69,26 @@ hr {
     margin-left: 2rem;
 
 }
+.gen_btn{
+    width: 15rem;
+    height: 3rem;
+    margin: 2rem;
+    background-color: black;
+    border-color:  #00ff22;
 
+}
+.gen_btn > a{
+    font-size: 1rem;
+    color: #00ff22;
+    font-family: Consolas,monaco,monospace;
+}
 .main_div{
     margin: 2rem;
     border: 0.1rem solid;
 }
 .v-line {
-
     border-right : thin solid #00ff22;
-
     height : 100%;
-
 }
 
 @keyframes textflicker {
