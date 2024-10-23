@@ -7,13 +7,33 @@ document.getElementById("imageUpload").addEventListener("change", function () {
     fileNameElement.textContent = fileName;
   }
 });
+function Check_input(x){
+  var result = -1;
 
+  if(!isNaN(x)){
+    const num =  parseInt(x);
+    if(num > 0 && num<11){
+      result = num;
+    }
+  }
+  return result;
+
+}
 function Generate_image() {
   const fileInput = document.getElementById("imageUpload");
   const file = fileInput.files[0];
 
   if (!file) {
     alert("Please select an image file.");
+    return;
+  }
+
+  const sizevalue = Check_input($("#font_input").val());
+  const distancevalue = Check_input($("#distance_input").val());
+
+  if (sizevalue == -1 || distancevalue == -1) {
+
+    alert("advanced options: Please enter each value between 1~10");
     return;
   }
 
@@ -44,4 +64,18 @@ function Generate_image() {
     .finally(() => {
       $(".gen_btn").attr("disabled", false);
     });
+}
+
+function openDiv() {
+  alert("comming soon");
+    // if($('.option_menu').css('display') === 'none'){
+    //   $('.option_menu').css('display', 'block');
+    //   $('.arrow').css('transform', 'rotate(-135deg)');
+    //   $('.arrow').css('margin-top', '0.8rem');
+    // } else {
+    //   $('.option_menu').css('display', 'none');
+    //   $('.arrow').css('transform', 'rotate(45deg)');
+    //   $('.arrow').css('margin-top', '1rem');
+    // }
+
 }
