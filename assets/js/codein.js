@@ -68,14 +68,14 @@ function Generate_image() {
 
 function openDiv() {
   alert("comming soon");
-    // if($('.option_menu').css('display') === 'none'){
-    //   $('.option_menu').css('display', 'block');
-    //   $('.arrow').css('transform', 'rotate(-135deg)');
-    //   $('.arrow').css('margin-top', '0.8rem');
-    // } else {
-    //   $('.option_menu').css('display', 'none');
-    //   $('.arrow').css('transform', 'rotate(45deg)');
-    //   $('.arrow').css('margin-top', '1rem');
-    // }
+    if($('.option_menu').css('display') === 'none'){
+      $('.option_menu').css('display', 'block');
+      $('.arrow').css('transform', 'rotate(-135deg)');
+      $('.arrow').css('margin-top', '0.8rem');
+    } else {
+      $('.option_menu').css('display', 'none');
+      $('.arrow').css('transform', 'rotate(45deg)');
+      $('.arrow').css('margin-top', '1rem');
+    }
 
 }

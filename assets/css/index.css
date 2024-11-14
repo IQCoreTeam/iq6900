@@ -115,7 +115,17 @@ hr {
 
 
 }
+.bar{
+    height: 2rem;
+    width: 100%;
+    background-color:  #00ff22;
+    color:black;
+    font-size: 1rem;
+    align-items: center;
+    margin:0;
 
+    animation: none;
+}
 .main_div{
     margin: 2rem;
     border: 0.1rem solid;
