@@ -54,6 +54,13 @@ hr {
 
 
 }
+.game_image{
+    width: 35rem;
+    max-height: 20rem;
+    object-fit: contain;
+    border-radius: 1rem;
+
+}
 .nav_bar>h1{
     margin: 0;
     padding: 1rem;
