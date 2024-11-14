@@ -7,18 +7,18 @@ document.getElementById("imageUpload").addEventListener("change", function () {
     fileNameElement.textContent = fileName;
   }
 });
-function Check_input(x){
+function Check_input(x) {
   var result = -1;
 
-  if(!isNaN(x)){
-    const num =  parseInt(x);
-    if(num > 0 && num<11){
+  if (!isNaN(x)) {
+    const num = parseInt(x);
+    if (num > 0 && num < 11) {
       result = num;
     }
   }
   return result;
-
 }
+
 function Generate_image() {
   const fileInput = document.getElementById("imageUpload");
   const file = fileInput.files[0];
@@ -28,17 +28,18 @@ function Generate_image() {
     return;
   }
 
-  const sizevalue = Check_input($("#font_input").val());
-  const distancevalue = Check_input($("#distance_input").val());
+  const sizeValue = Check_input($("#font_input").val());
+  const distanceValue = Check_input($("#distance_input").val());
 
-  if (sizevalue == -1 || distancevalue == -1) {
-
+  if (sizeValue == -1 || distanceValue == -1) {
     alert("advanced options: Please enter each value between 1~10");
     return;
   }
 
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("font_size", sizeValue);
+  formData.append("density", distanceValue);
 
   $(".game_image").attr("src", "./img/gameui.gif");
   $(".gen_btn").attr("disabled", true);
