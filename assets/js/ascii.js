@@ -44,7 +44,7 @@ async function displayFrames() {
             ascii.innerHTML = frames[i].replace(/ /g, "&nbsp;").replace(/\n/g, "<br>");
 
             // 프레임 출력 후 잠시 기다리기 (1초마다 출력)
-            await new Promise(resolve => setTimeout(resolve, 80.6));
+            await new Promise(resolve => setTimeout(resolve, 60.6));
         }
 
         // 현재 파일의 프레임을 다 출력한 후, 다음 파일로 넘어감
