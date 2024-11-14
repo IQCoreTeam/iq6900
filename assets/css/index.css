@@ -56,7 +56,6 @@ hr {
 }
 .game_image{
     width: 35rem;
-    height: 16rem;
     max-height: 20rem;
     object-fit: contain;
     border-radius: 1rem;
