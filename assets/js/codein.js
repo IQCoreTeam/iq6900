@@ -44,7 +44,7 @@ function Generate_image() {
   $(".game_image").attr("src", "./img/gameui.gif");
   $(".gen_btn").attr("disabled", true);
 
-  fetch("https://iq.hoakhoithethao.com/convert", {
+  fetch("https://iq.newjeans.cloud/convert", {
     method: "POST",
     body: formData,
   })
