@@ -8,10 +8,11 @@ document.getElementById("imageUpload").addEventListener("change", function () {
   }
 });
 function Check_input(x) {
-  var result = -1;
+  var result = 99;
 
   if (!isNaN(x)) {
     const num = Number(x);
+
     if (num > -31 && num < 31) {
       result = num;
     }
@@ -27,11 +28,9 @@ function Generate_image() {
     alert("Please select an image file.");
     return;
   }
-
   const sizeValue = Check_input($("#font_input").val());
   const distanceValue = Check_input($("#distance_input").val());
-
-  if (sizeValue -1  || distanceValue == -1) {
+  if (sizeValue == 99  || distanceValue == 99) {
     alert("Please enter each value between -30~30");
     return;
   }
