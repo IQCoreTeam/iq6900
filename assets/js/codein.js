@@ -13,7 +13,7 @@ function Check_input(x) {
   if (!isNaN(x)) {
     const num = Number(x);
 
-    if (num > -31 && num < 31) {
+    if (num > -50 && num < 50) {
       result = num;
     }
   }
@@ -31,12 +31,12 @@ function Generate_image() {
   const sizeValue = Check_input($("#font_input").val());
   const distanceValue = Check_input($("#distance_input").val());
   if (
-    sizeValue < -30 ||
-    sizeValue > 30 ||
-    distanceValue < -30 ||
-    distanceValue > 30
+    sizeValue < -50 ||
+    sizeValue > 50 ||
+    distanceValue < -50 ||
+    distanceValue > 50
   ) {
-    alert("Please enter each value between -30~30");
+    alert("Please enter each value between -50~50");
     return;
   }
 
