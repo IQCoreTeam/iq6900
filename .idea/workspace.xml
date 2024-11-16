@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="">
+    <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/js/codein.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/codein.js" afterDir="false" />
@@ -119,11 +119,35 @@
       <workItem from="1731602443787" duration="1137000" />
       <workItem from="1731626742787" duration="18000" />
       <workItem from="1731692639231" duration="1263000" />
-      <workItem from="1731733610751" duration="13391000" />
+      <workItem from="1731733610751" duration="14034000" />
     </task>
+    <task id="LOCAL-00001" summary="check mark">
+      <option name="closed" value="true" />
+      <created>1731748141175</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1731748141175</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="check mark" />
+    <option name="LAST_COMMIT_MESSAGE" value="check mark" />
   </component>
 </project>
