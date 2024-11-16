@@ -30,7 +30,12 @@ function Generate_image() {
   }
   const sizeValue = Check_input($("#font_input").val());
   const distanceValue = Check_input($("#distance_input").val());
-  if (sizeValue == 99  || distanceValue == 99) {
+  if (
+    sizeValue < -30 ||
+    sizeValue > 30 ||
+    distanceValue < -30 ||
+    distanceValue > 30
+  ) {
     alert("Please enter each value between -30~30");
     return;
   }
@@ -66,5 +71,3 @@ function Generate_image() {
       $(".gen_btn").attr("disabled", false);
     });
 }
-
-
