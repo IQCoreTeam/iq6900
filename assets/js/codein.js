@@ -11,7 +11,7 @@ function Check_input(x) {
   var result = -1;
 
   if (!isNaN(x)) {
-    const num = parseInt(x);
+    const num = Number(x);
     if (num > -31 && num < 31) {
       result = num;
     }
