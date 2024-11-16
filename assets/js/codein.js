@@ -12,7 +12,7 @@ function Check_input(x) {
 
   if (!isNaN(x)) {
     const num = parseInt(x);
-    if (num > 0 && num < 11) {
+    if (num > -31 && num < 31) {
       result = num;
     }
   }
@@ -31,8 +31,8 @@ function Generate_image() {
   const sizeValue = Check_input($("#font_input").val());
   const distanceValue = Check_input($("#distance_input").val());
 
-  if (sizeValue == -1 || distanceValue == -1) {
-    alert("advanced options: Please enter each value between 1~10");
+  if (sizeValue -1  || distanceValue == -1) {
+    alert("Please enter each value between -30~30");
     return;
   }
 
