@@ -40,10 +40,18 @@ function Generate_image() {
     return;
   }
 
+
   const formData = new FormData();
   formData.append("file", file);
   formData.append("font_size", sizeValue);
   formData.append("density", distanceValue);
+
+  if ($('#checkbox').is(':checked')){
+    formData.append("watermark", true);
+  }else{
+    formData.append("watermark", false);
+  }
+
   // $(".prograss").style("display", "flex"); 추가함
   // 여기서 프로그래스 진행 progress-bar 의 width 을 프로그래스에 맞게 조절하면됨.
   $(".game_image").attr("src", "./img/gameui.gif");
