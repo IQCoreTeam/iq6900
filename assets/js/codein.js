@@ -7,17 +7,23 @@ document.getElementById("imageUpload").addEventListener("change", function () {
     fileNameElement.textContent = fileName;
   }
 });
+
 function Check_input(x) {
-  var result = 99;
-
-  if (!isNaN(x)) {
-    const num = Number(x);
-
-    if (num > -30 && num < 30) {
-      result = num;
-    }
+  if (x === null || x === undefined || x.trim() === "") {
+    return null;
   }
-  return result;
+
+  const num = Number(x);
+
+  if (isNaN(num)) {
+    return null;
+  }
+
+  if (num >= -50 && num <= 50) {
+    return num;
+  } else {
+    return null;
+  }
 }
 
 function Generate_image() {
@@ -30,16 +36,11 @@ function Generate_image() {
   }
   const sizeValue = Check_input($("#font_input").val());
   const distanceValue = Check_input($("#distance_input").val());
-  if (
-    sizeValue < -30 ||
-    sizeValue > 30 ||
-    distanceValue < -30 ||
-    distanceValue > 30
-  ) {
-    alert("Please enter each value between -50~50");
+
+  if (sizeValue === null || distanceValue === null) {
+    alert("Please enter valid numeric values between -50 and 50.");
     return;
   }
-
 
   const formData = new FormData();
   formData.append("file", file);
