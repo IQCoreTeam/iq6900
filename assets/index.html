@@ -109,7 +109,7 @@
                             for="imageUpload"
                             class="custom-file-upload gen_btn"
                     >
-                        <a class="file-name">Select Image</a>
+                        <a class="file-name" style="cursor: pointer">Click To Select Image</a>
                     </label>
                     <input
                             type="file"
@@ -118,35 +118,67 @@
                             style="display: none"
                     />
                 </div>
-                <div class="option"
-                     style="margin-top: 2rem;text-align: center;justify-content: center;align-items: center;">
-                    <div class="option_title"
-                         style="display: flex;text-align: center;justify-content: center;align-items: center;">
-                        <div><a>advanced options</a></div>
-                        <div class="arrow_div" onclick="openDiv()">
-                            <div class="arrow"></div>
-                        </div>
+                <div class="gen_setting">
 
-                    </div>
-                    <div class="option_menu" style="display: none">
+                    <div class="option_menu">
+<!--                        <div class="check_div">-->
+<!--                            <p class="check_title">Logo:</p>-->
+<!--                            <input  type="checkbox" checked id="checkbox"/>-->
+<!--                            <label class="check" for="checkbox"></label>-->
+
+<!--                        </div>-->
                         <div class="input_menu" style="display: flex">
-                            <p>font size:
+                            <p class="input_title">font size:
                             <p>
                                 <label>
-                                    <input id="font_input" class="num_input" type="number" value="7">
+                                    <input id="font_input" class="num_input" type="number" value="14">
                                 </label>
                         </div>
                         <div class="input_menu" style="display: flex">
-                            <p>distance:
+                            <p class="input_title">distance:
                             <p>
                                 <label>
-                                    <input id="distance_input" class="num_input" type="number" value="3">
+                                    <input id="distance_input" class="num_input" type="number" value="-2">
                                 </label>
                         </div>
-                        <p style="font-size: 0.8rem">It may be slower depending on your settings.</p>
 
                     </div>
+                    <div class="progress" data-progress-percent="25">
+                        <div class="progress-bar">
+                        </div>
+                    </div>
+
                 </div>
+
+                <!--                <div class="option"-->
+                <!--                     style="margin-top: 2rem;text-align: center;justify-content: center;align-items: center;">-->
+                <!--                    <div class="option_title"-->
+                <!--                         style="display: flex;text-align: center;justify-content: center;align-items: center;">-->
+                <!--                        <div><a>advanced options</a></div>-->
+                <!--                        <div class="arrow_div" onclick="openDiv()">-->
+                <!--                            <div class="arrow"></div>-->
+                <!--                        </div>-->
+
+                <!--                    </div>-->
+                <!--                    <div class="option_menu" style="display: none">-->
+                <!--                        <div class="input_menu" style="display: flex">-->
+                <!--                            <p>font size:-->
+                <!--                            <p>-->
+                <!--                                <label>-->
+                <!--                                    <input id="font_input" class="num_input" type="number" value="7">-->
+                <!--                                </label>-->
+                <!--                        </div>-->
+                <!--                        <div class="input_menu" style="display: flex">-->
+                <!--                            <p>distance:-->
+                <!--                            <p>-->
+                <!--                                <label>-->
+                <!--                                    <input id="distance_input" class="num_input" type="number" value="3">-->
+                <!--                                </label>-->
+                <!--                        </div>-->
+                <!--                        <p style="font-size: 0.8rem">It may be slower depending on your settings.</p>-->
+
+                <!--                    </div>-->
+                <!--                </div>-->
 
 
                 <button

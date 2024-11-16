@@ -40,7 +40,8 @@ function Generate_image() {
   formData.append("file", file);
   formData.append("font_size", sizeValue);
   formData.append("density", distanceValue);
-
+  // $(".prograss").style("display", "flex"); 추가함
+  // 여기서 프로그래스 진행 progress-bar 의 width 을 프로그래스에 맞게 조절하면됨.
   $(".game_image").attr("src", "./img/gameui.gif");
   $(".gen_btn").attr("disabled", true);
 
@@ -67,16 +68,4 @@ function Generate_image() {
     });
 }
 
-function openDiv() {
-  alert("comming soon");
-    if($('.option_menu').css('display') === 'none'){
-      $('.option_menu').css('display', 'block');
-      $('.arrow').css('transform', 'rotate(-135deg)');
-      $('.arrow').css('margin-top', '0.8rem');
-    } else {
-      $('.option_menu').css('display', 'none');
-      $('.arrow').css('transform', 'rotate(45deg)');
-      $('.arrow').css('margin-top', '1rem');
-    }
 
-}
