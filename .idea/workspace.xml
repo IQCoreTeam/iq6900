@@ -5,7 +5,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
+      <change afterPath="$PROJECT_DIR$/assets/html/sections/main_page.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/html/sections/onchain_code.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/img/greenlogo.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/img/onchain.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/img/poster.gif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/init.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/sections/pages/effect.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/sections/pages/main_page.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/assets/css/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/img/Lucky.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/img/brain.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/img/buy.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/img/cursor1.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/img/logo.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/img/ro.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/img/wojak.gif" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/codein.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/codein.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +53,9 @@
     &quot;accountId&quot;: &quot;24e29b79-f196-4013-aca0-459e9139ecad&quot;
   }
 }</component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="lu068cng" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
 }</component>
@@ -43,30 +64,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/sumin/IdeaProjects/iq3600/assets/music&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/sumin/IdeaProjects/iq6900/assets/img",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/assets/music" />
       <recent name="$PROJECT_DIR$/assets/img" />
+      <recent name="$PROJECT_DIR$/assets/music" />
       <recent name="$PROJECT_DIR$/assets" />
       <recent name="$PROJECT_DIR$/assets/css" />
       <recent name="$PROJECT_DIR$/assets/js" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/assets/html/sections" />
       <recent name="$PROJECT_DIR$/assets" />
       <recent name="$PROJECT_DIR$/assets/img" />
     </key>
@@ -117,7 +140,10 @@
       <workItem from="1731602443787" duration="1137000" />
       <workItem from="1731626742787" duration="18000" />
       <workItem from="1731692639231" duration="1263000" />
-      <workItem from="1731733610751" duration="15606000" />
+      <workItem from="1731733610751" duration="20235000" />
+      <workItem from="1731986004517" duration="105000" />
+      <workItem from="1732122797448" duration="118000" />
+      <workItem from="1733293502886" duration="31523000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />

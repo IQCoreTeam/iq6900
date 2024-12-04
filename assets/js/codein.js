@@ -84,3 +84,4 @@ function Generate_image() {
             $(".gen_btn").attr("disabled", false);
         });
 }
+
