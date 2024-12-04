@@ -216,6 +216,7 @@ input:checked + .check:after {
     background: linear-gradient(rgba(0,0,0,0) 70%, rgba(0, 0, 0, 0.7) 30%);
     background-size: 100% 0.1rem, 0.2rem 100%;
     pointer-events: none;
+    z-index: 50;
 
 }
 .onchain_logo{
