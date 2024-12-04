@@ -5,25 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
-      <change afterPath="$PROJECT_DIR$/assets/html/sections/main_page.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/html/sections/onchain_code.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/img/greenlogo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/img/onchain.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/img/poster.gif" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/js/init.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/js/sections/pages/effect.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/js/sections/pages/main_page.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/assets/css/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/img/Lucky.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/img/brain.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/img/buy.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/img/cursor1.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/img/logo.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/img/ro.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/img/wojak.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/codein.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/codein.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/img/mv.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/assets/img/mv.mp4" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -143,7 +127,7 @@
       <workItem from="1731733610751" duration="20235000" />
       <workItem from="1731986004517" duration="105000" />
       <workItem from="1732122797448" duration="118000" />
-      <workItem from="1733293502886" duration="31523000" />
+      <workItem from="1733293502886" duration="32357000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />
