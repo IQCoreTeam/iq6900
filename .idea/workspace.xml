@@ -6,8 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/codeincontract.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/codeincontract.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/compress.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/compress.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/sections/pages/check_section.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/sections/pages/check_section.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/sections/pages/codein_section.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/sections/pages/codein_section.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/sections/pages/main_page.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/sections/pages/main_page.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/sections/pages/onchain_page.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/sections/pages/onchain_page.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -157,7 +159,7 @@
       <workItem from="1733834126516" duration="31529000" />
       <workItem from="1733988133891" duration="103822000" />
       <workItem from="1734358377310" duration="1979000" />
-      <workItem from="1734360594712" duration="2830000" />
+      <workItem from="1734360594712" duration="4159000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />
