@@ -38,7 +38,7 @@ function Generate_image() {
     const distanceValue = Check_input($("#distance_input").val());
 
     if (sizeValue === null || distanceValue === null) {
-        alert("Please enter valid numeric values between -50 and 50.");
+        alert("Please enter valid numeric values between -30 and 30.");
         return;
     }
     if (sizeValue < 0 ) {
@@ -57,8 +57,7 @@ function Generate_image() {
         formData.append("watermark", false);
     }
 
-    // $(".prograss").style("display", "flex"); 추가함
-    // 여기서 프로그래스 진행 progress-bar 의 width 을 프로그래스에 맞게 조절하면됨.
+
     $(".game_image").attr("src", "./img/gameui.gif");
     $(".gen_btn").attr("disabled", true);
 

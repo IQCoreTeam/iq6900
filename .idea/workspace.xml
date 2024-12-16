@@ -5,8 +5,88 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
+      <change afterPath="$PROJECT_DIR$/assets/fonts/consola.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/html/sections/check_code.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/html/sections/code_in.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/html/sections/onchain_page.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/check_contract.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/codein_client.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/codeincontract.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/compress.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/navbar.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/sections/codein_init.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/sections/pages/check_section.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/sections/pages/codein_section.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/sections/pages/onchain_page.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/css/ascii.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/assets/css/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/html/sections/effect.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/html/sections/main_page.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/main_page.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/html/sections/onchain_code.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/img/loading.gif" beforeDir="false" afterPath="$PROJECT_DIR$/assets/img/loading.gif" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/ascii.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/codein.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/codein.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/init.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/init.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/sections/pages/effect.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/sections/pages/effect.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/music/miku.mp3" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_10.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_11.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_12.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_13.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_14.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_15.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_16.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_17.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_18.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_19.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_2.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_20.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_21.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_22.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_23.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_24.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_25.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_26.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_27.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_28.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_29.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_3.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_30.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_31.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_32.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_33.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_34.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_35.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_36.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_37.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_38.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_39.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_4.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_40.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_41.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_42.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_43.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_44.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_45.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_46.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_47.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_48.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_49.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_5.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_50.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_51.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_52.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_53.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_54.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_55.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_56.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_57.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_6.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_7.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_8.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/output_txt/ascii_frames_9.txt" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,6 +116,10 @@
     &quot;accountId&quot;: &quot;24e29b79-f196-4013-aca0-459e9139ecad&quot;
   }
 }</component>
+  <component name="JsBowerSettings">
+    <bower-package value="" />
+    <bower.json value="" />
+  </component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="lu068cng" />
   </component>
@@ -47,37 +131,58 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultHtmlFileTemplate": "HTML File",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/sumin/IdeaProjects/iq6900/assets/img",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;JavaScript Debug.onchain_code.html.executor&quot;: &quot;Run&quot;,
+    &quot;Node.js.codeincontract.js.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/sumin/IdeaProjects/iq6900&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_interpreter_path&quot;: &quot;node&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;/Users/sumin/.nvm/versions/node/v23.3.0/lib/node_modules/npm/bin/npm-cli.js&quot;,
+    &quot;org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon&quot;: &quot;&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Problems&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.ide.settings.notifications&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/assets/fonts" />
       <recent name="$PROJECT_DIR$/assets/img" />
       <recent name="$PROJECT_DIR$/assets/music" />
       <recent name="$PROJECT_DIR$/assets" />
-      <recent name="$PROJECT_DIR$/assets/css" />
-      <recent name="$PROJECT_DIR$/assets/js" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/assets/js/sections" />
       <recent name="$PROJECT_DIR$/assets/html/sections" />
       <recent name="$PROJECT_DIR$/assets" />
       <recent name="$PROJECT_DIR$/assets/img" />
     </key>
   </component>
   <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="iq3600" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="iq3600" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration default="true" type="JetRunConfigurationType">
       <module name="iq3600" />
       <method v="2">
@@ -126,7 +231,12 @@
       <workItem from="1731733610751" duration="20235000" />
       <workItem from="1731986004517" duration="105000" />
       <workItem from="1732122797448" duration="118000" />
-      <workItem from="1733293502886" duration="32647000" />
+      <workItem from="1733293502886" duration="151327000" />
+      <workItem from="1733820441108" duration="13305000" />
+      <workItem from="1733834126516" duration="31529000" />
+      <workItem from="1733988133891" duration="103822000" />
+      <workItem from="1734358377310" duration="1979000" />
+      <workItem from="1734360594712" duration="1753000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />
@@ -156,5 +266,9 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="check mark" />
     <option name="LAST_COMMIT_MESSAGE" value="check mark" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

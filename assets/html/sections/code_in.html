@@ -1,0 +1,261 @@
+<script type="text/javascript">
+    document.getElementById("imageUpload").addEventListener("change", function () {
+        var fileName = this.files[0].name;
+        var fileNameElement = document.querySelector(
+            ".custom-file-upload .file-name",
+        );
+        if (fileNameElement) {
+            if (fileName.length > 20) {
+                fileName = fileName.slice(0, 5) + "..." + fileName.slice(-7);
+
+            }
+            fileNameElement.textContent = fileName;
+        }
+    });
+</script>
+<div id="code_in" style="display: none"></div>
+<div class="gen_setting" style="margin:8rem 0 6rem 0">
+    <div style="display: flex">
+        <div style="height: 26rem;font-size: 1rem;width: 20rem; display: flex; flex-direction: column; overflow-y: hidden;">
+
+            <p style="text-align: right; margin-right: 2rem;">
+                Onchain code in is IQ's own technology. <br>
+                <br>
+                We provided:
+                <br>
+                [Cheap Gas]
+                average gas cost<br>
+                5000 text 0.000005SOL<br>
+                <br>
+                [Compression]
+                We made compression algorithm:<br>
+                lossless, <br>
+                fast <br>
+                guarantees.<br>
+                <br>
+                minimum<br>
+                compression rate<br>
+                64%<br>
+            </p>
+        </div>
+        <div style="display: flex;flex-direction: column;">
+
+
+            <img class="code_title" src="img/onchain.png" style="width: 30rem; margin-bottom: 4rem">
+
+            <div style="margin-top: 1rem">
+                <label
+                        for="imageUpload"
+                        class="custom-file-upload gen_btn"
+                >
+                    <a class="file-name" style="cursor: pointer">Click To Select Image</a>
+                </label>
+
+                <input
+                        type="file"
+                        id="imageUpload"
+                        accept="image/*"
+                        style="display: none"
+                />
+            </div>
+            <div class="option_menu center">
+                <div style="display:flex; flex-direction: column">
+                    <button
+                            class="gen_btn"
+                            style="margin:2rem 0 0 0"
+                            type="button"
+                            value="button"
+                            onclick="Generate_image_client()"
+                            id="generate_btn"
+                    >
+                        <a>Generate Code</a>
+                    </button>
+                    <p>or</p>
+                    <button
+                            class="gen_btn"
+                            style="margin:0"
+                            type="button"
+                            value="button"
+                            onclick="move_type_section()"
+                            id="type_button"
+                    >
+                        <a>Type Text</a>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div style="height: 26rem;font-size: 1rem;width: 20rem; display: flex; flex-direction: column; overflow-y: hidden;">
+            <p style="text-align: left; margin-left: 2rem;">
+                Onchain code in is IQ's own technology. <br>
+                <br>
+                We provided:
+                <br>
+                [Cheap Gas]
+                average gas cost<br>
+                5000 text 0.000005SOL<br>
+                <br>
+                [Compression]
+                We made compression algorithm:<br>
+                lossless, <br>
+                fast <br>
+                guarantees.<br>
+                <br>
+                minimum<br>
+                compression rate<br>
+                64%<br>
+            </p>
+
+        </div>
+    </div>
+</div>
+<div class="type_in_setting" style="display: none; flex-direction: column;margin: 4rem 0 4rem 0">
+    <div class="asciidiv" style="width: 40rem;">
+        <textarea  id="text_input" class="on_chain_ascii type_in"></textarea>
+    </div>
+    <button
+            class="gen_btn"
+            style="margin:0"
+            type="button"
+            value="button"
+            onclick="type_done()"
+            id="text_in_button"
+    >
+        <a>Done</a>
+    </button>
+    <div class="code-in-div center" style="display: none; flex-direction: column">
+        <div style="margin:2rem 0 0 0; cursor: pointer">
+
+<pre class="connect-btn" onclick="Connect()" style="font-size: 0.8rem">
+    ██████╗ ██████╗ ███╗   ██╗███╗   ██╗███████╗ ██████╗████████╗
+   ██╔════╝██╔═══██╗████╗  ██║████╗  ██║██╔════╝██╔════╝╚══██╔══╝
+██║     ██║   ██║██╔██╗ ██║██╔██╗ ██║█████╗  ██║        ██║
+██║     ██║   ██║██║╚██╗██║██║╚██╗██║██╔══╝  ██║        ██║
+╚██████╗╚██████╔╝██║ ╚████║██║ ╚████║███████╗╚██████╗   ██║
+ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═╝
+                                </pre>
+            <pre class="sign-in-btn" onclick="pda_make()" style="font-size: 0.9rem;display: none">
+███████╗██╗ ██████╗ ███╗   ██╗      ██╗███╗   ██╗
+██╔════╝██║██╔════╝ ████╗  ██║      ██║████╗  ██║
+███████╗██║██║  ███╗██╔██╗ ██║█████╗██║██╔██╗ ██║
+╚════██║██║██║   ██║██║╚██╗██║╚════╝██║██║╚██╗██║
+███████║██║╚██████╔╝██║ ╚████║      ██║██║ ╚████║
+╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝      ╚═╝╚═╝  ╚═══╝
+                                </pre>
+            <pre class="code-in-btn" onclick="OnChainTextIn()" style="font-size: 0.9rem; display: none">
+ ██████╗ ██████╗ ██████╗ ███████╗    ██╗███╗   ██╗
+██╔════╝██╔═══██╗██╔══██╗██╔════╝    ██║████╗  ██║
+██║     ██║   ██║██║  ██║█████╗█████╗██║██╔██╗ ██║
+██║     ██║   ██║██║  ██║██╔══╝╚════╝██║██║╚██╗██║
+╚██████╗╚██████╔╝██████╔╝███████╗    ██║██║ ╚████║
+ ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝    ╚═╝╚═╝  ╚═══╝
+                                </pre>
+        </div>
+    </div>
+    <div class="progress_div center" style="display: none;flex-direction: column; margin: 0;">
+        <p style="font-size: 1.4rem;">Processing..</p>
+        <p>You will need to sign multiple times</p>
+        <div class="progress">
+            <div class="progress-bar">
+            </div>
+        </div>
+        <p class="progress_num">1/5</p>
+    </div>
+
+    <div class="result_div center" style="display: none;flex-direction: column">
+        <p class="result_txid"></p>
+        <a class="sol_scan" style="text-decoration-line: underline;">Sol Scan</a>
+
+        <pre class="Check" onclick="$.checkSection.init();" style="font-size: 0.9rem">
+  ██████╗██╗  ██╗███████╗ ██████╗██╗  ██╗
+ ██╔════╝██║  ██║██╔════╝██╔════╝██║ ██╔╝
+██║     ███████║█████╗  ██║     █████╔╝
+██║     ██╔══██║██╔══╝  ██║     ██╔═██╗
+ ╚██████╗██║  ██║███████╗╚██████╗██║  ██╗
+  ╚═════╝╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝  ╚═╝
+</pre>
+    </div>
+</div>
+
+<div class="code_in_setting" style="display: none; flex-direction: column;margin: 4rem 0 4rem 0">
+    <div class="asciidiv" style="width: 40rem">
+                        <pre id="ascii_text" class="on_chain_ascii"
+                             style="letter-spacing: 0.3em; line-height: 90%;"></pre>
+    </div>
+    <p id='asciiWidth' style="color:black;animation: none;text-shadow: none; display: none;"></p>
+    <div class="code_in_control center" style="display: flex; flex-direction: column;">
+
+
+        <div class="code-in-div center" style="display: flex; flex-direction: column">
+            <div class="input_menu" style="display:flex;text-align: center">
+                <p class="input_title" style="font-size: 1.3rem;">font size
+                <p>
+                    <label>
+                        <input id="font_input" style="margin: 0 0 0 1rem;" class="num_input" type="number" value="12"
+                               min="5" max="50">
+                    </label>
+            </div>
+
+            <button style="margin: 0;"
+                    class="gen_btn"
+                    type="button"
+                    value="button"
+                    onclick="Generate_image_client()"
+            >
+                <a>Edit Code</a>
+            </button>
+            <div style="margin:2rem 0 0 0; cursor: pointer" onclick="Connect()">
+                                <pre class="connect-btn" style="font-size: 0.8rem">
+    ██████╗ ██████╗ ███╗   ██╗███╗   ██╗███████╗ ██████╗████████╗
+   ██╔════╝██╔═══██╗████╗  ██║████╗  ██║██╔════╝██╔════╝╚══██╔══╝
+██║     ██║   ██║██╔██╗ ██║██╔██╗ ██║█████╗  ██║        ██║
+██║     ██║   ██║██║╚██╗██║██║╚██╗██║██╔══╝  ██║        ██║
+╚██████╗╚██████╔╝██║ ╚████║██║ ╚████║███████╗╚██████╗   ██║
+ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═╝
+                                </pre>
+                <pre class="sign-in-btn" onclick="pda_make()" style="font-size: 0.9rem;display: none">
+███████╗██╗ ██████╗ ███╗   ██╗      ██╗███╗   ██╗
+██╔════╝██║██╔════╝ ████╗  ██║      ██║████╗  ██║
+███████╗██║██║  ███╗██╔██╗ ██║█████╗██║██╔██╗ ██║
+╚════██║██║██║   ██║██║╚██╗██║╚════╝██║██║╚██╗██║
+███████║██║╚██████╔╝██║ ╚████║      ██║██║ ╚████║
+╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝      ╚═╝╚═╝  ╚═══╝
+                                </pre>
+                <pre class="code-in-btn" onclick="OnChainCodeIn()" style="font-size: 0.9rem;display: none">
+ ██████╗ ██████╗ ██████╗ ███████╗    ██╗███╗   ██╗
+██╔════╝██╔═══██╗██╔══██╗██╔════╝    ██║████╗  ██║
+██║     ██║   ██║██║  ██║█████╗█████╗██║██╔██╗ ██║
+██║     ██║   ██║██║  ██║██╔══╝╚════╝██║██║╚██╗██║
+╚██████╗╚██████╔╝██████╔╝███████╗    ██║██║ ╚████║
+ ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝    ╚═╝╚═╝  ╚═══╝
+                                </pre>
+            </div>
+        </div>
+
+        <div class="progress_div center" style="display: none;flex-direction: column; margin: 0;">
+            <p style="font-size: 1.4rem;">Processing..</p>
+            <p>You will need to sign multiple times</p>
+            <div class="progress">
+                <div class="progress-bar">
+                </div>
+            </div>
+            <p class="progress_num">0/5</p>
+        </div>
+
+        <div class="result_div center" style="display: none;flex-direction: column">
+            <p class="result_txid"></p>
+            <a class="sol_scan" style="text-decoration-line: underline;">Sol Scan</a>
+
+            <pre class="Check" onclick="$.checkSection.init();" style="font-size: 0.9rem">
+  ██████╗██╗  ██╗███████╗ ██████╗██╗  ██╗
+ ██╔════╝██║  ██║██╔════╝██╔════╝██║ ██╔╝
+██║     ███████║█████╗  ██║     █████╔╝
+██║     ██╔══██║██╔══╝  ██║     ██╔═██╗
+ ╚██████╗██║  ██║███████╗╚██████╗██║  ██╗
+  ╚═════╝╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝  ╚═╝
+</pre>
+        </div>
+    </div>
+</div>
+
+
+

@@ -1,0 +1,92 @@
+<div id="check_code" style="display: none"></div>
+<div class="center" style="display:flex;flex-direction: column;">
+    <div id="main-load" class="center" style="display: none; flex-direction: column;">
+        <img style="width: 30rem; margin-top: 10rem;margin-bottom: 1rem;" src="img/pixellogo.gif">
+        <p style="font-size: 1.3rem; margin-bottom: 9rem">Loading.....</p>
+    </div>
+
+    <div class="before_check" style="padding-bottom: 3rem;padding-top: 3rem">
+        <img class="check_title" src="img/onchain.png" style="width: 30rem; margin-bottom: 4rem">
+        <div class="enter_transaction_result center" style="display:flex; flex-direction: column">
+            <p>Enter transaction</p>
+
+            <div style="display:flex; text-align: center">
+                <label>
+                    <input class="transaction_input">
+                </label>
+                <div class="little_btn" onclick="transactionButton()">
+                    <a class="little_btn_text">Check</a>
+                </div>
+            </div>
+
+            <p>or</p>
+            <button style="margin: 0;"
+                    class="gen_btn"
+                    type="button"
+                    value="button"
+                    onclick="viewConnect()">
+                <a>Check My Wallet</a>
+            </button>
+        </div>
+    </div>
+    <div class="after_check" style="display:none; flex-direction: column;padding-bottom: 3rem;padding-top: 3rem">
+
+        <div class="transaction_input_check" style="display: none; flex-direction: column;">
+            <div class="asciidiv" style="width: 40rem;display: flex; flex-direction: column;">
+                <div class="loading center" style="width: 40rem; display: none; flex-direction: column">
+                    <img style="width: 30rem; margin-bottom: 4rem; margin-top: 4rem;" src="img/pixellogo.gif">
+                </div>
+
+                <pre id="ascii_text" class="on_chain_ascii" style="width:40rem; letter-spacing: 0.3em; line-height: 90%;"></pre>
+            </div>
+
+            <div class="center inputdiv" style="display:flex; margin-top:4rem; flex-direction: column; text-align: center">
+                <div style="display:flex; text-align: center">
+                    <label>
+                        <input class="transaction_input">
+                    </label>
+                    <div class="little_btn" onclick="transactionButton_in_result()">
+                        <a class="little_btn_text">Check</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="connect_check " style="display: none; flex-direction: column;">
+            <pre style="font-size: 0.6rem"> ______     __         __     ______     __  __        ______   __  __     __     _____        ______   ______        ______     __  __     ______     ______     __  __
+/\  ___\   /\ \       /\ \   /\  ___\   /\ \/ /       /\__  _\ /\_\_\_\   /\ \   /\  __-.     /\__  _\ /\  __ \      /\  ___\   /\ \_\ \   /\  ___\   /\  ___\   /\ \/ /
+  \ \ \____  \ \ \____  \ \ \  \ \ \____  \ \  _"-.     \/_/\ \/ \/_/\_\/_  \ \ \  \ \ \/\ \    \/_/\ \/ \ \ \/\ \     \ \ \____  \ \  __ \  \ \  __\   \ \ \____  \ \  _"-.
+   \ \_____\  \ \_____\  \ \_\  \ \_____\  \ \_\ \_\       \ \_\   /\_\/\_\  \ \_\  \ \____-       \ \_\  \ \_____\     \ \_____\  \ \_\ \_\  \ \_____\  \ \_____\  \ \_\ \_\
+    \/_____/   \/_____/   \/_/   \/_____/   \/_/\/_/        \/_/   \/_/\/_/   \/_/   \/____/        \/_/   \/_____/      \/_____/   \/_/\/_/   \/_____/   \/_____/   \/_/\/_/
+                                                                                                                                                                            </pre>
+            <div style="display: flex">
+                <div class="wallet_ascii_div">
+                    <div class="loading center" style="width: 35rem; display: none">
+                        <img style="width: 20rem; margin-bottom: 4rem; margin-top: 4rem;" src="img/pixellogo.gif">
+                    </div>
+                    <div class="text_div">
+                        <p>your text: </p>
+                        <pre class="on_chain_text"></pre>
+                    </div>
+                    <div class="image_div" style="width: 40rem;">
+                      <pre class="on_chain_ascii" style="letter-spacing: 0.28em; line-height: 90%;"></pre>
+                    </div>
+                </div>
+                <div class="transactions_div"
+                     style=" display:flex; margin-left:3rem; flex-direction:column; width: 20rem; overflow-y: scroll;">
+                </div>
+            </div>
+        </div>
+
+        <div class="center" style="display:flex; flex-direction: column;">
+            <a class="sol_scan" style=" font-size:1rem; text-decoration-line: underline; margin-top:2rem; margin-bottom: 1rem;">
+                Sol Scan</a>
+            <button style="margin: 0;"
+                    class="x_btn gen_btn center"
+                    type="button"
+                    value="button">
+                <a>Share it to X</a>
+            </button>
+        </div>
+    </div>
+</div>
