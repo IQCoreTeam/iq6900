@@ -1,4 +1,4 @@
-const compress_host = "https://compresspy.fly.dev/";
+const compress_host = "https://fastapi-app-silent-morning-5767.fly.dev/";
 
 // 압축 함수
 async function compressText(originalText) {
