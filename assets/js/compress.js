@@ -1,9 +1,9 @@
-const compress_host = "https://compresspy.fly.dev/";
+const compress_host = "https://compresspy.fly.dev";
 
 // 압축 함수
 async function compressText(originalText) {
     try {
-        const response = await fetch(`${compress_host}compress`, {
+        const response = await fetch(`${compress_host}/compress`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ascii: originalText })
@@ -24,7 +24,7 @@ async function compressText(originalText) {
 // 디코드 함수
 async function decompressText(compressedText,method) {
     try {
-        const response = await fetch(`${compress_host}decompress`, {
+        const response = await fetch(`${compress_host}/decompress`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
