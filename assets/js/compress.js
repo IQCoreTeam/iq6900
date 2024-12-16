@@ -14,7 +14,7 @@ async function compressText(originalText) {
         }
 
         const result = await response.json();
-        return result; // { result, method }
+        return result;
     } catch (error) {
         console.error('Error in compressText:', error.message);
         throw error;
