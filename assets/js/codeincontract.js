@@ -1,5 +1,5 @@
-const host = process.env.CONTRACT_API;
-const network = process.env.RPC_API;
+const host = process.env.PUBLIC_CONTRACT_API;
+const network = process.env.PUBLIC_RPC_API;
 
 const contractChunkSize = 900;
 const textChunkSize = 10000;

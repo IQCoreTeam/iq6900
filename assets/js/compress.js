@@ -1,5 +1,4 @@
-const compress_host = process.env.COMPRESS_API;
-
+const compress_host = process.env.PUBLIC_COMPRESS_API;
 // 압축 함수
 async function compressText(originalText) {
     try {
