@@ -1,4 +1,5 @@
-const compress_host = process.env.PUBLIC_COMPRESS_API;
+const compress_host = "https://compresspy.fly.dev/";
+
 // 압축 함수
 async function compressText(originalText) {
     try {
