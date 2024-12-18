@@ -222,7 +222,7 @@ async function pda_make() {
             if (transaction != null) {
                 const {signature} = await provider.signAndSendTransaction(transaction);
                 const status = await connection.getSignatureStatus(signature);
-                location.reload();
+                $.onchainPage.init();
             } else {
                 console.log("Transaction build failed");
             }
