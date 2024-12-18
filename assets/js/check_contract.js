@@ -278,6 +278,7 @@ async function transactionButton() {
             else if (asciiObj.type == "text") {
                 $(".on_chain_ascii").css("white-space","pre-wrap");
                 $(".on_chain_ascii").css("font-size","1rem");
+                $(".on_chain_ascii").css("text-align","left");
             }
             $(".on_chain_ascii").text(asciiObj.ascii_string);
 
