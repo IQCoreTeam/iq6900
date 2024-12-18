@@ -145,7 +145,6 @@ async function Generate_image_client() {
                 $(".on_chain_ascii").css("font-size", fontsize.toString()+"px");
                 $(".on_chain_ascii").text(result.relult);
                 $(".gen_setting").css("display", "none");
-
                 $(".code_in_setting").css("display", "flex");
 
             }).catch((error) => {
