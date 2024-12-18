@@ -215,7 +215,7 @@ async function viewConnect() {
         const db_pda_address = new solanaWeb3.PublicKey(db_pda.DBPDA);
 
         const fullsignatures = await fetchAllSignatures(db_pda_address);
-        const signatures = fullsignatures.slice(0, -1);
+        const signatures = await fullsignatures.slice(0, -1);
 
         if (Array.isArray(signatures) && signatures.length === 0) {
             alert("You haven't coded in yet.");
