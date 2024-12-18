@@ -214,8 +214,7 @@ async function viewConnect() {
 
         const db_pda_address = new solanaWeb3.PublicKey(db_pda.DBPDA);
 
-        const fullsignatures = await fetchAllSignatures(db_pda_address);
-        const signatures = await fullsignatures.slice(0, -1);
+        const signatures = await fetchAllSignatures(db_pda_address);
 
         if (Array.isArray(signatures) && signatures.length === 0) {
             alert("You haven't coded in yet.");
@@ -225,6 +224,7 @@ async function viewConnect() {
         const latest_trx = signatures[0];
         await handleTransactionClick(latest_trx);
         $('.transactions_div').empty();
+
         signatures.forEach(txid => {
             const $transactionElement = $('<p>')
                 .addClass('transaction_entry')
@@ -234,6 +234,7 @@ async function viewConnect() {
                 });
             $('.transactions_div').append($transactionElement);
         });
+        $(".transactions_div>p:last").css("display", "none");
 
         $("#main-load").css("display", "none");
         $(".after_check").css("display", "flex");
