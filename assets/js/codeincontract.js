@@ -87,6 +87,8 @@ async function _send_transaction(provider, transaction) {
                 return signature.signature;
             }
         } catch (err) {
+            alert(err.name);
+            alert(err.message);
             console.error("Error in _send_transaction:", err);
             return "error";
         }
