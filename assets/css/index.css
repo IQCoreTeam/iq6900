@@ -207,6 +207,7 @@ input:checked + .check:after {
     text-align: left;
 }
 .on_chain_text{
+    text-align: left;
     height: 15rem;
     overflow-y: scroll;
     white-space: pre-wrap;
