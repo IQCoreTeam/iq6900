@@ -131,7 +131,7 @@ async function bringCode(dataTxid) {
         const asciiObj = {
             ascii_string: finalresult,
             width: width,
-            type: type_field
+            type: type_field,
         };
         $(".loading").css('display', 'none');
         return asciiObj;
@@ -165,6 +165,9 @@ async function bringCode(dataTxid) {
         };
         $(".loading").css('display', 'none');
         return asciiObj;
+    }
+    else {
+        return false;
     }
     
 
