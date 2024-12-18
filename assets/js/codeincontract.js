@@ -1,7 +1,7 @@
 const host = "https://solanacontractapi.uc.r.appspot.com";
 const network = "https://devnet.helius-rpc.com/?api-key=ab814e2b-59a3-4ca9-911a-665f06fb5f09";
 
-const contractChunkSize = 900;
+const contractChunkSize = 850;
 const textChunkSize = 10000;
 const textInLimit = 5000;
 function sleep(ms) {
