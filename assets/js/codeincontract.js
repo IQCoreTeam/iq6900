@@ -220,10 +220,9 @@ async function pda_make() {
 
             const transaction = await createInitTransactionOnServer(useKeyString)
             if (transaction != null) {
-                console.log(transaction);
                 const {signature} = await provider.signAndSendTransaction(transaction);
                 const status = await connection.getSignatureStatus(signature);
-                // $.onchainPage.init();
+                $.onchainPage.init();
             } else {
                 console.log("Transaction build failed");
             }
