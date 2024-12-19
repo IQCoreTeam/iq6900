@@ -6,17 +6,9 @@
     function onchainPage() {
         let $onchainPageElement;
         let $wWidth = screen.width;
-        const $onchainPageTemplateUrl = "./html/sections/onchain_page.html?ver=20241219";
+        const $onchainPageTemplateUrl = "./html/sections/onchain_page.html?ver=20241220";
         function init() {
             loadOnchainPageTemplate();
-            alert("This is an on-chain testing version for Devnet.");
-            alert("For testing, you need to set your Phantom to Devnet. \n" +
-                "\n" +
-                "1. set the testnet\n" +
-                "https://hello-17.gitbook.io/crema-devnet-test-guide/switch-your-solana-wallet-to-devnet\n" +
-                "\n" +
-                "2. get the testnet solana \n" +
-                "https://faucet.solana.com/");
         }
 
         function loadOnchainPageTemplate() {

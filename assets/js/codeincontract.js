@@ -1,5 +1,5 @@
 const host = "https://solanacontractapi.uc.r.appspot.com";
-const network = "https://devnet.helius-rpc.com/?api-key=ab814e2b-59a3-4ca9-911a-665f06fb5f09";
+const network = "https://mainnet.helius-rpc.com/?api-key=ab814e2b-59a3-4ca9-911a-665f06fb5f09";
 
 const contractChunkSize = 850;
 const textChunkSize = 10000;
@@ -349,7 +349,7 @@ async function OnChainTextIn() {
             const result = await makeTextTransactions(useKeyString, chunkSize, chunks, handle, dataType, offset);
             const result_str = result.toString();
             
-            const solscanLink = "https://solscan.io/tx/"+result_str+"?cluster=devnet";
+            const solscanLink = "https://solscan.io/tx/"+result_str;
             $('.sol_scan').prop('href',solscanLink)
             result_view = result_str.slice(0,9)+"..."+result_str.slice(-9);
 
@@ -386,7 +386,7 @@ async function OnChainCodeIn() {
             
             const result = await makeAllTransactions(useKeyString, chunkSize, chunkList, handle, dataType, offset);
             const result_str = result.toString();
-            const solscanLink = "https://solscan.io/tx/"+result_str+"?cluster=devnet";
+            const solscanLink = "https://solscan.io/tx/"+result_str;
             $('.sol_scan').prop('href',solscanLink)
             result_view = result_str.slice(0,9)+"..."+result_str.slice(-9);
 

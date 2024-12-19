@@ -297,7 +297,7 @@ async function transactionButton() {
                 window.open(twitterIntentUrl, '_blank');
             });
 
-            const solscanLink = "https://solscan.io/tx/" + txid + "?cluster=devnet";
+            const solscanLink = "https://solscan.io/tx/" + txid;
             $(".sol_scan").off("click").on("click", function () {
                 window.open(solscanLink, '_blank');
             });
@@ -353,7 +353,7 @@ async function transactionButton_in_result() {
                 window.open(twitterIntentUrl, '_blank');
             });
 
-            const solscanLink = "https://solscan.io/tx/" + txid + "?cluster=devnet";
+            const solscanLink = "https://solscan.io/tx/" + txid;
             $(".sol_scan").off("click").on("click", function () {
                 window.open(solscanLink, '_blank');
             });
@@ -421,7 +421,7 @@ async function handleTransactionClick(txid) {
         });
 
 
-        const solscanLink = "https://solscan.io/tx/" + txid + "?cluster=devnet";
+        const solscanLink = "https://solscan.io/tx/" + txid;
         $(".sol_scan").off("click").on("click", function () {
             window.open(solscanLink, '_blank');
         });
