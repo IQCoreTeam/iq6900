@@ -284,9 +284,9 @@ async function transactionButton() {
 
             const post_contant = "coded-in.\n" +
                 "\n" +
-                "This will remain forever on Solana on-chain.\n" +
+                "this record will remain on the solana blockchain forever\n" +
                 "\n" +
-                "Txid:" + txid + "\n" +
+                "transaction hash:\n" + txid + "\n" +
                 "Check my record on https://iq6900.com/";
 
             $('.x_btn').css('display', 'flex');
@@ -340,9 +340,9 @@ async function transactionButton_in_result() {
 
             const post_contant = "coded-in.\n" +
                 "\n" +
-                "This will remain forever on Solana on-chain.\n" +
+                "this record will remain on the solana blockchain forever\n" +
                 "\n" +
-                "Txid:" + txid + "\n" +
+                "transaction hash:\n" + txid + "\n" +
                 "Check my record on https://iq6900.com/";
 
             $('.x_btn').css('display', 'flex');
@@ -409,9 +409,9 @@ async function handleTransactionClick(txid) {
 
         const _post_contant = "coded-in.\n" +
             "\n" +
-            "This record will remain forever on Solana on-chain.\n" +
+            "this record will remain on the solana blockchain forever\n" +
             "\n" +
-            "Txid:" + txid + "\n" +
+            "transaction hash:\n" + txid + "\n" +
             "Check my record on https://iq6900.com/";
 
 
