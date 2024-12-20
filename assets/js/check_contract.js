@@ -282,7 +282,7 @@ async function transactionButton() {
             }
             $(".on_chain_ascii").text(asciiObj.ascii_string);
 
-            const post_contant = "coded-in.\n" +
+            const post_contant = "Coded-In.\n" +
                 "\n" +
                 "this record will remain on the solana blockchain forever\n" +
                 "\n" +
@@ -338,7 +338,7 @@ async function transactionButton_in_result() {
             $(".on_chain_ascii").css("font-size", fontsize.toString() + "px");
             $(".on_chain_ascii").text(asciiObj.ascii_string);
 
-            const post_contant = "coded-in.\n" +
+            const post_contant = "Coded-In.\n" +
                 "\n" +
                 "this record will remain on the solana blockchain forever\n" +
                 "\n" +
@@ -407,12 +407,12 @@ async function handleTransactionClick(txid) {
 
 
 
-        const _post_contant = "coded-in.\n" +
+        const _post_contant = "Coded-In.\n" +
             "\n" +
             "this record will remain on the solana blockchain forever\n" +
             "\n" +
             "transaction hash:\n" + txid + "\n" +
-            "Check my record on https://iq6900.com/";
+            "Check here: https://iq6900.com/";
 
 
         const twitterIntentUrl = createTwitterIntent(_post_contant);
