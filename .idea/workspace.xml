@@ -5,8 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
+      <change afterPath="$PROJECT_DIR$/assets/img/onchain_click.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/check_contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/check_contract.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/assets/css/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/html/sections/main_page.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/main_page.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/html/sections/onchain_page.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/onchain_page.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/sections/codein_init.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/sections/codein_init.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -163,7 +168,8 @@
       <workItem from="1734679516326" duration="917000" />
       <workItem from="1734680439807" duration="556000" />
       <workItem from="1734681795222" duration="658000" />
-      <workItem from="1734687416212" duration="451000" />
+      <workItem from="1734687416212" duration="4940000" />
+      <workItem from="1735039856765" duration="1822000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />

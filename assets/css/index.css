@@ -84,10 +84,10 @@ hr {
     display: flex;
     margin-left:auto;
     margin-right: 2rem;
+    align-items: center;
 }
 .nav_btn>a{
     margin-left: 2rem;
-
 }
 .transaction_input{
     margin:0;
