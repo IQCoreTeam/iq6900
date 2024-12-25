@@ -282,12 +282,13 @@ async function transactionButton() {
             }
             $(".on_chain_ascii").text(asciiObj.ascii_string);
 
-            const post_contant = "Coded-In.\n" +
+
+            const post_contant = "Coded-In @IQ6900_\n" +
                 "\n" +
-                "this record will remain on the solana blockchain forever\n" +
+                "This record will remain on the solana blockchain forever\n" +
                 "\n" +
-                "transaction hash:\n" + txid + "\n" +
-                "Check my record on https://iq6900.com/";
+                "How to use: https://iq6900.gitbook.io/iq6900 \n"+
+                "Transaction hash:\n" + txid ;
 
             $('.x_btn').css('display', 'flex');
             $('.sol_scan').css('display', 'flex');
@@ -338,12 +339,12 @@ async function transactionButton_in_result() {
             $(".on_chain_ascii").css("font-size", fontsize.toString() + "px");
             $(".on_chain_ascii").text(asciiObj.ascii_string);
 
-            const post_contant = "Coded-In.\n" +
+            const post_contant = "Coded-In @IQ6900_\n" +
                 "\n" +
-                "this record will remain on the solana blockchain forever\n" +
+                "This record will remain on the solana blockchain forever\n" +
                 "\n" +
-                "transaction hash:\n" + txid + "\n" +
-                "Check my record on https://iq6900.com/";
+                "How to use: https://iq6900.gitbook.io/iq6900 \n"+
+                "Transaction hash:\n" + txid ;
 
             $('.x_btn').css('display', 'flex');
             $('.sol_scan').css('display', 'flex');
@@ -407,12 +408,14 @@ async function handleTransactionClick(txid) {
 
 
 
-        const _post_contant = "Coded-In.\n" +
+        const _post_contant = "Coded-In @IQ6900_\n" +
             "\n" +
-            "this record will remain on the solana blockchain forever\n" +
+            "This record will remain on the solana blockchain forever\n" +
             "\n" +
-            "transaction hash:\n" + txid + "\n" +
-            "Check here: https://iq6900.com/";
+            "How to use: https://iq6900.gitbook.io/iq6900 \n"+
+            "Transaction hash:\n" + txid ;
+
+
 
 
         const twitterIntentUrl = createTwitterIntent(_post_contant);
