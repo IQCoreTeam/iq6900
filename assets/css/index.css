@@ -74,6 +74,7 @@ hr {
     border-radius: 1rem;
 
 }
+
 .nav_bar>h1{
     margin: 0;
     padding: 1rem;
@@ -99,6 +100,9 @@ hr {
     font-size: 0.8rem;
     padding-left: 0.5rem;
     font-family: Consolas,monaco,monospace;
+}
+.transaction_input::placeholder {
+    color: #008011;
 }
 .little_btn{
     display: flex;

@@ -301,7 +301,7 @@ async function transactionButton() {
         if (txid.length == 44) {
            await searchWallet(txid);
         }
-        if (txid != undefined && txid != "" && txid.length > 80) {
+        else if (txid != undefined && txid != "" && txid.length > 80) {
             clicked = true;
             $('.before_check').css('display', 'none');
             $("#main-load").css("display", "flex");
