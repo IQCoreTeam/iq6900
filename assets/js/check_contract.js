@@ -244,7 +244,48 @@ async function viewConnect() {
         console.error(err);
     }
 }
+async function searchWallet(walletStr) {
+    $(".before_check").css("display", "none");
+    $("#main-load").css("display", "flex");
 
+    try {
+        const db_pda = await getDBPDA(walletStr);
+        if (db_pda == undefined) {
+            alert("This wallet hasn't been coded yet.");
+            return false;
+        }
+
+        const db_pda_address = new solanaWeb3.PublicKey(db_pda.DBPDA);
+        const signatures = await fetchAllSignatures(db_pda_address);
+
+        if (Array.isArray(signatures) && signatures.length === 0) {
+            alert("This wallet hasn't been coded yet.");
+            return false;
+        }
+
+        const latest_trx = signatures[0];
+        await handleTransactionClick(latest_trx);
+        $('.transactions_div').empty();
+
+        signatures.forEach(txid => {
+            const $transactionElement = $('<p>')
+                .addClass('transaction_entry')
+                .text(txid.slice(0, 15) + "..." + txid.slice(-15))
+                .on('click', async function () {
+                    await handleTransactionClick(txid);
+                });
+            $('.transactions_div').append($transactionElement);
+        });
+        $(".transactions_div>p:last").css("display", "none");
+
+        $("#main-load").css("display", "none");
+        $(".after_check").css("display", "flex");
+        $(".connect_check").css("display", "flex");
+
+    } catch (err) {
+        console.error(err);
+    }
+}
 function createTwitterIntent(text) {
     const baseUrl = "https://twitter.com/intent/tweet";
     const encodedText = encodeURIComponent(text); // 텍스트를 URL에 사용할 수 있도록 인코딩
@@ -257,6 +298,9 @@ async function transactionButton() {
         return false
     } else {
         var txid = $('.transaction_input').val();
+        if (txid.length == 44) {
+           await searchWallet(txid);
+        }
         if (txid != undefined && txid != "" && txid.length > 80) {
             clicked = true;
             $('.before_check').css('display', 'none');
