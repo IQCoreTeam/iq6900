@@ -6,11 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/html/sections/check_code.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/check_code.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/html/sections/onchain_page.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/onchain_page.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/check_contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/check_contract.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/sections/pages/check_section.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/sections/pages/check_section.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/init.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/init.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/sections/codein_init.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/sections/codein_init.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/js/sections/pages/onchain_page.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/sections/pages/onchain_page.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -177,7 +176,7 @@
       <workItem from="1735278055065" duration="1239000" />
       <workItem from="1735459277731" duration="2358000" />
       <workItem from="1735479464984" duration="2940000" />
-      <workItem from="1735484089597" duration="613000" />
+      <workItem from="1735484089597" duration="1188000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />

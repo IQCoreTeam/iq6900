@@ -26,7 +26,7 @@ $(function(){
 
 $(document).ready(function() {
     const { txid } = getQueryParams();
-    if (txid) {
+    if (window.history.length === 1&&txid) {
         $.checkSection.init(txid);
     }else {
         $.codeInSection.init();
