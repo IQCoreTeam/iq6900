@@ -239,6 +239,7 @@ async function viewConnect() {
         $("#main-load").css("display", "none");
         $(".after_check").css("display", "flex");
         $(".connect_check").css("display", "flex");
+        $(".x_my_wallet_btn").css("display", "flex");
 
         const _post_contant = "Coded-In @IQ6900_\n" +
             "\n" +
