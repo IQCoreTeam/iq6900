@@ -7,11 +7,11 @@
         let $checkSectionElement;
         let $wWidth = screen.width;
         const $checkSectionTemplateUrl = "./html/sections/check_code.html?ver=20241219";
-        function init() {
-            loadCheckSectionTemplate();
+        function init(txid = '') {
+            loadCheckSectionTemplate(txid);
         }
 
-        function loadCheckSectionTemplate() {
+        function loadCheckSectionTemplate(txid) {
             $.ajax({
                 url: $checkSectionTemplateUrl
                 , dataType: 'html'
@@ -19,16 +19,18 @@
                 , global: false
                 , success: function(templateData) {
                     $checkSectionElement = $(templateData);
-                    renderCheckSectionTemplate()
+                    renderCheckSectionTemplate(txid)
                 }
             });
         };
 
-        function renderCheckSectionTemplate() {
+        function renderCheckSectionTemplate(txid) {
             $("#web3_section").show();
             $("#web3_section").empty();
             $("#web3_section").append($checkSectionElement);
-         
+            if (txid != ''){
+                transactionButton(txid)
+            }
         }
 
         $.extend(this, {

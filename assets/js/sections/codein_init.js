@@ -25,5 +25,10 @@ $(function(){
 });
 
 $(document).ready(function() {
-    $.codeInSection.init();
+    const { txid } = getQueryParams();
+    if (txid) {
+        $.checkSection.init(txid);
+    }else {
+        $.codeInSection.init();
+    }
 });

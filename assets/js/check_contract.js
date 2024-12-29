@@ -293,11 +293,14 @@ function createTwitterIntent(text) {
 }
 
 
-async function transactionButton() {
+async function transactionButton(txid="") {
     if (clicked == true) {
         return false
     } else {
-        var txid = $('.transaction_input').val();
+        if(txid==""){
+            var txid = $('.transaction_input').val();
+        }
+
         if (txid.length == 44) {
            await searchWallet(txid);
         }
@@ -331,8 +334,7 @@ async function transactionButton() {
                 "\n" +
                 "This record will remain on the solana blockchain forever\n" +
                 "\n" +
-                "How to use: https://iq6900.gitbook.io/iq6900 \n"+
-                "Transaction hash:\n" + txid ;
+                "Check: https://iq6900.com?txid="+txid ;
 
             $('.x_btn').css('display', 'flex');
             $('.sol_scan').css('display', 'flex');
@@ -387,8 +389,7 @@ async function transactionButton_in_result() {
                 "\n" +
                 "This record will remain on the solana blockchain forever\n" +
                 "\n" +
-                "How to use: https://iq6900.gitbook.io/iq6900 \n"+
-                "Transaction hash:\n" + txid ;
+                "Check: https://iq6900.com?txid="+txid ;
 
             $('.x_btn').css('display', 'flex');
             $('.sol_scan').css('display', 'flex');
@@ -456,8 +457,7 @@ async function handleTransactionClick(txid) {
             "\n" +
             "This record will remain on the solana blockchain forever\n" +
             "\n" +
-            "How to use: https://iq6900.gitbook.io/iq6900 \n"+
-            "Transaction hash:\n" + txid ;
+            "Check: https://iq6900.com?txid="+txid ;
 
 
 

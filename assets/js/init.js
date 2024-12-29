@@ -1,3 +1,17 @@
+
+function getQueryParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return {
+        txid: urlParams.get('txid')
+    };
+}
+
+
 $(document).ready(function() {
-    $.mainPage.init();
+    const { txid } = getQueryParams();
+    if (txid) {
+        $.onchainPage.init();
+    }else {
+        $.mainPage.init();
+    }
 });
