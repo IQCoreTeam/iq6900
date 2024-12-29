@@ -240,6 +240,18 @@ async function viewConnect() {
         $(".after_check").css("display", "flex");
         $(".connect_check").css("display", "flex");
 
+        const _post_contant = "Coded-In @IQ6900_\n" +
+            "\n" +
+            "Check out my collection\n"+
+            "This record will remain on the solana blockchain forever\n" +
+            "\n" +
+            "Check: https://iq6900.com?txid="+useKeyString ;
+
+        const twitterIntentUrl = createTwitterIntent(_post_contant);
+        $(".x_my_wallet_btn").off("click").on("click", function () {
+            window.open(twitterIntentUrl, '_blank');
+        });
+
     } catch (err) {
         console.error(err);
     }

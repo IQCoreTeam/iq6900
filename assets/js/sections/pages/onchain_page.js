@@ -6,7 +6,7 @@
     function onchainPage() {
         let $onchainPageElement;
         let $wWidth = screen.width;
-        const $onchainPageTemplateUrl = "./html/sections/onchain_page.html?ver=20241221";
+        const $onchainPageTemplateUrl = "./html/sections/onchain_page.html?ver=20241229";
         function init() {
             loadOnchainPageTemplate();
         }
