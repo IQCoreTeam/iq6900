@@ -314,7 +314,7 @@ async function transactionButton(txid="") {
             var txid = $('.transaction_input').val();
         }
 
-        if (txid.length == 44) {
+        if (txid.length > 40&&txid.length <48) {
            await searchWallet(txid);
         }
         else if (txid != undefined && txid != "" && txid.length > 80) {
