@@ -3,7 +3,7 @@ const network = "https://mainnet.helius-rpc.com/?api-key=ab814e2b-59a3-4ca9-911a
 
 const contractChunkSize = 850;
 const textChunkSize = 10000;
-const textInLimit = 5000;
+const textInLimit = 7500;
 function sleep(ms) {
     return new Promise((r) => setTimeout(r, ms));
 }
