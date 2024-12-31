@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
-      <change beforePath="$PROJECT_DIR$/assets/html/sections/onchain_page.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/onchain_page.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/navbar.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/navbar.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -175,7 +175,7 @@
       <workItem from="1735484089597" duration="1363000" />
       <workItem from="1735485865221" duration="5919000" />
       <workItem from="1735534726974" duration="1107000" />
-      <workItem from="1735626616774" duration="1451000" />
+      <workItem from="1735626616774" duration="1598000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />
