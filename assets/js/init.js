@@ -9,7 +9,7 @@ function getQueryParams() {
 
 $(document).ready(function() {
     const { txid } = getQueryParams();
-    if (window.history.length === 1&&txid) {
+    if (txid) {
         $.onchainPage.init();
     }else {
         $.mainPage.init();

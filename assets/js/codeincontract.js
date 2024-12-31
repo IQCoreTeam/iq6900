@@ -1,11 +1,52 @@
 const host = "https://solanacontractapi.uc.r.appspot.com";
 const network = "https://mainnet.helius-rpc.com/?api-key=ab814e2b-59a3-4ca9-911a-665f06fb5f09";
 
-const contractChunkSize = 800;
-const textChunkSize = 10000;
-const textInLimit = 7500;
+const contractChunkSize = 850;
+const sizeLimitForSplit = 10000;
+const textInLimit = 10000;
+
 function sleep(ms) {
     return new Promise((r) => setTimeout(r, ms));
+}
+
+function getByteLength(text) {
+    const encoder = new TextEncoder(); // UTF-8로 변환
+    const encodedText = encoder.encode(text); // 바이트 배열 생성
+    return encodedText.length; // 바이트 배열의 길이 반환
+}
+
+function emojiToText(message) {
+    return message.replace(/([\uD800-\uDBFF][\uDC00-\uDFFF])/g, (match) => {
+        const codePoint = match.codePointAt(0).toString(16).toUpperCase();
+
+        return "//".slice(1)+`u${codePoint}`;
+    });
+}
+
+async function _getChunk_ForText(message,chunkSize) {
+    const encoder = new TextEncoder(); // 메시지를 UTF-8로 변환
+
+    let chunks = [];
+    let currentChunkStart = 0;
+    let currentChunkBytes = 0;
+
+    for (let i = 0; i < message.length; i++) {
+
+        let charByteLength = encoder.encode(message[i]).length;
+        currentChunkBytes += charByteLength;
+
+        if (currentChunkBytes > chunkSize) {
+            chunks.push(message.slice(currentChunkStart, i));
+            currentChunkStart = i;
+            currentChunkBytes = charByteLength;
+        }
+    }
+
+    if (currentChunkStart < message.length) {
+        chunks.push(message.slice(currentChunkStart)); // 나머지 문자열을 청크로 저장
+    }
+
+    return chunks;
 }
 
 async function _getChunk(message, chunkSize) {
@@ -31,7 +72,7 @@ async function _makeChunks() {
     let totalChunks = []
     let chunkSize = 0;
     const full_msg = $('#ascii_text').text();
-    textChunks = await _getChunk(full_msg, textChunkSize);
+    textChunks = await _getChunk(full_msg, sizeLimitForSplit);
     for (let textChunk of textChunks) {
         let _compressChunk = await compressText(textChunk);
         compressedChunks.push(_compressChunk);
@@ -330,16 +371,18 @@ async function OnChainTextIn() {
             const handle = "anonymous"; // edit with twitter api
 
             const original_text = $('#text_input').val();
-            console.log(original_text)
+            const emoji_text = emojiToText(original_text)
+            const byteLength = getByteLength(emoji_text)
+
             if(original_text == ''){
                 return false;
             }
-            else if (original_text.length > textInLimit){
+            else if (byteLength > textInLimit){
                 alert("Please Type less then: "+textInLimit.toString());
-                alert("Your Text's length: "+original_text.length);
+                alert("Your Text's length: "+byteLength);
                 return false;
             }
-            const chunks = await _getChunk(original_text,contractChunkSize);
+            const chunks = await _getChunk_ForText(emoji_text,contractChunkSize);
             const chunkSize = chunks.length;
 
             const offset = "none";

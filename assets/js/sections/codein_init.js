@@ -26,8 +26,10 @@ $(function(){
 
 $(document).ready(function() {
     const { txid } = getQueryParams();
-    if (window.history.length === 1&&txid) {
+    if (txid) {
         $.checkSection.init(txid);
+        const urlWithoutParams = window.location.protocol + "//" + window.location.host + window.location.pathname;
+        window.history.replaceState({}, '', urlWithoutParams);
     }else {
         $.codeInSection.init();
     }
