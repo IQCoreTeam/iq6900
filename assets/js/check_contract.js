@@ -64,7 +64,11 @@ function extractValue(text, key) {
     }
     return false; // 값이 없으면 null 반환
 }
-
+function convertTextToEmoji(text) {
+    return text.replace(/\/u([0-9A-Fa-f]{4,6})/g, (match, code) => {
+        return String.fromCodePoint(parseInt(code, 16));
+    });
+}
 async function addLines(beforeStr, width) {
     let result = '';
     for (let i = 0; i < beforeStr.length; i += width) {
@@ -156,8 +160,9 @@ async function bringCode(dataTxid) {
         }
         const width = 50;
         const textList = encodedChunks.reverse();
-        finalresult = textList.join()
-        console.log(finalresult);
+        const textData = textList.join();
+        finalresult = convertTextToEmoji(textData);
+
         const asciiObj = {
             ascii_string: finalresult,
             width: width,
