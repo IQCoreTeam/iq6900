@@ -140,7 +140,7 @@ async function bringCode(dataTxid) {
         $(".loading").css('display', 'none');
         return asciiObj;
     }
-    else if (type_field == "text"||asciiObj.type == "json") {
+    else if (type_field == "text"|| type_field == "json") {
         while (before_tx != "Genesis") {
             if (before_tx != undefined) {
                 const chunk = await getTransactionInfoOnServer(before_tx);
