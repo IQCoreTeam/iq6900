@@ -140,7 +140,7 @@ async function bringCode(dataTxid) {
         $(".loading").css('display', 'none');
         return asciiObj;
     }
-    else if (type_field == "text") {
+    else if (type_field == "text"||asciiObj.type == "json")) {
         while (before_tx != "Genesis") {
             if (before_tx != undefined) {
                 const chunk = await getTransactionInfoOnServer(before_tx);
@@ -340,7 +340,7 @@ async function transactionButton(txid="") {
                 const fontsize = $(".asciidiv").width() / parseInt(asciiObj.width);
                 $(".on_chain_ascii").css("font-size", fontsize.toString() + "px");
             }
-            else if (asciiObj.type == "text") {
+            else if (asciiObj.type == "text"||asciiObj.type == "json") {
                 $(".on_chain_ascii").css("white-space","pre-wrap");
                 $(".on_chain_ascii").css("font-size","1rem");
                 $(".on_chain_ascii").css("text-align","left");
@@ -459,7 +459,7 @@ async function handleTransactionClick(txid) {
             $(".on_chain_ascii").text(asciiObj.ascii_string);
 
         }
-        else if (asciiObj.type == "text") {
+        else if (asciiObj.type == "text"||asciiObj.type == "json")) {
             $(".text_div").css("display", "block");
             $(".on_chain_text").text(asciiObj.ascii_string);
 
