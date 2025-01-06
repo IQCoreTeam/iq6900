@@ -64,11 +64,13 @@ function extractValue(text, key) {
     }
     return false; // 값이 없으면 null 반환
 }
+
 function convertTextToEmoji(text) {
     return text.replace(/\/u([0-9A-Fa-f]{4,6})/g, (match, code) => {
         return String.fromCodePoint(parseInt(code, 16));
     });
 }
+
 async function addLines(beforeStr, width) {
     let result = '';
     for (let i = 0; i < beforeStr.length; i += width) {
@@ -139,8 +141,7 @@ async function bringCode(dataTxid) {
         };
         $(".loading").css('display', 'none');
         return asciiObj;
-    }
-    else if (type_field == "text"|| type_field == "json") {
+    } else if (type_field == "text" || type_field == "json") {
         while (before_tx != "Genesis") {
             if (before_tx != undefined) {
                 const chunk = await getTransactionInfoOnServer(before_tx);
@@ -170,11 +171,10 @@ async function bringCode(dataTxid) {
         };
         $(".loading").css('display', 'none');
         return asciiObj;
-    }
-    else {
+    } else {
         return false;
     }
-    
+
 
 }
 
@@ -184,16 +184,13 @@ async function fetchAllSignatures(address) {
     let before = null;
 
     try {
-        while (true) {
-            const signatures = await connection.getSignaturesForAddress(address, {
-                before: before,
-                limit: 1000,
-            });
+        const signatures = await connection.getSignaturesForAddress(address, {
+            before: before,
+            limit: 200,
+        });
+        allSignatures.push(...signatures.map((sig) => sig.signature));
+        before = signatures[signatures.length - 1].signature;
 
-            if (signatures.length === 0) break;
-            allSignatures.push(...signatures.map((sig) => sig.signature));
-            before = signatures[signatures.length - 1].signature;
-        }
         return allSignatures;
     } catch (error) {
         console.error("Error fetching signatures:", error);
@@ -248,10 +245,10 @@ async function viewConnect() {
 
         const _post_contant = "Coded-In @IQ6900_\n" +
             "\n" +
-            "Check out my collection\n"+
+            "Check out my collection\n" +
             "This record will remain on the solana blockchain forever\n" +
             "\n" +
-            "Check: https://iq6900.com?txid="+useKeyString ;
+            "Check: https://iq6900.com?txid=" + useKeyString;
 
         const twitterIntentUrl = createTwitterIntent(_post_contant);
         $(".x_my_wallet_btn").off("click").on("click", function () {
@@ -262,6 +259,7 @@ async function viewConnect() {
         console.error(err);
     }
 }
+
 async function searchWallet(walletStr) {
     $(".before_check").css("display", "none");
     $("#main-load").css("display", "flex");
@@ -304,6 +302,7 @@ async function searchWallet(walletStr) {
         console.error(err);
     }
 }
+
 function createTwitterIntent(text) {
     const baseUrl = "https://twitter.com/intent/tweet";
     const encodedText = encodeURIComponent(text); // 텍스트를 URL에 사용할 수 있도록 인코딩
@@ -311,18 +310,17 @@ function createTwitterIntent(text) {
 }
 
 
-async function transactionButton(txid="") {
+async function transactionButton(txid = "") {
     if (clicked == true) {
         return false
     } else {
-        if(txid==""){
+        if (txid == "") {
             var txid = $('.transaction_input').val();
         }
 
-        if (txid.length > 40&&txid.length <48) {
-           await searchWallet(txid);
-        }
-        else if (txid != undefined && txid != "" && txid.length > 80) {
+        if (txid.length > 40 && txid.length < 48) {
+            await searchWallet(txid);
+        } else if (txid != undefined && txid != "" && txid.length > 80) {
             clicked = true;
             $('.before_check').css('display', 'none');
             $("#main-load").css("display", "flex");
@@ -336,14 +334,13 @@ async function transactionButton(txid="") {
                 return false;
             }
 
-            if(asciiObj.type == "image") {
+            if (asciiObj.type == "image") {
                 const fontsize = $(".asciidiv").width() / parseInt(asciiObj.width);
                 $(".on_chain_ascii").css("font-size", fontsize.toString() + "px");
-            }
-            else if (asciiObj.type == "text"||asciiObj.type == "json") {
-                $(".on_chain_ascii").css("white-space","pre-wrap");
-                $(".on_chain_ascii").css("font-size","1rem");
-                $(".on_chain_ascii").css("text-align","left");
+            } else if (asciiObj.type == "text" || asciiObj.type == "json") {
+                $(".on_chain_ascii").css("white-space", "pre-wrap");
+                $(".on_chain_ascii").css("font-size", "1rem");
+                $(".on_chain_ascii").css("text-align", "left");
             }
             $(".on_chain_ascii").text(asciiObj.ascii_string);
 
@@ -352,7 +349,7 @@ async function transactionButton(txid="") {
                 "\n" +
                 "This record will remain on the solana blockchain forever\n" +
                 "\n" +
-                "Check: https://iq6900.com?txid="+txid ;
+                "Check: https://iq6900.com?txid=" + txid;
 
             $('.x_btn').css('display', 'flex');
             $('.sol_scan').css('display', 'flex');
@@ -407,7 +404,7 @@ async function transactionButton_in_result() {
                 "\n" +
                 "This record will remain on the solana blockchain forever\n" +
                 "\n" +
-                "Check: https://iq6900.com?txid="+txid ;
+                "Check: https://iq6900.com?txid=" + txid;
 
             $('.x_btn').css('display', 'flex');
             $('.sol_scan').css('display', 'flex');
@@ -452,14 +449,13 @@ async function handleTransactionClick(txid) {
             clicked = false;
             return false;
         }
-        if(asciiObj.type == "image") {
+        if (asciiObj.type == "image") {
             $(".image_div").css("display", "block");
             const fontsize = $(".image_div").width() / parseInt(asciiObj.width);
             $(".on_chain_ascii").css("font-size", fontsize.toString() + "px");
             $(".on_chain_ascii").text(asciiObj.ascii_string);
 
-        }
-        else if (asciiObj.type == "text"||asciiObj.type == "json") {
+        } else if (asciiObj.type == "text" || asciiObj.type == "json") {
             $(".text_div").css("display", "block");
             $(".on_chain_text").text(asciiObj.ascii_string);
 
@@ -470,14 +466,11 @@ async function handleTransactionClick(txid) {
         $('.sol_scan').css('display', 'flex');
 
 
-
         const _post_contant = "Coded-In @IQ6900_\n" +
             "\n" +
             "This record will remain on the solana blockchain forever\n" +
             "\n" +
-            "Check: https://iq6900.com?txid="+txid ;
-
-
+            "Check: https://iq6900.com?txid=" + txid;
 
 
         const twitterIntentUrl = createTwitterIntent(_post_contant);
