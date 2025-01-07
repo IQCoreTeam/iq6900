@@ -6,7 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/check_contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/check_contract.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/html/sections/main_page.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/main_page.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -196,7 +197,7 @@
       <workItem from="1736097724784" duration="87000" />
       <workItem from="1736100434337" duration="112000" />
       <workItem from="1736162103400" duration="26000" />
-      <workItem from="1736170264460" duration="61000" />
+      <workItem from="1736170264460" duration="1563000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />
