@@ -205,11 +205,14 @@ async function fetchDataSignatures(address) {
         allSignatures.push(...signatures.map((sig) => sig.signature));
         before = signatures[signatures.length - 1].signature;
         for (let i = 0; i < signatures.length; i++) {
+            console.log(signatures[i]);
             const type = await bringType(signatures[i]);
+            console.log(type);
             if (type !== false) {
                 dataSignatures.push(signatures[i]);
             }
         }
+
         return dataSignatures;
     } catch (error) {
         console.error("Error fetching signatures:", error);
