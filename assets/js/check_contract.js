@@ -179,6 +179,9 @@ async function bringCode(dataTxid) {
 }
 async function bringType(dataTxid) {
     const txInfo = await getTransactionInfoOnServer(dataTxid);
+    if (txInfo == undefined) {
+        return false;
+    }
     const tail_tx = txInfo.tail_tx;
     const type_field = txInfo.type_field;
     if(type_field == undefined){
