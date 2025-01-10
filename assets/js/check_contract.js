@@ -179,10 +179,12 @@ async function bringCode(dataTxid) {
 }
 async function bringType(dataTxid) {
     const txInfo = await getTransactionInfoOnServer(dataTxid);
-    if(txInfo == undefined){
+    const tail_tx = txInfo.tail_tx;
+    const type_field = txInfo.type_field;
+    if(type_field == undefined){
         return false;
     }
-    return txInfo.type_field;
+    return type_field;
 }
 
 async function fetchDataSignatures(address) {
@@ -205,7 +207,6 @@ async function fetchDataSignatures(address) {
                 dataSignatures.push(signatures[i]);
             }
         }
-
         return dataSignatures;
     } catch (error) {
         console.error("Error fetching signatures:", error);
@@ -250,7 +251,6 @@ async function viewConnect() {
                 });
             $('.transactions_div').append($transactionElement);
         });
-        $(".transactions_div>p:last").css("display", "none");
 
         $("#main-load").css("display", "none");
         $(".after_check").css("display", "flex");
@@ -306,8 +306,6 @@ async function searchWallet(walletStr) {
                 });
             $('.transactions_div').append($transactionElement);
         });
-        $(".transactions_div>p:last").css("display", "none");
-
         $("#main-load").css("display", "none");
         $(".after_check").css("display", "flex");
         $(".connect_check").css("display", "flex");
