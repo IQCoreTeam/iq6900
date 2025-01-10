@@ -199,13 +199,12 @@ async function fetchDataSignatures(address) {
     try {
         const signatures = await connection.getSignaturesForAddress(address, {
             before: before,
-            limit: 200,
+            limit: 100,
         });
 
         allSignatures.push(...signatures.map((sig) => sig.signature));
         before = signatures[signatures.length - 1].signature;
         for (let i = 0; i < signatures.length; i++) {
-
             const type = await bringType(signatures[i].signature);
             if (type !== false) {
                 dataSignatures.push(signatures[i].signature);
