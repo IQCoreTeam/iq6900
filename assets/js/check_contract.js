@@ -177,10 +177,18 @@ async function bringCode(dataTxid) {
 
 
 }
+async function bringType(dataTxid) {
+    const txInfo = await getTransactionInfoOnServer(dataTxid);
+    if(txInfo == undefined){
+        return false;
+    }
+    return txInfo.type_field;
+}
 
-async function fetchAllSignatures(address) {
+async function fetchDataSignatures(address) {
     const connection = new solanaWeb3.Connection(network);
     const allSignatures = [];
+    let dataSignatures = [];
     let before = null;
 
     try {
@@ -188,10 +196,17 @@ async function fetchAllSignatures(address) {
             before: before,
             limit: 200,
         });
+
         allSignatures.push(...signatures.map((sig) => sig.signature));
         before = signatures[signatures.length - 1].signature;
+        for (let i = 0; i < signatures.length; i++) {
+            const type = await bringType(signatures[i]);
+            if (type !== false) {
+                dataSignatures.push(signatures[i]);
+            }
+        }
 
-        return allSignatures;
+        return dataSignatures;
     } catch (error) {
         console.error("Error fetching signatures:", error);
         return [];
@@ -216,13 +231,12 @@ async function viewConnect() {
 
         const db_pda_address = new solanaWeb3.PublicKey(db_pda.DBPDA);
 
-        const signatures = await fetchAllSignatures(db_pda_address);
+        const signatures = await fetchDataSignatures(db_pda_address);
 
         if (Array.isArray(signatures) && signatures.length === 0) {
             alert("You haven't coded in yet.");
             return false;
         }
-
         const latest_trx = signatures[0];
         await handleTransactionClick(latest_trx);
         $('.transactions_div').empty();
