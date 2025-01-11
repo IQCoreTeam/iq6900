@@ -12,6 +12,7 @@ $(document).ready(function() {
     if (txid) {
         $.onchainPage.init();
     }else {
+        setEffect();
         // $.mainPage.init();
     }
 });
