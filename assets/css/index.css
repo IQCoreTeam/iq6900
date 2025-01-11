@@ -1058,7 +1058,7 @@ input::-webkit-inner-spin-button {
         height: 50rem;
         border: 0.1rem solid #00ff22;
         letter-spacing: 0.28em;
-        line-height: 120%;
+        line-height: 1.2;
         text-align: left;
     }
 
