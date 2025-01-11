@@ -973,7 +973,7 @@ input::-webkit-inner-spin-button {
 
     .type_in {
         width: 60rem;
-        height: 70rem;
+        height: 55dvh;
         background-color: black;
         color: #00ff22;
         font-size: 2rem;
