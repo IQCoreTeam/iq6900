@@ -16,7 +16,7 @@
 <div id="code_in" style="display: none"></div>
 <div class="gen_setting" style="margin:8rem 0 6rem 0">
     <div style="display: flex">
-        <div style="height: 26rem;font-size: 1rem;width: 20rem; display: flex; flex-direction: column; overflow-y: hidden;">
+        <div class="code_in_shill" >
 
             <p style="text-align: right; margin-right: 2rem;">
                 Onchain code in is IQ's own technology. <br>
@@ -41,12 +41,12 @@
         <div style="display: flex;flex-direction: column;">
 
 
-            <img class="code_title" src="img/onchain.png" style="width: 30rem; margin-bottom: 4rem">
+            <img class="code_title" src="img/onchain.png">
 
             <div style="margin-top: 1rem">
                 <label
                         for="imageUpload"
-                        class="custom-file-upload gen_btn"
+                        class="custom-file-upload"
                 >
                     <a class="file-name" style="cursor: pointer">Click To Select Image</a>
                 </label>
@@ -70,7 +70,7 @@
                     >
                         <a>Generate Code</a>
                     </button>
-                    <p>or</p>
+                    <p class="code_in_or">or</p>
                     <button
                             class="gen_btn"
                             style="margin:0"
@@ -84,7 +84,7 @@
                 </div>
             </div>
         </div>
-        <div style="height: 26rem;font-size: 1rem;width: 20rem; display: flex; flex-direction: column; overflow-y: hidden;">
+        <div class="code_in_shill">
             <p style="text-align: left; margin-left: 2rem;">
                 Onchain code in is IQ's own technology. <br>
                 <br>
@@ -108,13 +108,12 @@
         </div>
     </div>
 </div>
-<div class="type_in_setting" style="display: none; flex-direction: column;margin: 4rem 0 4rem 0">
-    <div class="asciidiv" style="width: 40rem;">
+<div class="type_in_setting">
+    <div class="asciidiv">
         <textarea  id="text_input" class="on_chain_ascii type_in"></textarea>
     </div>
     <button
             class="gen_btn"
-            style="margin:0"
             type="button"
             value="button"
             onclick="type_done()"
@@ -187,10 +186,10 @@
 
         <div class="code-in-div center" style="display: flex; flex-direction: column">
             <div class="input_menu" style="display:flex;text-align: center">
-                <p class="input_title" style="font-size: 1.3rem;">font size
+                <p class="input_title" >font size
                 <p>
                     <label>
-                        <input id="font_input" style="margin: 0 0 0 1rem;" class="num_input" type="number" value="12"
+                        <input id="font_input" class="num_input" type="number" value="12"
                                min="5" max="50">
                     </label>
             </div>

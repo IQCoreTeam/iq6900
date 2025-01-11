@@ -12,6 +12,6 @@ $(document).ready(function() {
     if (txid) {
         $.onchainPage.init();
     }else {
-        $.mainPage.init();
+        // $.mainPage.init();
     }
 });
