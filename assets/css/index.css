@@ -1042,7 +1042,7 @@ input::-webkit-inner-spin-button {
     .connect_check_title {
         top: 0;
         font-size: 0.6rem;
-        margin-bottom: 10rem;
+        margin-bottom: 2rem;
     }
 
     .connect_check_content {
@@ -1074,11 +1074,20 @@ input::-webkit-inner-spin-button {
         font-size: 1.5rem;
     }
     .transactions_div {
-        height: 10rem;
+        height: 5rem;
+        border: 0.1rem solid #00ff22;
         display: flex;
         margin:0;
         flex-direction: column;
         width: 55rem;
         overflow-y: scroll;
+    }
+    .on_chain_ascii {
+        width: 40rem;
+        height: 55rem;
+        overflow-y: scroll;
+        align-content: center;
+        letter-spacing: 0.3em;
+        line-height: 90%;
     }
 }
