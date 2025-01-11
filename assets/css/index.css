@@ -1086,7 +1086,5 @@ input::-webkit-inner-spin-button {
         height: 55rem;
         overflow-y: scroll;
         align-content: center;
-        letter-spacing: 0.3em;
-        line-height: 1;
     }
 }
