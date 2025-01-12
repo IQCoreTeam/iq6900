@@ -20,7 +20,7 @@ $(function(){
 
 $(function(){
     $("#how_to_use").click(function(){
-        alert("Under maintenance.");
+        window.open('https://iq6900.gitbook.io/iq6900', '_blank');
     });
 });
 
