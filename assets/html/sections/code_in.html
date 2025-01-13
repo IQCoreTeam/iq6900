@@ -59,7 +59,26 @@
                 />
             </div>
             <div class="option_menu center">
-                <div style="display:flex; flex-direction: column">
+                <div style="flex-direction: column">
+                    <button
+                            class="gen_btn connect-btn"
+                            type="button"
+                            value="button"
+                            onclick="Connect()"
+                    >
+                        <a>Connect</a>
+                    </button>
+                    <button
+                            class="gen_btn sign-in-btn"
+                            style="display: none"
+                            type="button"
+                            value="button"
+                            onclick="pda_make()"
+                    >
+                        <a>Sign-In</a>
+                    </button>
+                </div>
+                <div  class="code_in_menu" style="display:none; flex-direction: column">
                     <button
                             class="gen_btn"
                             style="margin:2rem 0 0 0"
@@ -123,24 +142,7 @@
     </button>
     <div class="code-in-div center" style="display: none; flex-direction: column">
         <div style="margin:2rem 0 0 0; cursor: pointer">
-
-<pre class="connect-btn" onclick="Connect()" style="font-size: 0.8rem">
-    ██████╗ ██████╗ ███╗   ██╗███╗   ██╗███████╗ ██████╗████████╗
-   ██╔════╝██╔═══██╗████╗  ██║████╗  ██║██╔════╝██╔════╝╚══██╔══╝
-██║     ██║   ██║██╔██╗ ██║██╔██╗ ██║█████╗  ██║        ██║
-██║     ██║   ██║██║╚██╗██║██║╚██╗██║██╔══╝  ██║        ██║
-╚██████╗╚██████╔╝██║ ╚████║██║ ╚████║███████╗╚██████╗   ██║
- ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═╝
-                                </pre>
-            <pre class="sign-in-btn" onclick="pda_make()" style="font-size: 0.9rem;display: none">
-███████╗██╗ ██████╗ ███╗   ██╗      ██╗███╗   ██╗
-██╔════╝██║██╔════╝ ████╗  ██║      ██║████╗  ██║
-███████╗██║██║  ███╗██╔██╗ ██║█████╗██║██╔██╗ ██║
-╚════██║██║██║   ██║██║╚██╗██║╚════╝██║██║╚██╗██║
-███████║██║╚██████╔╝██║ ╚████║      ██║██║ ╚████║
-╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝      ╚═╝╚═╝  ╚═══╝
-                                </pre>
-            <pre class="code-in-btn" onclick="OnChainTextIn()" style="font-size: 0.9rem; display: none">
+            <pre class="code-in-btn" onclick="OnChainTextIn()" style="font-size: 0.9rem;">
  ██████╗ ██████╗ ██████╗ ███████╗    ██╗███╗   ██╗
 ██╔════╝██╔═══██╗██╔══██╗██╔════╝    ██║████╗  ██║
 ██║     ██║   ██║██║  ██║█████╗█████╗██║██╔██╗ ██║
@@ -183,8 +185,6 @@
     </div>
     <p id='asciiWidth' style="color:black;animation: none;text-shadow: none; display: none;"></p>
     <div class="code_in_control center" style="display: flex; flex-direction: column;">
-
-
         <div class="code-in-div center" style="display: flex; flex-direction: column">
             <div class="input_menu" style="display:flex;text-align: center">
                 <p class="input_title" >font size
@@ -203,31 +203,14 @@
             >
                 <a>Edit Code</a>
             </button>
-            <div style="margin:2rem 0 0 0; cursor: pointer" onclick="Connect()">
-                                <pre class="connect-btn" style="font-size: 0.8rem">
-    ██████╗ ██████╗ ███╗   ██╗███╗   ██╗███████╗ ██████╗████████╗
-   ██╔════╝██╔═══██╗████╗  ██║████╗  ██║██╔════╝██╔════╝╚══██╔══╝
-██║     ██║   ██║██╔██╗ ██║██╔██╗ ██║█████╗  ██║        ██║
-██║     ██║   ██║██║╚██╗██║██║╚██╗██║██╔══╝  ██║        ██║
-╚██████╗╚██████╔╝██║ ╚████║██║ ╚████║███████╗╚██████╗   ██║
- ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═╝
-                                </pre>
-                <pre class="sign-in-btn" onclick="pda_make()" style="text-align:left;font-size: 0.9rem;display: none">
-███████╗██╗ ██████╗ ███╗   ██╗      ██╗   ██╗██████╗
-██╔════╝██║██╔════╝ ████╗  ██║      ██║   ██║██╔══██╗
-███████╗██║██║  ███╗██╔██╗ ██║█████╗██║   ██║██████╔╝
-╚════██║██║██║   ██║██║╚██╗██║╚════╝██║   ██║██╔═══╝
-███████║██║╚██████╔╝██║ ╚████║      ╚██████╔╝██║
-╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝       ╚═════╝ ╚═╝
-                                </pre>
-                <pre class="code-in-btn" onclick="OnChainCodeIn()" style="font-size: 0.9rem;display: none">
+                <pre class="code-in-btn" onclick="OnChainCodeIn()" style="font-size: 0.9rem;">
  ██████╗ ██████╗ ██████╗ ███████╗    ██╗███╗   ██╗
 ██╔════╝██╔═══██╗██╔══██╗██╔════╝    ██║████╗  ██║
 ██║     ██║   ██║██║  ██║█████╗█████╗██║██╔██╗ ██║
 ██║     ██║   ██║██║  ██║██╔══╝╚════╝██║██║╚██╗██║
 ╚██████╗╚██████╔╝██████╔╝███████╗    ██║██║ ╚████║
  ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝    ╚═╝╚═╝  ╚═══╝
-                                </pre>
+             </pre>
             </div>
         </div>
 
