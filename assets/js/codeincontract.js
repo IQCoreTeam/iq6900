@@ -263,6 +263,8 @@ async function pda_make() {
             if (transaction != null) {
                 const {signature} = await provider.signAndSendTransaction(transaction);
                 const status = await connection.getSignatureStatus(signature);
+
+                alert("Registration has been completed.\n Please wait a little while for it to be recorded on the block, then reconnect your wallet.")
                 $.onchainPage.init();
             } else {
                 console.log("Transaction build failed");
