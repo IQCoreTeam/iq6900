@@ -264,8 +264,8 @@ async function pda_make() {
                 const {signature} = await provider.signAndSendTransaction(transaction);
                 const status = await connection.getSignatureStatus(signature);
 
-                alert("Registration has been completed.\n Please wait a little while for it to be recorded on the block, then reconnect your wallet.")
-                $.onchainPage.init();
+                alert("Registration has been completed.\nPlease wait a little while for it to be recorded on the block, then reconnect your wallet.")
+                $.mainPage.init();
             } else {
                 console.log("Transaction build failed");
             }
@@ -476,7 +476,7 @@ async function Connect() {
             alert("You need to sign up once for each wallet. Click the button below to sign up.");
         } else {
             $('.code_in_menu').css('display', 'flex');
-            $('.file-name').css('display', 'flex');
+            $('.file-name').css('display', 'block');
 
         }
 
