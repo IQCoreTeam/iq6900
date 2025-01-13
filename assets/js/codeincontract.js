@@ -476,6 +476,8 @@ async function Connect() {
             alert("You need to sign up once for each wallet. Click the button below to sign up.");
         } else {
             $('.code_in_menu').css('display', 'flex');
+            $('.file-name').css('display', 'flex');
+
         }
 
     } catch (err) {
