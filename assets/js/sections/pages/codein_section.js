@@ -6,7 +6,7 @@
     function codeInSection() {
         let $codeInSectionElement;
         let $wWidth = screen.width;
-        const $codeInSectionTemplateUrl = "./html/sections/code_in.html?ver=20241221";
+        const $codeInSectionTemplateUrl = "./html/sections/code_in.html?ver=20241222";
         function init() {
             loadCodeInSectionTemplate();
         }
