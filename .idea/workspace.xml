@@ -5,10 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
-      <change beforePath="$PROJECT_DIR$/assets/html/sections/code_in.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/code_in.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/html/sections/onchain_page.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/onchain_page.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/sections/pages/codein_section.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/sections/pages/codein_section.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -201,7 +198,7 @@
       <workItem from="1736170264460" duration="4319000" />
       <workItem from="1736269485215" duration="2466000" />
       <workItem from="1736346974865" duration="35959000" />
-      <workItem from="1736532223579" duration="44471000" />
+      <workItem from="1736532223579" duration="44749000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />
