@@ -307,6 +307,7 @@ async function viewConnect() {
 
     const provider = await getProvider();
     const resp = await provider.connect();
+    let signatures = [];
     try {
         imported_signature = []
         const userkey = await resp.publicKey;
@@ -322,7 +323,7 @@ async function viewConnect() {
         const before = await fetchDataSignatures(db_pda_address);
         if (before != null){
             $(".before_list").on('click', async function () {
-                await bringBefore(db_pda_address,before);
+                signatures = await bringBefore(db_pda_address,before);
             });
             $(".before_list").css("display", "block");
         }
