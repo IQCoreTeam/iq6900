@@ -376,7 +376,7 @@ async function viewConnect() {
         $(".x_my_wallet_btn").off("click").on("click", function () {
             window.open(twitterIntentUrl, '_blank');
         });
-        const newbefore = await fetchDataSignatures(db_pda_address,newbefore);
+        const newbefore = await fetchDataSignatures(db_pda_address,before);
         if (newbefore != null) {
             $(".before_list").on('click', async function () {
                 await bringBefore(db_pda_address, before);
