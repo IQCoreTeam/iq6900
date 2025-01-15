@@ -302,8 +302,8 @@ async function bringBefore(db_pda_address, before) {
         $(".after_list").off('click').on('click', async function () {
             await bringAfter(db_pda_address, $('.transactions_div p:first').text());
         });
-
-        if (new_before != null) {
+        const before_before = await fetchDataSignatures(db_pda_address, new_before);
+        if (before_before != null) {
             $(".before_list").html("<-Before");
 
             $(".before_list").css("cursor", "pointer");
