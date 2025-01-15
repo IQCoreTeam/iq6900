@@ -193,7 +193,7 @@ async function bringType(dataTxid) {
     return type_field;
 }
 
-async function fetchDataSignatures(address, before = null) {
+async function fetchDataSignatures(address, before = null, limit = MAXCOUNT) {
     const connection = new solanaWeb3.Connection(network);
 
     let dataSignatures = [];
@@ -201,7 +201,7 @@ async function fetchDataSignatures(address, before = null) {
     try {
         const signatures = await connection.getSignaturesForAddress(address, {
             before: before,
-            limit: MAXCOUNT,
+            limit: limit,
         });
 
         new_before = signatures[signatures.length - 1];
@@ -276,6 +276,8 @@ async function bringAfter(db_pda_address, datapoint) {
 
 async function bringBefore(db_pda_address, before) {
     let new_before = null;
+    let is_more = null;
+
     $(".before_list").html("<-loading..");
     $(".before_list").onclick = null;
     $(".before_list").css("cursor", "wait");
@@ -285,12 +287,9 @@ async function bringBefore(db_pda_address, before) {
 
     if (lastPValue == lastElement && before != null) {
         new_before = await fetchDataSignatures(db_pda_address, before);
-        $(".before_list").html("<-Before");
-        $(".before_list").on('click', async function () {
-            await bringBefore(db_pda_address, new_before);
-        });
-        $(".before_list").css("cursor", "pointer");
-        $(".before_list").css("visibility", "visible");
+        if (new_before != null) {
+            const is_more = await fetchDataSignatures(db_pda_address, new_before, 1);
+        }
     }
 
 
@@ -307,16 +306,27 @@ async function bringBefore(db_pda_address, before) {
                 });
             $('.transactions_div').append($transactionElement);
         });
+        if (is_more != null) {
+            $(".before_list").html("<-Before");
+            $(".before_list").on('click', async function () {
+                await bringBefore(db_pda_address, $('.transactions_div p:last').text());
+            });
+            $(".before_list").css("cursor", "pointer");
+            $(".before_list").css("visibility", "visible");
+        }else {
+            $(".before_list").css("visibility", "hidden");
+        }
+        
         $(".after_list").css("visibility", "visible");
         $(".after_list").css("cursor", "pointer");
         $(".after_list").off('click').on('click', async function () {
             await bringAfter(db_pda_address, $('.transactions_div p:first').text());
         });
-    }else {
-            $(".before_list").css("visibility", "hidden");
+    } else {
+        $(".before_list").css("visibility", "hidden");
 
     }
-    
+
 
 }
 
