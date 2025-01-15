@@ -293,30 +293,30 @@ async function bringBefore(db_pda_address, before) {
             $(".before_list").css("cursor", "pointer");
             $(".before_list").css("visibility", "visible");
         }
-        
 
-    const signatures = await getPreviousValues(imported_signature, lastPValue)
-    if (signatures.length > 0) {
-        $('.transactions_div').empty();
 
-        signatures.forEach(txid => {
-            const $transactionElement = $('<p>')
-                .addClass('transaction_entry')
-                .text(txid)
-                .on('click', async function () {
-                    await handleTransactionClick(txid);
-                });
-            $('.transactions_div').append($transactionElement);
-        });
-        $(".after_list").css("visibility", "visible");
-        $(".after_list").css("cursor", "pointer");
-        $(".after_list").off('click').on('click', async function () {
-            await bringAfter(db_pda_address, $('.transactions_div p:first').text());
-        });
-        
-          
+        const signatures = await getPreviousValues(imported_signature, lastPValue)
+        if (signatures.length > 0) {
+            $('.transactions_div').empty();
+
+            signatures.forEach(txid => {
+                const $transactionElement = $('<p>')
+                    .addClass('transaction_entry')
+                    .text(txid)
+                    .on('click', async function () {
+                        await handleTransactionClick(txid);
+                    });
+                $('.transactions_div').append($transactionElement);
+            });
+            $(".after_list").css("visibility", "visible");
+            $(".after_list").css("cursor", "pointer");
+            $(".after_list").off('click').on('click', async function () {
+                await bringAfter(db_pda_address, $('.transactions_div p:first').text());
+            });
+
+
+        }
     }
-
 
 }
 
