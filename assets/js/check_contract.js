@@ -195,14 +195,18 @@ async function fetchDataSignatures(address,before = null) {
     const connection = new solanaWeb3.Connection(network);
     const allSignatures = [];
     let dataSignatures = [];
-
+let new_before = null;
     try {
         const signatures = await connection.getSignaturesForAddress(address, {
             before: before,
             limit: 10,
         });
         allSignatures.push(...signatures.map((sig) => sig.signature));
-        before = signatures[signatures.length - 1].signature;
+
+        new_before = signatures[signatures.length - 1];
+        if (new_before != null && new_before != undefined) {
+            new_before = new_before.signature;
+        }
         for (let i = 0; i < signatures.length; i++) {
             const type = await bringType(signatures[i].signature);
             if (type !== false) {
@@ -211,7 +215,7 @@ async function fetchDataSignatures(address,before = null) {
                 }
             }
         }
-        return before;
+        return new_before;
 
     } catch (error) {
         console.error("Error fetching signatures:", error);
