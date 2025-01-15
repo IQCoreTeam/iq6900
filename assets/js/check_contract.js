@@ -340,12 +340,6 @@ async function viewConnect() {
         const db_pda_address = new solanaWeb3.PublicKey(db_pda.DBPDA);
 
         const before = await fetchDataSignatures(db_pda_address);
-        if (before != null) {
-            $(".before_list").on('click', async function () {
-                await bringBefore(db_pda_address, before);
-            });
-            $(".before_list").css("visibility", "visible");
-        }
 
         if (Array.isArray(imported_signature) && imported_signature.length === 0) {
             alert("You haven't coded in yet.");
@@ -382,6 +376,13 @@ async function viewConnect() {
         $(".x_my_wallet_btn").off("click").on("click", function () {
             window.open(twitterIntentUrl, '_blank');
         });
+        const newbefore = await fetchDataSignatures(db_pda_address,newbefore);
+        if (newbefore != null) {
+            $(".before_list").on('click', async function () {
+                await bringBefore(db_pda_address, before);
+            });
+            $(".before_list").css("visibility", "visible");
+        }
 
     } catch (err) {
         console.error(err);
