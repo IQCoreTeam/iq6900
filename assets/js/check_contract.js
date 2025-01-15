@@ -271,7 +271,7 @@ async function bringBefore(db_pda_address,before) {
     }
 
     signatures = await getPreviousValues(imported_signature, lastPValue)
-    if (signatures.length<=0){
+    if (signatures.length>0){
         $('.transactions_div').empty();
 
         signatures.forEach(txid => {
