@@ -285,6 +285,13 @@ async function bringBefore(db_pda_address, before) {
         new_before = await fetchDataSignatures(db_pda_address, before);
     }
 
+    if (new_before != null) {
+        $(".before_list").html("<-Before");
+        $(".before_list").on('click', async function () {
+            await bringBefore(db_pda_address, new_before);
+        });
+        $(".before_list").css("cursor", "pointer");
+    }
     const signatures = await getPreviousValues(imported_signature, lastPValue)
     if (signatures.length > 0) {
         $('.transactions_div').empty();
@@ -303,8 +310,6 @@ async function bringBefore(db_pda_address, before) {
         $(".after_list").off('click').on('click', async function () {
             await bringAfter(db_pda_address, $('.transactions_div p:first').text());
         });
-        
-   
         
     } else {
         $(".before_list").css("visibility", "hidden");
