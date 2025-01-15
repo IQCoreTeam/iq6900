@@ -602,7 +602,7 @@ input::-webkit-inner-spin-button {
 .transaction_page_button{
     margin-top: 1rem;
     border: 0.1rem solid #00ff22;
-    width: 99%;
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;

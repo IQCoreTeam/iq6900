@@ -448,6 +448,14 @@ async function transactionButton(txid = "") {
 
         if (txid.length > 40 && txid.length < 48) {
             await searchWallet(txid);
+            const post_contant =
+                "\n"+
+                "Check out this collection: https://iq6900.com?txid=" + txid;
+            const twitterIntentUrl = await createTwitterIntent(post_contant);
+            $(".x_my_wallet_btn").off("click").on("click", function () {
+                window.open(twitterIntentUrl, '_blank');
+            });
+            $(".x_my_wallet_btn").html("Share This Collection");
         } else if (txid != undefined && txid != "" && txid.length > 80) {
             clicked = true;
             $('.before_check').css('display', 'none');
