@@ -264,8 +264,6 @@ input:checked + .check:after {
     padding: 2rem;
     width: 60rem;
     border: 0.1rem solid #00ff22;
-    /*letter-spacing: 0.28em;*/
-    line-height: 90%;
     text-align: left;
 }
 
@@ -1074,7 +1072,6 @@ input::-webkit-inner-spin-button {
     .text_div {
         width: 50rem;
         height: 50rem;
-        line-height: 100%;
         border: 0.1rem solid #00ff22;
         text-align: left;
     }
