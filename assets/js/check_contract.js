@@ -309,19 +309,19 @@ async function bringBefore(db_pda_address, before) {
             await bringAfter(db_pda_address, $('.transactions_div p:first').text());
         });
 
+        if (new_before != null) {
+            $(".before_list").html("<-Before");
+            $(".before_list").on('click', async function () {
+                await bringBefore(db_pda_address, new_before);
+            });
+            $(".before_list").css("cursor", "pointer");
+        } else {
+            $(".before_list").css("visibility", "hidden");
+        }
     } else {
         $(".before_list").css("visibility", "hidden");
     }
 
-    if (new_before != null) {
-        $(".before_list").html("<-Before");
-        $(".before_list").on('click', async function () {
-            await bringBefore(db_pda_address, new_before);
-        });
-        $(".before_list").css("cursor", "pointer");
-    } else {
-        $(".before_list").css("visibility", "hidden");
-    }
 
 }
 
