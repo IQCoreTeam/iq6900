@@ -281,7 +281,7 @@ async function bringBefore(db_pda_address, before) {
     const lastPValue = $('.transactions_div p:last').text();
     const lastElement = imported_signature[imported_signature.length - 1];
 
-    if (lastPValue == lastElement && before != null) {
+    if (lastPValue == lastElement == before) {
         new_before = await fetchDataSignatures(db_pda_address, before);
     }
 
@@ -292,6 +292,7 @@ async function bringBefore(db_pda_address, before) {
         });
         $(".before_list").css("cursor", "pointer");
     }
+    
     const signatures = await getPreviousValues(imported_signature, lastPValue)
     if (signatures.length > 0) {
         $('.transactions_div').empty();
