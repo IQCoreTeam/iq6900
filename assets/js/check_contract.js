@@ -281,8 +281,10 @@ async function bringBefore(db_pda_address, before) {
     const lastPValue = $('.transactions_div p:last').text();
     const lastElement = imported_signature[imported_signature.length - 1];
 
-    if (lastPValue == lastElement == before) {
-        new_before = await fetchDataSignatures(db_pda_address, before);
+    if (lastPValue == lastElement && before != null) {
+        if (lastPValue == before) {
+            new_before = await fetchDataSignatures(db_pda_address, before);
+        }
     }
 
     if (new_before != null) {
@@ -292,7 +294,7 @@ async function bringBefore(db_pda_address, before) {
         });
         $(".before_list").css("cursor", "pointer");
     }
-    
+
     const signatures = await getPreviousValues(imported_signature, lastPValue)
     if (signatures.length > 0) {
         $('.transactions_div').empty();
@@ -311,7 +313,7 @@ async function bringBefore(db_pda_address, before) {
         $(".after_list").off('click').on('click', async function () {
             await bringAfter(db_pda_address, $('.transactions_div p:first').text());
         });
-        
+
     } else {
         $(".before_list").css("visibility", "hidden");
     }
@@ -374,7 +376,7 @@ async function viewConnect() {
         $(".x_my_wallet_btn").off("click").on("click", function () {
             window.open(twitterIntentUrl, '_blank');
         });
-        const newbefore = await fetchDataSignatures(db_pda_address,before);
+        const newbefore = await fetchDataSignatures(db_pda_address, before);
         if (newbefore != null) {
             $(".before_list").on('click', async function () {
                 await bringBefore(db_pda_address, before);
