@@ -551,7 +551,7 @@ input::-webkit-inner-spin-button {
 }
 
 .on_chain_ascii {
-    width: 40rem;
+    width: 60rem;
     letter-spacing: 0.3em;
     line-height: 90%;
 }

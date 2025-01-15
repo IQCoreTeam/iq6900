@@ -349,6 +349,7 @@ async function viewConnect() {
         }
         const latest_trx = imported_signature[0];
         await handleTransactionClick(latest_trx);
+
         $('.transactions_div').empty();
 
         imported_signature.forEach(txid => {
@@ -360,7 +361,7 @@ async function viewConnect() {
                 });
             $('.transactions_div').append($transactionElement);
         });
-
+        await highlightTransactions(latest_trx);
         $("#main-load").css("display", "none");
         $(".after_check").css("display", "flex");
         $(".connect_check").css("display", "flex");
@@ -421,7 +422,7 @@ async function searchWallet(walletStr) {
                 });
             $('.transactions_div').append($transactionElement);
         });
-
+        await highlightTransactions(latest_trx);
         $("#main-load").css("display", "none");
         $(".after_check").css("display", "flex");
         $(".connect_check").css("display", "flex");
@@ -570,7 +571,7 @@ async function highlightTransactions(searchString) {
 
     paragraphs.forEach(p => {
         if (p.textContent.includes(searchString)) {
-            p.style.color = '#005a0d';
+            p.style.color = '#00b31a';
         } else {
             // Otherwise, set the text color to green
             p.style.color = '#00ff22';
