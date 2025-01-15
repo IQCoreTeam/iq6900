@@ -260,18 +260,18 @@ async function bringAfter(db_pda_address, datapoint) {
     if (imported_signature[0] == firstPValue) {
         $(".after_list").css("visibility", "hidden");
     } else {
-        $(".before_list").html("<-Before");
-        $(".before_list").css("cursor", "pointer");
-        $(".before_list").on('click', async function () {
-            await bringBefore(db_pda_address, lastPValue);
-        });
-        $(".before_list").css("visibility", "visible");
-
         $(".after_list").css("cursor", "pointer");
         $(".after_list").off('click').on('click', async function () {
             await bringAfter(db_pda_address, firstPValue);
         });
     }
+    $(".before_list").html("<-Before");
+    $(".before_list").css("cursor", "pointer");
+    $(".before_list").on('click', async function () {
+        await bringBefore(db_pda_address, lastPValue);
+    });
+    $(".before_list").css("visibility", "visible");
+
 }
 
 async function bringBefore(db_pda_address, before) {
@@ -292,7 +292,6 @@ async function bringBefore(db_pda_address, before) {
     const signatures = await getPreviousValues(imported_signature, lastPValue)
     if (signatures.length > 0) {
         $('.transactions_div').empty();
-
         signatures.forEach(txid => {
             const $transactionElement = $('<p>')
                 .addClass('transaction_entry')
@@ -302,15 +301,18 @@ async function bringBefore(db_pda_address, before) {
                 });
             $('.transactions_div').append($transactionElement);
         });
-      
-        $(".before_list").html("<-Before");
-        $(".before_list").on('click', async function () {
-            await bringBefore(db_pda_address, $('.transactions_div p:last').text());
-        });
-        $(".before_list").css("cursor", "pointer");
-        $(".before_list").css("visibility", "visible");
-
-
+        
+        if (signatures.length == MAXCOUNT) {
+            $(".before_list").html("<-Before");
+            $(".before_list").on('click', async function () {
+                await bringBefore(db_pda_address, $('.transactions_div p:last').text());
+            });
+            $(".before_list").css("cursor", "pointer");
+            $(".before_list").css("visibility", "visible");
+        } else {
+            $(".before_list").css("visibility", "hidden");
+        }
+        
         $(".after_list").css("visibility", "visible");
         $(".after_list").css("cursor", "pointer");
         $(".after_list").off('click').on('click', async function () {
@@ -318,7 +320,6 @@ async function bringBefore(db_pda_address, before) {
         });
     } else {
         $(".before_list").css("visibility", "hidden");
-
     }
 
 
