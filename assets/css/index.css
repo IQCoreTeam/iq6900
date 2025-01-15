@@ -546,7 +546,7 @@ input::-webkit-inner-spin-button {
 }
 
 .asciidiv {
-    width: 40rem;
+    width: 60rem;
 
 }
 
@@ -1075,8 +1075,8 @@ input::-webkit-inner-spin-button {
         padding: 1rem 3rem;
         width: 50rem;
         height: 50rem;
+
         border: 0.1rem solid #00ff22;
-        letter-spacing: 0.28em;
         text-align: left;
     }
 

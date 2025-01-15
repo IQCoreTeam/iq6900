@@ -475,6 +475,8 @@ async function transactionButton(txid = "") {
                 const fontsize = $(".asciidiv").width() / parseInt(asciiObj.width);
                 $(".on_chain_ascii").css("font-size", fontsize.toString() + "px");
             } else if (asciiObj.type == "text" || asciiObj.type == "json") {
+               
+                $(".on_chain_ascii").css("line-height", "100%");
                 $(".on_chain_ascii").css("white-space", "pre-wrap");
                 $(".on_chain_ascii").css("font-size", "1rem");
                 $(".on_chain_ascii").css("text-align", "left");
