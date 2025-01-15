@@ -262,11 +262,10 @@ input:checked + .check:after {
 
 .text_div {
     padding: 2rem;
-    width: 35rem;
+    width: 60rem;
     border: 0.1rem solid #00ff22;
     letter-spacing: 0.28em;
     line-height: 90%;
-
     text-align: left;
 }
 
@@ -347,7 +346,7 @@ input:checked + .check:after {
 
 .on_chain_text {
     text-align: left;
-    height: 15rem;
+    height: 30rem;
     overflow-y: scroll;
     white-space: pre-wrap;
     font-size: 1rem;
@@ -520,6 +519,7 @@ input::-webkit-inner-spin-button {
 }
 
 .connect_check_content {
+    flex-direction: column;
     display: flex;
 }
 
@@ -602,10 +602,11 @@ input::-webkit-inner-spin-button {
 
 .transactions_div {
     display: flex;
-    margin-left: 3rem;
+    margin-top: 3rem;
     flex-direction: column;
-    width: 20rem;
     overflow-y: scroll;
+    border: 0.1rem solid #00ff22;
+    height: 33rem;
 }
 
 .sol_scan {
@@ -958,7 +959,7 @@ input::-webkit-inner-spin-button {
     }
 
     #web3_section {
-        height: 77dvh;
+        min-height: 77dvh;
         align-content: center;
     }
 
@@ -1074,10 +1075,10 @@ input::-webkit-inner-spin-button {
         font-size: 1.5rem;
     }
     .transactions_div {
-        height: 5rem;
+        height: 20rem;
+        margin-top: 3rem;
         border: 0.1rem solid #00ff22;
         display: flex;
-        margin:0;
         flex-direction: column;
         width: 55rem;
         overflow-y: scroll;
