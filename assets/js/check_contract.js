@@ -283,16 +283,18 @@ async function bringBefore(db_pda_address, before) {
 
     if (lastPValue == lastElement && before != null) {
         new_before = await fetchDataSignatures(db_pda_address, before);
-        const before_before = await fetchDataSignatures(db_pda_address, new_before);
-        if (before_before != null) {
-            $(".before_list").html("<-Before");
-            $(".before_list").css("cursor", "pointer");
-            $(".before_list").on('click', async function () {
-                await bringBefore(db_pda_address, new_before);
-            });
-            $(".before_list").css("visibility", "visible");
-        } else {
-            $(".before_list").css("visibility", "hidden");
+        if (new_before != null) {
+            const before_before = await fetchDataSignatures(db_pda_address, new_before);
+            if (before_before != null) {
+                $(".before_list").html("<-Before");
+                $(".before_list").css("cursor", "pointer");
+                $(".before_list").on('click', async function () {
+                    await bringBefore(db_pda_address, new_before);
+                });
+                $(".before_list").css("visibility", "visible");
+            } else {
+                $(".before_list").css("visibility", "hidden");
+            }
         }
     }
 
