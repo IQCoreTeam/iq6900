@@ -600,12 +600,12 @@ input::-webkit-inner-spin-button {
     margin-bottom: 4rem;
 }
 .transaction_page_button{
+    margin-top: 1rem;
     border: 0.1rem solid #00ff22;
     width: 99%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin:auto;
 }
 
 .before_list{

@@ -237,7 +237,7 @@ async function getPreviousValues(array, value) {
     const end = Math.min(array.length, index + MAXCOUNT + 1);
     return array.slice(index + 1, end);
 }
-async function bringAfter(datapoint){
+async function bringAfter(db_pda_address,datapoint){
     const signatures = await getAfterValues(imported_signature, datapoint);
 
     $('.transactions_div').empty();
@@ -257,9 +257,13 @@ async function bringAfter(datapoint){
     if (aftervalue[0] == firstPValue) {
         $(".after_list").css("visibility", "hidden");
     }else{
+        $(".before_list").on('click', async function () {
+            await bringBefore(db_pda_address,firstPValue);
+        });
+
         $(".after_list").css("cursor", "pointer");
         $(".after_list").off('click').on('click', async function () {
-            await bringAfter(lastPValue);
+            await bringAfter(db_pda_address,lastPValue);
         });
     }
 }
@@ -292,7 +296,7 @@ async function bringBefore(db_pda_address,before) {
         $(".after_list").css("visibility", "visible");
         $(".after_list").css("cursor", "pointer");
         $(".after_list").off('click').on('click', async function () {
-            await bringAfter( $('.transactions_div p:last').text());
+            await bringAfter(db_pda_address, $('.transactions_div p:last').text());
         });
 
         if (new_before != null) {
@@ -384,6 +388,7 @@ async function searchWallet(walletStr) {
     $("#main-load").css("display", "flex");
 
     try {
+        imported_signature = []
         const db_pda = await getDBPDA(walletStr);
         if (db_pda == undefined) {
             alert("This wallet hasn't been coded yet.");
@@ -391,18 +396,23 @@ async function searchWallet(walletStr) {
         }
 
         const db_pda_address = new solanaWeb3.PublicKey(db_pda.DBPDA);
-        const signatures = await fetchDataSignatures(db_pda_address);
-
-        if (Array.isArray(signatures) && signatures.length === 0) {
-            alert("This wallet hasn't been coded yet.");
+        const before = await fetchDataSignatures(db_pda_address);
+        if (before != null){
+            $(".before_list").on('click', async function () {
+                await bringBefore(db_pda_address,before);
+            });
+            $(".before_list").css("visibility", "visible");
+        }
+        if (Array.isArray(imported_signature) && imported_signature.length === 0) {
+            alert("You haven't coded in yet.");
             return false;
         }
+        const latest_trx = imported_signature[0];
 
-        const latest_trx = signatures[0];
         await handleTransactionClick(latest_trx);
         $('.transactions_div').empty();
 
-        signatures.forEach(txid => {
+        imported_signature.forEach(txid => {
             const $transactionElement = $('<p>')
                 .addClass('transaction_entry')
                 .text(txid)
@@ -411,6 +421,7 @@ async function searchWallet(walletStr) {
                 });
             $('.transactions_div').append($transactionElement);
         });
+
         $("#main-load").css("display", "none");
         $(".after_check").css("display", "flex");
         $(".connect_check").css("display", "flex");
@@ -546,7 +557,18 @@ async function transactionButton_in_result() {
         }
     }
 }
+async function highlightTransactions(searchString) {
+    const paragraphs = document.querySelectorAll('.transactions_div p');
 
+    paragraphs.forEach(p => {
+        if (p.textContent.includes(searchString)) {
+            p.style.color = '#005a0d';
+        } else {
+            // Otherwise, set the text color to green
+            p.style.color = '#00ff22';
+        }
+    });
+}
 async function handleTransactionClick(txid) {
     if (clicked == true) return;
     else {
@@ -578,7 +600,7 @@ async function handleTransactionClick(txid) {
 
         }
 
-
+        await highlightTransactions(txid);
         $('.x_btn').css('display', 'flex');
         $('.sol_scan').css('display', 'flex');
 
