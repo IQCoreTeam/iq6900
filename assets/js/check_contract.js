@@ -261,7 +261,7 @@ async function bringAfter(db_pda_address, datapoint) {
         $(".after_list").css("visibility", "hidden");
     } else {
         $(".before_list").on('click', async function () {
-            await bringBefore(db_pda_address, firstPValue);
+            await bringBefore(db_pda_address, lastPValue);
         });
 
         $(".after_list").css("cursor", "pointer");
@@ -300,7 +300,7 @@ async function bringBefore(db_pda_address, before) {
         $(".after_list").css("visibility", "visible");
         $(".after_list").css("cursor", "pointer");
         $(".after_list").off('click').on('click', async function () {
-            await bringAfter(db_pda_address, $('.transactions_div p:last').text());
+            await bringAfter(db_pda_address, $('.transactions_div p:first').text());
         });
 
         if (new_before != null) {
