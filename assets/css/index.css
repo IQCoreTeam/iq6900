@@ -600,6 +600,8 @@ input::-webkit-inner-spin-button {
     margin-bottom: 4rem;
 }
 .transaction_page_button{
+    border: 0.1rem solid #00ff22;
+    width: 99%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -607,19 +609,21 @@ input::-webkit-inner-spin-button {
 }
 
 .before_list{
+    margin-left: 2rem;
     visibility: hidden;
 }
 .after_list{
     visibility: hidden;
+    margin-right: 2rem;
 }
 
 .transactions_div {
     display: flex;
-    margin-top: 3rem;
+    margin-top: 1rem;
     flex-direction: column;
     overflow-y: scroll;
     border: 0.1rem solid #00ff22;
-    height: 20rem;
+    height: 20.6rem;
 }
 
 .sol_scan {
@@ -1101,5 +1105,13 @@ input::-webkit-inner-spin-button {
         height: 55rem;
         overflow-y: scroll;
         align-content: center;
+    }
+    .transaction_page_button{
+        border: 0.1rem solid #00ff22;
+        width: 89%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin:auto;
     }
 }
