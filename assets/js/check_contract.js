@@ -379,7 +379,7 @@ async function searchWallet(walletStr) {
         }
 
         const db_pda_address = new solanaWeb3.PublicKey(db_pda.DBPDA);
-        const signatures = await fetchDataSignatures(db_pda_address).;
+        const signatures = await fetchDataSignatures(db_pda_address);
 
         if (Array.isArray(signatures) && signatures.length === 0) {
             alert("This wallet hasn't been coded yet.");
