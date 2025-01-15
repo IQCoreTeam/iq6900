@@ -257,7 +257,7 @@ async function bringAfter(db_pda_address, datapoint) {
     const firstPValue = $('.transactions_div p:first').text();
     const aftervalue = await getAfterValues(imported_signature, firstPValue);
 
-    if (aftervalue[0] == firstPValue || aftervalue.length < 1 ) {
+    if (imported_signature[0] == firstPValue ) {
         $(".after_list").css("visibility", "hidden");
     } else {
         $(".before_list").html("<-Before");
