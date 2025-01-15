@@ -201,14 +201,14 @@ async function fetchDataSignatures(address,before = null) {
             before: before,
             limit: 10,
         });
-
         allSignatures.push(...signatures.map((sig) => sig.signature));
         before = signatures[signatures.length - 1].signature;
         for (let i = 0; i < signatures.length; i++) {
             const type = await bringType(signatures[i].signature);
             if (type !== false) {
-
-                imported_signature.push(signatures[i].signature);
+                if (!imported_signature.includes(signatures[i].signature)) {
+                    imported_signature.push(signatures[i].signature);
+                }
             }
         }
         return before;
@@ -307,7 +307,7 @@ async function viewConnect() {
 
     const provider = await getProvider();
     const resp = await provider.connect();
-    let signatures = [];
+
     try {
         imported_signature = []
         const userkey = await resp.publicKey;
@@ -323,20 +323,20 @@ async function viewConnect() {
         const before = await fetchDataSignatures(db_pda_address);
         if (before != null){
             $(".before_list").on('click', async function () {
-                signatures = await bringBefore(db_pda_address,before);
+                await bringBefore(db_pda_address,before);
             });
             $(".before_list").css("display", "block");
         }
 
-        if (Array.isArray(signatures) && signatures.length === 0) {
+        if (Array.isArray(imported_signature) && imported_signature.length === 0) {
             alert("You haven't coded in yet.");
             return false;
         }
-        const latest_trx = signatures[0];
+        const latest_trx = imported_signature[0];
         await handleTransactionClick(latest_trx);
         $('.transactions_div').empty();
 
-        signatures.forEach(txid => {
+        imported_signature.forEach(txid => {
             const $transactionElement = $('<p>')
                 .addClass('transaction_entry')
                 .text(txid)
