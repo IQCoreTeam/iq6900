@@ -261,8 +261,9 @@ async function bringAfter(db_pda_address, datapoint) {
         $(".after_list").css("visibility", "hidden");
     } else {
         $(".before_list").on('click', async function () {
-            await bringBefore(db_pda_address, lastPValue);
+            await bringBefore(db_pda_address, firstPValue);
         });
+        $(".before_list").css("visibility", "visible");
 
         $(".after_list").css("cursor", "pointer");
         $(".after_list").off('click').on('click', async function () {
@@ -283,6 +284,20 @@ async function bringBefore(db_pda_address, before) {
     if (lastPValue == lastElement && before != null) {
         new_before = await fetchDataSignatures(db_pda_address, before);
     }
+    if (new_before ==! null) {
+        const before_before = await fetchDataSignatures(db_pda_address, new_before);
+        if (before_before != null) {
+            $(".before_list").html("<-Before");
+
+            $(".before_list").css("cursor", "pointer");
+            $(".before_list").on('click', async function () {
+                await bringBefore(db_pda_address, new_before);
+            });
+            $(".before_list").css("visibility", "visible");
+        } else {
+            $(".before_list").css("visibility", "hidden");
+        }
+    }
 
     const signatures = await getPreviousValues(imported_signature, lastPValue)
     if (signatures.length > 0) {
@@ -302,18 +317,7 @@ async function bringBefore(db_pda_address, before) {
         $(".after_list").off('click').on('click', async function () {
             await bringAfter(db_pda_address, $('.transactions_div p:first').text());
         });
-        const before_before = await fetchDataSignatures(db_pda_address, new_before);
-        if (before_before != null) {
-            $(".before_list").html("<-Before");
 
-            $(".before_list").css("cursor", "pointer");
-            $(".before_list").on('click', async function () {
-                await bringBefore(db_pda_address, new_before);
-            });
-            $(".before_list").css("visibility", "visible");
-        } else {
-            $(".before_list").css("visibility", "hidden");
-        }
     } else {
         $(".before_list").css("visibility", "hidden");
     }
