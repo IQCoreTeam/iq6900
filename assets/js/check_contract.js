@@ -474,8 +474,10 @@ async function transactionButton(txid = "") {
             if (asciiObj.type == "image") {
                 const fontsize = $(".asciidiv").width() / parseInt(asciiObj.width);
                 $(".on_chain_ascii").css("font-size", fontsize.toString() + "px");
+                $(".on_chain_ascii").css("letter-spacing", "0.3em");
+
             } else if (asciiObj.type == "text" || asciiObj.type == "json") {
-               
+                $(".on_chain_ascii").css("letter-spacing", "0");
                 $(".on_chain_ascii").css("line-height", "100%");
                 $(".on_chain_ascii").css("white-space", "pre-wrap");
                 $(".on_chain_ascii").css("font-size", "1rem");
