@@ -263,13 +263,13 @@ async function bringAfter(db_pda_address, datapoint) {
         $(".before_list").html("<-Before");
         $(".before_list").css("cursor", "pointer");
         $(".before_list").on('click', async function () {
-            await bringBefore(db_pda_address, firstPValue);
+            await bringBefore(db_pda_address, lastPValue);
         });
         $(".before_list").css("visibility", "visible");
 
         $(".after_list").css("cursor", "pointer");
         $(".after_list").off('click').on('click', async function () {
-            await bringAfter(db_pda_address, lastPValue);
+            await bringAfter(db_pda_address, firstPValue);
         });
     }
 }
