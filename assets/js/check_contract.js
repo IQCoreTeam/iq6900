@@ -257,7 +257,7 @@ async function bringAfter(db_pda_address, datapoint) {
     const firstPValue = $('.transactions_div p:first').text();
     const aftervalue = await getAfterValues(imported_signature, firstPValue);
 
-    if (imported_signature[0] == firstPValue ) {
+    if (imported_signature[0] == firstPValue) {
         $(".after_list").css("visibility", "hidden");
     } else {
         $(".before_list").html("<-Before");
@@ -284,39 +284,39 @@ async function bringBefore(db_pda_address, before) {
     const lastElement = imported_signature[imported_signature.length - 1];
 
     if (lastPValue == lastElement && before != null) {
-        if (lastPValue == before) {
-            new_before = await fetchDataSignatures(db_pda_address, before);
-            $(".before_list").html("<-Before");
-            $(".before_list").on('click', async function () {
-                await bringBefore(db_pda_address, new_before);
-            });
-            $(".before_list").css("cursor", "pointer");
-            $(".before_list").css("visibility", "visible");
-        }
-
-
-        const signatures = await getPreviousValues(imported_signature, lastPValue)
-        if (signatures.length > 0) {
-            $('.transactions_div').empty();
-
-            signatures.forEach(txid => {
-                const $transactionElement = $('<p>')
-                    .addClass('transaction_entry')
-                    .text(txid)
-                    .on('click', async function () {
-                        await handleTransactionClick(txid);
-                    });
-                $('.transactions_div').append($transactionElement);
-            });
-            $(".after_list").css("visibility", "visible");
-            $(".after_list").css("cursor", "pointer");
-            $(".after_list").off('click').on('click', async function () {
-                await bringAfter(db_pda_address, $('.transactions_div p:first').text());
-            });
-
-
-        }
+        new_before = await fetchDataSignatures(db_pda_address, before);
+        $(".before_list").html("<-Before");
+        $(".before_list").on('click', async function () {
+            await bringBefore(db_pda_address, new_before);
+        });
+        $(".before_list").css("cursor", "pointer");
+        $(".before_list").css("visibility", "visible");
     }
+
+
+    const signatures = await getPreviousValues(imported_signature, lastPValue)
+    if (signatures.length > 0) {
+        $('.transactions_div').empty();
+
+        signatures.forEach(txid => {
+            const $transactionElement = $('<p>')
+                .addClass('transaction_entry')
+                .text(txid)
+                .on('click', async function () {
+                    await handleTransactionClick(txid);
+                });
+            $('.transactions_div').append($transactionElement);
+        });
+        $(".after_list").css("visibility", "visible");
+        $(".after_list").css("cursor", "pointer");
+        $(".after_list").off('click').on('click', async function () {
+            await bringAfter(db_pda_address, $('.transactions_div p:first').text());
+        });
+    }else {
+            $(".before_list").css("visibility", "hidden");
+
+    }
+    
 
 }
 
