@@ -260,6 +260,8 @@ async function bringAfter(db_pda_address, datapoint) {
     if (aftervalue[0] == firstPValue) {
         $(".after_list").css("visibility", "hidden");
     } else {
+        $(".before_list").html("<-Before");
+        $(".before_list").css("cursor", "pointer");
         $(".before_list").on('click', async function () {
             await bringBefore(db_pda_address, firstPValue);
         });
@@ -293,6 +295,8 @@ async function bringBefore(db_pda_address, before) {
             await bringBefore(db_pda_address, new_before);
         });
         $(".before_list").css("cursor", "pointer");
+    } else {
+        $(".before_list").css("visibility", "hidden");
     }
 
     const signatures = await getPreviousValues(imported_signature, lastPValue)
