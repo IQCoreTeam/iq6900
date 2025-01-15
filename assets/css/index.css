@@ -601,16 +601,16 @@ input::-webkit-inner-spin-button {
 }
 .transaction_page_button{
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
     margin:auto;
 }
 
 .before_list{
-    display: none;
+    visibility: hidden;
 }
 .after_list{
-    display: none;
+    visibility: hidden;
 }
 
 .transactions_div {

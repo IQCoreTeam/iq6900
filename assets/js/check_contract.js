@@ -247,9 +247,11 @@ async function bringAfter(datapoint){
         $('.transactions_div').append($transactionElement);
     });
     const lastPValue = $('.transactions_div p:last').text();
+    const firstPValue = $('.transactions_div p:first').text();
     const aftervalue = await getAfterValues(imported_signature, lastPValue);
-    if (aftervalue.length<=0) {
-        $(".after_list").css("display", "none");
+
+    if (aftervalue[0] == firstPValue) {
+        $(".after_list").css("visibility", "hidden");
     }else{
         $(".after_list").css("cursor", "pointer");
         $(".after_list").off('click').on('click', async function () {
@@ -283,20 +285,23 @@ async function bringBefore(db_pda_address,before) {
                 });
             $('.transactions_div').append($transactionElement);
         });
-        $(".after_list").css("display", "block");
+        $(".after_list").css("visibility", "visible");
         $(".after_list").css("cursor", "pointer");
         $(".after_list").off('click').on('click', async function () {
             await bringAfter( $('.transactions_div p:last').text());
         });
 
-        if (signatures.length >= MAXCOUNT){
+        if (new_before != null) {
+            $(".before_list").html("<-Before");
+
             $(".before_list").css("cursor", "pointer");
             $(".before_list").on('click', async function () {
                 await bringBefore(db_pda_address,new_before);
             });
-            $(".before_list").css("display", "block");
+            $(".before_list").css("visibility", "visible");
+        }else {
+            $(".before_list").css("visibility", "hidden");
         }
-
     }
 
 }
@@ -325,7 +330,7 @@ async function viewConnect() {
             $(".before_list").on('click', async function () {
                 await bringBefore(db_pda_address,before);
             });
-            $(".before_list").css("display", "block");
+            $(".before_list").css("visibility", "visible");
         }
 
         if (Array.isArray(imported_signature) && imported_signature.length === 0) {
