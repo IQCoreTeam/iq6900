@@ -276,7 +276,6 @@ async function bringAfter(db_pda_address, datapoint) {
 
 async function bringBefore(db_pda_address, before) {
     let new_before = null;
-    let is_more = null;
 
     $(".before_list").html("<-loading..");
     $(".before_list").onclick = null;
@@ -287,9 +286,6 @@ async function bringBefore(db_pda_address, before) {
 
     if (lastPValue == lastElement && before != null) {
         new_before = await fetchDataSignatures(db_pda_address, before);
-        if (new_before != null) {
-            const is_more = await fetchDataSignatures(db_pda_address, new_before, 1);
-        }
     }
 
 
@@ -306,17 +302,15 @@ async function bringBefore(db_pda_address, before) {
                 });
             $('.transactions_div').append($transactionElement);
         });
-        if (is_more != null) {
-            $(".before_list").html("<-Before");
-            $(".before_list").on('click', async function () {
-                await bringBefore(db_pda_address, $('.transactions_div p:last').text());
-            });
-            $(".before_list").css("cursor", "pointer");
-            $(".before_list").css("visibility", "visible");
-        }else {
-            $(".before_list").css("visibility", "hidden");
-        }
-        
+      
+        $(".before_list").html("<-Before");
+        $(".before_list").on('click', async function () {
+            await bringBefore(db_pda_address, $('.transactions_div p:last').text());
+        });
+        $(".before_list").css("cursor", "pointer");
+        $(".before_list").css("visibility", "visible");
+
+
         $(".after_list").css("visibility", "visible");
         $(".after_list").css("cursor", "pointer");
         $(".after_list").off('click').on('click', async function () {
