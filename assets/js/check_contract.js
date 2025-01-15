@@ -255,7 +255,7 @@ async function bringAfter(db_pda_address, datapoint) {
     });
     const lastPValue = $('.transactions_div p:last').text();
     const firstPValue = $('.transactions_div p:first').text();
-    const aftervalue = await getAfterValues(imported_signature, lastPValue);
+    const aftervalue = await getAfterValues(imported_signature, firstPValue);
 
     if (aftervalue[0] == firstPValue) {
         $(".after_list").css("visibility", "hidden");
@@ -289,15 +289,6 @@ async function bringBefore(db_pda_address, before) {
         }
     }
 
-    if (new_before != null) {
-        $(".before_list").html("<-Before");
-        $(".before_list").on('click', async function () {
-            await bringBefore(db_pda_address, new_before);
-        });
-        $(".before_list").css("cursor", "pointer");
-    } else {
-        $(".before_list").css("visibility", "hidden");
-    }
 
     const signatures = await getPreviousValues(imported_signature, lastPValue)
     if (signatures.length > 0) {
@@ -318,6 +309,16 @@ async function bringBefore(db_pda_address, before) {
             await bringAfter(db_pda_address, $('.transactions_div p:first').text());
         });
 
+    } else {
+        $(".before_list").css("visibility", "hidden");
+    }
+
+    if (new_before != null) {
+        $(".before_list").html("<-Before");
+        $(".before_list").on('click', async function () {
+            await bringBefore(db_pda_address, new_before);
+        });
+        $(".before_list").css("cursor", "pointer");
     } else {
         $(".before_list").css("visibility", "hidden");
     }
