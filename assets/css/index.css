@@ -1072,10 +1072,9 @@ input::-webkit-inner-spin-button {
     }
 
     .text_div {
-        padding: 1rem 3rem;
         width: 50rem;
         height: 50rem;
-
+        line-height: 100%;
         border: 0.1rem solid #00ff22;
         text-align: left;
     }
