@@ -1,5 +1,6 @@
 var clicked = false;
-
+var imported_signature = []
+const MAXCOUNT = 10;
 // DBPDA를 요청하는 함수
 async function getDBPDA(userKey) {
     try {
@@ -190,16 +191,15 @@ async function bringType(dataTxid) {
     return type_field;
 }
 
-async function fetchDataSignatures(address) {
+async function fetchDataSignatures(address,before = null) {
     const connection = new solanaWeb3.Connection(network);
     const allSignatures = [];
     let dataSignatures = [];
-    let before = null;
 
     try {
         const signatures = await connection.getSignaturesForAddress(address, {
             before: before,
-            limit: 100,
+            limit: 10,
         });
 
         allSignatures.push(...signatures.map((sig) => sig.signature));
@@ -207,15 +207,98 @@ async function fetchDataSignatures(address) {
         for (let i = 0; i < signatures.length; i++) {
             const type = await bringType(signatures[i].signature);
             if (type !== false) {
-                dataSignatures.push(signatures[i].signature);
+
+                imported_signature.push(signatures[i].signature);
             }
         }
+        return before;
 
-        return dataSignatures;
     } catch (error) {
         console.error("Error fetching signatures:", error);
         return [];
     }
+}
+async function getAfterValues(array, value) {
+    const index = array.indexOf(value);
+    if (index === -1) return [];
+
+    const start = Math.max(0, index - MAXCOUNT);
+    return array.slice(start, index);
+}
+
+async function getPreviousValues(array, value) {
+    const index = array.indexOf(value);
+    if (index === -1) return [];
+
+    const end = Math.min(array.length, index + MAXCOUNT + 1);
+    return array.slice(index + 1, end);
+}
+async function bringAfter(datapoint){
+    const signatures = await getAfterValues(imported_signature, datapoint);
+
+    $('.transactions_div').empty();
+    signatures.forEach(txid => {
+        const $transactionElement = $('<p>')
+            .addClass('transaction_entry')
+            .text(txid)
+            .on('click', async function () {
+                await handleTransactionClick(txid);
+            });
+        $('.transactions_div').append($transactionElement);
+    });
+    const lastPValue = $('.transactions_div p:last').text();
+    const aftervalue = await getAfterValues(imported_signature, lastPValue);
+    if (aftervalue.length<=0) {
+        $(".after_list").css("display", "none");
+    }else{
+        $(".after_list").css("cursor", "pointer");
+        $(".after_list").off('click').on('click', async function () {
+            await bringAfter(lastPValue);
+        });
+    }
+}
+async function bringBefore(db_pda_address,before) {
+    let new_before = null;
+    $(".before_list").html("<-loading..");
+    $(".before_list").onclick = null;
+    $(".before_list").css("cursor", "wait");
+
+    const lastPValue = $('.transactions_div p:last').text();
+    const lastElement = imported_signature[imported_signature.length - 1];
+    let signatures = [];
+    if (lastPValue == lastElement && before != null) {
+         new_before = await fetchDataSignatures(db_pda_address, before);
+    }
+
+    signatures = await getPreviousValues(imported_signature, lastPValue)
+    if (signatures.length<=0){
+        $('.transactions_div').empty();
+
+        signatures.forEach(txid => {
+            const $transactionElement = $('<p>')
+                .addClass('transaction_entry')
+                .text(txid)
+                .on('click', async function () {
+                    await handleTransactionClick(txid);
+                });
+            $('.transactions_div').append($transactionElement);
+        });
+        $(".after_list").css("display", "block");
+        $(".after_list").css("cursor", "pointer");
+        $(".after_list").off('click').on('click', async function () {
+            await bringAfter( $('.transactions_div p:last').text());
+        });
+
+        if (signatures.length >= MAXCOUNT){
+            $(".before_list").css("cursor", "pointer");
+            $(".before_list").on('click', async function () {
+                await bringBefore(db_pda_address,new_before);
+            });
+            $(".before_list").css("display", "block");
+        }
+
+    }
+
 }
 
 async function viewConnect() {
@@ -225,7 +308,7 @@ async function viewConnect() {
     const provider = await getProvider();
     const resp = await provider.connect();
     try {
-
+        imported_signature = []
         const userkey = await resp.publicKey;
         const useKeyString = userkey.toString()
         const db_pda = await getDBPDA(useKeyString);
@@ -236,7 +319,13 @@ async function viewConnect() {
 
         const db_pda_address = new solanaWeb3.PublicKey(db_pda.DBPDA);
 
-        const signatures = await fetchDataSignatures(db_pda_address);
+        const before = await fetchDataSignatures(db_pda_address);
+        if (before != null){
+            $(".before_list").on('click', async function () {
+                await bringBefore(db_pda_address,before);
+            });
+            $(".before_list").css("display", "block");
+        }
 
         if (Array.isArray(signatures) && signatures.length === 0) {
             alert("You haven't coded in yet.");
@@ -249,7 +338,7 @@ async function viewConnect() {
         signatures.forEach(txid => {
             const $transactionElement = $('<p>')
                 .addClass('transaction_entry')
-                .text(txid.slice(0, 15) + "..." + txid.slice(-15))
+                .text(txid)
                 .on('click', async function () {
                     await handleTransactionClick(txid);
                 });
@@ -290,7 +379,7 @@ async function searchWallet(walletStr) {
         }
 
         const db_pda_address = new solanaWeb3.PublicKey(db_pda.DBPDA);
-        const signatures = await fetchDataSignatures(db_pda_address);
+        const signatures = await fetchDataSignatures(db_pda_address).;
 
         if (Array.isArray(signatures) && signatures.length === 0) {
             alert("This wallet hasn't been coded yet.");
@@ -304,7 +393,7 @@ async function searchWallet(walletStr) {
         signatures.forEach(txid => {
             const $transactionElement = $('<p>')
                 .addClass('transaction_entry')
-                .text(txid.slice(0, 15) + "..." + txid.slice(-15))
+                .text(txid)
                 .on('click', async function () {
                     await handleTransactionClick(txid);
                 });

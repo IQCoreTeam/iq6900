@@ -599,6 +599,19 @@ input::-webkit-inner-spin-button {
     width: 30rem;
     margin-bottom: 4rem;
 }
+.transaction_page_button{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin:auto;
+}
+
+.before_list{
+    display: none;
+}
+.after_list{
+    display: none;
+}
 
 .transactions_div {
     display: flex;
@@ -606,7 +619,7 @@ input::-webkit-inner-spin-button {
     flex-direction: column;
     overflow-y: scroll;
     border: 0.1rem solid #00ff22;
-    height: 33rem;
+    height: 20rem;
 }
 
 .sol_scan {
