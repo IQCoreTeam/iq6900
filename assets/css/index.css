@@ -1086,7 +1086,7 @@ input::-webkit-inner-spin-button {
 
     .on_chain_text {
         text-align: left;
-        height: 15rem;
+        height: 45rem;
         overflow-y: scroll;
         white-space: pre-wrap;
         font-size: 1.5rem;
