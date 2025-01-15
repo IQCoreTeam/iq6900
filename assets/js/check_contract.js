@@ -1,6 +1,7 @@
 var clicked = false;
 var imported_signature = []
 const MAXCOUNT = 10;
+
 // DBPDA를 요청하는 함수
 async function getDBPDA(userKey) {
     try {
@@ -178,6 +179,7 @@ async function bringCode(dataTxid) {
 
 
 }
+
 async function bringType(dataTxid) {
     const txInfo = await getTransactionInfoOnServer(dataTxid);
     if (txInfo == undefined) {
@@ -185,23 +187,22 @@ async function bringType(dataTxid) {
     }
     const tail_tx = txInfo.tail_tx;
     const type_field = txInfo.type_field;
-    if(type_field == undefined){
+    if (type_field == undefined) {
         return false;
     }
     return type_field;
 }
 
-async function fetchDataSignatures(address,before = null) {
+async function fetchDataSignatures(address, before = null) {
     const connection = new solanaWeb3.Connection(network);
-    const allSignatures = [];
+
     let dataSignatures = [];
-let new_before = null;
+    let new_before = null;
     try {
         const signatures = await connection.getSignaturesForAddress(address, {
             before: before,
-            limit: 10,
+            limit: MAXCOUNT,
         });
-        allSignatures.push(...signatures.map((sig) => sig.signature));
 
         new_before = signatures[signatures.length - 1];
         if (new_before != null && new_before != undefined) {
@@ -222,6 +223,7 @@ let new_before = null;
         return [];
     }
 }
+
 async function getAfterValues(array, value) {
     const index = array.indexOf(value);
     if (index === -1) return [];
@@ -237,7 +239,8 @@ async function getPreviousValues(array, value) {
     const end = Math.min(array.length, index + MAXCOUNT + 1);
     return array.slice(index + 1, end);
 }
-async function bringAfter(db_pda_address,datapoint){
+
+async function bringAfter(db_pda_address, datapoint) {
     const signatures = await getAfterValues(imported_signature, datapoint);
 
     $('.transactions_div').empty();
@@ -256,18 +259,19 @@ async function bringAfter(db_pda_address,datapoint){
 
     if (aftervalue[0] == firstPValue) {
         $(".after_list").css("visibility", "hidden");
-    }else{
+    } else {
         $(".before_list").on('click', async function () {
-            await bringBefore(db_pda_address,firstPValue);
+            await bringBefore(db_pda_address, firstPValue);
         });
 
         $(".after_list").css("cursor", "pointer");
         $(".after_list").off('click').on('click', async function () {
-            await bringAfter(db_pda_address,lastPValue);
+            await bringAfter(db_pda_address, lastPValue);
         });
     }
 }
-async function bringBefore(db_pda_address,before) {
+
+async function bringBefore(db_pda_address, before) {
     let new_before = null;
     $(".before_list").html("<-loading..");
     $(".before_list").onclick = null;
@@ -277,11 +281,11 @@ async function bringBefore(db_pda_address,before) {
     const lastElement = imported_signature[imported_signature.length - 1];
 
     if (lastPValue == lastElement && before != null) {
-         new_before = await fetchDataSignatures(db_pda_address, before);
+        new_before = await fetchDataSignatures(db_pda_address, before);
     }
 
     const signatures = await getPreviousValues(imported_signature, lastPValue)
-    if (signatures.length>0){
+    if (signatures.length > 0) {
         $('.transactions_div').empty();
 
         signatures.forEach(txid => {
@@ -304,13 +308,13 @@ async function bringBefore(db_pda_address,before) {
 
             $(".before_list").css("cursor", "pointer");
             $(".before_list").on('click', async function () {
-                await bringBefore(db_pda_address,new_before);
+                await bringBefore(db_pda_address, new_before);
             });
             $(".before_list").css("visibility", "visible");
-        }else {
+        } else {
             $(".before_list").css("visibility", "hidden");
         }
-    }else{
+    } else {
         $(".before_list").css("visibility", "hidden");
     }
 
@@ -336,9 +340,9 @@ async function viewConnect() {
         const db_pda_address = new solanaWeb3.PublicKey(db_pda.DBPDA);
 
         const before = await fetchDataSignatures(db_pda_address);
-        if (before != null){
+        if (before != null) {
             $(".before_list").on('click', async function () {
-                await bringBefore(db_pda_address,before);
+                await bringBefore(db_pda_address, before);
             });
             $(".before_list").css("visibility", "visible");
         }
@@ -398,9 +402,9 @@ async function searchWallet(walletStr) {
 
         const db_pda_address = new solanaWeb3.PublicKey(db_pda.DBPDA);
         const before = await fetchDataSignatures(db_pda_address);
-        if (before != null){
+        if (before != null) {
             $(".before_list").on('click', async function () {
-                await bringBefore(db_pda_address,before);
+                await bringBefore(db_pda_address, before);
             });
             $(".before_list").css("visibility", "visible");
         }
@@ -450,7 +454,7 @@ async function transactionButton(txid = "") {
         if (txid.length > 40 && txid.length < 48) {
             await searchWallet(txid);
             const post_contant =
-                "\n"+
+                "\n" +
                 "Check out this collection: https://iq6900.com?txid=" + txid;
             const twitterIntentUrl = await createTwitterIntent(post_contant);
             $(".x_my_wallet_btn").off("click").on("click", function () {
@@ -570,6 +574,7 @@ async function transactionButton_in_result() {
         }
     }
 }
+
 async function highlightTransactions(searchString) {
     const paragraphs = document.querySelectorAll('.transactions_div p');
 
@@ -582,6 +587,7 @@ async function highlightTransactions(searchString) {
         }
     });
 }
+
 async function handleTransactionClick(txid) {
     if (clicked == true) return;
     else {
