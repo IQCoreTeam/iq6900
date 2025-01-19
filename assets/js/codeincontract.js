@@ -416,9 +416,9 @@ async function OnChainTextIn() {
             const chunks = await _getChunk_ForText(emoji_text,contractChunkSize);
             const chunkSize = chunks.length;
 
-            const merkleRoot = await getMerkleRootFromServer(chunks);
-            console.log(merkleRoot)
-            const offset = merkleRoot;
+            // const merkleRoot = await getMerkleRootFromServer(chunks);
+            // console.log(merkleRoot)
+            const offset = "none";
            
             const dataType = "text";
            
