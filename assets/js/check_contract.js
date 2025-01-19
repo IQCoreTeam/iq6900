@@ -55,6 +55,25 @@ async function _getTransactionData(transactionData) {
         console.log(transactionData)
     }
 }
+function processString(input) {
+
+    const closingBracketIndex = input.indexOf(']');
+
+    if (closingBracketIndex === -1) {
+        return {
+            header: null,
+            content: input
+        };
+    }
+
+    const header = input.slice(1, closingBracketIndex); // ']' 포함
+    const content = input.slice(closingBracketIndex + 1).trim(); // 나머지 내용
+
+    return {
+        header: header,
+        content: content
+    };
+}
 
 function extractValue(text, key) {
     const regex = new RegExp(`${key}:\\s*(\\d+)`); // key와 숫자 값을 찾는 정규식
@@ -131,11 +150,14 @@ async function bringCode(dataTxid) {
         }
         let finalresult = null;
         const result = await chunkDecode(encodedChunks.reverse());
-        const width = extractValue(offset, 'width');
+        let width = extractValue(offset, 'width');
         if (width != false) {
              finalresult = await addLines(result, width);
         }else {
-             finalresult = result;
+            const header_check = processString(result);
+            finalresult = header_check.content;
+            width = extractValue(header_check.header, 'width');
+             // finalresult = result;
         }
         
         const asciiObj = {
