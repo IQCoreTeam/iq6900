@@ -418,7 +418,7 @@ async function OnChainTextIn() {
 
             const merkleRoot = await getMerkleRootFromServer(chunks);
             console.log(merkleRoot)
-            const offset = "none "+"merkleroot: "+merkleRoot;
+            const offset = merkleRoot;
            
             const dataType = "text";
            
