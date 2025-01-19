@@ -316,6 +316,9 @@ async function makeTextTransactions(userKeyStr, chunkSize, chunkList, handle, ty
     let decode_break = 0;
     let i = 0;
     await progress(current, totalSteps);
+    console.log(generateMerkleRoot(chunkList));
+    console.log(typeof generateMerkleRoot(chunkList));
+    console.log("Merkle Root"+generateMerkleRoot(chunkList));
 
     for (let text of chunkList) {
 
