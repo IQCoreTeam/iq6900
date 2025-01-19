@@ -92,27 +92,27 @@ async function _makeChunks() {
     }
     return resultObj;
 }
-const crypto = require("crypto");
+// const crypto = require("crypto");
+//
+// // 해시 함수 (SHA-256 사용)
+// function hash(data) {
+//     return crypto.createHash("sha256").update(data).digest("hex");
+// }
 
-// 해시 함수 (SHA-256 사용)
-function hash(data) {
-    return crypto.createHash("sha256").update(data).digest("hex");
-}
-
-function generateMerkleRoot(dataList) {
-    if (dataList.length === 0) return null;
-    let layer = dataList.map(hash);
-    while (layer.length > 1) {
-        const nextLayer = [];
-        for (let i = 0; i < layer.length; i += 2) {
-            const left = layer[i];
-            const right = layer[i + 1] || layer[i]; // 홀수 개일 때 마지막 노드 복제
-            nextLayer.push(hash(left + right));
-        }
-        layer = nextLayer;
-    }
-    return layer[0]; // 최종 루트
-}
+// function generateMerkleRoot(dataList) {
+//     if (dataList.length === 0) return null;
+//     let layer = dataList.map(hash);
+//     while (layer.length > 1) {
+//         const nextLayer = [];
+//         for (let i = 0; i < layer.length; i += 2) {
+//             const left = layer[i];
+//             const right = layer[i + 1] || layer[i]; // 홀수 개일 때 마지막 노드 복제
+//             nextLayer.push(hash(left + right));
+//         }
+//         layer = nextLayer;
+//     }
+//     return layer[0]; // 최종 루트
+// }
 
 
 async function _translate_transaction(data) {
@@ -411,9 +411,9 @@ async function OnChainTextIn() {
             const chunks = await _getChunk_ForText(emoji_text,contractChunkSize);
             const chunkSize = chunks.length;
 
-            const merkleRoot = await generateMerkleRoot(chunks);
-
-            const offset = "none "+"merkleroot: "+merkleRoot;
+            // const merkleRoot = await generateMerkleRoot(chunks);
+            //
+            // const offset = "none "+"merkleroot: "+merkleRoot;
            
             const dataType = "text";
            
