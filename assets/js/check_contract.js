@@ -67,7 +67,6 @@ function processString(input) {
     }
 
     const header = input.slice(0, closingBracketIndex);
-    alert(header)
     const content = input.slice(closingBracketIndex + 1).trim(); // 나머지 내용
 
     return {
@@ -151,11 +150,13 @@ async function bringCode(dataTxid) {
         }
         let finalresult = null;
         const result = await chunkDecode(encodedChunks.reverse());
+
         let width = extractValue(offset, 'width');
         if (width != false) {
              finalresult = await addLines(result, width);
         }else {
             const header_check = processString(result);
+            alert(header_check)
             width = extractValue(header_check.header, 'width');
             finalresult = await addLines(header_check.content, width);
         }
