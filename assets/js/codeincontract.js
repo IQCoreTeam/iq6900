@@ -310,6 +310,7 @@ async function makeTextTransactions(userKeyStr, chunkSize, chunkList, handle, ty
     let beforeHash = "Genesis";
     $('.code-in-div').css('display', 'none');
     $('.progress_div').css("display", "flex");
+
     const totalSteps = chunkSize + 1;
     let current = 0;
     let method = 0;
@@ -410,7 +411,9 @@ async function OnChainTextIn() {
             const chunks = await _getChunk_ForText(emoji_text,contractChunkSize);
             const chunkSize = chunks.length;
 
-            const offset = "none";
+            const merkleRoot = await generateMerkleRoot(chunks);
+
+            const offset = "none "+"merkleroot: "+merkleRoot;
            
             const dataType = "text";
            
