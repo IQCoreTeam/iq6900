@@ -134,9 +134,8 @@ async function bringCode(dataTxid) {
         const width = extractValue(offset, 'width');
         if (width != false) {
             const finalresult = await addLines(result, width);
-            
         }else {
-            finalresult = result;
+            const finalresult = result;
         }
         
         const finalresult = await addLines(result, width);
