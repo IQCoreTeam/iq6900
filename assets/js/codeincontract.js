@@ -71,8 +71,12 @@ async function _makeChunks() {
     let compressedChunks = []
     let totalChunks = []
     let chunkSize = 0;
-    const full_msg = $('#ascii_text').text();
+    let width = $('#asciiWidth').text();
+    let innerOffset = "[ width: "+width+"]"
+    let full_msg = innerOffset+$('#ascii_text').text();
+
     textChunks = await _getChunk(full_msg, sizeLimitForSplit);
+    const merkleroot = await getMerkleRootFromServer(textChunks);
     for (let textChunk of textChunks) {
         let _compressChunk = await compressText(textChunk);
         compressedChunks.push(_compressChunk);
@@ -89,6 +93,7 @@ async function _makeChunks() {
     const resultObj = {
         chunkList: totalChunks,
         chunkSize: chunkSize,
+        merkleRoot: merkleroot,
     }
     return resultObj;
 }
@@ -453,9 +458,9 @@ async function OnChainCodeIn() {
             let chunkObj = await _makeChunks();
             const chunkList = chunkObj.chunkList;
             const chunkSize = chunkObj.chunkSize;
-            const width = $('#asciiWidth').text();
+            const merkleRoot = chunkObj.merkleRoot;
+            const offset = merkleRoot;
 
-            const offset = "width: " + width.toString();
             console.log(offset)
             const dataType = "image";
             console.log("Chunk size: ", chunkSize);

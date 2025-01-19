@@ -129,11 +129,16 @@ async function bringCode(dataTxid) {
                 return;
             }
         }
-        const width = extractValue(offset, 'width');
-        if (width == false) {
-            return false;
-        }
+     
         const result = await chunkDecode(encodedChunks.reverse());
+        const width = extractValue(offset, 'width');
+        if (width != false) {
+            const finalresult = await addLines(result, width);
+            
+        }else {
+            finalresult = result;
+        }
+        
         const finalresult = await addLines(result, width);
         const asciiObj = {
             ascii_string: finalresult,
