@@ -155,9 +155,8 @@ async function bringCode(dataTxid) {
              finalresult = await addLines(result, width);
         }else {
             const header_check = processString(result);
-            finalresult = header_check.content;
             width = extractValue(header_check.header, 'width');
-             // finalresult = result;
+            finalresult = await addLines(header_check.content, width);
         }
         
         const asciiObj = {
