@@ -129,7 +129,8 @@ async function bringCode(dataTxid) {
                 return;
             }
         }
-     
+        const result = await chunkDecode(encodedChunks.reverse());
+
         const result = await chunkDecode(encodedChunks.reverse());
         const width = extractValue(offset, 'width');
         if (width != false) {
@@ -138,7 +139,6 @@ async function bringCode(dataTxid) {
             const finalresult = result;
         }
         
-        const finalresult = await addLines(result, width);
         const asciiObj = {
             ascii_string: finalresult,
             width: width,
