@@ -66,7 +66,8 @@ function processString(input) {
         };
     }
 
-    const header = input.slice(1, closingBracketIndex); // ']' 포함
+    const header = input.slice(0, closingBracketIndex);
+    alert(header)
     const content = input.slice(closingBracketIndex + 1).trim(); // 나머지 내용
 
     return {
