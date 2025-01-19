@@ -130,8 +130,6 @@ async function bringCode(dataTxid) {
             }
         }
         const result = await chunkDecode(encodedChunks.reverse());
-
-        const result = await chunkDecode(encodedChunks.reverse());
         const width = extractValue(offset, 'width');
         if (width != false) {
             const finalresult = await addLines(result, width);
