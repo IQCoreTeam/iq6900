@@ -157,7 +157,7 @@ async function bringCode(dataTxid) {
         }else {
             const header_check = processString(result);
             console.log(header_check)
-            alert(console.log(JSON.stringify(header_check)); 
+            alert(console.log(JSON.stringify(header_check))); 
             width = extractValue(header_check.header, 'width');
             finalresult = await addLines(header_check.content, width);
         }
