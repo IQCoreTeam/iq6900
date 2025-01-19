@@ -92,6 +92,31 @@ async function _makeChunks() {
     }
     return resultObj;
 }
+const crypto = require("crypto");
+
+// 해시 함수 (SHA-256 사용)
+function hash(data) {
+    return crypto.createHash("sha256").update(data).digest("hex");
+}
+
+function generateMerkleRoot(dataList) {
+    if (dataList.length === 0) return null;
+
+    let layer = dataList.map(hash);
+
+    while (layer.length > 1) {
+        const nextLayer = [];
+        for (let i = 0; i < layer.length; i += 2) {
+            const left = layer[i];
+            const right = layer[i + 1] || layer[i]; // 홀수 개일 때 마지막 노드 복제
+            nextLayer.push(hash(left + right));
+        }
+        layer = nextLayer;
+    }
+
+    return layer[0]; // 최종 루트
+}
+
 
 async function _translate_transaction(data) {
     const Buffer = buffer.Buffer;
@@ -293,7 +318,11 @@ async function makeTextTransactions(userKeyStr, chunkSize, chunkList, handle, ty
     let method = 0;
     let decode_break = 0;
     let i = 0;
+
+    const merkleRoot = generateMerkleRoot(chunkList);
     await progress(current, totalSteps);
+
+
     for (let text of chunkList) {
 
         const provider = window.phantom.solana;
@@ -304,6 +333,7 @@ async function makeTextTransactions(userKeyStr, chunkSize, chunkList, handle, ty
     }
 
     const provider = window.phantom.solana;
+    offset = offset+"MerkleRoot: "+merkleRoot;
     const DBTrx = await createDbCodeTransactionOnserver(userKeyStr, handle, beforeHash, type, offset);
     const resultHash = await _send_transaction(provider, DBTrx);
 
@@ -317,6 +347,8 @@ async function makeAllTransactions(userKeyStr, chunkSize, chunkList, handle, typ
     let beforeHash = "Genesis";
     $('.code-in-div').css('display', 'none');
     $('.progress_div').css("display", "flex");
+    const merkleRoot = generateMerkleRoot(chunkList);
+
     const totalSteps = chunkSize + 1;
     let current = 0;
     await progress(current, totalSteps);
@@ -353,8 +385,10 @@ async function makeAllTransactions(userKeyStr, chunkSize, chunkList, handle, typ
             await sleep(1000);
         }
     }
-    const provider = window.phantom.solana;
 
+
+    const provider = window.phantom.solana;
+    offset = offset+"MerkleRoot: "+merkleRoot;
     const DBTrx = await createDbCodeTransactionOnserver(userKeyStr, handle, beforeHash, type, offset);
     const resultHash = await _send_transaction(provider, DBTrx);
 

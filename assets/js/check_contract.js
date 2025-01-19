@@ -112,7 +112,6 @@ async function bringCode(dataTxid) {
     const encodedChunks = []
     let before_tx = tail_tx;
 
-
     if (type_field == "image") {
         while (before_tx != "Genesis") {
             if (before_tx != undefined) {
