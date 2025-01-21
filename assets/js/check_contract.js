@@ -67,7 +67,7 @@ function processString(input) {
     }
 
     const header = input.slice(0, closingBracketIndex);
-    const content = input.slice(closingBracketIndex + 1).trim(); // 나머지 내용
+    const content = input.slice(closingBracketIndex + 1);
 
     return {
         header: header,
