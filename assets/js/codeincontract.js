@@ -72,7 +72,7 @@ async function _makeChunks() {
     let totalChunks = []
     let chunkSize = 0;
     let width = $('#asciiWidth').text();
-    let innerOffset = "[ width: "+width+"]"
+    let innerOffset = "[ width: "+width+" ]"
     let full_msg = innerOffset+$('#ascii_text').text();
 
     textChunks = await _getChunk(full_msg, sizeLimitForSplit);
@@ -445,6 +445,7 @@ async function OnChainTextIn() {
         console.log("Phantom wallet is not connected.");
     }
 }
+
 async function OnChainCodeIn() {
     if (window.solana && window.solana.isPhantom) {
         try {

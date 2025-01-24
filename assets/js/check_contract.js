@@ -56,16 +56,13 @@ async function _getTransactionData(transactionData) {
     }
 }
 function processString(input) {
-
     const closingBracketIndex = input.indexOf(']');
-
     if (closingBracketIndex === -1) {
         return {
             header: null,
             content: input
         };
     }
-
     const header = input.slice(0, closingBracketIndex);
     const content = input.slice(closingBracketIndex + 1);
 
