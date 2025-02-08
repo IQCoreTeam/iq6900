@@ -18,8 +18,10 @@ $(document).ready(async function () {
     if (txid) {
         await goto_viewer();
         $(".bump").css("display", "none");
+        $(".loading").css('display', 'flex');
         const urlWithoutParams = window.location.protocol + "//" + window.location.host + window.location.pathname;
         window.history.replaceState({}, '', urlWithoutParams);
         await seeTransaction(txid);
+        $(".loading").css('display', 'none');
     }
 });
