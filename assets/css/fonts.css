@@ -1,0 +1,16 @@
+@font-face {
+    font-family: Consola;
+    src: url('../fonts/consola.ttf') format('truetype');
+}
+@font-face {
+    font-family: Montserrat;
+    src: url('../fonts/Montserrat/Montserrat-VariableFont_wght.ttf') format('truetype');
+}
+@font-face {
+    font-family: IBMPlexMono;
+    src: url('../fonts/IBM_Plex_Mono/IBMPlexMono-Medium.ttf') format('truetype');
+}
+@font-face {
+    font-family: IBMPlexMonoLight;
+    src: url('../fonts/IBM_Plex_Mono/IBMPlexMono-Light.ttf') format('truetype');
+}

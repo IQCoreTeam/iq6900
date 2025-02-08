@@ -6,7 +6,7 @@
     function mainPage() {
         let $mainPageElement;
         let $wWidth = screen.width;
-        const $mainPageTemplateUrl = "./html/sections/main_page.html?ver=20241218";
+        const $mainPageTemplateUrl = "./html/sections/main_page.html?ver=20250209";
         function init() {
             loadMainPageTemplate();
         }
@@ -25,9 +25,9 @@
         };
 
         function renderMainPageTemplate() {
-            $("#section").show();
-            $("#section").empty();
-            $("#section").append($mainPageElement);
+            $("#main_section").show();
+            $("#main_section").empty();
+            $("#main_section").append($mainPageElement);
         }
 
         $.extend(this, {

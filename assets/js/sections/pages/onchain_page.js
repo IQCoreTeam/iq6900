@@ -6,7 +6,7 @@
     function onchainPage() {
         let $onchainPageElement;
         let $wWidth = screen.width;
-        const $onchainPageTemplateUrl = "./html/sections/onchain_page.html?ver=20241234";
+        const $onchainPageTemplateUrl = "./html/sections/onchain_page.html?ver=20250209";
         function init() {
             loadOnchainPageTemplate();
         }
@@ -25,9 +25,9 @@
         };
 
         function renderOnchainPageTemplate() {
-            $("#section").show();
-            $("#section").empty();
-            $("#section").append($onchainPageElement);
+            $("#main_section").show();
+            $("#main_section").empty();
+            $("#main_section").append($onchainPageElement);
         }
 
         $.extend(this, {

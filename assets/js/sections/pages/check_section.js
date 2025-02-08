@@ -6,7 +6,7 @@
     function checkSection() {
         let $checkSectionElement;
         let $wWidth = screen.width;
-        const $checkSectionTemplateUrl = "./html/sections/check_code.html?ver=20241238";
+        const $checkSectionTemplateUrl = "./html/sections/check_code.html?ver=20250209";
         function init(txid = '') {
             loadCheckSectionTemplate(txid);
         }
@@ -24,12 +24,12 @@
             });
         };
 
-        function renderCheckSectionTemplate(txid) {
-            $("#web3_section").show();
-            $("#web3_section").empty();
-            $("#web3_section").append($checkSectionElement);
-            if (txid != ''){
-                transactionButton(txid)
+        function renderCheckSectionTemplate(txid='') {
+            $("#menu_section").show();
+            $("#menu_section").empty();
+            $("#menu_section").append($checkSectionElement);
+            if (txid !== ''){
+                // transactionButton(txid)
             }
         }
 

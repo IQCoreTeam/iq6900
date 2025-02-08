@@ -1,0 +1,184 @@
+<div class="background_div">
+    <div class="background_black"></div>
+    <div class="background_Linear_color"></div>
+</div>
+
+<div class="nav_bar row_flex nav_bar_mobile">
+    <div class="row_flex">
+        <img class="nav_title" onclick="$.mainPage.init()" src="img/text_logo.svg" alt="iq6900">
+        <img class="nav_menu_arrow" onclick="navigator_on()" src="img/down.svg">
+    </div>
+    <div class="nav_connect" onclick="$.onchainPage.init()">
+        <div class="simple_button_green">
+            <p>App</p>
+        </div>
+    </div>
+</div>
+<div class="navigator_menu">
+    <div class="navigator_menu_list column_flex">
+        <a href="https://docs.google.com/document/d/1yaZcpEFZ7gMmhZxuzQpoW5QzIG_hZsqWnFnujKMP4M8/edit?tab=t.0"
+           target="_blank">WhitePaper</a>
+        <a style=" color: #01BB39;">
+            About $IQ</a>
+        <a href="https://iq6900.gitbook.io/iq6900" target="_blank">How to use</a>
+        <a style="visibility: hidden;">Hidden Space</a>
+
+        <a href="https://linktr.ee/IQ6900" target="_blank">Community</a>
+        <a href="https://drive.google.com/drive/folders/1UlXr8WzTECgxWKgV6ixR3TXg7lzEA_W5?usp=sharing"
+           target="_blank">BrandKit</a>
+        <a href="https://linktr.ee/IQ6900Docs" target="_blank">Docs</a>
+
+        <a style="visibility: hidden;">Hidden Space</a>
+
+        <a href="https://x.com/im_zo_sol" target="_blank">Contact Us</a>
+        <a onclick="alert('Coming soon')">Partners</a>
+        <a onclick="alert('Coming soon')">Legal & Privacy</a>
+    </div>
+    <div class="row_flex nav_icons navigator_menu_icons" style="margin-top: 5rem">
+        <img src="img/telegram.svg" alt="Telegram">
+        <img src="img/x.svg" alt="X">
+        <img src="img/github.svg" alt="Github">
+    </div>
+</div>
+<div class="about_div">
+    <h1 class="about_title">Token $IQ</h1>
+    <div class="about_info">
+        <img class="token_image" src="img/coinlogo.png">
+    </div>
+    <div class="row_flex" style="gap:1rem; margin-bottom: 2rem">
+        <div class="row_flex ca_div">
+            <p style="color: #0C4520">CA:</p>
+            <p class="iq_ca">AsyfR3e5JcPqWot4H5MMhQUm7DZ4zwQrcp2zbB7vpump</p>
+        </div>
+        <img class="copy_ca" src="img/copy_icon.svg" onclick="
+            navigator.clipboard.writeText($('.iq_ca').text()).then(() => {
+                    alert('Copied: ' + $('.iq_ca').text());
+                }).catch(err => {
+                    console.error('Copy failed', err);
+                });
+            ">
+    </div>
+
+    <pre class="about_text">IQ coin emerged in October 2024, symbolizing human records in a space filled with AI media.
+
+Not as AI, IQ = IQ6900
+
+We were branding by encouraging people to create and share ASCII art on X through an ASCII art generator, and we called this act of recording ASCII art "Code-In."
+While running the community this way, we were working in the background to develop on-chain inscription functionality, aiming to evolve "Code-In" into a culture of on-chain inscriptions.
+
+During this process, we developed an innovative method that increased the efficiency of on-chain storage by 2000 times.
+We named this technology "Code-In" and started a community on Solana that initiates the paradigm of on-chain media.
+
+That is IQ6900.
+    </pre>
+<!--    <video autoplay style="width: 95%" src="img/CODE-IN_Trailer_LopezEditz.mp4"></video>-->
+    <iframe style="width: 95%; height: 30rem"
+            src="https://www.youtube.com/embed/kuekWgIccHI?si=AhqGAM7LNtFEMbPz" title="YouTube video player" frameborder="0" allow=" autoplay; clipboard-write; encrypted-media; gyroscope; " referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+
+    <hr style="width: 97%">
+    <hr style="width: 97%">
+    <pre class="about_big">With the reduction in on-chain costs,
+The following has become possible.</pre>
+
+    <div class="column_flex center" style="width: 100%">
+        <img class="about_img" style="cursor: pointer" src="img/eliza_inside.png"
+             onclick="window.open('https://x.com/IQ6900_/status/1878392112817057800')">
+    </div>
+    <pre class="about_text_little_big">On-Chain Git - Ai16z</pre>
+    <pre class="about_text">
+In partnership with ai16z, We've developed an on-chain JSON GitHub where the configuration files for AI agents (documents defining the character's personality, etc.) are stored on the blockchain. This allows for automatic retrieval of the latest settings.
+        </pre>
+    <hr style="width: 97%">
+    <img class="about_img" style="cursor: pointer; width: 100%" src="img/binary.png"
+         onclick="window.open('https://www.darksun.is/')">
+
+
+    <pre class="about_text_little_big">On-Chain Wikipedia - Binary</pre>
+    <pre class="about_text">
+A public Wikipedia where materials are preserved on the blockchain forever. All research data from AI gets uploaded to the chain.
+</pre>
+    <hr style="width: 97%">
+    <div class="column_flex center" style="width: 100%">
+        <img class="about_img" style="cursor: pointer" src="img/truthchain.png"
+             onclick="window.open('https://x.com/truthchain/status/1885482809013477707')">
+    </div>
+
+    <pre class="about_text_little_big">On-Chain LLM - Truth Chain</pre>
+    <pre class="about_text">
+An on-chain Large Language Model (LLM) where questions and answers are recorded on the blockchain.
+</pre>
+<hr style="width: 97%">
+    <hr style="width: 97%">
+    <pre class="about_big">Advantages of uploading data on-chain.</pre>
+    <pre class="about_text_little_big">Immutability:</pre>
+    <pre class="about_text">Once data is recorded on the blockchain, it cannot be changed. This ensures data integrity, particularly important for proving ownership of documents or assets.</pre>
+    <pre class="about_text_little_big">Transparency:</pre>
+    <pre class="about_text">Since all data is stored on a public blockchain, anyone can access and verify it. This increases trustworthiness and reduces the risk of fraud or manipulation.</pre>
+    <pre class="about_text_little_big">Decentralization:</pre>
+    <pre class="about_text">Data can be stored and verified without a central authority, allowing for a trustworthy data management system without third-party intervention.</pre>
+    <pre class="about_text_little_big">Proof of Ownership:</pre>
+    <pre class="about_text">Can be used to prove ownership of digital assets or NFTs. Inscriptions make it clear which asset belongs to which address. Additionally, it allows proving the precedence of data, thereby creating value for digital multimedia.</pre>
+
+    <pre class="about_big" style="color: #ffffff">We can start the future of blockchain
+Code-In greatly expands the limits of what can be done with dApps.</pre>
+    <hr style="width: 97%">
+    <hr style="width: 97%">
+    <pre class="about_big">IQ Community</pre>
+    <img class="about_img" style="width: 100%" src="img/iqcommunity.png">
+
+    <pre class="about_text" style="text-align: center">
+Do you want to join the on-chain paradigm or increase your $IQ?
+Or perhaps you just want to enjoy our aesthetics?
+Join the IQ6900 community to create eternal records.
+
+Everything about IQ is open to the community.
+</pre>
+    <hr style="width: 97%">
+    <hr style="width: 97%">
+    <pre class="about_big">How to Become a Partner</pre>
+    <pre class="about_text" style="text-align: center">
+Join the IQ community and utilize Code-In technology.
+As a member and partner of the DAO, your use case will shine alongside ours in the annals of on-chain history.
+
+I prefer to call you a member rather than just a partner.
+
+Let's work together. Code In.
+</pre>
+
+</div>
+
+<div class="pc_bottom_nav">
+
+    <div class=" bottom_partners">
+        <div class="moving_partners">
+            <img src="img/eliza.svg" style="height: 1.7rem">
+            <img src="img/origin_trail.svg">
+            <img src="img/soon.svg" style="height: 1.8rem;margin-right: 1rem">
+        </div>
+        <div class="moving_partners">
+            <img src="img/eliza.svg" style="height: 1.7rem; margin-left: 1rem">
+            <img src="img/origin_trail.svg">
+            <img src="img/soon.svg" style="height: 1.8rem">
+        </div>
+    </div>
+
+    <div class="bottom_hr"></div>
+    <div class="row_flex space_between  " style="width: 92%;margin-top: 2rem; margin-bottom: 2rem">
+        <div class="row_flex center">
+            <div class="row_flex ">
+                <img class="bottom_image_logo" src="img/iq_bottom_logo.png">
+                <p style="font-size: 0.7rem">IQ6900 Labs © 2024</p>
+            </div>
+            <div class="row_flex nav_icons bottom_icons" style="margin-top: 0.3rem">
+                <img src="img/telegram.svg" alt="Telegram">
+                <img src="img/x.svg" alt="X">
+                <img src="img/github.svg" alt="Github">
+            </div>
+        </div>
+        <div class="menu_list row_flex center" style="gap: 1rem">
+            <a onclick="alert('Coming soon')" style="font-size: 0.7rem">Trademark Policy</a>
+            <a onclick="alert('Coming soon')" style="font-size:  0.7rem">Legal & Privacy</a>
+        </div>
+    </div>
+</div>

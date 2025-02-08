@@ -11,8 +11,6 @@ $(document).ready(function() {
     const { txid } = getQueryParams();
     if (txid) {
         $.onchainPage.init();
-    }else {
-        setEffect();
-        // $.mainPage.init();
     }
+    init_connect()
 });

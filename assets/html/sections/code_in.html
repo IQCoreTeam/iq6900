@@ -1,244 +1,88 @@
-<script type="text/javascript">
-    document.getElementById("imageUpload").addEventListener("change", function () {
-        var fileName = this.files[0].name;
-        var fileNameElement = document.querySelector(
-            ".custom-file-upload .file-name",
-        );
-        if (fileNameElement) {
-            if (fileName.length > 20) {
-                fileName = fileName.slice(0, 5) + "..." + fileName.slice(-7);
-
-            }
-            fileNameElement.textContent = fileName;
-        }
-    });
-</script>
-<div id="code_in" style="display: none"></div>
-<div class="gen_setting" style="margin:8rem 0 6rem 0">
-    <div style="display: flex">
-        <div class="code_in_shill" >
-
-            <p style="text-align: right; margin-right: 2rem;">
-                Onchain code in is IQ's own technology. <br>
-                <br>
-                We provided:
-                <br>
-                [Cheap Gas]
-                average gas cost<br>
-                5000 text 0.000005SOL<br>
-                <br>
-                [Compression]
-                We made compression algorithm:<br>
-                lossless, <br>
-                fast <br>
-                guarantees.<br>
-                <br>
-                minimum<br>
-                compression rate<br>
-                64%<br>
-            </p>
-        </div>
-        <div style="display: flex;flex-direction: column;">
-
-
-            <img class="code_title" src="img/onchain.png">
-
-            <div style="margin-top: 1rem">
-                <label
-                        for="imageUpload"
-                        class="custom-file-upload"
-                >
-                    <a class="file-name" style="display: none; cursor: pointer">Click To Select Image</a>
-                </label>
-
-                <input
-                        type="file"
-                        id="imageUpload"
-                        accept="image/*"
-                        style="display: none"
-                />
-            </div>
-            <div class="option_menu center">
-                <div style="flex-direction: column">
-                    <button
-                            class="gen_btn connect-btn"
-                            type="button"
-                            value="button"
-                            onclick="Connect()"
-                    >
-                        <a>Connect</a>
-                    </button>
-                    <button
-                            class="gen_btn sign-in-btn"
-                            style="display: none"
-                            type="button"
-                            value="button"
-                            onclick="pda_make()"
-                    >
-                        <a>Sign-In</a>
-                    </button>
-                </div>
-                <div class="code_in_menu" style="display:none; flex-direction: column">
-                    <button
-                            class="gen_btn"
-                            style="margin:2rem 0 0 0"
-                            type="button"
-                            value="button"
-                            onclick="Generate_image_client()"
-                            id="generate_btn"
-                    >
-                        <a>Generate Code</a>
-                    </button>
-                    <p class="code_in_or">or</p>
-                    <button
-                            class="gen_btn"
-                            style="margin:0"
-                            type="button"
-                            value="button"
-                            onclick="move_type_section()"
-                            id="type_button"
-                    >
-                        <a>Type Text</a>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div class="code_in_shill">
-            <p style="text-align: left; margin-left: 2rem;">
-                Onchain code in is IQ's own technology. <br>
-                <br>
-                We provided:
-                <br>
-                [Cheap Gas]
-                average gas cost<br>
-                5000 text 0.000005SOL<br>
-                <br>
-                [Compression]
-                We made compression algorithm:<br>
-                lossless, <br>
-                fast <br>
-                guarantees.<br>
-                <br>
-                minimum<br>
-                compression rate<br>
-                64%<br>
-            </p>
-
-        </div>
+<div class="check_menus">
+    <div class="check_menu" style="transform: translateX(-1rem)">
+        <input class="check_box" type="radio" id="checkbox_image" name="code-in_menu" checked/>
+        <label for="checkbox_image">Upload Image</label>
+    </div>
+    <div class="check_menu">
+        <input class="check_box" type="radio" id="checkbox_text" name="code-in_menu"/>
+        <label for="checkbox_text">Inscribe Text</label>
     </div>
 </div>
-<div class="type_in_setting">
-    <div class="asciidiv">
-        <textarea  id="text_input" class="type_in"></textarea>
-    </div>
-    <button
-            class="gen_btn"
-            type="button"
-            value="button"
-            onclick="type_done()"
-            id="text_in_button"
-    >
-        <a>Done</a>
-    </button>
-    <div class="code-in-div center" style="display: none; flex-direction: column">
-        <div style="margin:2rem 0 0 0; cursor: pointer">
-            <pre class="code-in-btn" onclick="OnChainTextIn()" style="font-size: 0.9rem;">
- ██████╗ ██████╗ ██████╗ ███████╗    ██╗███╗   ██╗
-██╔════╝██╔═══██╗██╔══██╗██╔════╝    ██║████╗  ██║
-██║     ██║   ██║██║  ██║█████╗█████╗██║██╔██╗ ██║
-██║     ██║   ██║██║  ██║██╔══╝╚════╝██║██║╚██╗██║
-╚██████╗╚██████╔╝██████╔╝███████╗    ██║██║ ╚████║
- ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝    ╚═╝╚═╝  ╚═══╝
-                                </pre>
-        </div>
-    </div>
-    <div class="progress_div center" style="display: none;flex-direction: column; margin: 0;">
-        <p style="font-size: 1.4rem;">Processing..</p>
-        <p>You will need to sign multiple times</p>
-        <div class="progress">
-            <div class="progress-bar">
-            </div>
-        </div>
-        <p class="progress_num">1/5</p>
-    </div>
+<div class="upload_image">
+    <div class="contents_input">
+        <img src="img/img_logo_white.svg">
 
-    <div class="result_div center" style="display: none;flex-direction: column">
-        <p class="result_txid"></p>
-        <a class="sol_scan" style="text-decoration-line: underline;">Sol Scan</a>
+        <label for="imageUpload_For_Text" class="custom-file-upload">
+            <a class="file-name">Select Image</a>
+        </label>
 
-        <pre class="Check" onclick="$.checkSection.init();" style="font-size: 0.9rem">
-  ██████╗██╗  ██╗███████╗ ██████╗██╗  ██╗
- ██╔════╝██║  ██║██╔════╝██╔════╝██║ ██╔╝
-██║     ███████║█████╗  ██║     █████╔╝
-██║     ██╔══██║██╔══╝  ██║     ██╔═██╗
- ╚██████╗██║  ██║███████╗╚██████╗██║  ██╗
-  ╚═════╝╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝  ╚═╝
-</pre>
+        <input
+                type="file"
+                id="imageUpload_For_Text"
+                accept="image/*"
+                style="display: none"
+        />
+    </div>
+    <div class="generate_result">
+        <pre class="generate_result_txt"></pre>
+    </div>
+    <p id='asciiWidth' style="display: none;"></p>
+</div>
+
+<div class="row_flex space_between center font_manage" style="padding-left: 1rem;padding-right: 1rem">
+    <p class="font_size">Font size</p>
+    <div class="row_flex center">
+        <input type='button'
+               class="arrow_button left_arrow"
+               onclick="
+                       const number = parseInt($('.input_number').val());
+                       if(number>5)
+                       $('.input_number').val(number-1)
+                        "
+        />
+
+        <input type="number" class='input_number font_input' min="5" max="50" value="13" readonly>
+
+        <input type='button'
+               class="arrow_button right_arrow"
+               onclick="
+                       const number = parseInt($('.input_number').val());
+                       if(number<50)
+                       $('.input_number').val(number+1)
+                        "
+        />
     </div>
 </div>
 
-<div class="code_in_setting" style="display: none; flex-direction: column;margin: 4rem 0 4rem 0">
-    <div class="asciidiv">
-                        <pre id="ascii_text"
-                             class="on_chain_ascii"
-                             style="letter-spacing: 0.3em; line-height: 90%;"></pre>
+<div class="inscribe_text" style="display: none;flex-direction: column;">
+    <div class="contents_input">
+        <label>
+            <textarea class="type_in"></textarea>
+        </label>
     </div>
-    <p id='asciiWidth' style="color:black;animation: none;text-shadow: none; display: none;"></p>
-    <div class="code_in_control center" style="display: flex; flex-direction: column;">
-        <div class="code-in-div center" style="display: flex; flex-direction: column">
-            <div class="input_menu" style="display:flex;text-align: center">
-                <p class="input_title" >font size
-                <p>
-                    <label>
-                        <input id="font_input" class="num_input" type="number" value="12"
-                               min="5" max="50">
-                    </label>
-            </div>
+    <div class="green_button code_in_button" onclick="codeIn()">
+        <p class="code_in_button_p">Code-In</p>
+    </div>
+</div>
 
-            <button style="margin: 0;"
-                    class="gen_btn"
-                    type="button"
-                    value="button"
-                    onclick="Generate_image_client()"
-            >
-                <a>Edit Code</a>
-            </button>
-                <pre class="code-in-btn" onclick="OnChainCodeIn()" style="font-size: 0.9rem;">
- ██████╗ ██████╗ ██████╗ ███████╗    ██╗███╗   ██╗
-██╔════╝██╔═══██╗██╔══██╗██╔════╝    ██║████╗  ██║
-██║     ██║   ██║██║  ██║█████╗█████╗██║██╔██╗ ██║
-██║     ██║   ██║██║  ██║██╔══╝╚════╝██║██║╚██╗██║
-╚██████╗╚██████╔╝██████╔╝███████╗    ██║██║ ╚████║
- ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝    ╚═╝╚═╝  ╚═══╝
-             </pre>
-            </div>
-        </div>
+<div class="after_gen">
+    <div class="green_button re_gen" onclick="Generate_image_text()">
+        <p style="color: #989898">Re-Generate</p>
+    </div>
 
-        <div class="progress_div center" style="display: none;flex-direction: column; margin: 0;">
-            <p style="font-size: 1.4rem;">Processing..</p>
-            <p>You will need to sign multiple times</p>
-            <div class="progress">
-                <div class="progress-bar">
-                </div>
-            </div>
-            <p class="progress_num">0/5</p>
-        </div>
-
-        <div class="result_div center" style="display: none;flex-direction: column">
-            <p class="result_txid"></p>
-            <a class="sol_scan" style="text-decoration-line: underline;">Sol Scan</a>
-
-            <pre class="Check" onclick="$.checkSection.init();" style="font-size: 0.9rem">
-  ██████╗██╗  ██╗███████╗ ██████╗██╗  ██╗
- ██╔════╝██║  ██║██╔════╝██╔════╝██║ ██╔╝
-██║     ███████║█████╗  ██║     █████╔╝
-██║     ██╔══██║██╔══╝  ██║     ██╔═██╗
- ╚██████╗██║  ██║███████╗╚██████╗██║  ██╗
-  ╚═════╝╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝  ╚═╝
-</pre>
-        </div>
+    <div class="green_button code_in_button" onclick="codeIn()">
+        <p class="code_in_button_p">Code-In</p>
     </div>
 </div>
 
 
+<div class="progress_div column_flex center ">
 
+    <div class="progress">
+        <div class="progress-bar">
+        </div>
+    </div>
+    <p class="progress_status">Processing..</p>
+</div>
+
+<p class="info">* Data kept forever, can't be deleted.</p>

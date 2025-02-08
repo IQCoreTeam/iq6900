@@ -1,102 +1,93 @@
-<div id="check_code" style="display: none"></div>
-<div class="center" style="display:flex;flex-direction: column;">
-    <div id="main-load" class="center" style="display: none; flex-direction: column;">
-        <img style="width: 30rem; margin-top: 10rem;margin-bottom: 1rem;" src="img/pixellogo.gif">
-        <p class="check_load">Loading.....</p>
+<div class="check_buttons column_flex">
+    <div class="search_div ">
+        <input id="search" placeholder=" Search: Txid or Wallet address" class="center"/>
     </div>
+    <div class="green_button" style="margin-top: 2rem;" onclick="check_button()">
+        <p>Check Record</p>
+    </div>
+</div>
+<div class="loading" >
+    <img src="img/3d_logo.gif">
+</div>
+<div class="bump" style="height: 20rem"></div>
 
-    <div class="before_check" style="padding-bottom: 3rem;padding-top: 3rem">
-        <img class="check_title_img" src="img/onchain.png" >
-        <div class="enter_transaction_result center" style="display:flex; flex-direction: column">
-            <div class="transaction_input_div">
-                <label>
-                    <input class="transaction_input" placeholder="Enter TXID or wallet address here.">
-                </label>
-                <div class="little_btn" onclick="transactionButton()">
-                    <a class="little_btn_text">Check</a>
-                </div>
+<div class="column_flex records">
+    <div class="records_list">
+        <p class="all_records_title">All records:</p>
+        <div class="loading_mini">
+            <img src="img/3d_logo.gif">
+        </div>
+        <div class="transactions_div column_flex">
+
+        </div>
+
+        <div class="row_flex page_menu">
+            <img src="./img/thin_left.svg" class="go_recent thin_arrow_button" style="opacity: 0.3"/>
+            <div class='page_num'>
+                <p class="current">1</p>
             </div>
-
-            <p class="check_or">or</p>
-            <button style="margin: 0;"
-                    class="gen_btn"
-                    type="button"
-                    value="button"
-                    onclick="viewConnect()">
-                <a>Connect Wallet</a>
-            </button>
+            <img src="./img/thin_right.svg" class=" go_old thin_arrow_button"/>
         </div>
     </div>
-    <div class="after_check" style="display:none; flex-direction: column;padding-bottom: 3rem;padding-top: 3rem">
+    <div class="see_code_in">
+        <div class="goto_all_records" onclick="back()"><p>All records</p></div>
 
-        <div class="transaction_input_check" style="display: none; flex-direction: column;">
-            <div class="asciidiv">
-                <div class="loading center" style="width: 40rem; height: 40rem; display: none; flex-direction: column">
-                    <img style="width: 30rem; margin-bottom: 4rem; margin-top: 4rem;" src="img/pixellogo.gif">
+        <div class="record">
+        <pre class="coded_in_text"></pre>
+            <pre class="coded_in_ascii"></pre>
+            <div class=" coded_page_bottom_menu">
+                <div class="row_flex coded_page_sig">
+                    <p class="coded_page_sig_title">Sig:</p>
+                    <p class="coded_page_tx_id">***e23wdw</p>
                 </div>
-                <pre id="ascii_text" class="on_chain_ascii"></pre>
-            </div>
-
-            <div class="center inputdiv">
-                <div style="display:flex; text-align: center">
-                    <label>
-                        <input class="transaction_input">
-                    </label>
-                    <div class="little_btn" onclick="transactionButton_in_result()">
-                        <a class="little_btn_text">Check</a>
+                <div class="row_flex" style="gap: 2rem">
+                    <div class="sol_scan coded_page_link_menu">
+                        <img src="img/search_icon.svg">
+                        <p>Solscan</p>
+                    </div>
+                    <div class="x_btn coded_page_link_menu">
+                        <p>Share</p>
+                        <img src="img/share_icon.svg">
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="connect_check " style="display: none; flex-direction: column;">
-            <pre class="connect_check_title"> ______     __         __     ______     __  __        ______   __  __     __     _____        ______   ______        ______     __  __     ______     ______     __  __
-/\  ___\   /\ \       /\ \   /\  ___\   /\ \/ /       /\__  _\ /\_\_\_\   /\ \   /\  __-.     /\__  _\ /\  __ \      /\  ___\   /\ \_\ \   /\  ___\   /\  ___\   /\ \/ /
-  \ \ \____  \ \ \____  \ \ \  \ \ \____  \ \  _"-.     \/_/\ \/ \/_/\_\/_  \ \ \  \ \ \/\ \    \/_/\ \/ \ \ \/\ \     \ \ \____  \ \  __ \  \ \  __\   \ \ \____  \ \  _"-.
-   \ \_____\  \ \_____\  \ \_\  \ \_____\  \ \_\ \_\       \ \_\   /\_\/\_\  \ \_\  \ \____-       \ \_\  \ \_____\     \ \_____\  \ \_\ \_\  \ \_____\  \ \_____\  \ \_\ \_\
-    \/_____/   \/_____/   \/_/   \/_____/   \/_/\/_/        \/_/   \/_/\/_/   \/_/   \/____/        \/_/   \/_____/      \/_____/   \/_/\/_/   \/_____/   \/_____/   \/_/\/_/
-                                                                                                                                                                            </pre>
-            <div class="connect_check_content" >
-                <div class="wallet_ascii_div">
-                    <div class="loading center" style="width: 60rem; height: 40rem; display: none">
-                        <img style="width: 20rem; margin-bottom: 4rem; margin-top: 4rem;" src="img/pixellogo.gif">
-                    </div>
-                    <div class="text_div">
-                        <p>your text: </p>
-                        <pre class="on_chain_text"></pre>
-                    </div>
-                    <div class="image_div" style="width: 60rem;">
-                      <pre class="on_chain_ascii" style="letter-spacing: 0.28em; line-height: 90%;"></pre>
-                    </div>
-                </div>
-                <div class="transaction_page_button">
-                    <p class="before_list"><-Before</p>
-                    <p>Your transaction list</p>
-                    <p class="after_list">After-></p>
-                </div>
-                <div class="transactions_div">
-                </div>
-            </div>
-        </div>
-
-        <div class="center" style="display:flex; flex-direction: column;">
-            <a class="sol_scan">
-                Sol Scan</a>
-
-            <button style="margin: 0;"
-                    class="x_btn gen_btn center"
-                    type="button"
-                    value="button">
-                <a>Share This Data to X</a>
-            </button>
-
-            <button style="margin: 0; display: none"
-                    class="x_my_wallet_btn gen_btn center"
-                    type="button"
-                    value="button">
-                <a>Share My Collection</a>
-            </button>
-
         </div>
     </div>
 </div>
+<script>
+
+
+    function back() {
+        $(".coded_in_text").css("display", "none");
+        $(".see_code_in").css("display", "none");
+
+        $(".records_list").css("display", "flex");
+    }
+    async function check_button(txId = ''){
+        $(".bump").css("display", "none");
+
+        if(txId === ''){
+            const search = $("#search").val();
+            $('#search').val("");
+            if (search.length > 40 && search.length < 48) {
+                await walletSearch(search);
+            } else if (search.length > 80 && search.length < 100) {
+                await seeTransaction(search);
+            }else{
+                if ($(".after_connect:visible").length === 0) {
+                    return false;
+                }else{
+                    await walletSearch();
+                }
+            }
+
+        }else {
+            if (txId.length > 40 && txId.length < 48) {
+                await walletSearch(txId);
+            } else if (txId !== "" && txId.length > 80) {
+                await seeTransaction(txId)
+            }
+        }
+
+    }
+</script>

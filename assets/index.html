@@ -1,455 +1,183 @@
 <!doctype html>
-<html lang="en-US">
+<html lang="en-US" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link rel="stylesheet" href="css/index.css?ver=20241242"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/fonts.css?ver=20250209"/>
+    <link rel="stylesheet" href="css/index.css?ver=20250209"/>
+
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://bundle.run/buffer@6.0.3"></script>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+    <script src="https://bundle.run/buffer@6.0.3"></script>
 
     <!--My js-->
-    <script type="text/javascript" src="js/sections/pages/effect.js?ver=20241217"></script>
-    <script type="text/javascript" src="js/sections/pages/main_page.js?ver=20241233"></script>
-    <script type="text/javascript" src="js/sections/pages/onchain_page.js?ver=20241243"></script>
-    <script type="text/javascript" src="js/navbar.js?ver=20241231"></script>
-    <script type="text/javascript" src="js/init.js?ver=20241233"></script>
+    <script type="text/javascript" src="js/sections/pages/main_page.js?ver=20250209"></script>
+    <script type="text/javascript" src="js/sections/pages/about_page.js?ver=20250209"></script>
 
-    <script type="text/javascript" src="js/codeincontract.js?ver=202412354"></script>
-    <script type="text/javascript" src="js/check_contract.js?ver=20241279"></script>
-    <script type="text/javascript" src="js/compress.js?ver=20241217"></script>
+    <script type="text/javascript" src="js/sections/pages/onchain_page.js?ver=20250209"></script>
+    <script type="text/javascript" src="js/sections/pages/generate_page.js?ver=20250209"></script>
+
+    <script type="text/javascript" src="js/init.js?ver=20250209"></script>
+
+    <script type="text/javascript" src="js/code_in_contract.js?ver=20250209"></script>
+    <script type="text/javascript" src="js/check_contract.js?ver=20250209"></script>
+
+    <script type="text/javascript" src="js/compress.js?ver=20250209"></script>
+
+    <script type="text/javascript" src="js/navigator.js?ver=20250209"></script>
+
+
     <title>IQ6900</title>
     <link rel="icon" href="img/coinlogo.png"/>
 </head>
 <body>
-<nav class="nav_bar">
-    <img class="home_button"
-         style="
-                    margin-left: 2rem;
-                    width: 4rem;
-                    filter: invert(64%) sepia(27%) saturate(5621%)
-                        hue-rotate(86deg) brightness(118%) contrast(128%);
-                        cursor: pointer;
-                "
-         src="img/logo.png"
 
-    />
-
-    <div class="nav_btn">
-        <a href="https://x.com/IQ6900_" target="_blank">Twitter</a>
-        <a href="https://drive.google.com/drive/folders/1UlXr8WzTECgxWKgV6ixR3TXg7lzEA_W5?usp=sharing" target="_blank">BrandKit</a>
-        <a href="https://www.tiktok.com/@iq6900sol" target="_blank">Tiktok</a>
-        <a href="https://github.com/zo-eth/iq6900-s-codes" target="_blank">GitHub</a>
-        <a href="https://iq6900.gitbook.io/iq6900" target="_blank">GitBook</a>
-        <a href="https://docs.google.com/document/d/1yaZcpEFZ7gMmhZxuzQpoW5QzIG_hZsqWnFnujKMP4M8/edit?tab=t.0"
-           target="_blank">WhitePaper</a>
-        <a href="https://dexscreener.com/solana/diudnpbq7yu4aen5z1foibmdmkjstuxz3apzg3saiudb" target="_blank">DEX</a>
-    </div>
-</nav>
-<hr/>
-
-<section id="section">
-    <div class="main_div_main_page">
-        <div id="main_page">
-
-            <div class="main_top_div">
-                <div class="welcome_div">
-                    <h1 class="welcome_title">
-                        Welcome to IQ
-                    </h1>
-                    <hr/>
-                    <p class="welcome_info">
-
-                        <br/>
-                        Beyond high-level memes crafted by tech,<br/>
-                        a place where technology turns <br/>
-                        communities into memes. <br/>
-
-                        Welcome to $IQ <br/>
-                        <br/>
-                        ##################_MUSIC_VIDEO_##################<br/>
-                        <video class="welcome_video" src="img/mv.mp4" controls poster="img/poster.gif"></video>
-                    </p>
-                </div>
-                <div class="welcome_v-line">
+<div class="full_div column_flex">
+    <div class="pc_menu">
+        <div class="nav_bar row_flex">
+            <img class="main_title  z-index_top" src="img/text_logo.svg" alt="iq6900" onclick="$.mainPage.init()">
+            <div class="row_flex z-index_top">
+                <div class="row_flex nav_icons ">
+                    <img src="img/telegram.svg" alt="Telegram">
+                    <img src="img/x.svg" alt="X">
+                    <img src="img/github.svg" alt="Github">
                 </div>
 
-
-                <div class="ascii_gen_div">
-                <pre class="ascii_gen_title">
- ██████╗ ██████╗ ██████╗ ███████╗    ██╗███╗   ██╗
-██╔════╝██╔═══██╗██╔══██╗██╔════╝    ██║████╗  ██║
-██║     ██║   ██║██║  ██║█████╗█████╗██║██╔██╗ ██║
-██║     ██║   ██║██║  ██║██╔══╝╚════╝██║██║╚██╗██║
-╚██████╗╚██████╔╝██████╔╝███████╗    ██║██║ ╚████║
- ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝    ╚═╝╚═╝  ╚═══╝
-                </pre>
-
-                    <p class="gen_p_line">----------------------------------------------------</p>
-                    <img
-                            class="game_image"
-                            src="img/gameimg.png"
-                    />
-
-                    <div style="margin-top: 1rem">
-                        <label
-                                for="imageUpload"
-                                class="custom-file-upload"
-                        >
-                            <a class="file-name" style="cursor: pointer">Click To Select Image</a>
-                        </label>
-                        <input
-                                type="file"
-                                id="imageUpload"
-                                accept="image/*"
-                                style="display: none"
-                        />
+                <div class="nav_connect before_connect" style="display: flex" onclick="nav_connect()">
+                    <div class="connect_button center ">
+                        <p class="nav_status_before_login">Connect Wallet</p>
                     </div>
-                    <div class="gen_setting">
+                </div>
 
-                        <div class="option_menu">
-                            <div class="check_div">
-                                <p class="check_title">Logo:</p>
-                                <input type="checkbox" id="checkbox"/>
-                                <label class="check" for="checkbox"></label>
-                            </div>
-                            <div class="input_menu">
-                                <p class="input_title">font size:
-                                <p>
-                                    <label>
-                                        <input id="font_input" class="num_input" type="number" value="8">
-                                    </label>
-                            </div>
-                            <div class="input_menu" style="display: flex">
-                                <p class="input_title">distance:
-                                <p>
-                                    <label>
-                                        <input id="distance_input" class="num_input" type="number" value="-2">
-                                    </label>
-                            </div>
-
-                        </div>
+                <div class="nav_connect after_connect" style="display: none">
+                    <div class="connected_button">
+                        <div class="green"></div>
+                        <p class="wallet_address_in_btn"></p>
                     </div>
-
-                    <button
-                            class="gen_btn"
-                            type="button"
-                            value="button"
-                            onclick="Generate_image()"
-                    >
-                        <a>Generate IQ GIF</a>
-                    </button>
-                </div>
-            </div>
-            <hr/>
-            <div
-                    style="
-                                    margin: auto;
-                                    text-align: center;
-                                    justify-content: center;
-                                    align-items: center;
-                                "
-            >
-                <div>
-                    <div class="center main_page_on_chain_div" style="display: flex;">
-                        <div class="onchain_spam">
-                            <p style=" animation: Down 0.5s infinite;">
-                                On-Chain Inscription<br> On-Chain Inscription<br> On-Chain Inscription<br> On-Chain
-                                Inscription<br> On-Chain Inscription<br>
-                                On-Chain Inscription<br> On-Chain Inscription<br> On-Chain Inscription<br> On-Chain
-                                Inscription<br> On-Chain Inscription<br>
-                                On-Chain Inscription<br> On-Chain Inscription<br> On-Chain Inscription<br> On-Chain
-                                Inscription<br> On-Chain Inscription<br>
-                                On-Chain Inscription<br> On-Chain Inscription<br> On-Chain Inscription<br> On-Chain
-                                Inscription<br> On-Chain Inscription<br>
-                            </p>
-                        </div>
-                        <div class="v-line" style="margin: 0 ;height: 26rem"></div>
-                        <div class="center" style="display: flex; flex-direction: column">
-                            <h1 class="main_page_onchain_title">CODE-IN to Onchain</h1>
-                            <hr class="main_page_on_chain_hr" style="width: 100%"/>
-                            <img class="onchain_logo" src="img/onchain_click.png"
-                                 onclick="$.onchainPage.init();"/>
-                        </div>
-                        <div class="v-line" style="margin: 0 ;height: 26rem"></div>
-                        <div class="gas_info_main_page_div">
-                            <p class="gas_info_main_text">
-                                Onchain code in is IQ's own technology. <br>
-                                <br>
-                                We provided:
-                                <br>
-                                [Cheap Gas]
-                                average gas cost<br>
-                                5000 text 0.000005SOL<br>
-                                for ascii art<br>
-                                <br>
-                                [Compression]
-                                We made compression algorithm:<br>
-                                lossless, <br>
-                                fast <br>
-                                guarantees.<br>
-                                <br>
-                                minimum<br>
-                                compression rate<br>
-                                64%<br>
-                            </p>
-
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-            <hr/>
-
-            <div class="code_in_info_main_page">
-                <div class="code_in_info_main_page_content">
-                    <div style="display: flex; flex-direction: column;margin:auto;">
-            <pre class="code_in_info_main_page_title"> ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄   ▄▄▄▄▄▄▄▄▄▄▄          ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄          ▄▄▄▄▄▄▄▄▄▄▄  ▄▄        ▄
-▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░▌ ▐░░░░░░░░░░░▌        ▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌        ▐░░░░░░░░░░░▌▐░░▌      ▐░▌
-▐░█▀▀▀▀▀▀▀▀▀ ▐░█▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀▀▀          ▀▀▀▀█░█▀▀▀▀ ▐░█▀▀▀▀▀▀▀▀▀          ▀▀▀▀█░█▀▀▀▀ ▐░▌░▌     ▐░▌
-▐░▌          ▐░▌       ▐░▌▐░▌       ▐░▌▐░▌                       ▐░▌     ▐░▌                       ▐░▌     ▐░▌▐░▌    ▐░▌
-▐░▌          ▐░▌       ▐░▌▐░▌       ▐░▌▐░█▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄ ▐░▌     ▐░█▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄ ▐░▌     ▐░▌ ▐░▌   ▐░▌
-▐░▌          ▐░▌       ▐░▌▐░▌       ▐░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░▌     ▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░▌     ▐░▌  ▐░▌  ▐░▌
-▐░▌          ▐░▌       ▐░▌▐░▌       ▐░▌▐░█▀▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀▀ ▐░▌     ▐░█▀▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀▀ ▐░▌     ▐░▌   ▐░▌ ▐░▌
-▐░▌          ▐░▌       ▐░▌▐░▌       ▐░▌▐░▌                       ▐░▌     ▐░▌                       ▐░▌     ▐░▌    ▐░▌▐░▌
-▐░█▄▄▄▄▄▄▄▄▄ ▐░█▄▄▄▄▄▄▄█░▌▐░█▄▄▄▄▄▄▄█░▌▐░█▄▄▄▄▄▄▄▄▄              ▐░▌     ▐░▌                   ▄▄▄▄█░█▄▄▄▄ ▐░▌     ▐░▐░▌
-▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░▌ ▐░░░░░░░░░░░▌             ▐░▌     ▐░▌                  ▐░░░░░░░░░░░▌▐░▌      ▐░░▌
- ▀▀▀▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀   ▀▀▀▀▀▀▀▀▀▀▀               ▀       ▀                    ▀▀▀▀▀▀▀▀▀▀▀  ▀        ▀▀
-
-            </pre>
-
-                        <pre class="code_in_info_main_page_info_text">
-
-In a world full of AI Code memes,
-How about becoming a meme ourselves, through technology?
-Rather than looking at the code, you code-in.
-
-Making it usable is the beginning of technology.
-Let’s walk together from the beginning of
-blockchain to the end and leave footprints.
-
-Raise the $IQ of many people along the way
-You can also try it out and sing with a friend called AI.
-
-/OO-EE-OO
-
-Even if the day comes when we can't remember each other
-Our footprints will always remain here, on-chain.
-
-</pre>
-                    </div>
-                    <pre class="thinking_ascii">
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀                              ⢀⣤⣶⣿⣿⣿⣆⠘⠿⠟⢻⣿⣿⡇⢐⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀                             ⢸⣿⣿⣿⣧⡄⠙⣿⣷⣶⣶⡿⠿⠿⢃⣼⡟⠻⣿⣿⣶⡄⠀⠀⠀⠀
-⠀⠀                              ⢰⣷⣌⠙⠉⣿⣿⡟⢀⣿⣿⡟⢁⣤⣤⣶⣾⣿⡇⠸⢿⣿⠿⢃⣴⡄⠀⠀
-⠀⠀                              ⢸⣿⣿⣿⣿⠿⠋⣠⣾⣿⣿⠀⣾⣿⣿⣛⠛⢿⣿⣶⣤⣤⣴⣿⣿⣿⡆⠀
-⠀                              ⣴⣤⣄⣀⣠⣤⣴⣾⣿⣿⣿⣿⣆⠘⠿⣿⣿⣷⡄⢹⣿⣿⠿⠟⢿⣿⣿⣿⠀
-⠀                             ⢸⣿⣿⡿⠛⠛⣻⣿⣿⣿⣿⣿⣿⣷⣦⣼⣿⣿⠃⣸⣿⠃⢰⣶⣾⣿⣿⡟⠀
-⠀⠀                            ⢿⡏⢠⣾⣿⣿⡿⠋⣠⣄⡉⢻⣿⣿⡿⠟⠁⠀⠛⠛⠀⠘⠿⠿⠿⠋⠀⠀
-⠀⠀                                    ⠀⠁⠘⢿⣿⣿⣷⣤⣿⣿⠗⠀⣉⣥⣴⣶⡶⠋⠀⠀⠀⠀
-⠀⠀⠀⠀                                     ⣤⣀⡉⠛⠛⠋⣉⣠⣴⠿⢿⣿⠿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀               .                      ⠈⠻⢿⣿⣿⣿⣿⡿⠋⣠⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                ⣤⡾⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                  ⢰⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀     ⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣾⣿⠟⠋⠁⣀⣤⣤⣤⣤⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣷⡆⠀⠀⠀⠙⢿⣿⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⠿⠋⠀⠀⠀⢰⣿⠁⠀⠀⣿⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⢰⣿⡦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠛⠃⠀⠀⠀⠀⠈⣿⣷⡀
-⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⡟⠁⠀⠀⠀⠀⣰⣿⣿⣶⣶⡾⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣠⣿⣿⠇
-⠀⠀⠀⠀⠀⠀⠀⣼⣿⠏⠀⠀⠀⠀⢀⣼⣿⠟⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⣤⣤⣤⣤⣶⣶⣶⣶⣶⣶⣶⣿⣿⣿⣿⣿⠿⠛⠁⠀
-⠀⠀⠀⠀⠀⠀⣼⣿⠏⠀⠀⠀⠀⠀⣼⣿⠏⠀⠀⠀⠀⠀⠀⣴⣿⣿⣿⣿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠟⠛⢿⣿⡏⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⣸⣿⠏⠀⠀⠀⠀⠀⢸⣿⡟⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⣰⣿⡟⠀⠀⠀⠀⠀⢠⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣿⣿⣷⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⢰⣿⡟⠀⠀⠀⠀⠀⠀⣾⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⣿⢿⣿⣶⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⣼⣿⠀⠀⠀⠀⠀⠀⣰⣿⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣧⠙⢿⣿⣦⡀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⢸⣿⡏⠀⠀⠀⠀⠀⢠⣿⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣿⡄⠀⠙⢿⣿⣦⡀⠀⠀⠀⠀⠀
-⠀⠀⣿⣿⠁⠀⠀⠀⠀⠀⣼⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣇⠀⠀⠀⠙⠿⣿⣦⡄⠀⠀⠀
-⠀⢠⣿⡏⠀⠀⠀⠀⠀⣸⣿⡟⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⡄⠀⠀⠀⠀⣹⣿⡇⠀⠀⠀
-⠀⣾⣿⠃⠀⠀⠀⠀⢠⣿⡟⠀⠀⠀⠀⣠⣤⣾⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣿⣇⠀⠀⠀⢀⣿⡿⠃⠀⠀⠀
-⢀⣿⡏⠀⠀⠀⠀⠀⣿⣿⠁⠀⣠⣴⣾⣿⠟⠋⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀⢀⣾⣿⠇⠀⠀⠀⠀
-⢸⣿⠃⠀⠀⠀⠀⠀⢿⣿⣿⣿⡿⠟⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣿⠀⢠⣿⣿⠋⠀⠀⠀⠀⠀
-⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣦⣾⣿⠁⠀⠀⠀⠀⠀⠀
-⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⡿⠁⠀⠀⠀⠀⠀⠀⠀
-⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀
-⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀
-⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣇⠀⠀⠀⠀⠀⠀⠀⠀
-⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀
-⢸⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀
-            </pre>
-                </div>
-
-            </div>
-            <hr/>
-            <div
-                    style="
-                                    margin: auto;
-                                    text-align: center;
-                                    justify-content: center;
-                                    align-items: center;
-                                "
-            >
-                <div class="center reasons_why">
-<pre class="reasons_why_title">
-  _____                                           _              _ _____ ____    _       _                             _   _
- |  __ \                                         | |            | |_   _/ __ \  (_)     (_)                           | | (_)
- | |__) |___  __ _ ___  ___  _ __  ___  __      _| |__  _   _  / __)| || |  | |  _ ___   _ _ __  _ __   _____   ____ _| |_ ___   _____
- |  _  // _ \/ _` / __|/ _ \| '_ \/ __| \ \ /\ / / '_ \| | | | \__ \| || |  | | | / __| | | '_ \| '_ \ / _ \ \ / / _` | __| \ \ / / _ \
- | | \ \  __/ (_| \__ \ (_) | | | \__ \  \ V  V /| | | | |_| | (   /| || |__| | | \__ \ | | | | | | | | (_) \ V / (_| | |_| |\ V /  __/
- |_|  \_\___|\__,_|___/\___/|_| |_|___/   \_/\_/ |_| |_|\__, |  |_|_____\___\_\ |_|___/ |_|_| |_|_| |_|\___/ \_/ \__,_|\__|_| \_/ \___|
-                                                         __/ |
-                                                        |___/
-</pre>
-                    <pre class="reasons_why_info">
-----------------------------------------------------------------------------------------------
-
-Decentralized blockchain is a distributed ledger of transactions, and its values do not change.
-
-Therefore, people believed that anything stored on the blockchain would remain there forever.
-This led to many attempts to use it for data storage.
-How appealing is the idea of preserving your data for as long as humanity exists?
-
-However, there were limitations.
-To allocate space for data storage on the blockchain network, an enormous amount of gas fees was required.
-For example, storing just 1MB of data on the blockchain could cost a user ~7 SOL.
-
-That’s the price of a small fortune! With traditional methods, many would need to pay so high fees.
-
-So, we gave up on the attribute of eternal storage and instead opted for engraving links onto the blockchain.
-
-IQ's developer, Zo, had the following curiosity:
-- Is there a way to store data without allocating space?
-- Could we implement a much more blockchain-friendly data storage
-  by using 'recording' instead of 'storing'?
-
-Thus, the idea of Code-in, a state-based inscription method, was born.
-With this method, you can save more than 2000 times on gas fees: instead of paying ~7 SOL for 1MB, you pay just ~0.0033.. SOL.
-That’s a couple of cents—no need to sell your house!
-
-What’s more:
-• The gas fee stays constant regardless of how much data you record.
-• Data retrieval is lightning-fast.
-• No space restrictions—store as much as you want! Even if users send 300TB to our contract, it remains fast and inexpensive.
-
-This revolutionary approach works not only on Solana but on almost all chains, offering the potential to overcome many limitations.
-
-Yes, we've been telling lies.
-The notion that everyone could store data immortally was still a dream.
-But how about now?
-That dream has become a reality.
-
-Let's start history together, making eternal storage cheap, fast, and accessible for everyone.
-</pre>
-
-                </div>
-            </div>
-            <hr/>
-            <div
-                    style="
-                                    margin: auto;
-                                    text-align: center;
-                                    justify-content: center;
-                                    align-items: center;
-                                "
-            >
-
-            <pre class="buy_iq">
-
-    ___     _  _    _  _       _F]_    __     ____
-   F _ ",  FJ  L]  FJ  LJ     F ___L   FJ    F __ ]
-  J `-'(| J |  | L J \/ F    J (___|  J  L  J |--| L
-  | ,--.\ | |  | | J\  /L    J\___ \  |  |  | | _| |
-  F L__J \F L__J J  F  J    .--___) \ F  J  F L_F  J
- J_______J\______/F|____|   J\__  __JJ____LJ\_____  \
- |_______FJ______F |____|    J__LJ__F|____| J_____\J]
-                                LJ                \J
-            </pre>
-                <img class="main_page_girl_gif" src="img/girl.gif"/>
-
-                <p class="contract_address_pump_fun">
-                    Contract Address<br>
-                    AsyfR3e5JcPqWot4H5MMhQUm7DZ4zwQrcp2zbB7vpump
-                </p>
-            </div>
-            <hr/>
-            <div class="main_page_join_div">
-                <div class="main_page_join_div_left">
-                    <h1 class="main_page_join_div_info_title">
-                        Pretty self-explanatory:3
-                    </h1>
-                    <p class="main_page_join_div_info">
-                        9fBaZEj4XEUyeawCZRj8F6StiYkEoyV38kAmuufvvvV<br/>
-                        TGTYrUbffmsLvUpKbTCkXD25r8RAkpHEDki<br/>
-                        <br/>
-
-                        ၶဝ်ႈႁူမ်ႈၸွမ်း တူင်ႇဝူင်း IQ ။ ႁပ်ႉတွၼ်ႈယူႇတႃႇသေႇ <br/>
-                        <br/>
-
-                        1001000 1101111 1110111 100000 1101101 1100001<br/>
-                        1101110 1111001 100000 1101000 1100001 1110110<br/>
-                        1100101 100000 1111001 1101111 1110101 100000<br/>
-                        1110011 1101111 1101100 1110110 1100101 1100100 <br/>
-                        111111<br/>
-                        <br/>
-                        커뮤니티에 합류하세요 커뮤니티에 합류하세요 <br/>
-                        커뮤니티에 합류하세요 커뮤니티에 합류하세요 <br/>
-                    </p>
-
-                    <a style="text-align:left; margin: 0; cursor: pointer"
-                       href="http://t.me/portalforiq6900">
-                        <pre class="main_page_join_btn">
-______/\\\\\\\\\\\_______/\\\\\_______/\\\\\\\\\\\__/\\\\\_____/\\\____________/\\\\\\\\\\\\\\\_____/\\\\\\\\\\\\_
- _____\/////\\\///______/\\\///\\\____\/////\\\///__\/\\\\\\___\/\\\___________\///////\\\/////____/\\\//////////__
-  _________\/\\\_______/\\\/__\///\\\______\/\\\_____\/\\\/\\\__\/\\\_________________\/\\\________/\\\_____________
-   _________\/\\\______/\\\______\//\\\_____\/\\\_____\/\\\//\\\_\/\\\_________________\/\\\_______\/\\\____/\\\\\\\_
-    _________\/\\\_____\/\\\_______\/\\\_____\/\\\_____\/\\\\//\\\\/\\\_________________\/\\\_______\/\\\___\/////\\\_
-     _________\/\\\_____\//\\\______/\\\______\/\\\_____\/\\\_\//\\\/\\\_________________\/\\\_______\/\\\_______\/\\\_
-      __/\\\___\/\\\______\///\\\__/\\\________\/\\\_____\/\\\__\//\\\\\\_________________\/\\\_______\/\\\_______\/\\\_
-       _\//\\\\\\\\\_________\///\\\\\/______/\\\\\\\\\\\_\/\\\___\//\\\\\_________________\/\\\_______\//\\\\\\\\\\\\/__
-        __\/////////____________\/////_______\///////////__\///_____\/////__________________\///_________\////////////____
-                        </pre>
-                    </a>
-
-                </div>
-                <hr/>
-
-                <div style="margin: auto">
-                    <img style="width: 27rem;" src="img/pixellogo.gif"/>
                 </div>
             </div>
         </div>
+        <div class="menu_list column_flex">
+            <a href="https://dexscreener.com/solana/diudnpbq7yu4aen5z1foibmdmkjstuxz3apzg3saiudb" target="_blank">Dex
+                Screener</a>
+            <a href="https://docs.google.com/document/d/1yaZcpEFZ7gMmhZxuzQpoW5QzIG_hZsqWnFnujKMP4M8/edit?tab=t.0"
+               target="_blank">WhitePaper</a>
+            <a onclick="$.aboutPage.init()">
+                About $IQ</a>
+            <a href="https://iq6900.gitbook.io/iq6900" target="_blank">How to use</a>
+            <a href="https://linktr.ee/IQ6900Docs" target="_blank">Docs</a>
+            <a style="visibility: hidden;">Hidden Space</a>
+
+            <a href="https://linktr.ee/IQ6900" target="_blank">Community</a>
+            <a href="https://drive.google.com/drive/folders/1UlXr8WzTECgxWKgV6ixR3TXg7lzEA_W5?usp=sharing"
+               target="_blank">BrandKit</a>
+            <a href="https://x.com/im_zo_sol" target="_blank">Contact Us</a>
+            <a onclick="alert('Coming soon')">Partners</a>
+            <a onclick="alert('Coming soon')">Legal & Privacy</a>
+        </div>
 
     </div>
+    <section id="main_section">
+        <div class="background_div">
+            <img class="background_dog_image" src="img/dog.png" alt="dog">
+            <div class="background_Linear_color"></div>
+        </div>
+        <section id="menu_section">
+            <div class="pc_main_info">
+                <h1 class="main_h1">Store any data On-Chain <br>Permanently</h1>
+                <h2 class="main_h2"
+                    style="background: linear-gradient(rgba(0, 0, 0, 0),#000000); box-shadow: 0 2rem 1rem #000000;">
+                    IQ6900® technology enables storing data fully on-chain <br>
+                    2000x cheaper than regular on-chain storage.</h2>
+            </div>
+            <div class="mobile_main_info">
+                <img class="mobile_title" src="img/text_logo.svg" alt="iq6900">
+                <h1 class="main_h1">Store any data<br>Permanently</h1>
+                <h2 class="main_h2">IQ6900® technology enables storing<br>
+                    data fully on-chain 2000x cheaper<br>
+                    than regular on-chain storage.</h2>
+            </div>
+            <div class="main_buttons column_flex" style="background: black;box-shadow: 0 -2rem 2rem #000000;">
+                <div onclick=" $.onchainPage.init();" class="green_button">
+                    <p>Launch App</p>
+                </div>
 
-    <script type="text/javascript" src="js/codein.js?ver=20241121"></script>
-</section>
+                <div class="img_button" onclick=" $.generatePage.init();">
+                    <div class="row_flex"><img src="img/img_logo.svg">
+                        <p>Art Generator</p></div>
+                </div>
+            </div>
+        </section>
 
-<div style="align-items: center; text-align: center ; margin: 0">
-    <img class="bottom_logo" src="img/logo.png"/>
+        <div class="pc_bottom_nav">
 
-    <p class="copyright">
-        @Copyright Team IQ6900
-    </p>
+            <div class=" bottom_partners">
+                <div class="moving_partners">
+                    <img src="img/eliza.svg" style="height: 1.7rem">
+                    <img src="img/origin_trail.svg">
+                    <img src="img/soon.svg" style="height: 1.8rem;margin-right: 1rem">
+                </div>
+                <div class="moving_partners">
+                    <img src="img/eliza.svg" style="height: 1.7rem; margin-left: 1rem">
+                    <img src="img/origin_trail.svg">
+                    <img src="img/soon.svg" style="height: 1.8rem">
+                </div>
+            </div>
+
+            <div class="bottom_hr"></div>
+            <div class="row_flex space_between  " style="width: 92%;margin-top: 2rem; margin-bottom: 2rem">
+                <div class="row_flex center">
+                    <div class="row_flex ">
+                        <img class="bottom_image_logo" src="img/iq_bottom_logo.png">
+                        <p style="font-size: 0.7rem">IQ6900 Labs © 2024</p>
+                    </div>
+                    <div class="row_flex nav_icons bottom_icons" style="margin-top: 0.3rem">
+                        <img src="img/telegram.svg" alt="Telegram">
+                        <img src="img/x.svg" alt="X">
+                        <img src="img/github.svg" alt="Github">
+                    </div>
+                </div>
+                <div class="menu_list row_flex center" style="gap: 1rem">
+                    <a onclick="alert('Coming soon')" style="font-size: 0.7rem">Trademark Policy</a>
+                    <a onclick="alert('Coming soon')" style="font-size:  0.7rem">Legal & Privacy</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class=" mobile_bottom_nav">
+        <div class="menu_list column_flex">
+            <a href="https://docs.google.com/document/d/1yaZcpEFZ7gMmhZxuzQpoW5QzIG_hZsqWnFnujKMP4M8/edit?tab=t.0"
+               target="_blank">WhitePaper</a>
+            <a href="https://dexscreener.com/solana/diudnpbq7yu4aen5z1foibmdmkjstuxz3apzg3saiudb" target="_blank">Buy
+                IQ</a>
+            <a href="https://iq6900.gitbook.io/iq6900" target="_blank">How to use</a>
+            <a style="visibility: hidden;">Hidden Space</a>
+            <div class="row_flex nav_icons">
+                <img src="img/telegram.svg" alt="Telegram">
+                <img src="img/x.svg" alt="X">
+                <img src="img/github.svg" alt="Github">
+            </div>
+        </div>
+
+        <div class="menu_list column_flex">
+            <a href="https://linktr.ee/IQ6900" target="_blank">Community</a>
+            <a href="https://drive.google.com/drive/folders/1UlXr8WzTECgxWKgV6ixR3TXg7lzEA_W5?usp=sharing"
+               target="_blank">BrandKit</a>
+            <a href="https://linktr.ee/IQ6900Docs" target="_blank">Docs</a>
+
+            <a style="visibility: hidden;">Hidden Space</a>
+
+            <a href="https://x.com/im_zo_sol" target="_blank">Contact Us</a>
+            <a onclick="alert('Coming soon')">Partners</a>
+            <a onclick="alert('Coming soon')">Legal & Privacy</a>
+        </div>
+    </div>
+
 </div>
-<div class="crt-effect"></div>
 
 </body>
 
-
-<script type="text/javascript">
-    const mutationObserver = new MutationObserver(() => {
-        updateBodyHeight();
-    });
-    const resizeObserver = new ResizeObserver(() => {
-        updateBodyHeight();
-    });
-
-    function updateBodyHeight() {
-        setEffect();
-    }
-
-    mutationObserver.observe(document.body, {childList: true, subtree: true});
-    resizeObserver.observe(document.body);
-</script>
 </html>
 

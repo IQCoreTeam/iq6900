@@ -1,32 +1,235 @@
-<script type="text/javascript" src="js/codein_client.js?ver=20241217"></script>
-<script type="text/javascript" src="js/sections/pages/codein_section.js?ver=20241233"></script>
-<script type="text/javascript" src="js/sections/pages/check_section.js?ver=20241237"></script>
-<script type="text/javascript" src="js/sections/codein_init.js?ver=20241234"></script>
-<hr>
-<hr>
-<div style="padding:0 4rem 0 4rem;">
-    <div class="onchain_menu_div">
-        <div id="go_codein" class="onchain_menu_btn">
-            <p>Code-In</p>
-        </div>
-        <div id="go_check" class="onchain_menu_btn">
-            <p>Check-Code</p>
-        </div>
-        <div id="how_to_use" class="onchain_menu_btn">
-            <p>How-To-Use</p>
+<script type="text/javascript" src="js/sections/pages/check_section.js?ver=20241244"></script>
+<script type="text/javascript" src="js/sections/pages/code_in_section.js?ver=20241243"></script>
+<script type="text/javascript" src="js/art_generate_text.js?ver=20250209"></script>
+
+<div class="background_div">
+    <div class="on_chain_page_dog_pc">
+        <img src="img/left_dog.png" alt="dog">
+    </div>
+
+    <div class="background_black"></div>
+    <div class="background_Linear_color"></div>
+</div>
+
+<div class="nav_bar row_flex nav_bar_mobile">
+    <div class="row_flex">
+        <img class="nav_title" onclick="$.mainPage.init()" src="img/text_logo.svg" alt="iq6900">
+        <img  class="nav_menu_arrow" onclick="navigator_on()" src="img/down.svg">
+    </div>
+    <div class="nav_connect before_connect" onclick="nav_connect()">
+        <div class="simple_button">
+            <p class="nav_status_before_login">Connect</p>
         </div>
     </div>
-    <div class="main_div" style="margin: 0;padding: 0;">
-        <div class="center">
-            <div style="
-                                    display: flex;
-                                    flex-direction: column;
-                                    justify-content: center;
-                                    align-items: center;
-                                ">
-                <div id="web3_section">
-                </div>
+
+    <div class="nav_connect after_connect"  style="display: none">
+        <div class="connected_button">
+            <div class="green"></div>
+            <p class="wallet_address_in_btn"></p>
+        </div>
+    </div>
+
+</div>
+<div class="navigator_menu">
+    <div class="navigator_menu_list column_flex">
+        <a href="https://docs.google.com/document/d/1yaZcpEFZ7gMmhZxuzQpoW5QzIG_hZsqWnFnujKMP4M8/edit?tab=t.0"
+           target="_blank">WhitePaper</a>
+        <a onclick="$.aboutPage.init()">
+            About $IQ</a>
+        <a href="https://iq6900.gitbook.io/iq6900" target="_blank">How to use</a>
+        <a style="visibility: hidden;">Hidden Space</a>
+
+        <a href="https://linktr.ee/IQ6900" target="_blank">Community</a>
+        <a href="https://drive.google.com/drive/folders/1UlXr8WzTECgxWKgV6ixR3TXg7lzEA_W5?usp=sharing"
+           target="_blank">BrandKit</a>
+        <a href="https://linktr.ee/IQ6900Docs" target="_blank">Docs</a>
+
+        <a style="visibility: hidden;">Hidden Space</a>
+
+        <a href="https://x.com/im_zo_sol" target="_blank">Contact Us</a>
+        <a onclick="alert('Coming soon')">Partners</a>
+        <a onclick="alert('Coming soon')">Legal & Privacy</a>
+    </div>
+    <div class="row_flex nav_icons navigator_menu_icons" >
+        <img src="img/telegram.svg" alt="Telegram">
+        <img src="img/x.svg" alt="X">
+        <img src="img/github.svg" alt="Github">
+    </div>
+</div>
+<div class="main_buttons row_flex">
+    <div class="img_button_green" id="go_code_in">
+        <div onclick="goto_code_in()" class="row_flex"><img src="img/gen_logo.svg">
+            <p>Code-In</p></div>
+    </div>
+
+    <div class="img_button" id="go_viewer">
+        <div onclick="goto_viewer()"  class="row_flex"><img src="img/viewer_logo.svg">
+            <p>Viewer</p></div>
+    </div>
+</div>
+
+<section id="menu_section">
+    <div class="check_menus">
+        <div class="check_menu" style="transform: translateX(-1rem)">
+            <input class="check_box" type="radio" id="checkbox_image" name="code-in_menu" checked/>
+            <label for="checkbox_image">Upload Image</label>
+        </div>
+        <div class="check_menu">
+            <input class="check_box" type="radio" id="checkbox_text" name="code-in_menu"/>
+            <label for="checkbox_text">Inscribe Text</label>
+        </div>
+    </div>
+    <div class="upload_image">
+        <div class="contents_input">
+            <img src="img/img_logo_white.svg">
+
+            <label for="imageUpload_For_Text" class="custom-file-upload">
+                <a class="file-name">Select Image</a>
+            </label>
+
+            <input
+                    type="file"
+                    id="imageUpload_For_Text"
+                    accept="image/*"
+                    style="display: none"
+            />
+        </div>
+        <div class="generate_result">
+            <pre class="generate_result_txt"></pre>
+        </div>
+        <p id='asciiWidth' style="display: none;"></p>
+    </div>
+
+    <div class="row_flex space_between center font_manage" style="padding-left: 1rem;padding-right: 1rem">
+        <p class="font_size" >Font size</p>
+        <div class="row_flex center">
+            <input type='button'
+                   class="arrow_button left_arrow"
+                   onclick="
+                       const number = parseInt($('.input_number').val());
+                       if(number>5)
+                       $('.input_number').val(number-1)
+                        "
+            />
+
+            <input type="number"  class='input_number font_input' min="5" max="50" value="13" readonly>
+
+            <input type='button'
+                   class="arrow_button right_arrow"
+                   onclick="
+                       const number = parseInt($('.input_number').val());
+                       if(number<50)
+                       $('.input_number').val(number+1)
+                        "
+            />
+        </div>
+    </div>
+
+    <div class="inscribe_text" style="display: none;flex-direction: column;">
+        <div class="contents_input">
+            <label>
+                <textarea class="type_in"></textarea>
+            </label>
+        </div>
+        <div class="green_button code_in_button" onclick="codeIn()" >
+            <p class="code_in_button_p">Code-In</p>
+        </div>
+    </div>
+
+    <div class="after_gen">
+        <div class="green_button re_gen" onclick="Generate_image_text()">
+            <p style="color: #989898">Re-Generate</p>
+        </div>
+
+        <div class="green_button code_in_button" onclick="codeIn()">
+            <p class="code_in_button_p">Code-In</p>
+        </div>
+    </div>
+
+
+
+    <div class="progress_div column_flex center " >
+
+        <div class="progress">
+            <div class="progress-bar">
             </div>
+        </div>
+        <p class="progress_status">Processing..</p>
+    </div>
+
+    <p class="info" >* Data kept forever, can't be deleted.</p>
+
+</section>
+<div class="pc_bottom_nav">
+
+    <div class=" bottom_partners">
+        <div class="moving_partners">
+            <img src="img/eliza.svg" style="height: 1.7rem">
+            <img src="img/origin_trail.svg">
+            <img src="img/soon.svg" style="height: 1.8rem;margin-right: 1rem">
+        </div>
+        <div class="moving_partners">
+            <img src="img/eliza.svg" style="height: 1.7rem; margin-left: 1rem">
+            <img src="img/origin_trail.svg">
+            <img src="img/soon.svg" style="height: 1.8rem">
+        </div>
+    </div>
+
+    <div class="bottom_hr"></div>
+    <div class="row_flex space_between  " style="width: 92%;margin-top: 2rem; margin-bottom: 2rem">
+        <div class="row_flex center">
+            <div class="row_flex ">
+                <img class="bottom_image_logo" src="img/iq_bottom_logo.png">
+                <p style="font-size: 0.7rem">IQ6900 Labs © 2024</p>
+            </div>
+            <div class="row_flex nav_icons bottom_icons" style="margin-top: 0.3rem">
+                <img src="img/telegram.svg" alt="Telegram">
+                <img src="img/x.svg" alt="X">
+                <img src="img/github.svg" alt="Github">
+            </div>
+        </div>
+        <div class="menu_list row_flex center" style="gap: 1rem">
+            <a onclick="alert('Coming soon')" style="font-size: 0.7rem">Trademark Policy</a>
+            <a onclick="alert('Coming soon')" style="font-size:  0.7rem">Legal & Privacy</a>
         </div>
     </div>
 </div>
+<script>
+
+    init_connect();
+    $(document).ready(function () {
+        $("#checkbox_image").change(function () {
+            if ($("#checkbox_image").is(":checked")) {
+                $(".inscribe_text").css("display", "none");
+                $(".upload_image").css("display", "flex");
+                $(".font_manage").css("display", "flex");
+
+            }
+        });
+        $("#checkbox_text").change(function () {
+            if ($("#checkbox_text").is(":checked")) {
+                $(".upload_image").css("display", "none");
+                $(".font_manage").css("display", "none");
+                $(".inscribe_text").css("display", "flex");
+            }
+        });
+    });
+    function toggleClassForMenu(menu1,menu2, oldClass, newClass) {
+        if ($(menu1).hasClass(oldClass)) {
+            $(menu1).removeClass(oldClass)
+            $(menu1).addClass(newClass);
+
+            $(menu2).removeClass(newClass)
+            $(menu2).addClass(oldClass);
+        }
+    }
+    function goto_viewer(){
+        toggleClassForMenu('#go_viewer','#go_code_in',"img_button","img_button_green");
+        $.checkSection.init();
+    }
+    function goto_code_in(){
+        toggleClassForMenu('#go_code_in','#go_viewer',"img_button","img_button_green");
+        $.codeInSection.init();
+    }
+
+</script>

@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/check_contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/check_contract.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/assets/css/index.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/js/codeincontract.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/codeincontract.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -214,6 +213,10 @@
       <workItem from="1737266283545" duration="31548000" />
       <workItem from="1737477937466" duration="3684000" />
       <workItem from="1737520252514" duration="6374000" />
+      <workItem from="1737720107962" duration="15802000" />
+      <workItem from="1738387750547" duration="33000" />
+      <workItem from="1738420440638" duration="70000" />
+      <workItem from="1738477016899" duration="25888000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />
