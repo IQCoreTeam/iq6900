@@ -17,9 +17,9 @@ $(document).ready(async function () {
     const {txid} = getQueryParams();
     if (txid) {
         await goto_viewer();
+        $(".bump").css("display", "none");
         const urlWithoutParams = window.location.protocol + "//" + window.location.host + window.location.pathname;
         window.history.replaceState({}, '', urlWithoutParams);
-
         await seeTransaction(txid);
     }
 });
