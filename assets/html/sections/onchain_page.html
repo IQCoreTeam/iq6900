@@ -14,7 +14,7 @@
 <div class="nav_bar row_flex nav_bar_mobile">
     <div class="row_flex">
         <img class="nav_title" onclick="$.mainPage.init()" src="img/text_logo.svg" alt="iq6900">
-        <img  class="nav_menu_arrow" onclick="navigator_on()" src="img/down.svg">
+        <img class="nav_menu_arrow" onclick="navigator_on()" src="img/down.svg">
     </div>
     <div class="nav_connect before_connect" onclick="nav_connect()">
         <div class="simple_button">
@@ -22,7 +22,7 @@
         </div>
     </div>
 
-    <div class="nav_connect after_connect"  style="display: none">
+    <div class="nav_connect after_connect" style="display: none">
         <div class="connected_button">
             <div class="green"></div>
             <p class="wallet_address_in_btn"></p>
@@ -50,7 +50,7 @@
         <a onclick="alert('Coming soon')">Partners</a>
         <a onclick="alert('Coming soon')">Legal & Privacy</a>
     </div>
-    <div class="row_flex nav_icons navigator_menu_icons" >
+    <div class="row_flex nav_icons navigator_menu_icons">
         <img src="img/telegram.svg" alt="Telegram">
         <img src="img/x.svg" alt="X">
         <img src="img/github.svg" alt="Github">
@@ -63,7 +63,7 @@
     </div>
 
     <div class="img_button" id="go_viewer">
-        <div onclick="goto_viewer()"  class="row_flex"><img src="img/viewer_logo.svg">
+        <div onclick="goto_viewer()" class="row_flex"><img src="img/viewer_logo.svg">
             <p>Viewer</p></div>
     </div>
 </div>
@@ -101,7 +101,7 @@
     </div>
 
     <div class="row_flex space_between center font_manage" style="padding-left: 1rem;padding-right: 1rem">
-        <p class="font_size" >Font size</p>
+        <p class="font_size">Font size</p>
         <div class="row_flex center">
             <input type='button'
                    class="arrow_button left_arrow"
@@ -112,7 +112,7 @@
                         "
             />
 
-            <input type="number"  class='input_number font_input' min="5" max="50" value="13" readonly>
+            <input type="number" class='input_number font_input' min="5" max="50" value="13" readonly>
 
             <input type='button'
                    class="arrow_button right_arrow"
@@ -131,7 +131,7 @@
                 <textarea class="type_in"></textarea>
             </label>
         </div>
-        <div class="green_button code_in_button" onclick="codeIn()" >
+        <div class="green_button code_in_button" onclick="codeIn()">
             <p class="code_in_button_p">Code-In</p>
         </div>
     </div>
@@ -147,8 +147,7 @@
     </div>
 
 
-
-    <div class="progress_div column_flex center " >
+    <div class="progress_div column_flex center ">
 
         <div class="progress">
             <div class="progress-bar">
@@ -157,7 +156,7 @@
         <p class="progress_status">Processing..</p>
     </div>
 
-    <p class="info" >* Data kept forever, can't be deleted.</p>
+    <p class="info">* Data kept forever, can't be deleted.</p>
 
 </section>
 <div class="pc_bottom_nav">
@@ -205,6 +204,16 @@
                 $(".font_manage").css("display", "flex");
 
             }
+
+            const {txid} = getQueryParams();
+            if (txid) {
+                goto_viewer();
+                const urlWithoutParams = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({}, '', urlWithoutParams);
+
+                seeTransaction(txid);
+            }
+
         });
         $("#checkbox_text").change(function () {
             if ($("#checkbox_text").is(":checked")) {
@@ -214,7 +223,8 @@
             }
         });
     });
-    function toggleClassForMenu(menu1,menu2, oldClass, newClass) {
+
+    function toggleClassForMenu(menu1, menu2, oldClass, newClass) {
         if ($(menu1).hasClass(oldClass)) {
             $(menu1).removeClass(oldClass)
             $(menu1).addClass(newClass);
@@ -223,12 +233,14 @@
             $(menu2).addClass(oldClass);
         }
     }
-    function goto_viewer(){
-        toggleClassForMenu('#go_viewer','#go_code_in',"img_button","img_button_green");
+
+    function goto_viewer() {
+        toggleClassForMenu('#go_viewer', '#go_code_in', "img_button", "img_button_green");
         $.checkSection.init();
     }
-    function goto_code_in(){
-        toggleClassForMenu('#go_code_in','#go_viewer',"img_button","img_button_green");
+
+    function goto_code_in() {
+        toggleClassForMenu('#go_code_in', '#go_viewer', "img_button", "img_button_green");
         $.codeInSection.init();
     }
 

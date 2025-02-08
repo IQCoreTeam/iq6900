@@ -23,8 +23,6 @@ $(document).ready(function() {
     const { txid } = getQueryParams();
     if (txid) {
         $.onchainPage.init();
-        await goto_viewer();
-        await seeTransaction(txid);
     }
     init_connect()
 });
