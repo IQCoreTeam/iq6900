@@ -566,7 +566,8 @@ async function init_connect() {
             const userstatus = await pda_check(PDAPubKey);
             if (!userstatus) {
                 alert("You need to sign up once for each wallet. Click the button below to sign up.");
-                $(".before_connect").attr("onclick", "pda_make()");
+                $('.before_connect').attr("onclick", "pda_make()");
+
                 $('.nav_status_before_login').text("Sign Up");
             } else {
                 $('.before_connect').css('display', 'none');
