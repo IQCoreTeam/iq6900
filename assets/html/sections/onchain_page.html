@@ -204,16 +204,6 @@
                 $(".font_manage").css("display", "flex");
 
             }
-
-            const {txid} = getQueryParams();
-            if (txid) {
-                goto_viewer();
-                const urlWithoutParams = window.location.protocol + "//" + window.location.host + window.location.pathname;
-                window.history.replaceState({}, '', urlWithoutParams);
-
-                seeTransaction(txid);
-            }
-
         });
         $("#checkbox_text").change(function () {
             if ($("#checkbox_text").is(":checked")) {
