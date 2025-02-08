@@ -103,10 +103,11 @@ async function _makeChunks() {
 async function _translate_transaction(data) {
     const Buffer = buffer.Buffer;
     const transaction = new solanaWeb3.Transaction();
+    console.log(data);
     const connection = new solanaWeb3.Connection(network);
     const latestBlockhash = await connection.getLatestBlockhash();
     transaction.recentBlockhash = latestBlockhash.blockhash; // 서버에서 받은 recentBlockhash
-    transaction.feePayer = new solanaWeb3.PublicKey(data.feePayer); // 서버에서 받은 feePayer
+    transaction.feePayer = new solanaWeb3.PublicKey(data.); // 서버에서 받은 feePayer
 
     data.instructions.forEach((instr) => {
         const instruction = new solanaWeb3.TransactionInstruction({
