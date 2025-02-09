@@ -167,7 +167,7 @@ async function createInitTransactionOnServer(userKeyString) {
         if (response.ok) {
             try {
                 const responseData = await response.json();
-                const data = responseData.transaction;
+                const data = responseData;
                 const transaction = await _translate_transaction(data.transaction);
                 return transaction;
             } catch (error) {
