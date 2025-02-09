@@ -107,7 +107,7 @@ async function _translate_transaction(data) {
     const connection = new solanaWeb3.Connection(network);
     const latestBlockhash = await connection.getLatestBlockhash();
     transaction.recentBlockhash = latestBlockhash.blockhash; // 서버에서 받은 recentBlockhash
-    transaction.feePayer = new solanaWeb3.PublicKey(data); // 서버에서 받은 feePayer
+    transaction.feePayer = new solanaWeb3.PublicKey(data.feePayer); // 서버에서 받은 feePayer
 
     data.instructions.forEach((instr) => {
         const instruction = new solanaWeb3.TransactionInstruction({
@@ -166,9 +166,9 @@ async function createInitTransactionOnServer(userKeyString) {
         const response = await fetch(host + `/initialize-user/${userKeyString}`);
         if (response.ok) {
             try {
+
                 const responseData = await response.json();
                 const data = responseData;
-                console.log(data);
                 const transaction = await _translate_transaction(data.transaction);
                 return transaction;
             } catch (error) {
