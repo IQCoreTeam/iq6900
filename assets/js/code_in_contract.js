@@ -75,8 +75,9 @@ async function _makeChunks() {
     let width = $('#asciiWidth').text();
     let innerOffset = "[ width: " + width + " ]"
     let full_msg = innerOffset + $('.generate_result_txt').text();
+    let ascii = full_msg.replace(/\n/g, "");  // 모든 \n을 빈 문자열로 대체
 
-    textChunks = await _getChunk(full_msg, sizeLimitForSplit);
+    textChunks = await _getChunk(ascii, sizeLimitForSplit);
     const merkleroot = await getMerkleRootFromServer(textChunks);
 
     for (let textChunk of textChunks) {
