@@ -482,7 +482,7 @@ async function pda_make() {
             const connection = new solanaWeb3.Connection(network);
             const userkey = resp.publicKey;
             const useKeyString = userkey.toString()
-
+            console.log(useKeyString)
             const transaction = await createInitTransactionOnServer(useKeyString)
             if (transaction != null) {
                 const {signature} = await provider.signAndSendTransaction(transaction);
