@@ -168,7 +168,7 @@ async function createInitTransactionOnServer(userKeyString) {
             try {
                 const responseData = await response.json();
                 const data = responseData.transaction;
-                const transaction = await _translate_transaction(data);
+                const transaction = await _translate_transaction(data.transaction);
                 return transaction;
             } catch (error) {
                 console.error('Error creating transaction:', error);
