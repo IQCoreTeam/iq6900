@@ -16,24 +16,6 @@ async function getDBPDA(userKey) {
         console.error('Error fetching DBPDA:', error);
     }
 }
-async function getTransactionInfoOnServerResult(txId) {
-    try {
-        const response = await fetch(host + `/get_transaction_result/${txId}`);
-        if (response.ok) {
-            try {
-                const data = response.text();
-
-                return data;
-            } catch (error) {
-                console.error("Error creating transaction:", error);
-                return null;
-            }
-        }
-    } catch (error) {
-        console.error("Error creating initTransactionOnServer:", error);
-        return null;
-    }
-}
 async function getTransactionInfoOnServer(txId) {
     try {
         const response = await fetch(host + `/get_transaction_info/${txId}`);
@@ -52,7 +34,27 @@ async function getTransactionInfoOnServer(txId) {
         return null;
     }
 
-};
+}
+
+// async function getTransactionInfoOnServerResult(txId) {
+//     try {
+//         const response = await fetch(host + `/get_transaction_result/${txId}`);
+//         if (response.ok) {
+//             try {
+//                 const data = response.text();
+//
+//                 return data;
+//             } catch (error) {
+//                 console.error("Error creating transaction:", error);
+//                 return null;
+//             }
+//         }
+//     } catch (error) {
+//         console.error("Error creating initTransactionOnServer:", error);
+//         return null;
+//     }
+// }
+
 
 async function _getTransactionData(transactionData) {
     if ('code' in transactionData) {
@@ -133,7 +135,6 @@ async function chunkDecode(chunks) {
 
     return resultText;
 }
-
 async function bringCode(dataTxid) {
     const txInfo = await getTransactionInfoOnServer(dataTxid);
 
@@ -145,7 +146,24 @@ async function bringCode(dataTxid) {
     let before_tx = tail_tx;
 
     if (type_field == "image") {
-        const result = await getTransactionInfoOnServerResult(dataTxid);
+        while (before_tx != "Genesis") {
+            if (before_tx != undefined) {
+                const chunk = await getTransactionInfoOnServer(before_tx);
+                if (chunk == undefined) {
+                    console.log("No chunk found.");
+                    return false;
+                }
+                let chunkData = await _getTransactionData(chunk)
+                console.log(chunkData);
+                encodedChunks.push(chunkData.data);
+                before_tx = chunkData.before_tx;
+            } else {
+                console.error("before data undefined")
+                return;
+            }
+        }
+        let finalresult = null;
+        const result = await chunkDecode(encodedChunks.reverse());
 
         let width = extractValue(offset, 'width');
         if (width !== false) {
@@ -164,7 +182,23 @@ async function bringCode(dataTxid) {
         return asciiObj;
 
     } else if (type_field === "text" || type_field === "json") {
-        const result = await getTransactionInfoOnServerResult(dataTxid);
+        while (before_tx !== "Genesis") {
+            if (before_tx !== undefined) {
+                const chunk = await getTransactionInfoOnServer(before_tx);
+                if (chunk === undefined) {
+                    console.log("No chunk found.");
+                    return false;
+                }
+
+                let chunkData = await _getTransactionData(chunk);
+                console.log(chunkData);
+                encodedChunks.push(chunkData.data.code);
+                before_tx = chunkData.before_tx;
+            } else {
+                console.error("before data undefined")
+                return;
+            }
+        }
         const width = 0;
         const textList = encodedChunks.reverse();
         const textData = textList.join();
@@ -182,6 +216,7 @@ async function bringCode(dataTxid) {
 
 
 }
+
 
 async function bringType(dataTxid) {
     const txInfo = await getTransactionInfoOnServer(dataTxid);
