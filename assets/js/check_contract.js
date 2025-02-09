@@ -34,7 +34,25 @@ async function getTransactionInfoOnServerResult(txId) {
         return null;
     }
 }
+async function getTransactionInfoOnServer(txId) {
+    try {
+        const response = await fetch(host + `/get_transaction_info/${txId}`);
+        if (response.ok) {
+            try {
+                const data = await response.json();
 
+                return data.argData;
+            } catch (error) {
+                console.error('Error creating transaction:', error);
+                return null;
+            }
+        }
+    } catch (error) {
+        console.error('Error creating initTransactionOnServer:', error);
+        return null;
+    }
+
+};
 
 async function _getTransactionData(transactionData) {
     if ('code' in transactionData) {
