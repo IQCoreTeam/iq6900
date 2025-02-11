@@ -462,7 +462,7 @@ html, body {
     overflow: hidden;
 }
 
-.contents_input > img {
+.upload_img_logo {
     opacity: 0.153;
     width: 3rem;
     margin: 1rem;
@@ -1818,7 +1818,7 @@ input[type=checkbox] {
         color: #2BD52D;
     }
 
-    .contents_input > img {
+    .upload_img_logo{
         opacity: 0.153;
         width: 5.4rem;
         margin: 1rem;
