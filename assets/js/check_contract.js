@@ -580,7 +580,7 @@ async function seeTransaction(txid) {
         const fontsize = $(".coded_in_ascii").width() / parseInt(asciiObj.width);
 
         if (Mobile()){
-           const line_height = fontsize * 1.4;
+           const line_height = fontsize * 1.3;
             $(".coded_in_ascii").css("line-height", line_height.toString() + "px");
 
         } else {
