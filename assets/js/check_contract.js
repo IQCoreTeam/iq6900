@@ -16,6 +16,42 @@ async function getDBPDA(userKey) {
         console.error('Error fetching DBPDA:', error);
     }
 }
+
+async function getCacheFromServer(txId, merkleRoot) {
+    const url = `${host}/getCache?txId=${encodeURIComponent(txId)}&merkleRoot=${encodeURIComponent(merkleRoot)}`;
+    try {
+        const response = await fetch(url);
+        if (response.ok) {
+            return await response.text();
+        } else {
+            console.error('Error fetching cache data:', response.statusText);
+            return null;
+        }
+    } catch (error) {
+        console.error('Request failed:', error);
+        return null;
+    }
+}
+
+async function getTransactionInfoOnServerResult(txId) {
+    try {
+        const response = await fetch(host + `/get_transaction_result/${txId}`);
+        if (response.ok) {
+            try {
+                const data = response.text();
+
+                return data;
+            } catch (error) {
+                console.error("Error creating transaction:", error);
+                return null;
+            }
+        }
+    } catch (error) {
+        console.error("Error creating initTransactionOnServer:", error);
+        return null;
+    }
+}
+
 async function getTransactionInfoOnServer(txId) {
     try {
         const response = await fetch(host + `/get_transaction_info/${txId}`);
@@ -34,27 +70,7 @@ async function getTransactionInfoOnServer(txId) {
         return null;
     }
 
-}
-
-// async function getTransactionInfoOnServerResult(txId) {
-//     try {
-//         const response = await fetch(host + `/get_transaction_result/${txId}`);
-//         if (response.ok) {
-//             try {
-//                 const data = response.text();
-//
-//                 return data;
-//             } catch (error) {
-//                 console.error("Error creating transaction:", error);
-//                 return null;
-//             }
-//         }
-//     } catch (error) {
-//         console.error("Error creating initTransactionOnServer:", error);
-//         return null;
-//     }
-// }
-
+};
 
 async function _getTransactionData(transactionData) {
     if ('code' in transactionData) {
@@ -135,9 +151,13 @@ async function chunkDecode(chunks) {
 
     return resultText;
 }
+function isMerkleRoot(str) {
+    const base58Alphabet = /^[1-9A-HJ-NP-Za-km-z]+$/;
+    return base58Alphabet.test(str) && str.length === 44;
+}
 async function bringCode(dataTxid) {
     const txInfo = await getTransactionInfoOnServer(dataTxid);
-
+    const blockTime = txInfo.blockTime;
     const tail_tx = txInfo.tail_tx;
     const offset = txInfo.offset;
     const type_field = txInfo.type_field;
@@ -146,32 +166,25 @@ async function bringCode(dataTxid) {
     let before_tx = tail_tx;
 
     if (type_field == "image") {
-        while (before_tx != "Genesis") {
-            if (before_tx != undefined) {
-                const chunk = await getTransactionInfoOnServer(before_tx);
-                if (chunk == undefined) {
-                    console.log("No chunk found.");
-                    return false;
-                }
-                let chunkData = await _getTransactionData(chunk)
-                console.log(chunkData);
-                encodedChunks.push(chunkData.data);
-                before_tx = chunkData.before_tx;
-            } else {
-                console.error("before data undefined")
-                return;
-            }
+        let result = "";
+        if(isMerkleRoot(offset)) {
+            result = await getCacheFromServer(dataTxid, offset);
         }
-        let finalresult = null;
-        const result = await chunkDecode(encodedChunks.reverse());
-
+        else{
+            result = await getTransactionInfoOnServerResult(dataTxid);
+        }
         let width = extractValue(offset, 'width');
         if (width !== false) {
             finalresult = await addLines(result, width);
+
         } else {
             const header_check = processString(result);
             width = extractValue(header_check.header, 'width');
-            finalresult = await addLines(header_check.content, width);
+            if (!header_check.content.includes("\n")) {
+                finalresult = await addLines(header_check.content, width);
+            }else{
+                finalresult = header_check.content
+            }
         }
 
         const asciiObj = {
@@ -182,33 +195,22 @@ async function bringCode(dataTxid) {
         return asciiObj;
 
     } else if (type_field === "text" || type_field === "json") {
-        while (before_tx !== "Genesis") {
-            if (before_tx !== undefined) {
-                const chunk = await getTransactionInfoOnServer(before_tx);
-                if (chunk === undefined) {
-                    console.log("No chunk found.");
-                    return false;
-                }
-
-                let chunkData = await _getTransactionData(chunk);
-                console.log(chunkData);
-                encodedChunks.push(chunkData.data.code);
-                before_tx = chunkData.before_tx;
-            } else {
-                console.error("before data undefined")
-                return;
-            }
+        let result = "";
+        if(isMerkleRoot(offset)) {
+            result = await getCacheFromServer(dataTxid, offset);
+        }
+        else{
+            result = await getTransactionInfoOnServerResult(dataTxid);
         }
         const width = 0;
-        const textList = encodedChunks.reverse();
-        const textData = textList.join();
-        let finalresult = convertTextToEmoji(textData);
+        let finalResult = convertTextToEmoji(result);
 
         const asciiObj = {
-            ascii_string: finalresult,
+            ascii_string: finalResult,
             width: width,
             type: type_field
         };
+
         return asciiObj;
     } else {
         return false;
@@ -216,7 +218,6 @@ async function bringCode(dataTxid) {
 
 
 }
-
 
 async function bringType(dataTxid) {
     const txInfo = await getTransactionInfoOnServer(dataTxid);
@@ -432,9 +433,45 @@ async function clickItems(event) {
     }
     await seeTransaction(tx);
 }
+async function publicSearch() {
+    $(".bump").css("display", "none");
+    try {
+
+        $(".goto_all_records").css("display", "flex");
+        $(".see_code_in").css("display", "none");
+
+        $(".loading").css('display', 'flex');
+        imported_signature = []
+        let IQContractKeyString = "GbgepibVcKMbLW6QaFrhUGG34WDvJ2SKvznL2HUuquZh";
+        const IQContractKey = new solanaWeb3.PublicKey(IQContractKeyString);
+        const before = await fetchDataSignatures(IQContractKey);
+        if (Array.isArray(imported_signature) && imported_signature.length === 0) {
+            $(".loading").css('display', 'none');
+            alert("You haven't coded in yet.");
+            return false;
+        }
+
+        await makeTxItems(imported_signature)
+
+        $(".coded_in_text").css("display", "none");
+        $(".see_code_in").css("display", "none");
+        $(".records_list").css("display", "flex");
+
+        $(".loading").css('display', 'none');
+
+        $(".go_old").on('click', async function () {
+            await bringOld(IQContractKey, before);
+        });
+
+        $(".go_old").css("opacity", "1");
+
+    } catch (err) {
+        console.error(err);
+    }
+}
 
 async function walletSearch(address = "") {
-
+    $(".bump").css("display", "none");
     try {
         if (address == "") {
             address = $("#search").val();
@@ -509,19 +546,20 @@ function createTwitterIntent(text) {
 }
 
 async function seeTransaction(txid) {
+    $(".bump").css("display", "none");
     $(".coded_in_ascii").text("");
     $(".coded_in_text").text("");
     $(".records_list").css("display", "none");
     $(".loading").css("display", "flex");
 
     const asciiObj = await bringCode(txid);
-    if (asciiObj == false) {
+    if (asciiObj === false) {
+        $(".loading").css("display", "none");
+
         const _ascii_string = "404 not found";
         $(".coded_in_text").text(_ascii_string);
-
-        $(".see_code_in").css("display", "flex");
         $(".coded_in_text").css("display", "flex");
-
+        $(".see_code_in").css("display", "flex");
         return false;
     }
     if (asciiObj.type == "image") {
@@ -566,3 +604,7 @@ async function seeTransaction(txid) {
 
 
 }
+
+
+
+

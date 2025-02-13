@@ -12,5 +12,5 @@ $(document).ready(function() {
     if (txid) {
         $.onchainPage.init();
     }
-    init_connect()
+
 });

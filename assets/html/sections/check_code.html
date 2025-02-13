@@ -6,7 +6,7 @@
         <p>Check Record</p>
     </div>
 </div>
-<div class="loading" >
+<div class="loading">
     <img src="img/3d_logo.gif">
 </div>
 <div class="bump" style="height: 20rem"></div>
@@ -33,7 +33,7 @@
         <div class="goto_all_records" onclick="back()"><p>All records</p></div>
 
         <div class="record">
-        <pre class="coded_in_text"></pre>
+            <pre class="coded_in_text"></pre>
             <pre class="coded_in_ascii"></pre>
             <div class=" coded_page_bottom_menu">
                 <div class="row_flex coded_page_sig">
@@ -63,31 +63,37 @@
 
         $(".records_list").css("display", "flex");
     }
-    async function check_button(txId = ''){
-        $(".bump").css("display", "none");
 
-        if(txId === ''){
+    async function check_button(txId = '') {
+        $(".bump").css("display", "none");
+        $(".records").css("display", "none");
+
+        if (txId === '') {
             const search = $("#search").val();
             $('#search').val("");
+
             if (search.length > 40 && search.length < 48) {
                 await walletSearch(search);
             } else if (search.length > 80 && search.length < 100) {
                 await seeTransaction(search);
-            }else{
+            } else if (search === "public search") {
+                await publicSearch();
+            } else {
                 if ($(".after_connect:visible").length === 0) {
                     return false;
-                }else{
+                } else {
                     await walletSearch();
                 }
             }
 
-        }else {
+        } else {
             if (txId.length > 40 && txId.length < 48) {
                 await walletSearch(txId);
             } else if (txId !== "" && txId.length > 80) {
                 await seeTransaction(txId)
             }
         }
+        $(".records").css("display", "flex");
 
     }
 </script>

@@ -1,89 +1,90 @@
-<div class="check_menus">
-    <div class="check_menu" style="transform: translateX(-1rem)">
-        <input class="check_box" type="radio" id="checkbox_image" name="code-in_menu" checked/>
-        <label for="checkbox_image">Upload Image</label>
-    </div>
-    <div class="check_menu">
-        <input class="check_box" type="radio" id="checkbox_text" name="code-in_menu"/>
-        <label for="checkbox_text">Inscribe Text</label>
-    </div>
-</div>
-<div class="upload_image">
-    <div class="contents_input">
 
-
-        <label for="imageUpload_For_Text" class="custom-file-upload">
-            <img class="upload_img_logo" src="img/img_logo_white.svg">
-            <a class="file-name">Select Image</a>
-        </label>
-
-        <input
-                type="file"
-                id="imageUpload_For_Text"
-                accept="image/*"
-                style="display: none"
-        />
+    <div class="check_menus">
+        <div class="check_menu" style="transform: translateX(-1rem)">
+            <input class="check_box" type="radio" id="checkbox_image" name="code-in_menu" checked/>
+            <label for="checkbox_image">Upload Image</label>
+        </div>
+        <div class="check_menu">
+            <input class="check_box" type="radio" id="checkbox_text" name="code-in_menu"/>
+            <label for="checkbox_text">Inscribe Text</label>
+        </div>
     </div>
-    <div class="generate_result">
-        <pre class="generate_result_txt"></pre>
-    </div>
-    <p id='asciiWidth' style="display: none;"></p>
-</div>
+    <div class="upload_image">
+        <div class="contents_input">
 
-<div class="row_flex space_between center font_manage" style="padding-left: 1rem;padding-right: 1rem">
-    <p class="font_size">Font size</p>
-    <div class="row_flex center">
-        <input type='button'
-               class="arrow_button left_arrow"
-               onclick="
+            <label for="imageUpload_For_Text" class="custom-file-upload">
+                <img class="upload_img_logo" src="img/img_logo_white.svg">
+                <a class="file-name">Select Image</a>
+            </label>
+
+            <input
+                    type="file"
+                    id="imageUpload_For_Text"
+                    accept="image/*"
+                    style="display: none"
+            />
+        </div>
+        <div class="generate_result">
+            <pre class="generate_result_txt"></pre>
+        </div>
+        <p id='asciiWidth' style="display: none;"></p>
+    </div>
+
+    <div class="row_flex space_between center font_manage" style="padding-left: 1rem;padding-right: 1rem">
+        <p class="font_size">Font size</p>
+        <div class="row_flex center">
+            <input type='button'
+                   class="arrow_button left_arrow"
+                   onclick="
                        const number = parseInt($('.input_number').val());
                        if(number>5)
                        $('.input_number').val(number-1)
                         "
-        />
+            />
 
-        <input type="number" class='input_number font_input' min="5" max="50" value="13" readonly>
+            <input type="number" class='input_number font_input' min="5" max="50" value="13" readonly>
 
-        <input type='button'
-               class="arrow_button right_arrow"
-               onclick="
+            <input type='button'
+                   class="arrow_button right_arrow"
+                   onclick="
                        const number = parseInt($('.input_number').val());
                        if(number<50)
                        $('.input_number').val(number+1)
                         "
-        />
-    </div>
-</div>
-
-<div class="inscribe_text" style="display: none;flex-direction: column;">
-    <div class="contents_input">
-        <label>
-            <textarea class="type_in"></textarea>
-        </label>
-    </div>
-    <div class="green_button code_in_button" onclick="codeIn()">
-        <p class="code_in_button_p">Code-In</p>
-    </div>
-</div>
-
-<div class="after_gen">
-    <div class="green_button re_gen" onclick="Generate_image_text()">
-        <p style="color: #989898">Re-Generate</p>
-    </div>
-
-    <div class="green_button code_in_button" onclick="codeIn()">
-        <p class="code_in_button_p">Code-In</p>
-    </div>
-</div>
-
-
-<div class="progress_div column_flex center ">
-
-    <div class="progress">
-        <div class="progress-bar">
+            />
         </div>
     </div>
-    <p class="progress_status">Processing..</p>
-</div>
 
-<p class="info">* Data kept forever, can't be deleted.</p>
+    <div class="inscribe_text" style="display: none;flex-direction: column;">
+        <div class="contents_input">
+            <label>
+                <textarea class="type_in"></textarea>
+            </label>
+        </div>
+        <div class="green_button code_in_button" onclick="codeIn()">
+            <p class="code_in_button_p">Code-In</p>
+        </div>
+    </div>
+
+    <div class="after_gen">
+        <div class="green_button re_gen" onclick="Generate_image_text()">
+            <p style="color: #989898">Re-Generate</p>
+        </div>
+
+        <div class="green_button code_in_button" onclick="codeIn()">
+            <p class="code_in_button_p">Code-In</p>
+        </div>
+    </div>
+
+
+    <div class="progress_div column_flex center ">
+
+        <div class="progress">
+            <div class="progress-bar">
+            </div>
+        </div>
+        <p class="progress_status">Processing..</p>
+    </div>
+
+    <p class="info">* Data kept forever, can't be deleted.</p>
+

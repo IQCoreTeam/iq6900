@@ -1,7 +1,7 @@
-<script type="text/javascript" src="js/sections/pages/check_section.js?ver=20241244"></script>
-<script type="text/javascript" src="js/sections/pages/code_in_section.js?ver=20241244"></script>
-<script type="text/javascript" src="js/art_generate_text.js?ver=20250209"></script>
-<script type="text/javascript" src="js/sections/pages/onchain_init.js?ver=20250210"></script>
+<script type="text/javascript" src="js/sections/pages/check_section.js?ver=20250213"></script>
+<script type="text/javascript" src="js/sections/pages/code_in_section.js?ver=20250213"></script>
+<script type="text/javascript" src="js/art_generate_text.js?ver=20250213"></script>
+<script type="text/javascript" src="js/sections/pages/onchain_init.js?ver=20250213"></script>
 
 <div class="background_div">
     <div class="on_chain_page_dog_pc">
@@ -14,7 +14,7 @@
 
 <div class="nav_bar row_flex nav_bar_mobile">
     <div class="row_flex">
-        <img class="nav_title" onclick="$.mainPage.init()" src="img/text_logo.svg" alt="iq6900">
+        <img class="nav_title" onclick="$.mainPage.init()" src="img/text_logo.png" alt="iq6900">
         <img class="nav_menu_arrow" onclick="navigator_on()" src="img/down.svg">
     </div>
     <div class="nav_connect before_connect" onclick="nav_connect()">
@@ -203,7 +203,7 @@
                 $(".inscribe_text").css("display", "none");
                 $(".upload_image").css("display", "flex");
                 $(".font_manage").css("display", "flex");
-
+                $(".after_gen").css("display", "none");
             }
         });
         $("#checkbox_text").change(function () {

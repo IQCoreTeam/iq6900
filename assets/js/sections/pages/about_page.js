@@ -6,7 +6,7 @@
     function aboutPage() {
         let $aboutPageElement;
         let $wWidth = screen.width;
-        const $aboutPageTemplateUrl = "./html/sections/about_page.html?ver=20250209";
+        const $aboutPageTemplateUrl = "./html/sections/about_page.html?ver=20250213";
         function init(txid = '') {
             loadAboutPageTemplate(txid);
         }

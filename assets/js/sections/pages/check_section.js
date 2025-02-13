@@ -6,7 +6,7 @@
     function checkSection() {
         let $checkSectionElement;
         let $wWidth = screen.width;
-        const $checkSectionTemplateUrl = "./html/sections/check_code.html?ver=20250209";
+        const $checkSectionTemplateUrl = "./html/sections/check_code.html?ver=20250213";
         function init(txid = '') {
             loadCheckSectionTemplate(txid);
         }
