@@ -182,6 +182,9 @@ async function bringCode(dataTxid) {
                 finalresult = await addLines(result, width);
             } else {
                 const header_check = processString(result);
+                if (header_check.header == null) {
+                    return false;
+                }
                 width = extractValue(header_check.header, 'width');
                 if (!header_check.content.includes("\n")) {
                     finalresult = await addLines(header_check.content, width);
