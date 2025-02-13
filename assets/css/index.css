@@ -1121,7 +1121,7 @@ html, body {
 .coded_in_ascii {
     display: none;
     letter-spacing: 0.4em;
-    /*line-height: 98%;*/
+    line-height: 1em;
     font-family: IBMPlexMonoLight, monospace;
     color: #2BD52D;
     width: 34rem;
@@ -2155,6 +2155,7 @@ input[type=checkbox] {
     .coded_in_ascii {
         display: none;
         letter-spacing: 0.4em;
+        line-height: 1em;
         font-family: IBMPlexMonoLight, monospace;
         color: #2BD52D;
         width: 55.3rem;
