@@ -546,7 +546,9 @@ async function walletSearch(address = "") {
         console.error(err);
     }
 }
-
+function Mobile(){
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
 function createTwitterIntent(text) {
     const baseUrl = "https://twitter.com/intent/tweet";
     const encodedText = encodeURIComponent(text); // 텍스트를 URL에 사용할 수 있도록 인코딩
@@ -576,6 +578,15 @@ async function seeTransaction(txid) {
 
         $(".coded_in_ascii").css("display", "flex");
         const fontsize = $(".coded_in_ascii").width() / parseInt(asciiObj.width);
+
+        if (Mobile()){
+           const line_height = fontsize * 1.4;
+            $(".coded_in_ascii").css("line-height", line_height.toString() + "px");
+
+        } else {
+            $(".coded_in_ascii").css("line-height", fontsize.toString() + "px");
+        }
+
         $(".coded_in_ascii").css("font-size", fontsize.toString() + "px");
         $(".coded_in_ascii").text(asciiObj.ascii_string);
 
