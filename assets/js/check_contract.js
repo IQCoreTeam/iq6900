@@ -174,10 +174,12 @@ async function bringCode(dataTxid) {
             } else {
                 result = await getTransactionInfoOnServerResult(dataTxid);
             }
+            if (!result) {
+                return false;
+            }
             let width = extractValue(offset, 'width');
             if (width !== false) {
                 finalresult = await addLines(result, width);
-
             } else {
                 const header_check = processString(result);
                 width = extractValue(header_check.header, 'width');
