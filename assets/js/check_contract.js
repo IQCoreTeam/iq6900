@@ -151,10 +151,12 @@ async function chunkDecode(chunks) {
 
     return resultText;
 }
+
 function isMerkleRoot(str) {
     const base58Alphabet = /^[1-9A-HJ-NP-Za-km-z]+$/;
     return base58Alphabet.test(str) && str.length === 44;
 }
+
 async function bringCode(dataTxid) {
     const txInfo = await getTransactionInfoOnServer(dataTxid);
     const blockTime = txInfo.blockTime;
@@ -164,58 +166,58 @@ async function bringCode(dataTxid) {
 
     const encodedChunks = []
     let before_tx = tail_tx;
-
-    if (type_field == "image") {
-        let result = "";
-        if(isMerkleRoot(offset)) {
-            result = await getCacheFromServer(dataTxid, offset);
-        }
-        else{
-            result = await getTransactionInfoOnServerResult(dataTxid);
-        }
-        let width = extractValue(offset, 'width');
-        if (width !== false) {
-            finalresult = await addLines(result, width);
-
-        } else {
-            const header_check = processString(result);
-            width = extractValue(header_check.header, 'width');
-            if (!header_check.content.includes("\n")) {
-                finalresult = await addLines(header_check.content, width);
-            }else{
-                finalresult = header_check.content
+    if (type_field) {
+        if (type_field === "image") {
+            let result = "";
+            if (isMerkleRoot(offset)) {
+                result = await getCacheFromServer(dataTxid, offset);
+            } else {
+                result = await getTransactionInfoOnServerResult(dataTxid);
             }
+            let width = extractValue(offset, 'width');
+            if (width !== false) {
+                finalresult = await addLines(result, width);
+
+            } else {
+                const header_check = processString(result);
+                width = extractValue(header_check.header, 'width');
+                if (!header_check.content.includes("\n")) {
+                    finalresult = await addLines(header_check.content, width);
+                } else {
+                    finalresult = header_check.content
+                }
+            }
+
+            const asciiObj = {
+                ascii_string: finalresult,
+                width: width,
+                type: type_field,
+            };
+            return asciiObj;
+
+        } else if (type_field === "text" || type_field === "json") {
+            let result = "";
+            if (isMerkleRoot(offset)) {
+                result = await getCacheFromServer(dataTxid, offset);
+            } else {
+                result = await getTransactionInfoOnServerResult(dataTxid);
+            }
+            const width = 0;
+            let finalResult = convertTextToEmoji(result);
+
+            const asciiObj = {
+                ascii_string: finalResult,
+                width: width,
+                type: type_field
+            };
+
+            return asciiObj;
+        } else {
+            return false;
         }
-
-        const asciiObj = {
-            ascii_string: finalresult,
-            width: width,
-            type: type_field,
-        };
-        return asciiObj;
-
-    } else if (type_field === "text" || type_field === "json") {
-        let result = "";
-        if(isMerkleRoot(offset)) {
-            result = await getCacheFromServer(dataTxid, offset);
-        }
-        else{
-            result = await getTransactionInfoOnServerResult(dataTxid);
-        }
-        const width = 0;
-        let finalResult = convertTextToEmoji(result);
-
-        const asciiObj = {
-            ascii_string: finalResult,
-            width: width,
-            type: type_field
-        };
-
-        return asciiObj;
     } else {
         return false;
     }
-
 
 }
 
@@ -433,6 +435,7 @@ async function clickItems(event) {
     }
     await seeTransaction(tx);
 }
+
 async function publicSearch() {
     $(".bump").css("display", "none");
     try {
