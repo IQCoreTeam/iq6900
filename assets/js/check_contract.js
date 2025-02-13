@@ -577,6 +577,7 @@ async function seeTransaction(txid) {
         $(".coded_in_ascii").css("display", "flex");
         const fontsize = $(".coded_in_ascii").width() / parseInt(asciiObj.width);
         $(".coded_in_ascii").css("font-size", fontsize.toString() + "px");
+        $(".coded_in_ascii").css("line-height", fontsize.toString() + "px");
         $(".coded_in_ascii").text(asciiObj.ascii_string);
 
         $(".see_code_in").css("display", "flex");

@@ -6,7 +6,7 @@
     function generatePage() {
         let $generatePageElement;
         let $wWidth = screen.width;
-        const $generatePageTemplateUrl = "./html/sections/generate_page.html?ver=20250213";
+        const $generatePageTemplateUrl = "./html/sections/generate_page.html?ver=20250209";
         function init() {
             loadGeneratePageTemplate();
         }
