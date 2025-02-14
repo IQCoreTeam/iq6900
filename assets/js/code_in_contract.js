@@ -354,7 +354,65 @@ async function makeAllTransactions(userKeyStr, chunkSize, chunkList, handle, typ
     await sleep(1000);
     return resultHash;
 }
+async function LoveIn() {
+    if (window.solana && window.solana.isPhantom) {
+        try {
+            $('.info').text("");
+            $('.type_in').prop('disabled', true);
+            $('.code_in_button').css('display', 'none');
+            $('.progress_div').css("display", "flex");
+            const provider = await getProvider();
+            const resp = await provider.connect();
+            const connection = new solanaWeb3.Connection(network);
+            const userkey = await resp.publicKey;
+            const useKeyString = userkey.toString()
+            const handle = "anonymous"; // edit with twitter api
+            const from = $('.from').val();
+            const to = $('.to').val();
 
+            const message = $('.type_in').val();
+            const emoji_text = emojiToText(message)
+            const byteLength = getByteLength(message)
+
+            if (message === ''||from===''||to==='') {
+                return false;
+            } else if (byteLength > textInLimit) {
+                alert("Please Type less then: " + textInLimit.toString());
+                alert("Your Text's length: " + byteLength);
+                return false;
+            }
+            const letter = {
+                from: from,
+                to: to,
+                message: emoji_text,
+            };
+            const jsonString = JSON.stringify(letter);
+
+            const chunks = await _getChunk_ForText(jsonString, contractChunkSize);
+            const chunkSize = chunks.length;
+
+            const merkleRoot = await getMerkleRootFromServer(chunks);
+            console.log(merkleRoot);
+            const offset = merkleRoot;
+            const dataType = "love_letter";
+            const result = await makeTextTransactions(useKeyString, chunkSize, chunks, handle, dataType, offset);
+            console.log(result);
+            let IQContractKeyString = "GbgepibVcKMbLW6QaFrhUGG34WDvJ2SKvznL2HUuquZh";
+            updateTxListToServer(IQContractKeyString, "love_letter")
+
+            $('.progress_div').css("display", "none");
+            $('.code_in_button_p').text("Check My Data");
+            $('.code_in_button').attr("onclick", "goto_viewer()");
+            $('.code_in_button').css("display", "block");
+            $('.info').text("Tx: "+result.slice(0,10)+"...<br> It might take about 2 minutes to fully get onto the block, Please wait and check.");
+
+        } catch (error) {
+            console.error("Error signing or sending transaction: ", error);
+        }
+    } else {
+        console.log("Phantom wallet is not connected.");
+    }
+}
 async function textCodeIn() {
     if (window.solana && window.solana.isPhantom) {
         try {
@@ -393,6 +451,9 @@ async function textCodeIn() {
 
             const result = await makeTextTransactions(useKeyString, chunkSize, chunks, handle, dataType, offset);
             console.log(result);
+            let IQContractKeyString = "GbgepibVcKMbLW6QaFrhUGG34WDvJ2SKvznL2HUuquZh";
+            updateTxListToServer(IQContractKeyString, "SolanaInternet")
+
             $('.progress_div').css("display", "none");
             $('.code_in_button_p').text("Check My Data");
 
@@ -400,6 +461,7 @@ async function textCodeIn() {
 
             $('.code_in_button').css("display", "block");
             $('.info').text("Tx: "+result.slice(0,10)+"...<br> It might take about 2 minutes to fully get onto the block, Please wait and check.");
+
         } catch (error) {
             console.error("Error signing or sending transaction: ", error);
         }
@@ -435,6 +497,8 @@ async function asciiCodeIn() {
 
             const result = await makeAllTransactions(useKeyString, chunkSize, chunkList, handle, dataType, offset);
             console.log(result);
+            let IQContractKeyString = "GbgepibVcKMbLW6QaFrhUGG34WDvJ2SKvznL2HUuquZh";
+            updateTxListToServer(IQContractKeyString, "SolanaInternet")
 
             $('.progress_div').css("display", "none");
             $('.code_in_button_p').text("Check My Data");

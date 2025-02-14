@@ -33,6 +33,33 @@ async function getCacheFromServer(txId, merkleRoot) {
     }
 }
 
+async function getCacheListFromServer(targetName, dataType, lastId = "null") {
+    const url = new URL(host + "/getTxList"); // 서버 URL
+    const params = {
+        targetName: targetName,
+        dataType: dataType,
+        lastId: lastId,
+    };
+    // URL에 쿼리 파라미터 추가
+    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+    try {
+        const response = await fetch(url, {
+            method: "GET", // GET 요청
+            headers: {
+                "Content-Type": "application/json", // JSON 형식
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Failed to get Merkle Root:", error.message);
+        throw error;
+    }
+}
+
 async function getTransactionInfoOnServerResult(txId) {
     try {
         const response = await fetch(host + `/get_transaction_result/${txId}`);
@@ -70,6 +97,34 @@ async function getTransactionInfoOnServer(txId) {
         return null;
     }
 
+}
+
+const updateTxListToServer = async (targetName, dataType) => {
+    const url = host + "/update-tx-list"; // 서버 URL
+
+    const requestData = {
+        targetName: targetName,
+        dataType: dataType,
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: "POST", // POST 요청
+            headers: {
+                "Content-Type": "application/json", // JSON 형식
+            },
+            body: JSON.stringify(requestData), // 요청 본문에 데이터 전송
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+
+        return await response.json(); // 응답 데이터 반환
+    } catch (error) {
+        console.error("Failed to update transaction list:", error.message);
+        throw error; // 오류 처리
+    }
 };
 
 async function _getTransactionData(transactionData) {
@@ -200,7 +255,7 @@ async function bringCode(dataTxid) {
             };
             return asciiObj;
 
-        } else if (type_field === "text" || type_field === "json") {
+        } else if (type_field === "text" || type_field === "json" || type_field === "love_letter") {
             let result = "";
             if (isMerkleRoot(offset)) {
                 result = await getCacheFromServer(dataTxid, offset);
@@ -215,7 +270,6 @@ async function bringCode(dataTxid) {
                 width: width,
                 type: type_field
             };
-
             return asciiObj;
         } else {
             return false;
@@ -281,11 +335,11 @@ async function getOldValues(array, value) {
     const index = array.indexOf(value);
     if (index === -1) return [];
 
-    const end = Math.min(array.length, index + MAXCOUNT + 1);
-    return array.slice(index + 1, end);
+    return array.slice(index + 1, index + 1 + MAXCOUNT);
 }
 
-async function bringAfter(db_pda_address, datapoint) {
+async function bringAfter(target, type, datapoint) {
+
     const signatures = await getAfterValues(imported_signature, datapoint);
     $(".go_recent").off('click')
     if (signatures.length > 0) {
@@ -305,39 +359,60 @@ async function bringAfter(db_pda_address, datapoint) {
 
             $(".go_recent").css("cursor", "pointer");
             $(".go_recent").off('click').on('click', async function () {
-                await bringAfter(db_pda_address, firstPValue);
+                await bringAfter(target, type, firstPValue);
             });
         }
 
         $(".go_old").css("cursor", "pointer");
         $(".go_old").off('click').on('click', async function () {
-            await bringOld(db_pda_address, lastPValue);
+            await bringOldCache(target, type, lastPValue);
         });
         $(".go_old").css("opacity", "1");
     } else {
         $(".go_recent").css("opacity", "0.3");
     }
 }
+async function fetchAll(type) {
+    imported_signature = [];
+    let IQContractKeyString = "GbgepibVcKMbLW6QaFrhUGG34WDvJ2SKvznL2HUuquZh";
+    let lastId = "null"; // 처음에는 "null"로 시작
+    let hasMoreData = true; // 더 가져올 데이터가 있는지 확인
 
-async function bringOld(db_pda_address, before) {
-    let new_old = null;
-    $(".go_old").off('click');
+    while (hasMoreData) {
+        try {
+            // `lastId`를 올바르게 반영하여 요청
+            const list = await getCacheListFromServer(IQContractKeyString, type, lastId);
+            console.log("Fetched list:", list);
 
-    $(".go_old").css("opacity", "0.3");
+            if (Array.isArray(list) && list.length > 0) {
+                for (const item of list) {
+                    if (item._id && !imported_signature.includes(item._id)) {
+                        imported_signature.push(item._id); // 중복 방지 후 추가
+                    }
+                }
 
-    const lastPValue = $('.transactions_div  .transaction_div:last  .transaction:last .hidden_txt').text();
-    const lastElement = imported_signature[imported_signature.length - 1];
+                // ⭐ 여기서 `lastId`를 리스트의 마지막 `_id`로 업데이트
+                lastId = list[list.length - 1]._id;
+                console.log("Updated lastId:", lastId);
 
-    if (lastPValue === lastElement && before != null) {
-        $(".transactions_div").css("display", "none");
-        $(".loading_mini").css("display", "flex");
-
-        new_old = await fetchDataSignatures(db_pda_address, before);
-        console.log(new_old);
-        $(".transactions_div").css("display", "flex");
-        $(".loading_mini").css("display", "none");
+                // ⭐ 만약 100개보다 적으면 더 이상 데이터가 없다고 판단하고 종료
+                if (list.length < 100) {
+                    hasMoreData = false;
+                }
+            } else {
+                hasMoreData = false;
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            hasMoreData = false; // 에러 발생 시 루프 종료
+        }
     }
-    const signatures = await getOldValues(imported_signature, lastPValue)
+
+    console.log("All data fetched:", imported_signature);
+}
+async function bringOldCache(targetAddress, type, before) {
+
+    const signatures = await getOldValues(imported_signature, $('.transactions_div  .transaction_div:last  .transaction:last .hidden_txt').text())
     if (signatures.length > 0) {
         $('.transactions_div').empty();
 
@@ -345,33 +420,80 @@ async function bringOld(db_pda_address, before) {
         const pagenum = $(".current").text();
         $(".current").text(parseInt(pagenum) + 1)
 
-        if (signatures.length === MAXCOUNT) {
-            $(".go_old").off('click').on('click', async function () {
-                await bringOld(db_pda_address,
-                    $('.transactions_div .transaction_div:last .transaction:last .hidden_txt').text()
-                );
-            });
-            $(".go_old").css("cursor", "pointer");
-            $(".go_old").css("opacity", "1");
 
-        } else {
-            $(".go_old").css("opacity", "0.3");
+        $(".go_old").off('click').on('click', async function () {
+            await bringOldCache(targetAddress, type, imported_signature[imported_signature.length - 1]);
+        });
 
-        }
+        $(".go_old").css("cursor", "pointer");
+        $(".go_old").css("opacity", "1");
+
+
         $(".go_recent").css("opacity", "1");
         $(".go_recent").css("cursor", "pointer");
         $(".go_recent").off('click').on('click', async function () {
-            await bringAfter(db_pda_address,
+            await bringAfter(targetAddress, type,
                 $('.transactions_div .transaction_div:first .transaction:first .hidden_txt').text()
             );
         });
-
     } else {
         $(".go_old").css("opacity", "0.3");
-
     }
-
 }
+
+// async function bringOld(db_pda_address, before) {
+//     let new_old = null;
+//     $(".go_old").off('click');
+//
+//     $(".go_old").css("opacity", "0.3");
+//
+//     const lastPValue = $('.transactions_div  .transaction_div:last  .transaction:last .hidden_txt').text();
+//     const lastElement = imported_signature[imported_signature.length - 1];
+//
+//     if (lastPValue === lastElement && before != null) {
+//         $(".transactions_div").css("display", "none");
+//         $(".loading_mini").css("display", "flex");
+//
+//         new_old = await fetchDataSignatures(db_pda_address, before);
+//         console.log(new_old);
+//         $(".transactions_div").css("display", "flex");
+//         $(".loading_mini").css("display", "none");
+//     }
+//     const signatures = await getOldValues(imported_signature, lastPValue)
+//     if (signatures.length > 0) {
+//         $('.transactions_div').empty();
+//
+//         await makeTxItems(signatures);
+//         const pagenum = $(".current").text();
+//         $(".current").text(parseInt(pagenum) + 1)
+//
+//         if (signatures.length === MAXCOUNT) {
+//             $(".go_old").off('click').on('click', async function () {
+//                 await bringOld(db_pda_address,
+//                     $('.transactions_div .transaction_div:last .transaction:last .hidden_txt').text()
+//                 );
+//             });
+//             $(".go_old").css("cursor", "pointer");
+//             $(".go_old").css("opacity", "1");
+//
+//         } else {
+//             $(".go_old").css("opacity", "0.3");
+//
+//         }
+//         $(".go_recent").css("opacity", "1");
+//         $(".go_recent").css("cursor", "pointer");
+//         $(".go_recent").off('click').on('click', async function () {
+//             await bringAfter(
+//                 $('.transactions_div .transaction_div:first .transaction:first .hidden_txt').text()
+//             );
+//         });
+//
+//     } else {
+//         $(".go_old").css("opacity", "0.3");
+//
+//     }
+//
+// }
 
 async function makeTxItems(signatures) {
     let count = 0;
@@ -391,7 +513,7 @@ async function makeTxItems(signatures) {
         $transactionElement.append(
             $('<p>').addClass('hidden_txt').text(txid)
         );
-        if ($(".after_connect:visible").length === 0) {
+        if (Mobile()) {
             $transactionElement.append(
                 $('<p>').addClass('signature').text("***" + txid.slice(-6))
             );
@@ -433,7 +555,6 @@ async function makeTxItems(signatures) {
 
 async function clickItems(event) {
     const tx = $(event.currentTarget).find('.hidden_txt').text().trim();
-    console.log("Clicked TX:", tx); // 디버깅용 콘솔 로그
     if (!tx) {
         console.error("❌ Transaction ID not found!");
         return;
@@ -441,25 +562,81 @@ async function clickItems(event) {
     await seeTransaction(tx);
 }
 
-async function publicSearch() {
+async function initLoveLetter() {
     $(".bump").css("display", "none");
     try {
+
+
+        let IQContractKeyString = "GbgepibVcKMbLW6QaFrhUGG34WDvJ2SKvznL2HUuquZh";
 
         $(".goto_all_records").css("display", "flex");
         $(".see_code_in").css("display", "none");
 
         $(".loading").css('display', 'flex');
         imported_signature = []
-        let IQContractKeyString = "GbgepibVcKMbLW6QaFrhUGG34WDvJ2SKvznL2HUuquZh";
-        const IQContractKey = new solanaWeb3.PublicKey(IQContractKeyString);
-        const before = await fetchDataSignatures(IQContractKey);
+        const list = await getCacheListFromServer(IQContractKeyString, "love_letter");
+        if (Array.isArray(list)) {  // 데이터가 배열인지 확인
+            for (const item of list) {
+                if (item._id) {  // _id 필드가 있는지 확인
+                    imported_signature.push(item._id);  // _id 추가
+                }
+            }
+        }
+
         if (Array.isArray(imported_signature) && imported_signature.length === 0) {
             $(".loading").css('display', 'none');
             alert("You haven't coded in yet.");
             return false;
         }
-
         await makeTxItems(imported_signature)
+        $(".coded_in_text").css("display", "none");
+        $(".see_code_in").css("display", "none");
+        $(".records_list").css("display", "flex");
+
+        $(".loading").css('display', 'none');
+
+        $(".go_old").on('click', async function () {
+            await bringOldCache(IQContractKeyString, 'love_letter', imported_signature[imported_signature.length - 1]);
+
+        });
+
+        $(".go_old").css("opacity", "1");
+        await fetchAll('love_letter');
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function publicSearch() {
+    $(".bump").css("display", "none");
+    try {
+        let IQContractKeyString = "GbgepibVcKMbLW6QaFrhUGG34WDvJ2SKvznL2HUuquZh";
+
+
+        $(".goto_all_records").css("display", "flex");
+        $(".see_code_in").css("display", "none");
+
+        $(".loading").css('display', 'flex');
+
+        imported_signature = []
+        const list = await getCacheListFromServer(IQContractKeyString, "SolanaInternet");
+
+        if (Array.isArray(list)) {  // 데이터가 배열인지 확인
+            for (const item of list) {
+                if (item._id) {  // _id 필드가 있는지 확인
+                    imported_signature.push(item._id);  // _id 추가
+                }
+            }
+        }
+
+        if (Array.isArray(imported_signature) && imported_signature.length === 0) {
+            $(".loading").css('display', 'none');
+            alert("You haven't coded in yet.");
+            return false;
+        }
+        await makeTxItems(imported_signature.slice(0, 12));
+        // await makeTxItems(imported_signature)
 
         $(".coded_in_text").css("display", "none");
         $(".see_code_in").css("display", "none");
@@ -468,11 +645,11 @@ async function publicSearch() {
         $(".loading").css('display', 'none');
 
         $(".go_old").on('click', async function () {
-            await bringOld(IQContractKey, before);
+            await bringOldCache(IQContractKeyString, 'SolanaInternet', imported_signature[imported_signature.length - 1]);
         });
 
         $(".go_old").css("opacity", "1");
-
+        await fetchAll('SolanaInternet');
     } catch (err) {
         console.error(err);
     }
@@ -546,9 +723,11 @@ async function walletSearch(address = "") {
         console.error(err);
     }
 }
-function Mobile(){
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+function Mobile() {
+    return window.matchMedia("(max-width: 650px)").matches;
 }
+
 function createTwitterIntent(text) {
     const baseUrl = "https://twitter.com/intent/tweet";
     const encodedText = encodeURIComponent(text); // 텍스트를 URL에 사용할 수 있도록 인코딩
@@ -578,26 +757,29 @@ async function seeTransaction(txid) {
 
         $(".coded_in_ascii").css("display", "flex");
         const fontsize = $(".coded_in_ascii").width() / parseInt(asciiObj.width);
-
-        if (Mobile()){
-           const line_height = fontsize * 1.3;
-            $(".coded_in_ascii").css("line-height", line_height.toString() + "px");
-
-        } else {
-            $(".coded_in_ascii").css("line-height", fontsize.toString() + "px");
-        }
-
+        const asciiHeight = asciiObj.ascii_string.split("\n").length; // 엔터 개수로 세로 줄 개수 계산
+        const aspectRatio = asciiObj.width / asciiHeight;
         $(".coded_in_ascii").css("font-size", fontsize.toString() + "px");
+        $(".coded_in_ascii").css("aspect-ratio", aspectRatio);
+
         $(".coded_in_ascii").text(asciiObj.ascii_string);
 
         $(".see_code_in").css("display", "flex");
 
-    } else if (asciiObj.type == "text" || asciiObj.type == "json") {
+    } else if (asciiObj.type === "text" || asciiObj.type === "json") {
         $(".loading").css("display", "none");
 
 
         $(".coded_in_text").css("display", "flex");
         $(".coded_in_text").text(asciiObj.ascii_string);
+        $(".see_code_in").css("display", "flex");
+    } else if (asciiObj.type === "love_letter") {
+        $(".loading").css("display", "none");
+        const jsonObject = JSON.parse(asciiObj.ascii_string);
+        $(".from").text(jsonObject.from);
+        $(".to").text(jsonObject.to);
+        $(".message").text(jsonObject.message);
+        $(".love_letter").css("display", "flex");
         $(".see_code_in").css("display", "flex");
     }
     $('.coded_page_tx_id').text("***" + txid.slice(-6));

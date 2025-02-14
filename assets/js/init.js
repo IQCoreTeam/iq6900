@@ -1,4 +1,4 @@
-
+let loadOff = 1;
 function getQueryParams() {
     const urlParams = new URLSearchParams(window.location.search);
     return {

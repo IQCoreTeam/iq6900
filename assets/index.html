@@ -4,34 +4,49 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="css/fonts.css?ver=20250209"/>
-    <link rel="stylesheet" href="css/index.css?ver=20250218"/>
+    <link rel="stylesheet" href="css/index.css?ver=20250220"/>
+    <link rel="stylesheet" href="css/valentine.css?ver=20250220"/>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
     <script src="https://bundle.run/buffer@6.0.3"></script>
 
     <!--My js-->
+    <script type="text/javascript" src="js/sections/pages/code_in_hub_page.js?ver=20250210"></script>
     <script type="text/javascript" src="js/sections/pages/main_page.js?ver=20250209"></script>
     <script type="text/javascript" src="js/sections/pages/about_page.js?ver=20250209"></script>
+    <script type="text/javascript" src="js/sections/pages/love_page.js?ver=20250210"></script>
+    <script type="text/javascript" src="js/sections/pages/lovein_page.js?ver=20250210"></script>
+
     <script type="text/javascript" src="js/sections/pages/onchain_page.js?ver=20250209"></script>
     <script type="text/javascript" src="js/sections/pages/generate_page.js?ver=20250209"></script>
     <script type="text/javascript" src="js/init.js?ver=20250210"></script>
-    <script type="text/javascript" src="js/code_in_contract.js?ver=20250209"></script>
-    <script type="text/javascript" src="js/check_contract.js?ver=20250213"></script>
+    <script type="text/javascript" src="js/code_in_contract.js?ver=20250210"></script>
+    <script type="text/javascript" src="js/check_contract.js?ver=20250229"></script>
     <script type="text/javascript" src="js/compress.js?ver=20250209"></script>
     <script type="text/javascript" src="js/navigator.js?ver=20250209"></script>
+    <script type="text/javascript" src="js/effects/loading.js?ver=20250209"></script>
 
     <title>IQ6900</title>
     <link rel="icon" href="img/coinlogo.png"/>
 </head>
 <body>
+<div class="loading-screen center">
+    <img class="loading_img" src="img/solana_internet.svg">
+    <div class="loading-item center">
+        <div class="code-animation">
+            <span class="typing-text"></span>
+        </div>
+
+        <div id ="loading-bar" class="loading-bar"></div>
+    </div>
+</div>
 
 <div class="full_div column_flex">
     <div class="pc_menu">
         <div class="nav_bar row_flex">
             <img class="main_title  z-index_top" src="img/text_logo.png" alt="iq6900" onclick="$.mainPage.init()">
             <div class="row_flex ">
-
 
                 <div class="nav_connect z-index_top before_connect" style="display: flex" onclick="nav_connect()">
                     <div class="connect_button center ">
@@ -94,8 +109,12 @@
                     than regular on-chain storage.</h2>
             </div>
             <div class="main_buttons column_flex" style="background: black;box-shadow: 0 -2rem 2rem #000000;">
-                <div onclick=" $.onchainPage.init();" class="green_button">
+                <div onclick=" $.codeInHubPage.init();" class="green_button">
                     <p>Launch App</p>
+                </div>
+
+                <div onclick=" $.lovePage.init();" class="pink_button" >
+                    <p>Valentine Page<3</p>
                 </div>
 
                 <div class="img_button" onclick=" $.generatePage.init();">
