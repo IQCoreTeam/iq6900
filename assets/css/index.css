@@ -32,7 +32,7 @@ html, body {
 
 .letter_item {
     background-color: #000000;
-    color:white;
+    color: white;
     border: rgba(255, 255, 255, 0.11) solid 0.12rem;
     border-radius: 1rem;
     display: flex;
@@ -42,13 +42,16 @@ html, body {
     padding: 0 1rem;
 
 }
-.letter_item:focus{
+
+.letter_item:focus {
     outline: none;
 }
+
 .letter_item:hover {
     background-color: #1313133e;
     border: rgba(255, 255, 255, 0.177) solid 0.12rem;
 }
+
 /* Loading Screen */
 
 .loading-screen {
@@ -139,7 +142,10 @@ html, body {
     overflow: hidden;
     position: relative;
 }
-
+.loading-item{
+    display: flex;
+    flex-direction: column;
+}
 .loading-bar::after {
     content: "";
     display: block;
@@ -394,6 +400,9 @@ html, body {
     justify-items: center;
     align-items: center;
     z-index: 4;
+    display: flex;
+    justify-content: center;
+
 }
 
 .main_buttons {
@@ -1483,56 +1492,67 @@ input[type=checkbox] {
 .code_in_hub_title {
     width: 25rem;
 }
-.cupid_img{
+
+.cupid_img {
     width: 15rem;
 }
-.message{
+
+.message {
     text-align: center;
     font-size: 1.3rem;
     text-wrap: wrap;
     word-break: break-word;
 }
+
 .letter_menu_title {
     font-size: 2rem;
     color: green;
     margin: 0;
 }
-.letter_info{
+
+.letter_info {
     justify-content: space-between;
 }
-.letter_menu_item{
+
+.letter_menu_item {
     width: 4rem;
     height: 3rem;
     font-size: 1.3rem;
     margin: 0;
     word-break: break-all;
 }
+
 @media (max-width: 600px) {
-    .cupid_img{
+    .cupid_img {
         width: 25rem;
     }
-    .message{
+
+    .message {
         text-align: center;
         font-size: 2rem;
         text-wrap: wrap;
         word-break: break-word;
     }
+
     .letter_menu_title {
         font-size: 3rem;
         color: green;
         margin: 0;
     }
-    .letter_info{
+
+    .letter_info {
         justify-content: space-between;
     }
-    .letter_menu_item{
+
+    .letter_menu_item {
 
         width: 7rem;
-        height:10rem;
+        height: 10rem;
         font-size: 3rem;
         margin: 0;
         word-break: break-all;
     }
+
     .letter_menu {
         margin-top: 2rem;
         position: relative;
@@ -1546,7 +1566,7 @@ input[type=checkbox] {
 
     .letter_item {
         background-color: #000000;
-        color:white;
+        color: white;
         border: rgba(255, 255, 255, 0.11) solid 0.12rem;
         border-radius: 1rem;
         display: flex;
@@ -1558,13 +1578,16 @@ input[type=checkbox] {
         box-sizing: border-box;
 
     }
-    .letter_item:focus{
+
+    .letter_item:focus {
         outline: none;
     }
+
     .letter_item:hover {
         background-color: #1313133e;
         border: rgba(255, 255, 255, 0.177) solid 0.12rem;
     }
+
     /* Loading Screen */
     .loading-screen {
         display: none;
@@ -1576,6 +1599,11 @@ input[type=checkbox] {
         justify-items: center;
         text-align: center;
 
+    }
+
+    .loading-item {
+        display: flex;
+        flex-direction: column;
     }
 
     .loading_img {
@@ -2484,6 +2512,7 @@ input[type=checkbox] {
         margin-top: 2rem;
         transform: none;
     }
+
     .arrow_button {
         width: 5rem;
         height: 5rem;
