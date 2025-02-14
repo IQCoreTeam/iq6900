@@ -402,7 +402,7 @@ html, body {
     z-index: 4;
     display: flex;
     justify-content: center;
-
+    flex-direction: column;
 }
 
 .main_buttons {
@@ -1924,6 +1924,7 @@ input[type=checkbox] {
         width: 100%;
         justify-items: center;
         align-items: center;
+        flex-direction: column;
     }
 
     .mobile_main_info {
