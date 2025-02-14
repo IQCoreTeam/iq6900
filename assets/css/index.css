@@ -509,6 +509,19 @@ html, body {
     transform: translateX(3.1rem);
 }
 
+/*onchain page*/
+.love_in_page_gif {
+    position: absolute;
+    overflow: visible;
+    margin-left: 50rem;
+    margin-top: 5rem;
+}
+
+.love_in_page_gif > img {
+    width: 19rem;
+    transform: translateX(5.1rem);
+}
+
 .progress_div {
 
     width: 23rem;
