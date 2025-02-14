@@ -393,6 +393,8 @@ html, body {
     width: 100%;
     justify-items: center;
     align-items: center;
+    display: flex;
+    flex-direction: column;
 }
 
 #menu_section {
@@ -1919,6 +1921,8 @@ input[type=checkbox] {
         width: 100%;
         justify-items: center;
         align-items: center;
+        display: flex;
+        flex-direction: column;
     }
 
     #menu_section {
