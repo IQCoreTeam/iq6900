@@ -593,7 +593,7 @@ async function initLoveLetter() {
         $(".loading").css('display', 'none');
 
         $(".go_old").on('click', async function () {
-            await bringOldCache(IQContractKeyString, 'love_letter' imported_signature[imported_signature.length - 1]);
+            await bringOldCache(IQContractKeyString, 'love_letter', imported_signature[imported_signature.length - 1]);
 
         });
 
