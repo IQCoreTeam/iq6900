@@ -409,7 +409,7 @@ async function fetchAll(type) {
 
 async function bringOldCache(targetAddress, type, before) {
 
-    const signatures = await getOldValues(imported_signature, $('.transactions_div  .transaction_div:last  .transaction:last .hidden_txt').text())
+    const signatures = await getOldValues(Array.from(imported_signature), $('.transactions_div  .transaction_div:last  .transaction:last .hidden_txt').text())
     if (signatures.length > 0) {
         $('.transactions_div').empty();
 
