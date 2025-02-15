@@ -381,7 +381,7 @@ async function fetchAll(type) {
     while (hasMoreData) {
         try {
             // `lastId`를 올바르게 반영하여 요청
-            const list = await getCacheListFromServer(IQContractKeyString, type, lastId);
+            const list = await getCacheListFromServer(IQContractKeyString, type, null);
             console.log("Fetched list:", list);
 
             if (Array.isArray(list) && list.length > 0) {
@@ -392,8 +392,8 @@ async function fetchAll(type) {
                 }
 
                 // ⭐ 여기서 `lastId`를 리스트의 마지막 `_id`로 업데이트
-                lastId = list[list.length - 1]._id;
-                console.log("Updated lastId:", lastId);
+                lastBlock = list[list.length - 1].blockTime;
+                console.log("Updated lastBlock:", lastBlock);
 
                 // ⭐ 만약 100개보다 적으면 더 이상 데이터가 없다고 판단하고 종료
                 if (list.length < 100) {
@@ -596,7 +596,7 @@ async function initLoveLetter() {
         $(".loading").css('display', 'none');
 
         $(".go_old").on('click', async function () {
-            await bringOldCache(IQContractKeyString, 'love_letter', imported_signature[imported_signature.length - 1]);
+            await bringOldCache(IQContractKeyString, 'love_letter',);
 
         });
 
