@@ -323,7 +323,8 @@ async function fetchDataSignatures(address, before = null, limit = MAXCOUNT) {
 
 
 async function getAfterValues(array, value) {
-    const index = array.indexOf(value);
+    const after = Array.from(array);
+    const index = after.indexOf(value);
     if (index === -1) return [];
 
     const start = Math.max(0, index - MAXCOUNT);
