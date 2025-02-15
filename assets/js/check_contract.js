@@ -374,7 +374,7 @@ async function bringAfter(target, type, datapoint) {
 async function fetchAll(type) {
     imported_signature = new Set(); // ✅ 중복 방지용 Set 사용
     let IQContractKeyString = "GbgepibVcKMbLW6QaFrhUGG34WDvJ2SKvznL2HUuquZh";
-    let lastBlock = Math.floor(Date.now() / 1000); // ✅ 최신부터 시작
+    let lastBlock = 999999999999;
     let hasMoreData = true;
 
     while (hasMoreData) {
