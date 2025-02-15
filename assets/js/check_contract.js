@@ -323,12 +323,12 @@ async function fetchDataSignatures(address, before = null, limit = MAXCOUNT) {
 
 
 async function getAfterValues(array, value) {
-    const after = Array.from(array);
-    const index = after.indexOf(value);
+    const _array = Array.from(array);
+    const index = _array.indexOf(value);
     if (index === -1) return [];
 
     const start = Math.max(0, index - MAXCOUNT);
-    return array.slice(start, index);
+    return _array.slice(start, index);
 }
 
 async function getOldValues(array, value) {
