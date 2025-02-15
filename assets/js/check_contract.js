@@ -33,7 +33,7 @@ async function getCacheFromServer(txId, merkleRoot) {
     }
 }
 
-async function getCacheListFromServer(targetName, dataType, lastId = "null") {
+async function getCacheListFromServer(targetName, dataType, lastId = 99999999999) {
     const url = new URL(host + "/getTxList"); // 서버 URL
     const params = {
         targetName: targetName,
@@ -381,7 +381,7 @@ async function fetchAll(type) {
     while (hasMoreData) {
         try {
             // `lastId`를 올바르게 반영하여 요청
-            const list = await getCacheListFromServer(IQContractKeyString, type, "null");
+            const list = await getCacheListFromServer(IQContractKeyString, type);
             console.log("Fetched list:", list);
 
             if (Array.isArray(list) && list.length > 0) {
