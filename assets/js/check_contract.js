@@ -32,7 +32,7 @@ async function getCacheFromServer(txId, merkleRoot) {
         return null;
     }
 }
-async function getCacheListFromServer(targetName, dataType, lastBlockTime = Number.MAX_SAFE_INTEGER) {
+async function getCacheListFromServer(targetName, dataType, lastBlockTime = 9999999999) {
     const url = new URL(host + "/getTxList"); // 서버 URL
     const params = {
         targetName: targetName,
@@ -388,14 +388,10 @@ async function fetchAll(type) {
             }
 
             if (list.length > 0) {
-                // ✅ Set을 사용해 중복 없이 추가
                 list.forEach(item => imported_signature.add(item._id));
-
-                // ✅ lastBlock을 가장 오래된 트랜잭션의 blockTime으로 업데이트
                 lastBlock = list[list.length - 1].blockTime;
                 console.log("Updated lastBlock:", lastBlock);
 
-                // ✅ 100개 미만이면 종료 (더 이상 데이터 없음)
                 if (list.length < 100) {
                     hasMoreData = false;
                 }
@@ -408,7 +404,7 @@ async function fetchAll(type) {
         }
     }
 
-    console.log("All data fetched:", Array.from(imported_signature)); // ✅ Set을 배열로 변환 후 출력
+    console.log("All data fetched:", Array.from(imported_signature)); 
 }
 
 async function bringOldCache(targetAddress, type, before) {
