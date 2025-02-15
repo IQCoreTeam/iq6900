@@ -372,29 +372,30 @@ async function bringAfter(target, type, datapoint) {
     }
 }
 async function fetchAll(type) {
-    imported_signature = [];
+    imported_signature = new Set(); // ✅ 중복 방지용 Set 사용
     let IQContractKeyString = "GbgepibVcKMbLW6QaFrhUGG34WDvJ2SKvznL2HUuquZh";
-    let lastId = "null"; // 처음에는 "null"로 시작
-    let hasMoreData = true; // 더 가져올 데이터가 있는지 확인
-    let lastBlock = 9999999999999999;
+    let lastBlock = Math.floor(Date.now() / 1000); // ✅ 최신부터 시작
+    let hasMoreData = true;
+
     while (hasMoreData) {
         try {
-            // `lastId`를 올바르게 반영하여 요청
-            const list = await getCacheListFromServer(IQContractKeyString, type,lastBlock);
+            const list = await getCacheListFromServer(IQContractKeyString, type, lastBlock);
             console.log("Fetched list:", list);
 
-            if (Array.isArray(list) && list.length > 0) {
-                for (const item of list) {
-                    if (item._id && !imported_signature.includes(item._id)) {
-                        imported_signature.push(item._id); // 중복 방지 후 추가
-                    }
-                }
+            if (!list || !Array.isArray(list)) {
+                console.error("Error: list is undefined or not an array");
+                break;
+            }
 
-                // ⭐ 여기서 `lastId`를 리스트의 마지막 `_id`로 업데이트
+            if (list.length > 0) {
+                // ✅ Set을 사용해 중복 없이 추가
+                list.forEach(item => imported_signature.add(item._id));
+
+                // ✅ lastBlock을 가장 오래된 트랜잭션의 blockTime으로 업데이트
                 lastBlock = list[list.length - 1].blockTime;
                 console.log("Updated lastBlock:", lastBlock);
 
-                // ⭐ 만약 100개보다 적으면 더 이상 데이터가 없다고 판단하고 종료
+                // ✅ 100개 미만이면 종료 (더 이상 데이터 없음)
                 if (list.length < 100) {
                     hasMoreData = false;
                 }
@@ -403,12 +404,13 @@ async function fetchAll(type) {
             }
         } catch (error) {
             console.error("Error fetching data:", error);
-            hasMoreData = false; // 에러 발생 시 루프 종료
+            hasMoreData = false;
         }
     }
 
-    console.log("All data fetched:", imported_signature);
+    console.log("All data fetched:", Array.from(imported_signature)); // ✅ Set을 배열로 변환 후 출력
 }
+
 async function bringOldCache(targetAddress, type, before) {
 
     const signatures = await getOldValues(imported_signature, $('.transactions_div  .transaction_div:last  .transaction:last .hidden_txt').text())
