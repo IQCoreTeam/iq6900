@@ -389,7 +389,7 @@ async function fetchAll(type) {
 
             if (list.length > 0) {
                 list.forEach(item => imported_signature.add(item._id));
-                lastBlock = list[list.length - 1].blockTime;
+                lastBlock = list[list.length - 1].block_time;
                 console.log("Updated lastBlock:", lastBlock);
 
                 if (list.length < 100) {
