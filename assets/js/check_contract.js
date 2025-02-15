@@ -32,12 +32,12 @@ async function getCacheFromServer(txId, merkleRoot) {
         return null;
     }
 }
-async function getCacheListFromServer(targetName, dataType, lastBlockTime = 9999999999) {
+async function getCacheListFromServer(targetName, dataType, lastBlock = 9999999999) {
     const url = new URL(host + "/getTxList"); // 서버 URL
     const params = {
         targetName: targetName,
         dataType: dataType,
-        lastBlockTime: lastBlockTime,
+        lastBlock: lastBlock,
     };
     // URL에 쿼리 파라미터 추가
     Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
