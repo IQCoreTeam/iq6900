@@ -404,7 +404,7 @@ async function LoveIn() {
             $('.code_in_button_p').text("Check My Data");
             $('.code_in_button').attr("onclick", "goto_viewer()");
             $('.code_in_button').css("display", "block");
-            $('.info').text("Tx: "+result.slice(0,10)+"...<br> It might take about 2 minutes to fully get onto the block, Please wait and check.");
+            $('.info').html("Tx: "+result.slice(0,10)+"...<br> It might take about 2 minutes to fully get onto the block, Please wait and check.");
 
         } catch (error) {
             console.error("Error signing or sending transaction: ", error);
@@ -460,7 +460,7 @@ async function textCodeIn() {
             $('.code_in_button').attr("onclick", "goto_viewer()");
 
             $('.code_in_button').css("display", "block");
-            $('.info').text("Tx: "+result.slice(0,10)+"...<br> It might take about 2 minutes to fully get onto the block, Please wait and check.");
+            $('.info').html("Tx: "+result.slice(0,10)+"...<br> It might take about 2 minutes to fully get onto the block, Please wait and check.");
 
         } catch (error) {
             console.error("Error signing or sending transaction: ", error);
@@ -505,7 +505,7 @@ async function asciiCodeIn() {
             $('.code_in_button').attr("onclick", "goto_viewer()");
             $('.after_gen').css("display", "flex");
 
-            $('.info').text("Tx: "+result.slice(0,10)+"...<br> It might take about 2 minutes to fully get onto the block, Please wait and check.");
+            $('.info').html("Tx: "+result.slice(0,10)+"...<br> It might take about 2 minutes to fully get onto the block, Please wait and check.");
 
 
         } catch (error) {

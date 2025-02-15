@@ -1518,7 +1518,7 @@ input[type=checkbox] {
 }
 
 .letter_menu_item {
-    width: 4rem;
+    width: 8rem;
     height: 3rem;
     font-size: 1.3rem;
     margin: 0;
@@ -1548,8 +1548,7 @@ input[type=checkbox] {
     }
 
     .letter_menu_item {
-
-        width: 7rem;
+        width: 13rem;
         height: 10rem;
         font-size: 3rem;
         margin: 0;
