@@ -11,6 +11,7 @@ $(document).ready(function() {
     const { txid } = getQueryParams();
     if (txid) {
         $.onchainPage.init();
+        $('.bump').css('display', 'none');
     }
 
 });

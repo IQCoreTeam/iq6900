@@ -20,8 +20,8 @@ $(document).ready(async function () {
 
         const urlWithoutParams = window.location.protocol + "//" + window.location.host + window.location.pathname;
         window.history.replaceState({}, '', urlWithoutParams);
-        $('.bump').css('display', 'none');
+        
         await seeTransaction(txid);
-
+        $('.bump').css('display', 'none');
     }
 });
