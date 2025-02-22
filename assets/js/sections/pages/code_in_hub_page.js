@@ -6,7 +6,7 @@
     function CodeInHubPage() {
         let $codeInHubPageElement;
         let $wWidth = screen.width;
-        const $codeInHubPageTemplateUrl = "./html/sections/code_in_hub_page.html?ver=20250210";
+        const $codeInHubPageTemplateUrl = "./html/sections/code_in_hub_page.html?ver=20250211";
 
         function init() {
             loadCodeInHubPageTemplate();
@@ -28,6 +28,8 @@
             $("#main_section").show();
             $("#main_section").empty();
             $("#main_section").append($codeInHubPageElement);
+            $(".nav_connect").attr("onclick", "$.onchainPage.init()");
+            $(".nav_status_before_login").text("Code-In");
         }
 
         $.extend(this, {

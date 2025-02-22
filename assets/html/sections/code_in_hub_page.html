@@ -1,7 +1,7 @@
 <div class="background_div">
-    <div class="on_chain_page_dog_pc">
-        <img src="img/left_dog.png" alt="dog">
-    </div>
+<!--    <div class="on_chain_page_dog_pc">-->
+<!--        <img src="img/left_dog.png" alt="dog">-->
+<!--    </div>-->
 
     <div class="background_black"></div>
     <div class="background_Linear_color"></div>
@@ -136,8 +136,6 @@
 <script>
     $(document).ready(async function () {
         $(".loading_img").attr("src", "./img/solana_internet.svg");
-        $(".nav_connect").attr("onclick", "$.onchainPage.init()");
-        $(".nav_status_before_login").text("Code-In");
         $(".after_connect").css("display", "none");
         $(".before_connect").css("display", "flex");
         await startProcess();

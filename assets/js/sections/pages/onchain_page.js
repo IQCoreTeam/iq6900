@@ -6,7 +6,7 @@
     function onchainPage() {
         let $onchainPageElement;
         let $wWidth = screen.width;
-        const $onchainPageTemplateUrl = "./html/sections/onchain_page.html?ver=20250210";
+        const $onchainPageTemplateUrl = "./html/sections/onchain_page.html?ver=20250212";
         function init() {
             loadOnchainPageTemplate();
         }
@@ -28,6 +28,8 @@
             $("#main_section").show();
             $("#main_section").empty();
             $("#main_section").append($onchainPageElement);
+            $('.nav_connect').attr('onclick',"nav_connect()");
+            $('.nav_status_before_login').text("Connect");
         }
 
         $.extend(this, {

@@ -28,7 +28,9 @@
             $("#main_section").show();
             $("#main_section").empty();
             $("#main_section").append($lovePageElement);
-
+            $(".nav_connect").attr("onclick", "$.loveInPage.init()");
+            $(".nav_status_before_login").text("Love-In");
+            $(".nav_title").attr("onclick", "$.mainPage.init()");
         }
 
         $.extend(this, {

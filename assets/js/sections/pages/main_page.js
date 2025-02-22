@@ -28,6 +28,8 @@
             $("#main_section").show();
             $("#main_section").empty();
             $("#main_section").append($mainPageElement);
+            $('.nav_connect').attr('onclick',"nav_connect()");
+            $('.nav_status_before_login').text("Connect");
         }
 
         $.extend(this, {
