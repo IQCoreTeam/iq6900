@@ -1865,7 +1865,7 @@ input[type=checkbox] {
 
     .navigator_menu {
         height: 95rem;
-        transform: translateY(-7rem);
+        transform: translate(-8rem, 13rem);
         background-repeat: no-repeat;
         background-size: contain;
         width: 47.7rem;
