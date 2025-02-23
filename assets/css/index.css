@@ -165,7 +165,7 @@ html, body {
 
 .moving_partners {
     display: flex;
-    width: 44rem;
+    width: 40rem;
     gap: 2rem;
     animation: marquee 7s linear infinite;
 }
@@ -196,7 +196,7 @@ html, body {
         transform: translateX(0);
     }
     to {
-        transform: translateX(-46.7rem);
+        transform: translateX(-43rem);
     }
 }
 
