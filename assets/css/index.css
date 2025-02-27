@@ -847,17 +847,17 @@ input[type=number] {
     height: 6.4rem;
     padding: 0.5rem;
     box-sizing: border-box;
-    background: rgba(43, 213, 45, 0.1);
+    background: rgba(63, 177, 85, 0.1);
     clip-path: polygon(0.5rem 0, 100% 0, 100% 100%, 0 100%, 0 0.5rem);
     border-radius: 0.2rem;
 }
 
 .transaction:active {
-    background: rgba(43, 213, 45, 0.2);
+    background: rgba(48, 181, 84, 0.2);
 }
 
 .transaction:hover {
-    background: rgba(43, 213, 45, 0.2);
+    background: rgba(48, 181, 84, 0.2);
 }
 
 .sig_title {
