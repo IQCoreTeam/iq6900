@@ -765,54 +765,56 @@ input[type=number] {
     display: flex;
     width: 30rem;
     height: 3rem;
-
     justify-items: center;
-
     align-items: center;
     align-content: center;
     border-radius: 0.2rem;
     border: #252525 solid 0.12rem;
-
+    overflow: hidden;
 }
 
 .search_div:hover {
-    display: flex;
     border: #434343 solid 0.12rem;
-
 }
 
+.search_div:focus-within {
+    border-color: #9b9b9b;
+}
 
 .search_div > input {
-
     font-size: 1.6rem;
-    font-family: Montserrat, serif;
+    font-family: Montserrat, sans-serif;
     font-weight: 400;
-
-    width: 97%;
+    width: 100%;
+    height: 100%;
     background: transparent;
     color: white;
-
     border: none;
+    padding-left: 0.8rem;
+    outline: none;
+    text-align: left !important;
     resize: none;
-    scrollbar-width: none;
-
+    white-space: nowrap;
+    overflow-x: auto;
+    caret-color: #66D04B;
+    box-sizing: border-box;
 }
 
-
 .search_div > input::placeholder {
-
-    padding-left: 0.8rem;
     opacity: 0.3;
     color: rgba(253, 253, 253, 0.457);
     font-size: 1.6rem;
 }
 
+.search_div > input:focus::placeholder {
+    opacity: 0;
+}
+
 .search_div > input:focus {
     opacity: 1;
     outline: none;
-    color: rgb(102, 208, 75);
+    color: rgb(212 212 212);
 }
-
 
 .records {
     width: 38rem;
