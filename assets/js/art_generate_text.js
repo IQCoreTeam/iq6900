@@ -109,7 +109,7 @@ function Check_input(x) {
         return null;
     }
 
-    if (num > 4 && num <= 50) {
+    if (num > 0 && num <= 50) {
         return num;
     } else {
         return null;
