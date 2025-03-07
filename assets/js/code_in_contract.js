@@ -1,5 +1,5 @@
 const host = "https://solanacontractapi.uc.r.appspot.com";
-const network = "https://mainnet.helius-rpc.com/?api-key=ab814e2b-59a3-4ca9-911a-665f06fb5f09";
+const network = "https://api.mainnet-beta.solana.com";
 
 const contractChunkSize = 850;
 const sizeLimitForSplit = 10000;
