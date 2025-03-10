@@ -32,11 +32,11 @@ async function getCacheFromServer(txId, merkleRoot) {
         return null;
     }
 }
-async function getCacheListFromServer(targetName, dataType, lastBlock = 9999999999) {
+async function getCacheListFromServer(targeAddress, category, lastBlock = 9999999999) {
     const url = new URL(host + "/getTxList"); // 서버 URL
     const params = {
-        targetName: targetName,
-        dataType: dataType,
+        targeAddress: targeAddress,
+        category: category,
         lastBlock: lastBlock,
     };
     // URL에 쿼리 파라미터 추가
@@ -54,7 +54,7 @@ async function getCacheListFromServer(targetName, dataType, lastBlock = 99999999
         }
         return await response.json();
     } catch (error) {
-        console.error("Failed to get Merkle Root:", error.message);
+        console.error("Failed to get Txlist:", error.message);
         throw error;
     }
 }
@@ -98,12 +98,12 @@ async function getTransactionInfoOnServer(txId) {
 
 }
 
-const updateTxListToServer = async (targetName, dataType) => {
+const updateTxListToServer = async (targeAddress, category) => {
     const url = host + "/update-tx-list"; // 서버 URL
 
     const requestData = {
-        targetName: targetName,
-        dataType: dataType,
+        targeAddress: targeAddress,
+        category: category,
     };
 
     try {
