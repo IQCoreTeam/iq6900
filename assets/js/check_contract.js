@@ -32,10 +32,10 @@ async function getCacheFromServer(txId, merkleRoot) {
         return null;
     }
 }
-async function getCacheListFromServer(targeAddress, category, lastBlock = 9999999999) {
+async function getCacheListFromServer(targetAddress, category, lastBlock = 9999999999) {
     const url = new URL(host + "/getTxList"); // 서버 URL
     const params = {
-        targeAddress: targeAddress,
+        targetAddress: targetAddress,
         category: category,
         lastBlock: lastBlock,
     };
@@ -98,11 +98,11 @@ async function getTransactionInfoOnServer(txId) {
 
 }
 
-const updateTxListToServer = async (targeAddress, category) => {
+const updateTxListToServer = async (targetAddress, category) => {
     const url = host + "/update-tx-list"; // 서버 URL
 
     const requestData = {
-        targeAddress: targeAddress,
+        targetAddress: targetAddress,
         category: category,
     };
 
