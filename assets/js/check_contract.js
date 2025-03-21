@@ -749,7 +749,7 @@ async function seeTransaction(txid) {
         $(".see_code_in").css("display", "flex");
         return false;
     }
-    if (asciiObj.type == "image") {
+    if (asciiObj.type === "image"|| asciiObj.type === "test_image") {
         $(".loading").css("display", "none");
 
 
@@ -764,13 +764,6 @@ async function seeTransaction(txid) {
 
         $(".see_code_in").css("display", "flex");
 
-    } else if (asciiObj.type === "text" || asciiObj.type === "json") {
-        $(".loading").css("display", "none");
-
-
-        $(".coded_in_text").css("display", "flex");
-        $(".coded_in_text").text(asciiObj.ascii_string);
-        $(".see_code_in").css("display", "flex");
     } else if (asciiObj.type === "love_letter") {
         $(".loading").css("display", "none");
         const jsonObject = JSON.parse(asciiObj.ascii_string);
@@ -778,6 +771,11 @@ async function seeTransaction(txid) {
         $(".to").text(jsonObject.to);
         $(".message").text(jsonObject.message);
         $(".love_letter").css("display", "flex");
+        $(".see_code_in").css("display", "flex");
+    } else {
+        $(".loading").css("display", "none");
+        $(".coded_in_text").css("display", "flex");
+        $(".coded_in_text").text(asciiObj.ascii_string);
         $(".see_code_in").css("display", "flex");
     }
     $('.coded_page_tx_id').text("***" + txid.slice(-6));
