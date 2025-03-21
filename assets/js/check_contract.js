@@ -751,8 +751,6 @@ async function seeTransaction(txid) {
     }
     if (asciiObj.type === "image"|| asciiObj.type === "test_image") {
         $(".loading").css("display", "none");
-
-
         $(".coded_in_ascii").css("display", "flex");
         const fontsize = $(".coded_in_ascii").width() / parseInt(asciiObj.width);
         const asciiHeight = asciiObj.ascii_string.split("\n").length; // 엔터 개수로 세로 줄 개수 계산
@@ -778,6 +776,7 @@ async function seeTransaction(txid) {
         $(".coded_in_text").text(asciiObj.ascii_string);
         $(".see_code_in").css("display", "flex");
     }
+
     $('.coded_page_tx_id').text("***" + txid.slice(-6));
 
     $('.x_btn').css('display', 'flex');
