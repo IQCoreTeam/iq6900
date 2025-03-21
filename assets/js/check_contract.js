@@ -270,9 +270,7 @@ async function bringCode(dataTxid) {
                 type: type_field
             };
             return asciiObj;
-        } else {
-            return false;
-        }
+        } 
     } else {
         return false;
     }
