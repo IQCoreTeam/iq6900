@@ -221,7 +221,7 @@ async function bringCode(dataTxid) {
     const encodedChunks = []
     let before_tx = tail_tx;
     if (type_field) {
-        if (type_field === "image") {
+        if (type_field === "image"|| type_field === "test_image") {
             let result = "";
             if (isMerkleRoot(offset)) {
                 result = await getCacheFromServer(dataTxid, offset);
@@ -254,7 +254,7 @@ async function bringCode(dataTxid) {
             };
             return asciiObj;
 
-        } else if (type_field === "text" || type_field === "json" || type_field === "love_letter") {
+        } else  {
             let result = "";
             if (isMerkleRoot(offset)) {
                 result = await getCacheFromServer(dataTxid, offset);
@@ -749,7 +749,7 @@ async function seeTransaction(txid) {
         $(".see_code_in").css("display", "flex");
         return false;
     }
-    if (asciiObj.type === "image"|| asciiObj.type === "test_image") {
+    if (asciiObj.type == "image"|| asciiObj.type == "test_image") {
         $(".loading").css("display", "none");
         $(".coded_in_ascii").css("display", "flex");
         const fontsize = $(".coded_in_ascii").width() / parseInt(asciiObj.width);
@@ -757,9 +757,7 @@ async function seeTransaction(txid) {
         const aspectRatio = asciiObj.width / asciiHeight;
         $(".coded_in_ascii").css("font-size", fontsize.toString() + "px");
         $(".coded_in_ascii").css("aspect-ratio", aspectRatio);
-
         $(".coded_in_ascii").text(asciiObj.ascii_string);
-
         $(".see_code_in").css("display", "flex");
 
     } else if (asciiObj.type === "love_letter") {
