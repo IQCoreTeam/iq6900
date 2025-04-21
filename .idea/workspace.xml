@@ -5,7 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/assets/css/index.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/art_generate.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/art_generate.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/js/check_contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/check_contract.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -54,7 +57,9 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;JavaScript Debug.index.html.executor&quot;: &quot;Run&quot;,
     &quot;JavaScript Debug.onchain_code.html.executor&quot;: &quot;Run&quot;,
+    &quot;Node.js.art_generate.js.executor&quot;: &quot;Run&quot;,
     &quot;Node.js.codeincontract.js.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
@@ -237,7 +242,31 @@
       <workItem from="1742015597660" duration="1441000" />
       <workItem from="1742336206511" duration="3141000" />
       <workItem from="1742551371221" duration="2094000" />
-      <workItem from="1742553478162" duration="548000" />
+      <workItem from="1742553478162" duration="5086000" />
+      <workItem from="1742800471292" duration="1897000" />
+      <workItem from="1742875053366" duration="1613000" />
+      <workItem from="1742921225801" duration="1018000" />
+      <workItem from="1742990632287" duration="3934000" />
+      <workItem from="1743253805353" duration="1300000" />
+      <workItem from="1743259770594" duration="633000" />
+      <workItem from="1743261898477" duration="638000" />
+      <workItem from="1743328365021" duration="5000" />
+      <workItem from="1743328579925" duration="1891000" />
+      <workItem from="1743334946262" duration="5064000" />
+      <workItem from="1743403993618" duration="2294000" />
+      <workItem from="1743509674334" duration="4564000" />
+      <workItem from="1743567181446" duration="11350000" />
+      <workItem from="1743769047612" duration="1977000" />
+      <workItem from="1743851863652" duration="4019000" />
+      <workItem from="1744092529953" duration="1207000" />
+      <workItem from="1744198334194" duration="82000" />
+      <workItem from="1744284456486" duration="39000" />
+      <workItem from="1744284521799" duration="66000" />
+      <workItem from="1744287726554" duration="3063000" />
+      <workItem from="1744356334258" duration="324000" />
+      <workItem from="1744365207803" duration="4270000" />
+      <workItem from="1745032145578" duration="5641000" />
+      <workItem from="1745153071962" duration="3212000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />

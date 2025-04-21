@@ -270,7 +270,7 @@ async function bringCode(dataTxid) {
                 type: type_field
             };
             return asciiObj;
-        } 
+        }
     } else {
         return false;
     }
@@ -403,7 +403,7 @@ async function fetchAll(type) {
         }
     }
 
-    console.log("All data fetched:", Array.from(imported_signature)); 
+    console.log("All data fetched:", Array.from(imported_signature));
 }
 
 async function bringOldCache(targetAddress, type, before) {
@@ -796,7 +796,6 @@ async function seeTransaction(txid) {
 
 
 }
-
 
 
 
