@@ -2653,7 +2653,7 @@ input[type=checkbox] {
     .coded_in_ascii {
         display: none;
         letter-spacing: 0.4em;
-        line-height: 1.27em;
+        line-height: 1;
         font-family: IBMPlexMonoLight, monospace;
         color: #2BD52D;
         width: 55.3rem;

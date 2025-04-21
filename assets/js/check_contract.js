@@ -751,9 +751,12 @@ async function seeTransaction(txid) {
         $(".loading").css("display", "none");
         $(".coded_in_ascii").css("display", "flex");
         const fontsize = $(".coded_in_ascii").width() / parseInt(asciiObj.width);
-        const asciiHeight = asciiObj.ascii_string.split("\n").length; // 엔터 개수로 세로 줄 개수 계산
+        const asciiHeight = asciiObj.ascii_string.split("\n").length;
         const aspectRatio = asciiObj.width / asciiHeight;
-        $(".coded_in_ascii").css("font-size", fontsize.toString() + "px");
+
+        $(".record").css("font-size", fontsize.toString() + "px");
+        // we need to set font size to parent for set the 'em' letter space
+
         $(".coded_in_ascii").css("aspect-ratio", aspectRatio);
         $(".coded_in_ascii").text(asciiObj.ascii_string);
         $(".see_code_in").css("display", "flex");

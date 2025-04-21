@@ -7,8 +7,6 @@
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/assets/css/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/art_generate.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/art_generate.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/js/check_contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/check_contract.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -266,7 +264,7 @@
       <workItem from="1744356334258" duration="324000" />
       <workItem from="1744365207803" duration="4270000" />
       <workItem from="1745032145578" duration="5641000" />
-      <workItem from="1745153071962" duration="3212000" />
+      <workItem from="1745153071962" duration="3779000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />
