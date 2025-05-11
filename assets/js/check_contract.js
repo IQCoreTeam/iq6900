@@ -437,59 +437,59 @@ async function bringOldCache(targetAddress, type, before) {
     }
 }
 
-// async function bringOld(db_pda_address, before) {
-//     let new_old = null;
-//     $(".go_old").off('click');
-//
-//     $(".go_old").css("opacity", "0.3");
-//
-//     const lastPValue = $('.transactions_div  .transaction_div:last  .transaction:last .hidden_txt').text();
-//     const lastElement = imported_signature[imported_signature.length - 1];
-//
-//     if (lastPValue === lastElement && before != null) {
-//         $(".transactions_div").css("display", "none");
-//         $(".loading_mini").css("display", "flex");
-//
-//         new_old = await fetchDataSignatures(db_pda_address, before);
-//         console.log(new_old);
-//         $(".transactions_div").css("display", "flex");
-//         $(".loading_mini").css("display", "none");
-//     }
-//     const signatures = await getOldValues(imported_signature, lastPValue)
-//     if (signatures.length > 0) {
-//         $('.transactions_div').empty();
-//
-//         await makeTxItems(signatures);
-//         const pagenum = $(".current").text();
-//         $(".current").text(parseInt(pagenum) + 1)
-//
-//         if (signatures.length === MAXCOUNT) {
-//             $(".go_old").off('click').on('click', async function () {
-//                 await bringOld(db_pda_address,
-//                     $('.transactions_div .transaction_div:last .transaction:last .hidden_txt').text()
-//                 );
-//             });
-//             $(".go_old").css("cursor", "pointer");
-//             $(".go_old").css("opacity", "1");
-//
-//         } else {
-//             $(".go_old").css("opacity", "0.3");
-//
-//         }
-//         $(".go_recent").css("opacity", "1");
-//         $(".go_recent").css("cursor", "pointer");
-//         $(".go_recent").off('click').on('click', async function () {
-//             await bringAfter(
-//                 $('.transactions_div .transaction_div:first .transaction:first .hidden_txt').text()
-//             );
-//         });
-//
-//     } else {
-//         $(".go_old").css("opacity", "0.3");
-//
-//     }
-//
-// }
+async function bringOld(db_pda_address, before) {
+    let new_old = null;
+    $(".go_old").off('click');
+
+    $(".go_old").css("opacity", "0.3");
+
+    const lastPValue = $('.transactions_div  .transaction_div:last  .transaction:last .hidden_txt').text();
+    const lastElement = imported_signature[imported_signature.length - 1];
+
+    if (lastPValue === lastElement && before != null) {
+        $(".transactions_div").css("display", "none");
+        $(".loading_mini").css("display", "flex");
+
+        new_old = await fetchDataSignatures(db_pda_address, before);
+        console.log(new_old);
+        $(".transactions_div").css("display", "flex");
+        $(".loading_mini").css("display", "none");
+    }
+    const signatures = await getOldValues(imported_signature, lastPValue)
+    if (signatures.length > 0) {
+        $('.transactions_div').empty();
+
+        await makeTxItems(signatures);
+        const pagenum = $(".current").text();
+        $(".current").text(parseInt(pagenum) + 1)
+
+        if (signatures.length === MAXCOUNT) {
+            $(".go_old").off('click').on('click', async function () {
+                await bringOld(db_pda_address,
+                    $('.transactions_div .transaction_div:last .transaction:last .hidden_txt').text()
+                );
+            });
+            $(".go_old").css("cursor", "pointer");
+            $(".go_old").css("opacity", "1");
+
+        } else {
+            $(".go_old").css("opacity", "0.3");
+
+        }
+        $(".go_recent").css("opacity", "1");
+        $(".go_recent").css("cursor", "pointer");
+        $(".go_recent").off('click').on('click', async function () {
+            await bringAfter(
+                $('.transactions_div .transaction_div:first .transaction:first .hidden_txt').text()
+            );
+        });
+
+    } else {
+        $(".go_old").css("opacity", "0.3");
+
+    }
+
+}
 
 async function makeTxItems(signatures) {
     let count = 0;
