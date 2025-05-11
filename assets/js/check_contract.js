@@ -710,7 +710,7 @@ async function walletSearch(address = "") {
         $(".loading").css('display', 'none');
 
         $(".go_old").on('click', async function () {
-            await bringOld(db_pda_address, before);
+            await bringOldCache(db_pda_address, before);
         });
 
         $(".go_old").css("opacity", "1");

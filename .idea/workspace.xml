@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/assets/css/index.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/js/check_contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/check_contract.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -264,7 +263,14 @@
       <workItem from="1744356334258" duration="324000" />
       <workItem from="1744365207803" duration="4270000" />
       <workItem from="1745032145578" duration="5641000" />
-      <workItem from="1745153071962" duration="3779000" />
+      <workItem from="1745153071962" duration="4274000" />
+      <workItem from="1745226633381" duration="1920000" />
+      <workItem from="1745308468912" duration="1000" />
+      <workItem from="1745308477570" duration="4831000" />
+      <workItem from="1745644435937" duration="3079000" />
+      <workItem from="1745765829774" duration="161000" />
+      <workItem from="1745831494157" duration="3693000" />
+      <workItem from="1746248546903" duration="5008000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />
@@ -294,6 +300,17 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="check mark" />
     <option name="LAST_COMMIT_MESSAGE" value="check mark" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/assets/js/code_in_contract.js</url>
+          <line>245</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
