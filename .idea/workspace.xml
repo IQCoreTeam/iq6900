@@ -6,13 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/html/sections/about_page.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/about_page.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/html/sections/code_in_hub_page.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/code_in_hub_page.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/html/sections/generate_page.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/generate_page.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/html/sections/love_in.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/love_in.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/html/sections/love_page.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/love_page.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/html/sections/onchain_page.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/html/sections/onchain_page.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -276,7 +269,7 @@
       <workItem from="1745644435937" duration="3079000" />
       <workItem from="1745765829774" duration="161000" />
       <workItem from="1745831494157" duration="3693000" />
-      <workItem from="1746248546903" duration="10126000" />
+      <workItem from="1746248546903" duration="16468000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />
