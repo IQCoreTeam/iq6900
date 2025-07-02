@@ -14,3 +14,30 @@
     font-family: IBMPlexMonoLight;
     src: url('../fonts/IBM_Plex_Mono/IBMPlexMono-Light.ttf') format('truetype');
 }
+@font-face {
+    font-family: 'Kode Mono';
+    src: url('../fonts/KodeMono-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Silkscreen Bold';
+    src: url('../fonts/Silkscreen-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Silkscreen';
+    src: url('../fonts/Silkscreen-Regular.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+
+@font-face {
+    font-family: 'Pixelify Sans';
+    src: url('../fonts/PixelifySans-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+}

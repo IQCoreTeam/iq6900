@@ -2,9 +2,10 @@
     font-family: Montserrat, serif;
     scrollbar-width: none; /* Firefox */
     font-size: 1.2dvw;
-    -webkit-text-size-adjust: none; /* 크롬, 사파리, 오페라 신버전 */
+    -webkit-text-size-adjust: none; /* Ã­ÂÂ¬Ã«Â¡Â¬, Ã¬â€šÂ¬Ã­Å’Å’Ã«Â¦Â¬, Ã¬ËœÂ¤Ã­Å½ËœÃ«ÂÂ¼ Ã¬â€¹Â Ã«Â²â€žÃ¬Â â€ž */
     -ms-text-size-adjust: none; /* IE */
-    -moz-text-size-adjust: none; /* 파이어폭스 */
+    -moz-text-size-adjust: none; /* Ã­Å’Å’Ã¬ÂÂ´Ã¬â€“Â´Ã­ÂÂ­Ã¬Å Â¤ */
+    --mv-width: 50rem;
 }
 
 html, body {
@@ -350,17 +351,8 @@ html, body {
 }
 
 /*onchain page*/
-.love_in_page_gif {
-    position: absolute;
-    overflow: visible;
-    margin-left: 50rem;
-    margin-top: 5rem;
-}
 
-.love_in_page_gif > img {
-    width: 19rem;
-    transform: translateX(5.1rem);
-}
+
 .on_chain_page_dog_pc {
     position: absolute;
     overflow: visible;
@@ -371,6 +363,26 @@ html, body {
 .on_chain_page_dog_pc > img {
     width: 27rem;
     transform: translateX(3.1rem);
+}
+
+.mv-progress-div {
+    width: 37.5rem;
+}
+
+.mv-progress {
+    width: 98%;
+    height: 1.5rem;
+    background: #000;
+    overflow: hidden;
+    position: relative;
+}
+
+.mv-progress-bar {
+    background: linear-gradient(90deg, black 40%, #00BD39 0);
+    background-size: 0.8rem 100%;
+    height: 2rem;
+    width: 37.5rem;
+    position: absolute;
 }
 
 .progress_div {
@@ -424,9 +436,11 @@ html, body {
     -webkit-appearance: none;
     margin: 0;
 }
+
 input[type=number] {
-    -moz-appearance:textfield;
+    -moz-appearance: textfield;
 }
+
 .input_number:focus {
     outline: none;
 }
@@ -830,6 +844,7 @@ input[type=number] {
 }
 
 .transactions_div {
+    /*width: 34rem;*/
     width: 100%;
     border: #0A1508 solid 0.12rem;
     padding: 1rem;
@@ -837,6 +852,11 @@ input[type=number] {
     border-radius: 0.2rem;
     gap: 0.5rem;
     cursor: pointer;
+}
+
+.feeds_div {
+    cursor: default;
+    width: 34rem;
 }
 
 .transaction_div {
@@ -913,35 +933,6 @@ input[type=number] {
 
 /*buttons*/
 
-/*buttons*/
-.pink_button {
-    display: flex;
-    cursor: pointer;
-    width: 100%;
-    height: 3rem;
-    background: #b9ffc2;
-    background-size: cover;
-
-    justify-items: center;
-    align-items: center;
-    align-content: center;
-    justify-content: center;
-    border-radius: 0.2rem;
-    border: rgb(24, 177, 44) solid 0.12rem;
-}
-
-.pink_button > p {
-    font-family: Consola, monospace;
-    font-size: 1.5rem;
-    margin: 0;
-    color: rgb(7, 96, 25);
-}
-
-.pink_button:hover {
-    filter: brightness(115%);
-    animation: bounce 0.3s ease infinite;
-
-}
 
 .green_button {
     display: flex;
@@ -1539,6 +1530,435 @@ input[type=checkbox] {
     word-break: break-all;
 }
 
+.feed_div {
+    width: 34rem;
+    background: #000000;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    color: white;
+    border-radius: 1rem;
+    border: green 0.1rem solid;
+    word-wrap: break-word;
+    font-family: "Kode Mono", monospace;
+    box-sizing: border-box;
+}
+
+.feed_handle {
+    font-family: "Kode Mono", monospace;
+    padding: 1rem;
+    font-size: 1rem;
+    background: green;
+    color: black;
+}
+
+.feed_tx {
+    display: none;
+}
+
+.feed_text {
+    font-family: "Kode Mono", monospace;
+    white-space: break-spaces;
+    font-size: 1rem;
+    padding: 1rem;
+    color: white;
+}
+
+.feed_reply {
+    font-family: "Kode Mono", monospace;
+    white-space: break-spaces;
+    font-size: 1rem;
+    padding: 1rem;
+    background: green;
+    color: black;
+}
+
+.bottom_feed_links {
+    width: 100%;
+    display: flex;
+    font-size: 1rem;
+    flex-direction: row;
+    justify-content: space-between;
+    font-family: "Kode Mono", monospace;
+}
+
+.feed_image {
+    text-align: center;
+    line-height: 1;
+    letter-spacing: 0.4em;
+    text-rendering: optimizeLegibility;
+    font-family: IBMPlexMonoLight, monospace;
+}
+
+.q_tab {
+    font-size: 1rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.q_tab.active {
+    border-bottom: 2px solid white;
+    cursor: default;
+}
+
+.q_brain {
+    padding: 1rem;
+    width: 34rem;
+}
+
+.q_div_padding {
+    padding: 1rem;
+    box-sizing: border-box;
+
+}
+
+.q_menu_div {
+    cursor: default;
+    width: 34rem;
+    display: flex;
+    background: green;
+    font-family: "Kode Mono", monospace;
+    justify-content: space-evenly;
+    padding: 1rem;
+    box-sizing: border-box;
+    border-radius: 0.3rem;
+    border: green solid 0.12rem;
+}
+
+.q_top_menu_div {
+    cursor: default;
+    width: 34rem;
+    display: flex;
+    background: black;
+    font-family: "Kode Mono", monospace;
+    justify-content: space-evenly;
+    padding: 1rem;
+    box-sizing: border-box;
+    border-radius: 0.3rem;
+    border: green solid 0.12rem;
+}
+
+.q_page_btn {
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.diary_list_div {
+    padding: 1rem;
+    display: flex;
+    width: 34rem;
+    flex-direction: row;
+    overflow: scroll;
+}
+
+.diary_div {
+    padding: 2rem;
+    margin-right: 1rem;
+    min-width: 30rem;
+    border: green solid 0.12rem;
+    border-radius: 1rem;
+    box-sizing: border-box;
+}
+
+.diary {
+    white-space: break-spaces;
+}
+
+.diary_tx {
+    display: none;
+}
+
+
+.root_green_div {
+    border: #00BD39 solid 0.1rem;
+    margin: 2rem 9.4rem
+}
+
+
+.mv_console_div {
+    scrollbar-width: none;
+    padding: 0 2rem;
+    color: #00ff22;
+    min-height: 41.7rem;
+    overflow-y: scroll;
+    box-sizing: border-box;
+    border-bottom: #00BD39 solid 0.1rem;
+}
+
+.music_tx_display {
+    font-family: "Pixelify Sans", monospace;
+    width: 18rem;
+    word-wrap: break-word;
+    font-size: 0.9rem;
+}
+
+.music_div {
+    scrollbar-width: none;
+    display: block;
+    width: var(--mv-width);
+    height: 10rem;
+    overflow: scroll;
+    border-right: #00BD39 solid 0.1rem;
+    font-family: "Pixelify Sans", monospace;
+    color: #00ff22;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.music_links > a:link {
+    color: #00ff22;
+}
+
+.music_base {
+    white-space: break-spaces;
+    word-wrap: break-word;
+}
+
+.mv_left_menu_div {
+    box-sizing: border-box;
+    width: var(--mv-width);
+    border-right: 0.1rem #00BD39 solid;
+    border-bottom: #00BD39 solid 0.1rem;
+    display: flex;
+    align-items: center;
+}
+
+.left_top_menu {
+    height: 3rem;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    border-bottom: #00BD39 solid 0.1rem;
+}
+
+.mv_top_logo_div {
+    display: flex;
+    align-items: center;
+    border-right: 0.1rem #00BD39 solid;
+}
+
+.top_logo {
+    width: 2.3rem;
+    padding: 0.5rem 0.8rem 0.5rem 0.8rem;
+
+    display: block;
+}
+
+.play_progress {
+    align-items: center;
+}
+
+.play_progress_div {
+    border-right: 0.1rem #00ff22 solid;
+}
+
+.play_button {
+    font-family: "Pixelify Sans", monospace;
+    font-size: 1em;
+    text-align: center;
+    width: 5rem;
+    height: 1.5rem;
+    background: #00ff22;
+    border: none;
+    margin-left: 1rem;
+    cursor: pointer;
+}
+
+.mv_display {
+    box-sizing: border-box;
+    width: var(--mv-width);
+    font-family: IBMPlexMonoLight, monospace;
+    line-height: 0.8;
+    letter-spacing: 0.1em;
+    white-space: pre;
+    font-size: 0.35rem;
+    color: #00ff22;
+    background-color: black;
+    border-right: #00BD39 solid 0.1rem;
+    border-bottom: #00BD39 solid 0.1rem;
+    /* display: block; */
+    margin: 0;
+}
+
+.mv_right_menu_div {
+    height: 3rem;
+    width: 100%;
+
+}
+
+.mv_right_top_div {
+    height: 3rem;
+    border-bottom: #00BD39 solid 0.1rem;
+    width: 100%;
+}
+
+.close_mv {
+    width: 3.28rem;
+    margin: 0;
+    cursor: pointer;
+    display: flex;
+}
+
+.close_mv > p {
+    font-family: "Silkscreen", monospace;
+    color: #00ff22;
+    font-size: 1.4rem;
+    line-height: 0;
+}
+
+.mv_right_status_div {
+    display: flex;
+    height: 3rem;
+    width: 20rem;
+    font-size: 1rem;
+    font-family: "Silkscreen", monospace;
+    color: black;
+    background-color: #06c809;
+}
+
+.mv_time {
+    font-family: "Pixelify Sans", monospace;
+    color: #00ff22;
+    font-size: 1.2rem;
+}
+
+.green_panel {
+    background-color: #06c809;
+    display: flex;
+}
+
+.green_panel > p {
+    font-family: "Silkscreen", monospace;
+    color: black;
+    font-size: 1rem;
+    line-height: 1;
+
+}
+
+.how_to_check_div {
+    margin-bottom: 4rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.how_to_check_div > p {
+    font-family: "Pixelify Sans", monospace;
+    color: #00BD39;
+    font-size: 1.2rem;
+}
+
+.about_on_chain_div {
+    gap: 1.5rem;
+}
+
+.about_on_chain_text {
+    font-family: "Pixelify Sans", monospace;
+    color: #00ff22;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.code_in_logo {
+    width: 20rem;
+    margin-top: 4rem;
+}
+
+.network_img {
+    width: 12rem;
+    border: #00BD39 solid 0.1rem;
+}
+
+.check_ascii_title {
+    display: flex;
+    color: #00ff22;
+    font-size: 0.5rem;
+    transform: translateY(3rem);
+    background: black;
+}
+
+.check_on_chain_box {
+    border: #00BD39 solid 0.1rem;
+    padding: 3rem;
+    border-radius: 1rem;
+}
+
+.check_on_chain_box > p {
+    font-family: "Silkscreen", monospace;
+    color: #00ff22;
+}
+
+.explain_ix_div {
+    border: #0a9100 solid 0.1rem;
+    padding: 0.3rem 1.5rem;
+    border-radius: 1rem;
+    height: 12rem;
+    overflow-y: scroll;
+    scrollbar-width: none;
+}
+
+.explain_ix {
+    font-family: "Silkscreen", monospace;
+    color: #06c809;
+    font-size: 0.9rem;
+}
+
+.about_iq_logo {
+    width: 12rem;
+}
+
+.about_iq_div {
+    display: flex;
+    width: 100%;
+    padding: 4rem;
+    box-sizing: border-box;
+}
+
+.about_box_group {
+    margin-bottom: 6rem;
+}
+
+.about_box {
+    padding: 0 1rem;
+    box-sizing: border-box;
+}
+
+.about_title {
+    width: 13rem;
+    height: 100%;
+    margin: 0;
+}
+
+.about_title > p {
+
+    color: #06c809;
+    font-size: 1.2rem;
+    font-family: "Pixelify Sans", monospace;
+}
+
+.about_explain {
+    width: 40rem;
+}
+
+.about_explain > p {
+    color: #06c809;
+    font-size: 1.1rem;
+    font-family: "Pixelify Sans", monospace;
+
+}
+
+.about_box:hover {
+    background-color: #06c809;
+    color: black;
+}
+
+.about_box:hover p {
+    color: black;
+}
+
+.roadmap_img {
+    width: 50rem;
+    margin-bottom: 5rem;
+}
+
 @media (max-width: 600px) {
     .cupid_img {
         width: 25rem;
@@ -2081,32 +2501,6 @@ input[type=checkbox] {
         outline: none;
     }
 
-    .pink_button {
-        display: flex;
-        cursor: pointer;
-        width: 100%;
-        height: 10rem;
-        background: url('../img/heart.png') center;
-        justify-items: center;
-        align-items: center;
-        align-content: center;
-        justify-content: center;
-        border-radius: 0.42rem;
-        border: rgb(24, 177, 44) solid 0.3rem;
-    }
-
-    .pink_button > p {
-        font-size: 5rem;
-        margin: 0;
-        padding-bottom: 0.26rem;
-        color: rgb(7, 96, 25);
-    }
-
-    .pink_button:active {
-        filter: brightness(115%);
-
-
-    }
 
     .green_button {
         display: flex;
@@ -2328,7 +2722,6 @@ input[type=checkbox] {
         color: #2BD52D;
     }
 
-
     .check_menus {
         margin-bottom: 4rem;
         display: flex;
@@ -2490,6 +2883,123 @@ input[type=checkbox] {
         border: unset;
     }
 
+    .q_tab {
+        font-size: 2rem;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+    }
+
+    .feed_div {
+        width: 100%;
+        background: #000000;
+        margin-bottom: 1rem;
+        padding: 2rem;
+        color: white;
+        border-radius: 1rem;
+        border: green 0.1rem solid;
+        word-wrap: break-word;
+        font-family: "Kode Mono", monospace;
+        box-sizing: border-box;
+    }
+
+    .feed_handle {
+        font-size: 2rem;
+        font-family: "Kode Mono", monospace;
+        padding: 1rem;
+        background: green;
+        color: black;
+    }
+
+    .feed_text {
+        font-size: 2rem;
+        font-family: "Kode Mono", monospace;
+        white-space: break-spaces;
+        padding: 1rem;
+        color: white;
+    }
+
+    .feed_reply {
+        font-family: "Kode Mono", monospace;
+        white-space: break-spaces;
+        font-size: 2rem;
+        padding: 1rem;
+        background: green;
+        color: black;
+    }
+
+    .bottom_feed_links {
+        width: 100%;
+        display: flex;
+        font-size: 2rem;
+        flex-direction: row;
+        justify-content: space-between;
+        font-family: "Kode Mono", monospace;
+    }
+
+    .feeds_div {
+        width: 100%;
+        cursor: default;
+    }
+
+    .q_top_menu_div {
+        cursor: default;
+        width: 63.5rem;
+        display: flex;
+        background: black;
+        border: green solid 0.12rem;
+        font-family: "Kode Mono", monospace;
+        justify-content: space-evenly;
+        padding: 2rem;
+        box-sizing: border-box;
+        border-radius: 0.3rem;
+    }
+
+    .q_div_padding {
+        padding: 2rem;
+        box-sizing: border-box;
+    }
+
+    .q_menu_div {
+        cursor: default;
+        width: 63.5rem;
+        display: flex;
+        background: green;
+        border: green solid 0.12rem;
+        font-family: "Kode Mono", monospace;
+        justify-content: space-evenly;
+        padding: 2rem;
+        box-sizing: border-box;
+        border-radius: 0.3rem;
+    }
+
+    .diary_list_div {
+        padding: 2rem;
+        display: flex;
+        width: 63.5rem;
+        flex-direction: row;
+        overflow: scroll;
+    }
+
+    .diary_div {
+        padding: 2rem;
+        margin-right: 1rem;
+        min-width: 200rem;
+        border: green solid 0.12rem;
+        border-radius: 1rem;
+        box-sizing: border-box;
+        font-size: 2rem;
+    }
+
+    .q_brain {
+        width: 63.5rem;
+        padding: 2rem;
+    }
+
+    .q_page_btn {
+        font-size: 2rem;
+        cursor: pointer;
+    }
+
     .transaction_div {
         width: 100%;
         gap: 2rem;
@@ -2563,11 +3073,7 @@ input[type=checkbox] {
         margin-top: 2rem;
         transform: none;
     }
-    .love_in_button {
-        width: 100%;
-        margin-top: 2rem;
-        transform: none;
-    }
+
     .arrow_button {
         width: 5rem;
         height: 5rem;
@@ -2843,4 +3349,6 @@ input[type=checkbox] {
     .code_in_hub_title {
         width: 50rem;
     }
+
+
 }

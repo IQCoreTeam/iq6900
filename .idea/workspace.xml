@@ -5,7 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
-      <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/assets/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/code_in_contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/code_in_contract.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -270,7 +271,11 @@
       <workItem from="1745765829774" duration="161000" />
       <workItem from="1745831494157" duration="3693000" />
       <workItem from="1746248546903" duration="16468000" />
-      <workItem from="1748955254714" duration="294000" />
+      <workItem from="1748955254714" duration="1030000" />
+      <workItem from="1749468925514" duration="3895000" />
+      <workItem from="1749600321196" duration="4346000" />
+      <workItem from="1750129561442" duration="11000" />
+      <workItem from="1750136372181" duration="180000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />

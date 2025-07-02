@@ -25,6 +25,8 @@
         };
 
         function renderAboutPageTemplate() {
+            $(".pc_menu").css("display","none");
+
             $("#main_section").show();
             $("#main_section").empty();
             $("#main_section").append($aboutPageElement);

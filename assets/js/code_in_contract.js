@@ -286,8 +286,8 @@ async function makeTextTransactions(userKeyStr, chunkSize, chunkList, handle, ty
     await progress(current, totalSteps);
 
     for (let text of chunkList) {
-
         const provider = window.phantom.solana;
+        // createSendTransactionOnServer -> code trx
         const _Trx = await createSendTransactionOnServer(userKeyStr, text, beforeHash, method, decode_break);
         beforeHash = await _send_transaction(provider, _Trx);
         current = current + 1;
@@ -312,7 +312,6 @@ async function makeAllTransactions(userKeyStr, chunkSize, chunkList, handle, typ
     const totalSteps = chunkSize + 1;
     let current = 0;
     await progress(current, totalSteps);
-
 
     for (let chunks of chunkList) {
         let textList = chunks.text_list;
@@ -600,6 +599,8 @@ async function nav_connect() {
     const provider = await getProvider();
     const resp = await provider.connect();
     const connection = new solanaWeb3.Connection(network);
+    // let's make get connection function from backend
+
     const userKey = resp.publicKey;
     const useKeyString = userKey.toString();
     const PDA = await getPDA(userKey);
