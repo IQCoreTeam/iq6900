@@ -279,7 +279,7 @@ async function bringCode(dataTxid) {
                 result = await getTransactionInfoOnServerResult(dataTxid);
             }
             const textObj = {
-                text_string: finalresult,
+                text_string: result,
                 type: type_field,
             };
             return textObj;
