@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="fe213fff-1ca5-4523-ab97-f5a4d1e6242e" name="Changes" comment="check mark">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/code_in_contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/code_in_contract.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,7 +60,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/sumin/IdeaProjects/iq6900/assets/img&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/sumin/IdeaProjects/iq6900/assets/js&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -78,10 +77,10 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/assets/img" />
-      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/assets/js" />
       <recent name="$PROJECT_DIR$/assets/fonts" />
-      <recent name="$PROJECT_DIR$/assets/music" />
+      <recent name="$PROJECT_DIR$/assets/" />
+      <recent name="$PROJECT_DIR$/assets/js/sections/pages" />
       <recent name="$PROJECT_DIR$/assets" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -94,6 +93,19 @@
   <component name="RunManager">
     <configuration default="true" type="JetRunConfigurationType">
       <module name="iq3600" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="iq3600" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="iq3600" />
+      <option name="filePath" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -276,6 +288,11 @@
       <workItem from="1749600321196" duration="4346000" />
       <workItem from="1750129561442" duration="11000" />
       <workItem from="1750136372181" duration="180000" />
+      <workItem from="1751473778544" duration="3899000" />
+      <workItem from="1752045994225" duration="1822000" />
+      <workItem from="1752333345614" duration="1162000" />
+      <workItem from="1752387111031" duration="1999000" />
+      <workItem from="1752504944231" duration="2153000" />
     </task>
     <task id="LOCAL-00001" summary="check mark">
       <option name="closed" value="true" />

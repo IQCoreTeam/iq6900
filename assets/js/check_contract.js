@@ -258,7 +258,7 @@ async function bringCode(dataTxid) {
             };
             return asciiObj;
 
-        } if (type_field === 'base64' || type_field === 'text') {
+        } if (type_field === 'base64') {
             let result = "";
             if (isMerkleRoot(offset)) {
                 result = await getCacheFromServer(dataTxid, offset);
@@ -271,7 +271,20 @@ async function bringCode(dataTxid) {
             };
             return base64Obj;
 
-        } else {
+        }else if(type_field === 'text'){
+            let result = "";
+            if (isMerkleRoot(offset)) {
+                result = await getCacheFromServer(dataTxid, offset);
+            } else {
+                result = await getTransactionInfoOnServerResult(dataTxid);
+            }
+            const textObj = {
+                text_string: finalresult,
+                type: type_field,
+            };
+            return textObj;
+        }
+        else {
             let result = "";
             if (isMerkleRoot(offset)) {
                 result = await getCacheFromServer(dataTxid, offset);
@@ -935,7 +948,7 @@ async function seeTransaction(txid) {
     } else {
         $(".loading").css("display", "none");
         $(".coded_in_text").css("display", "flex");
-        $(".coded_in_text").text(asciiObj.ascii_string);
+        $(".coded_in_text").text(asciiObj.text_string);
         $(".see_code_in").css("display", "flex");
     }
 
