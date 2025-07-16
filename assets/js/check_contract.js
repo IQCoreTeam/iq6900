@@ -294,8 +294,8 @@ async function bringCode(dataTxid) {
             const width = 0;
             let finalResult = convertTextToEmoji(result); // does not work for base64 file type
 
-            const asciiObj = {
-                ascii_string: finalResult,
+            const textObj = {
+                text_string: finalResult,
                 width: width,
                 type: type_field
             };
