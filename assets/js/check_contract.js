@@ -299,7 +299,7 @@ async function bringCode(dataTxid) {
                 width: width,
                 type: type_field
             };
-            return asciiObj;
+            return textObj;
         }
     } else {
         return false;
