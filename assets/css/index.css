@@ -1825,13 +1825,7 @@ input[type=checkbox] {
     background-color: #06c809;
     display: flex;
 }
-.ca_pre{
-    background: #06c809;
-    color: black;
-    font-family: 'Silkscreen', monospace;
-    width: fit-content;
-    text-align: center;
-}
+
 .green_panel > p {
     font-family: "Silkscreen", monospace;
     color: black;
@@ -1916,6 +1910,7 @@ input[type=checkbox] {
     width: 100%;
     padding: 4rem;
     box-sizing: border-box;
+    flex-direction: column;
 }
 
 .about_box_group {
@@ -1964,7 +1959,13 @@ input[type=checkbox] {
     width: 50rem;
     margin-bottom: 5rem;
 }
-
+.ca_pre{
+    background: #06c809;
+    color: black;
+    font-family: 'Silkscreen', monospace;
+    width: fit-content;
+    text-align: center;
+}
 @media (max-width: 600px) {
     .cupid_img {
         width: 25rem;
