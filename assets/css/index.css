@@ -1964,7 +1964,10 @@ input[type=checkbox] {
     color: black;
     font-family: 'Silkscreen', monospace;
     width: fit-content;
+    padding: 1rem;
+    margin-top: 2rem;
     text-align: center;
+    font-size: 1rem;
 }
 @media (max-width: 600px) {
     .cupid_img {
