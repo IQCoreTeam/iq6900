@@ -244,7 +244,7 @@ async function bringCode(dataTxid) {
                    // return false;
                     finalresult = header_check.content
                     width = 30;
-                    type= 'text';
+                    type_field= 'text';
                 }
                 width = extractValue(header_check.header, 'width');
                 if (!header_check.content.includes("\n")) {
