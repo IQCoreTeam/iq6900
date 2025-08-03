@@ -242,8 +242,8 @@ async function bringCode(dataTxid) {
                 const header_check = processString(result);
                 if (header_check.header == null) {
                    // return false;
-                    finalresult = result
-                    width = 60
+                    finalresult = "Some transactions were dropped. Please try again"
+                    width = 30
                 }else {
                     width = extractValue(header_check.header, 'width');
                 }
