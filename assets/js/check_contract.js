@@ -243,7 +243,7 @@ async function bringCode(dataTxid) {
                 if (header_check.header == null) {
                    // return false;
                     finalresult = result
-                    width = 40
+                    width = 60
                 }else {
                     width = extractValue(header_check.header, 'width');
                 }
