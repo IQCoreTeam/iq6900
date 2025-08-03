@@ -242,11 +242,11 @@ async function bringCode(dataTxid) {
                 const header_check = processString(result);
                 if (header_check.header == null) {
                    // return false;
-                    finalresult = header_check.content
-                    width = 30;
-                    type_field= 'text';
+                    finalresult = result
+                    width = 40
+                }else {
+                    width = extractValue(header_check.header, 'width');
                 }
-                width = extractValue(header_check.header, 'width');
                 if (!header_check.content.includes("\n")) {
                     finalresult = await addLines(header_check.content, width);
                 } else {
