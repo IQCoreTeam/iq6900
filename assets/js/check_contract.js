@@ -242,7 +242,7 @@ async function bringCode(dataTxid) {
                 const header_check = processString(result);
                 if (header_check.header == null) {
                    // return false;
-                    finalresult = header_check.content;
+                    finalresult = header_check.content
                 }
                 width = extractValue(header_check.header, 'width');
                 if (!header_check.content.includes("\n")) {
