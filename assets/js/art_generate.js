@@ -56,7 +56,7 @@ function Generate_image() {
         formData.append("watermark", false);
     }
 
-    fetch("https://iq.newjeans.cloud/convert", {
+    fetch("https://iq.damn.it.com/convert", {
         method: "POST",
         body: formData,
     })
