@@ -812,7 +812,7 @@ async function bringDataHandler(targetAddress, menu) {
 
 async function publicSearch() {
     try {
-        let IQContractKeyString = "GbgepibVcKMbLW6QaFrhUGG34WDvJ2SKvznL2HUuquZh";
+        let IQContractKeyString = "EWNSTD8tikwqHMcRNuuNbZrnYJUiJdKq9UXLXSEU4wZ1";
         await bringDataHandler(IQContractKeyString, "SolanaInternet");
     } catch (err) {
         console.error(err);
