@@ -27,7 +27,7 @@ html, body {
     display: flex;
     position: relative;
     margin-top: 1rem;
-    width: 46rem;
+    height: 100dvh;
 }
 
 .background_black {
@@ -2074,7 +2074,8 @@ input[type=checkbox] {
         display: flex;
         position: relative;
         margin-top: 12rem;
-        width: 70rem;
+        height: 100dvh;
+
     }
 
 
