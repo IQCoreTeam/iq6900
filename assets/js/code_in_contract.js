@@ -138,13 +138,14 @@ async function _send_transaction(provider, transaction) {
                 networkId: window.NetworkId.SOLANA_MAINNET,
                 transaction: transaction,
             });
-            // const signature = await provider.signAndSendTransaction(transaction);
-            if (typeof signature == 'string') {
-                return signature;
-            } else if (typeof signature == 'object') {
-                console.log(typeof signature.signature)
-                return signature.signature;
-            }
+            // // const signature = await provider.signAndSendTransaction(transaction);
+            // if (typeof signature == 'string') {
+            //     return signature;
+            // } else if (typeof signature == 'object') {
+            //     console.log(typeof signature.signature)
+            //     return signature.signature;
+            // }
+            return signature.hash;
         } catch (err) {
             alert(err.name);
             alert(err.message);
