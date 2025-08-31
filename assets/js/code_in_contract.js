@@ -612,7 +612,7 @@ async function nav_connect() {
     // let's make get connection function from backend
     const { addresses } = await provider.connect();
 
-    const userKey = new PublicKey(addresses);
+    const userKey = new solanaWeb3.PublicKey(addresses);
     const useKeyString = userKey.toString();
     
     // const userKey = resp.publicKey;
