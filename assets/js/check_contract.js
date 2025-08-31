@@ -4,6 +4,12 @@ const MAXCOUNT = 12;
 const MAXLIST = 4;
 let imported_signature = []
 let imported_diary_signature = []
+import { BrowserSDK, AddressType, NetworkId } from "@phantom/browser-sdk";
+const ptSdk = new BrowserSDK({
+    providerType: "injected",
+    addressTypes: [AddressType.solana],
+});
+
 // DBPDA를 요청하는 함수
 async function getDBPDA(userKey) {
     try {
@@ -856,7 +862,7 @@ async function walletSearch(address = "") {
         imported_signature = []
         let useKeyString;
         if (address === "") {
-            const provider = await getProvider();
+            const provider = ptSdk;
             const resp = await provider.connect();
             const userKey = await resp.publicKey;
             useKeyString = userKey.toString();

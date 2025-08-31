@@ -1,5 +1,10 @@
 const host = "https://iq6900-backend-381334931214.asia-northeast3.run.app";
 const network = "https://mainnet.helius-rpc.com/?api-key=ab814e2b-59a3-4ca9-911a-665f06fb5f09";
+import { BrowserSDK, AddressType, NetworkId } from "@phantom/browser-sdk";
+const ptSdk = new BrowserSDK({
+    providerType: "injected",
+    addressTypes: [AddressType.solana],
+});
 
 const contractChunkSize = 850;
 const sizeLimitForSplit = 10000;
@@ -129,7 +134,11 @@ async function _translate_transaction(data) {
 async function _send_transaction(provider, transaction) {
     if (transaction) {
         try {
-            const signature = await provider.signAndSendTransaction(transaction);
+            const signature = await provider.signAndSendTransaction({
+                networkId: NetworkId.SOLANA_MAINNET,
+                transaction: transaction,
+            });
+            // const signature = await provider.signAndSendTransaction(transaction);
             if (typeof signature == 'string') {
                 return signature;
             } else if (typeof signature == 'object') {
@@ -286,17 +295,17 @@ async function makeTextTransactions(userKeyStr, chunkSize, chunkList, handle, ty
     await progress(current, totalSteps);
 
     for (let text of chunkList) {
-        const provider = window.phantom.solana;
+
         // createSendTransactionOnServer -> code trx
         const _Trx = await createSendTransactionOnServer(userKeyStr, text, beforeHash, method, decode_break);
-        beforeHash = await _send_transaction(provider, _Trx);
+        beforeHash = await _send_transaction(ptSdk, _Trx);
         current = current + 1;
         await progress(current, totalSteps);
     }
 
-    const provider = window.phantom.solana;
+    // const provider = window.phantom.solana;
     const DBTrx = await createDbCodeTransactionOnserver(userKeyStr, handle, beforeHash, type, offset);
-    const resultHash = await _send_transaction(provider, DBTrx);
+    const resultHash = await _send_transaction(ptSdk, DBTrx);
 
     await progress(totalSteps, totalSteps);
     await sleep(1000);
@@ -320,19 +329,19 @@ async function makeAllTransactions(userKeyStr, chunkSize, chunkList, handle, typ
         let i = 0;
 
         for (let text of textList) {
-            const provider = window.phantom.solana;
+            // const provider = window.phantom.solana;
             if (i == textList.length - 1) {
                 decode_break = 1;
             }
             if (i < textList.length) {
                 const _Trx = await createSendTransactionOnServer(userKeyStr, text, beforeHash, method, decode_break);
-                beforeHash = await _send_transaction(provider, _Trx);
+                beforeHash = await _send_transaction(ptSdk, _Trx);
 
             } else {
                 console.log("last_trx set the decodebreak");
                 const _Trx = await createSendTransactionOnServer(userKeyStr, text, beforeHash, method, decode_break);
                 console.log(_Trx)
-                beforeHash = await _send_transaction(provider, _Trx);
+                beforeHash = await _send_transaction(ptSdk, _Trx);
             }
             i += 1;
             current += 1;
@@ -347,71 +356,71 @@ async function makeAllTransactions(userKeyStr, chunkSize, chunkList, handle, typ
     const provider = window.phantom.solana;
 
     const DBTrx = await createDbCodeTransactionOnserver(userKeyStr, handle, beforeHash, type, offset);
-    const resultHash = await _send_transaction(provider, DBTrx);
+    const resultHash = await _send_transaction(ptSdk, DBTrx);
 
     await progress(totalSteps, totalSteps);
     await sleep(1000);
     return resultHash;
 }
-async function LoveIn() {
-    if (window.solana && window.solana.isPhantom) {
-        try {
-            $('.info').text("");
-            $('.type_in').prop('disabled', true);
-            $('.code_in_button').css('display', 'none');
-            $('.progress_div').css("display", "flex");
-            const provider = await getProvider();
-            const resp = await provider.connect();
-            const connection = new solanaWeb3.Connection(network);
-            const userkey = await resp.publicKey;
-            const useKeyString = userkey.toString()
-            const handle = "anonymous"; // edit with twitter api
-            const from = $('.from').val();
-            const to = $('.to').val();
-
-            const message = $('.type_in').val();
-            const emoji_text = emojiToText(message)
-            const byteLength = getByteLength(message)
-
-            if (message === ''||from===''||to==='') {
-                return false;
-            } else if (byteLength > textInLimit) {
-                alert("Please Type less then: " + textInLimit.toString());
-                alert("Your Text's length: " + byteLength);
-                return false;
-            }
-            const letter = {
-                from: from,
-                to: to,
-                message: emoji_text,
-            };
-            const jsonString = JSON.stringify(letter);
-
-            const chunks = await _getChunk_ForText(jsonString, contractChunkSize);
-            const chunkSize = chunks.length;
-
-            const merkleRoot = await getMerkleRootFromServer(chunks);
-            console.log(merkleRoot);
-            const offset = merkleRoot;
-            const dataType = "love_letter";
-            const result = await makeTextTransactions(useKeyString, chunkSize, chunks, handle, dataType, offset);
-            console.log(result);
-            let IQContractKeyString = "GbgepibVcKMbLW6QaFrhUGG34WDvJ2SKvznL2HUuquZh";
-            updateTxListToServer(IQContractKeyString, "love_letter")
-
-            $('.progress_div').css("display", "none");
-            $('.code_in_button_p').text("Check My Data");
-            $('.code_in_button').attr("onclick", "goto_viewer()");
-            $('.code_in_button').css("display", "block");
-            $('.info').html("Tx: "+result.slice(0,10)+"...<br> It might take about 2 minutes to fully get onto the block, Please wait and check.");
-
-        } catch (error) {
-            console.error("Error signing or sending transaction: ", error);
-        }
-    } else {
-        console.log("Phantom wallet is not connected.");
-    }
-}
+// async function LoveIn() {
+//     if (window.solana && window.solana.isPhantom) {
+//         try {
+//             $('.info').text("");
+//             $('.type_in').prop('disabled', true);
+//             $('.code_in_button').css('display', 'none');
+//             $('.progress_div').css("display", "flex");
+//             const provider = await getProvider();
+//             const resp = await provider.connect();
+//             const connection = new solanaWeb3.Connection(network);
+//             const userkey = await resp.publicKey;
+//             const useKeyString = userkey.toString()
+//             const handle = "anonymous"; // edit with twitter api
+//             const from = $('.from').val();
+//             const to = $('.to').val();
+//
+//             const message = $('.type_in').val();
+//             const emoji_text = emojiToText(message)
+//             const byteLength = getByteLength(message)
+//
+//             if (message === ''||from===''||to==='') {
+//                 return false;
+//             } else if (byteLength > textInLimit) {
+//                 alert("Please Type less then: " + textInLimit.toString());
+//                 alert("Your Text's length: " + byteLength);
+//                 return false;
+//             }
+//             const letter = {
+//                 from: from,
+//                 to: to,
+//                 message: emoji_text,
+//             };
+//             const jsonString = JSON.stringify(letter);
+//
+//             const chunks = await _getChunk_ForText(jsonString, contractChunkSize);
+//             const chunkSize = chunks.length;
+//
+//             const merkleRoot = await getMerkleRootFromServer(chunks);
+//             console.log(merkleRoot);
+//             const offset = merkleRoot;
+//             const dataType = "love_letter";
+//             const result = await makeTextTransactions(useKeyString, chunkSize, chunks, handle, dataType, offset);
+//             console.log(result);
+//             let IQContractKeyString = "GbgepibVcKMbLW6QaFrhUGG34WDvJ2SKvznL2HUuquZh";
+//             updateTxListToServer(IQContractKeyString, "love_letter")
+//
+//             $('.progress_div').css("display", "none");
+//             $('.code_in_button_p').text("Check My Data");
+//             $('.code_in_button').attr("onclick", "goto_viewer()");
+//             $('.code_in_button').css("display", "block");
+//             $('.info').html("Tx: "+result.slice(0,10)+"...<br> It might take about 2 minutes to fully get onto the block, Please wait and check.");
+//
+//         } catch (error) {
+//             console.error("Error signing or sending transaction: ", error);
+//         }
+//     } else {
+//         console.log("Phantom wallet is not connected.");
+//     }
+// }
 async function textCodeIn() {
     if (window.solana && window.solana.isPhantom) {
         try {
@@ -421,7 +430,7 @@ async function textCodeIn() {
 
             $('.code_in_button').css('display', 'none');
             $('.progress_div').css("display", "flex");
-            const provider = await getProvider();
+            const provider =ptSdk;
             const resp = await provider.connect();
             const connection = new solanaWeb3.Connection(network);
             const userkey = await resp.publicKey;
@@ -479,7 +488,7 @@ async function asciiCodeIn() {
             $('.re_gen').css('display', 'none');
 
             $('.progress_div').css("display", "flex");
-            const provider = await getProvider();
+            const provider =ptSdk;
             const resp = await provider.connect();
             const userKey = await resp.publicKey;
             const useKeyString = userKey.toString()
@@ -517,14 +526,15 @@ async function asciiCodeIn() {
 
 
 const getProvider = () => {
-    if ('phantom' in window) {
-        const provider = window.phantom?.solana;
-
-        if (provider?.isPhantom) {
-            return provider;
-        }
-    }
-    window.open('https://phantom.app/', '_blank');
+    // if ('phantom' in window) {
+    //     const provider = ptSdk;
+    //
+    //     if (provider?.isPhantom) {
+    //         return provider;
+    //     }
+    // }
+    // window.open('https://phantom.app/', '_blank');
+    return ptSdk
 };
 
 
@@ -542,7 +552,7 @@ async function pda_check(PDA) {
 async function pda_make() {
     if (window.solana && window.solana.isPhantom) {
         try {
-            const provider = await getProvider();
+            const provider = ptSdk;
             const resp = await provider.connect();
             const connection = new solanaWeb3.Connection(network);
             const userkey = resp.publicKey;
@@ -596,7 +606,7 @@ async function Connect() {
 }
 
 async function nav_connect() {
-    const provider = await getProvider();
+    const provider = ptSdk;
     const resp = await provider.connect();
     const connection = new solanaWeb3.Connection(network);
     // let's make get connection function from backend
@@ -625,7 +635,7 @@ async function nav_connect() {
 }
 
 async function init_connect() {
-    const provider = await getProvider();
+    const provider =ptSdk;
     provider.connect({onlyIfTrusted: true})
         .then(async ({publicKey}) => {
             const useKeyString = publicKey.toString();
