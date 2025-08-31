@@ -12,7 +12,7 @@
     <script type="module">
         import {BrowserSDK, AddressType} from 'https://cdn.jsdelivr.net/npm/@phantom/browser-sdk@0.3.8/+esm'
 
-        export const ptSdk = BrowserSDK({
+        export const ptSdk = new BrowserSDK({
             providerType: "injected",
             addressTypes: [AddressType.solana],
         });
