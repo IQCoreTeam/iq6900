@@ -135,7 +135,7 @@ async function _send_transaction(provider, transaction) {
     if (transaction) {
         try {
             const signature = await provider.signAndSendTransaction({
-                networkId: NetworkId.SOLANA_MAINNET,
+                networkId: window.NetworkId.SOLANA_MAINNET,
                 transaction: transaction,
             });
             // const signature = await provider.signAndSendTransaction(transaction);

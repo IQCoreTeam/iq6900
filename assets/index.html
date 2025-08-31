@@ -10,12 +10,13 @@
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
 
     <script type="module">
-        import {BrowserSDK, AddressType} from 'https://cdn.jsdelivr.net/npm/@phantom/browser-sdk@0.3.8/+esm'
+        import {BrowserSDK, AddressType ,NetworkId} from 'https://cdn.jsdelivr.net/npm/@phantom/browser-sdk@0.3.8/+esm'
 
         window.ptSdk = new BrowserSDK({
             providerType: "injected",
             addressTypes: [AddressType.solana],
         });
+        window.NetworkId = NetworkId;
 
     </script>
 
@@ -32,7 +33,7 @@
     <script type="text/javascript" src="js/sections/pages/generate_page.js?ver=20250209"></script>
     <script type="text/javascript" src="js/init.js?ver=20250211"></script>
     <script type="text/javascript" src="js/code_in_contract.js?ver=20250837"></script>
-    <script type="text/javascript" src="js/check_contract.js?ver=20250837"></script>
+    <script type="text/javascript" src="js/check_contract.js?ver=20250838"></script>
     <script type="text/javascript" src="js/compress.js?ver=20250209"></script>
     <script type="text/javascript" src="js/navigator.js?ver=20250209"></script>
     <script type="text/javascript" src="js/effects/loading.js?ver=20250209"></script>
