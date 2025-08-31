@@ -335,13 +335,13 @@ async function makeAllTransactions(userKeyStr, chunkSize, chunkList, handle, typ
             }
             if (i < textList.length) {
                 const _Trx = await createSendTransactionOnServer(userKeyStr, text, beforeHash, method, decode_break);
-                beforeHash = await _send_transaction(ptSdk, _Trx);
+                beforeHash = await _send_transaction(window.ptSdk, _Trx);
 
             } else {
                 console.log("last_trx set the decodebreak");
                 const _Trx = await createSendTransactionOnServer(userKeyStr, text, beforeHash, method, decode_break);
                 console.log(_Trx)
-                beforeHash = await _send_transaction(ptSdk, _Trx);
+                beforeHash = await _send_transaction(window.ptSdk, _Trx);
             }
             i += 1;
             current += 1;
@@ -356,7 +356,7 @@ async function makeAllTransactions(userKeyStr, chunkSize, chunkList, handle, typ
     const provider = window.phantom.solana;
 
     const DBTrx = await createDbCodeTransactionOnserver(userKeyStr, handle, beforeHash, type, offset);
-    const resultHash = await _send_transaction(ptSdk, DBTrx);
+    const resultHash = await _send_transaction(window.ptSdk, DBTrx);
 
     await progress(totalSteps, totalSteps);
     await sleep(1000);
@@ -430,7 +430,7 @@ async function textCodeIn() {
 
             $('.code_in_button').css('display', 'none');
             $('.progress_div').css("display", "flex");
-            const provider =ptSdk;
+            const provider = window.ptSdk;
             const resp = await provider.connect();
             const connection = new solanaWeb3.Connection(network);
             const userkey = await resp.publicKey;
@@ -488,7 +488,7 @@ async function asciiCodeIn() {
             $('.re_gen').css('display', 'none');
 
             $('.progress_div').css("display", "flex");
-            const provider =ptSdk;
+            const provider = window.ptSdk;
             const resp = await provider.connect();
             const userKey = await resp.publicKey;
             const useKeyString = userKey.toString()
@@ -534,7 +534,7 @@ const getProvider = () => {
     //     }
     // }
     // window.open('https://phantom.app/', '_blank');
-    return ptSdk
+    return window.ptSdk;
 };
 
 
@@ -552,7 +552,7 @@ async function pda_check(PDA) {
 async function pda_make() {
     if (window.solana && window.solana.isPhantom) {
         try {
-            const provider = ptSdk;
+            const provider = window.ptSdk;
             const resp = await provider.connect();
             const connection = new solanaWeb3.Connection(network);
             const userkey = resp.publicKey;
@@ -606,7 +606,7 @@ async function Connect() {
 }
 
 async function nav_connect() {
-    const provider = ptSdk;
+    const provider = window.ptSdk;
     const resp = await provider.connect();
     const connection = new solanaWeb3.Connection(network);
     // let's make get connection function from backend

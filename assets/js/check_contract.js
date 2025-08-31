@@ -862,7 +862,7 @@ async function walletSearch(address = "") {
         imported_signature = []
         let useKeyString;
         if (address === "") {
-            const provider = ptSdk;
+            const provider = window.ptSdk;
             const resp = await provider.connect();
             const userKey = await resp.publicKey;
             useKeyString = userKey.toString();
