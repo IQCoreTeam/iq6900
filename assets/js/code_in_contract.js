@@ -547,7 +547,6 @@ const getProvider = () => {
 
 async function pda_check(PDA) {
     try {
-        console.log('PDA check: ', PDA);
         const connection = new solanaWeb3.Connection(network);
 
         const accountInfo = await connection.getAccountInfo(PDA);
