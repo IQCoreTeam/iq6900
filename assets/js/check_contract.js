@@ -4,8 +4,8 @@ const MAXCOUNT = 12;
 const MAXLIST = 4;
 let imported_signature = []
 let imported_diary_signature = []
-import { BrowserSDK, AddressType, NetworkId } from "@phantom/browser-sdk";
-const ptSdk = new BrowserSDK({
+// import { BrowserSDK, AddressType, NetworkId } from "@phantom/browser-sdk";
+const ptSdk = new phantomwalletSdk.BrowserSDK({
     providerType: "injected",
     addressTypes: [AddressType.solana],
 });
