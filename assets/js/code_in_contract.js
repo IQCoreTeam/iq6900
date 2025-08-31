@@ -353,7 +353,7 @@ async function makeAllTransactions(userKeyStr, chunkSize, chunkList, handle, typ
             await sleep(1000);
         }
     }
-    const provider = window.phantom.solana;
+   // const provider = window.phantom.solana;
 
     const DBTrx = await createDbCodeTransactionOnserver(userKeyStr, handle, beforeHash, type, offset);
     const resultHash = await _send_transaction(window.ptSdk, DBTrx);
@@ -430,11 +430,17 @@ async function textCodeIn() {
 
             $('.code_in_button').css('display', 'none');
             $('.progress_div').css("display", "flex");
+            // const provider = window.ptSdk;
+            // const resp = await provider.connect();
+            // const connection = new solanaWeb3.Connection(network);
+            // const userkey = await resp.publicKey;
+            // const useKeyString = userkey.toString()
+            
             const provider = window.ptSdk;
-            const resp = await provider.connect();
-            const connection = new solanaWeb3.Connection(network);
-            const userkey = await resp.publicKey;
-            const useKeyString = userkey.toString()
+            const { addresses } = await provider.connect();
+            const userKey = new solanaWeb3.PublicKey(addresses[0].address);
+            const useKeyString = userKey.toString();
+            
             const handle = "anonymous"; // edit with twitter api
 
             const original_text = $('.type_in').val();
@@ -489,9 +495,10 @@ async function asciiCodeIn() {
 
             $('.progress_div').css("display", "flex");
             const provider = window.ptSdk;
-            const resp = await provider.connect();
-            const userKey = await resp.publicKey;
-            const useKeyString = userKey.toString()
+            const { addresses } = await provider.connect();
+            const userKey = new solanaWeb3.PublicKey(addresses[0].address);
+            const useKeyString = userKey.toString();
+            
             const handle = "anonymous"; // edit with twitter api
 
             let chunkObj = await _makeChunks();
@@ -555,10 +562,9 @@ async function pda_make() {
         try {
             const provider = window.ptSdk;
             const { addresses } = await provider.connect();
-
-            const userKey = new solanaWeb3.PublicKey(addresses);
+            const userKey = new solanaWeb3.PublicKey(addresses[0].address);
             const useKeyString = userKey.toString();
-            console.log(useKeyString)
+            // console.log(useKeyString)
             const transaction = await createInitTransactionOnServer(useKeyString)
             if (transaction != null) {
                 const {signature} = await provider.signAndSendTransaction(transaction);
@@ -608,12 +614,10 @@ async function Connect() {
 
 async function nav_connect() {
     const provider = window.ptSdk;
-    // const resp = await provider.connect();
-  //  const connection = new solanaWeb3.Connection(network);
-    // let's make get connection function from backend
+  
     const { addresses } = await provider.connect();
 
-    const userKey = new solanaWeb3.PublicKey(addresses);
+    const userKey = new solanaWeb3.PublicKey(addresses[0].address);
     const useKeyString = userKey.toString();
     
     // const userKey = resp.publicKey;

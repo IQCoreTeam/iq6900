@@ -863,9 +863,10 @@ async function walletSearch(address = "") {
         let useKeyString;
         if (address === "") {
             const provider = window.ptSdk;
-            const resp = await provider.connect();
-            const userKey = await resp.publicKey;
+            const { addresses } = await provider.connect();
+            const userKey = new solanaWeb3.PublicKey(addresses[0].address);
             useKeyString = userKey.toString();
+
         } else {
             useKeyString = address;
         }
