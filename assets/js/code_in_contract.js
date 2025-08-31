@@ -540,6 +540,7 @@ const getProvider = () => {
 
 async function pda_check(PDA) {
     try {
+        console.log('PDA check: ', PDA);
         const connection = new solanaWeb3.Connection(network);
 
         const accountInfo = await connection.getAccountInfo(PDA);
@@ -553,10 +554,10 @@ async function pda_make() {
     if (window.solana && window.solana.isPhantom) {
         try {
             const provider = window.ptSdk;
-            const resp = await provider.connect();
-            const connection = new solanaWeb3.Connection(network);
-            const userkey = resp.publicKey;
-            const useKeyString = userkey.toString()
+            const { addresses } = await provider.connect();
+
+            const userKey = new solanaWeb3.PublicKey(addresses);
+            const useKeyString = userKey.toString();
             console.log(useKeyString)
             const transaction = await createInitTransactionOnServer(useKeyString)
             if (transaction != null) {
