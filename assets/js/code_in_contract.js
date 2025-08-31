@@ -607,12 +607,16 @@ async function Connect() {
 
 async function nav_connect() {
     const provider = window.ptSdk;
-    const resp = await provider.connect();
-    const connection = new solanaWeb3.Connection(network);
+    // const resp = await provider.connect();
+  //  const connection = new solanaWeb3.Connection(network);
     // let's make get connection function from backend
+    const { addresses } = await provider.connect();
 
-    const userKey = resp.publicKey;
+    const userKey = new PublicKey(addresses);
     const useKeyString = userKey.toString();
+    
+    // const userKey = resp.publicKey;
+    // const useKeyString = userKey.toString();
     const PDA = await getPDA(userKey);
     const PDAPubKey = new solanaWeb3.PublicKey(PDA);
     const userstatus = await pda_check(PDAPubKey);
