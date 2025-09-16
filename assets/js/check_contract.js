@@ -227,7 +227,7 @@ async function bringCode(dataTxid) {
     const tail_tx = txInfo.tail_tx;
     const offset = txInfo.offset;
     const type_field = txInfo.type_field;
-    //console.log(txInfo)
+    console.log(txInfo)
 
     const encodedChunks = []
     let before_tx = tail_tx;
