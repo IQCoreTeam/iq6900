@@ -247,10 +247,10 @@ async function bringCode(dataTxid) {
             } else {
                 const header_check = processString(result);
                 if (header_check.header == null) {
-                   // return false;
+                    // return false;
                     finalresult = "Some transactions were dropped. Please try again"
                     width = 30
-                }else {
+                } else {
                     width = extractValue(header_check.header, 'width');
                 }
                 if (!header_check.content.includes("\n")) {
@@ -267,20 +267,8 @@ async function bringCode(dataTxid) {
             };
             return asciiObj;
 
-        } if (type_field === 'base64') {
-            let result = "";
-            if (isMerkleRoot(offset)) {
-                result = await getCacheFromServer(dataTxid, offset);
-            } else {
-                result = await getTransactionInfoOnServerResult(dataTxid);
-            }
-            const base64Obj = {
-                base64Str: result,
-                type: type_field
-            };
-            return base64Obj;
 
-        }else if(type_field === 'text'||type_field === 'base64'){
+        } else if (type_field === 'text' || type_field === 'base64') {
             let result = "";
             if (isMerkleRoot(offset)) {
                 result = await getCacheFromServer(dataTxid, offset);
@@ -292,8 +280,7 @@ async function bringCode(dataTxid) {
                 type: type_field,
             };
             return textObj;
-        }
-        else {
+        } else {
             let result = "";
             if (isMerkleRoot(offset)) {
                 result = await getCacheFromServer(dataTxid, offset);
@@ -480,6 +467,7 @@ async function bringOldCache(targetAddress, type, before) {
 
 let isFetching = 0;
 let isFetchingDiary = 0;
+
 async function bringOldCacheFeed(targetAddress, type) {
     const signatures = await getOldValues(Array.from(imported_signature), $('.feed_div:last .tx_id').text(), MAXLIST);
     if (isFetching || !signatures.length > 0) {
@@ -495,7 +483,7 @@ async function bringOldCacheFeed(targetAddress, type) {
 async function bringOldCacheDiary(targetAddress, type) {
     const signatures = await getOldValues(Array.from(imported_diary_signature), $('.diary_div:last .diary_tx').text(), MAXLIST);
     console.log("start loading diary");
-    if (isFetchingDiary){
+    if (isFetchingDiary) {
         return
     }
     if (!signatures.length > 0) {
@@ -507,6 +495,7 @@ async function bringOldCacheDiary(targetAddress, type) {
     await makeDiary(signatures);
     isFetchingDiary = 0;
 }
+
 async function bringOld(db_pda_address, before) {
     let new_old = null;
     $(".go_old").off('click');
@@ -560,6 +549,7 @@ async function bringOld(db_pda_address, before) {
     }
 
 }
+
 async function makeDiary(signatures) {
 
     let $DiaryDivElement = $('.diary_list_div');
@@ -863,7 +853,7 @@ async function walletSearch(address = "") {
         let useKeyString;
         if (address === "") {
             const provider = window.ptSdk;
-            const { addresses } = await provider.connect();
+            const {addresses} = await provider.connect();
             const userKey = new solanaWeb3.PublicKey(addresses[0].address);
             useKeyString = userKey.toString();
 
