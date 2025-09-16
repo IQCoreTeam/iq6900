@@ -112,11 +112,82 @@ function decode(t) {
 
 function audioPlayer(url) {
     const mp3Player = document.getElementById('mp3');
+    if (!mp3Player) {
+        console.warn('#mp3 element not found');
+        return;
+    }
+    // 기존 소스 제거 후 주입
+    while (mp3Player.firstChild) mp3Player.removeChild(mp3Player.firstChild);
     const source = document.createElement('source');
     source.src = url;
-    source.type = 'audio/aac';
+    source.type = 'audio/mpeg'; // mp3에 맞게 수정
     mp3Player.appendChild(source);
+    mp3Player.load();
+}
+// ... existing code ...
 
+async function renderFrames() {
+    // 대상 요소 준비될 때까지 대기
+    let mp3Player = document.getElementById('mp3');
+    let $preElement = $('.mv_display');
+
+    if (!mp3Player || !$preElement.length) {
+        await new Promise((resolve) => {
+            const observer = new MutationObserver(() => {
+                mp3Player = document.getElementById('mp3');
+                $preElement = $('.mv_display');
+                if (mp3Player && $preElement.length) {
+                    observer.disconnect();
+                    resolve();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+    }
+
+    const framesPerSecond = 30;
+    const linesPerFrame = FRAME_HEIGHT + SKIP_LINES;
+    const flatFrames = [];
+
+    let lastProcessed = 0;
+
+    // 최소 한 프레임이 들어올 때까지 대기 (실제 문자열인지 체크)
+    while (typeof frameQueue[0] !== 'string' || frameQueue[0].length === 0) {
+        console.log("renderFrames waiting frames...");
+        await new Promise(res => setTimeout(res, 50));
+    }
+
+    // frameQueue를 평탄화하여 flatFrames에 누적
+    setInterval(() => {
+        while (typeof frameQueue[lastProcessed] !== 'undefined') {
+            const raw = frameQueue[lastProcessed];
+            if (!raw || typeof raw !== 'string') break;
+
+            const lines = raw.split("\n");
+            for (let i = 0; i + FRAME_HEIGHT <= lines.length; i += linesPerFrame) {
+                const frame = lines.slice(i, i + FRAME_HEIGHT).join("\n");
+                flatFrames.push(frame);
+            }
+            lastProcessed++;
+        }
+    }, 200);
+
+    function renderLoop() {
+        if (!videoCtrl.pause) {
+            // 오디오가 준비 안되었을 때를 대비해 안전 처리
+            let ct = (mp3Player && typeof mp3Player.currentTime === 'number') ? mp3Player.currentTime : 0;
+            const currentTime = Math.max(0, ct - skipTime); // 음수 방지
+            const frameIndex = Math.max(0, Math.floor(currentTime * framesPerSecond));
+
+            const frame = flatFrames[frameIndex];
+            if (frame) {
+                $preElement.text(frame);
+            }
+        }
+        requestAnimationFrame(renderLoop);
+    }
+
+    renderLoop();
 }
 
 async function startSound() {
@@ -135,93 +206,93 @@ function playBtn() {
     videoCtrl.stateChange();
 }
 
-async function renderFrames() {
-    let queueIndex = 0;
-    while (!isDone ) {
-        console.log("started")
-        if (queueIndex < frameQueue.length) {
-            try {
-                const rawStr = frameQueue[queueIndex];
-
-                queueIndex++;
-
-                const lines = rawStr.split("\n");
-                let lineIndex = 0;
-
-                const $preElement = $('.mv_display');
-
-                while (lineIndex + FRAME_HEIGHT <= lines.length) {
-                    if (videoCtrl.pause == true) {
-                        console.log('waiting')
-                        await new Promise(res => setTimeout(res, 33.333));
-                    } else {
-                        const frameLines = lines.slice(lineIndex, lineIndex + FRAME_HEIGHT);
-                        $preElement.text(frameLines.join("\n"));
-
-                        await new Promise(res => setTimeout(res, 33.333));
-                        lineIndex += FRAME_HEIGHT + SKIP_LINES;
-                    }
-
-                }
-
-            }catch (e){
-                console.log('no frames')
-            }
-        } else {
-            console.log('await')
-            await new Promise(res => setTimeout(res, 100));
-        }
-    }
-}
-//
 // async function renderFrames() {
-//     const mp3Player = document.getElementById('mp3');
-//     const $preElement = $('.mv_display');
-//     const framesPerSecond = 30;
-//     const linesPerFrame = FRAME_HEIGHT + SKIP_LINES;
+//     let queueIndex = 0;
+//     while (!isDone ) {
+//         console.log("started")
+//         if (queueIndex < frameQueue.length) {
+//             try {
+//                 const rawStr = frameQueue[queueIndex];
 //
-//     const flatFrames = [];
+//                 queueIndex++;
 //
+//                 const lines = rawStr.split("\n");
+//                 let lineIndex = 0;
 //
-//     let lastProcessed = 0;
-//     while (!frameQueue[0]) {
-//         console.log("music waiting frames...");
-//         await new Promise(res => setTimeout(res, 50));
-//     }
+//                 const $preElement = $('.mv_display');
 //
+//                 while (lineIndex + FRAME_HEIGHT <= lines.length) {
+//                     if (videoCtrl.pause == true) {
+//                         console.log('waiting')
+//                         await new Promise(res => setTimeout(res, 33.333));
+//                     } else {
+//                         const frameLines = lines.slice(lineIndex, lineIndex + FRAME_HEIGHT);
+//                         $preElement.text(frameLines.join("\n"));
 //
-//     setInterval(() => {
-//         while (frameQueue[lastProcessed] !== undefined) {
-//             const raw = frameQueue[lastProcessed];
-//             if (!raw) {
-//                 break;
+//                         await new Promise(res => setTimeout(res, 33.333));
+//                         lineIndex += FRAME_HEIGHT + SKIP_LINES;
+//                     }
+//
+//                 }
+//
+//             }catch (e){
+//                 console.log('no frames')
 //             }
-//             const lines = raw.split("\n");
-//             for (let i = 0; i + FRAME_HEIGHT <= lines.length; i += linesPerFrame) {
-//                 const frame = lines.slice(i, i + FRAME_HEIGHT).join("\n");
-//                 flatFrames.push(frame);
-//             }
-//             lastProcessed++;
+//         } else {
+//             console.log('await')
+//             await new Promise(res => setTimeout(res, 100));
 //         }
-//     }, 200);
-//
-//
-//     function renderLoop() {
-//         if (!videoCtrl.pause) {
-//             const currentTime = mp3Player.currentTime-skipTime;
-//             const frameIndex = Math.floor(currentTime * framesPerSecond);
-//             const frame = flatFrames[frameIndex];
-//
-//             if (frame) {
-//                 $preElement.text(frame);
-//             }
-//         }
-//
-//         requestAnimationFrame(renderLoop);
 //     }
-//
-//     renderLoop();
 // }
+
+async function renderFrames() {
+    const mp3Player = document.getElementById('mp3');
+    const $preElement = $('.mv_display');
+    const framesPerSecond = 30;
+    const linesPerFrame = FRAME_HEIGHT + SKIP_LINES;
+
+    const flatFrames = [];
+
+
+    let lastProcessed = 0;
+    while (!frameQueue[0]) {
+        console.log("music waiting frames...");
+        await new Promise(res => setTimeout(res, 50));
+    }
+
+
+    setInterval(() => {
+        while (frameQueue[lastProcessed] !== undefined) {
+            const raw = frameQueue[lastProcessed];
+            if (!raw) {
+                break;
+            }
+            const lines = raw.split("\n");
+            for (let i = 0; i + FRAME_HEIGHT <= lines.length; i += linesPerFrame) {
+                const frame = lines.slice(i, i + FRAME_HEIGHT).join("\n");
+                flatFrames.push(frame);
+            }
+            lastProcessed++;
+        }
+    }, 200);
+
+
+    function renderLoop() {
+        if (!videoCtrl.pause) {
+            const currentTime = mp3Player.currentTime-skipTime;
+            const frameIndex = Math.floor(currentTime * framesPerSecond);
+            const frame = flatFrames[frameIndex];
+
+            if (frame) {
+                $preElement.text(frame);
+            }
+        }
+
+        requestAnimationFrame(renderLoop);
+    }
+
+    renderLoop();
+}
 
 async function startFetcher(txList) {
 
