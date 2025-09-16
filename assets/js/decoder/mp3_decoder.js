@@ -258,10 +258,10 @@ async function startFetcher(txList) {
             frameQueue[i] = fallbackFrame();
         }
     }
-    // completedFetchers++;
-    // if (completedFetchers === MAX_CONCURRENT_FETCHERS) {
-    //     isDone = true;
-    // }
+    completedFetchers++;
+    if (completedFetchers === MAX_CONCURRENT_FETCHERS) {
+        isDone = true;
+    }
 }
 
 function fallbackFrame() {
@@ -283,10 +283,10 @@ async function startVideo() {
     const txList = content.trim().split("\n").map(line => line.trim());
 
     // Bring frames from blockchain,
-    // for (let i = 0; i < MAX_CONCURRENT_FETCHERS; i++) {
-    //     startFetcher(txList);
-    // }
-    startFetcher(txList);
+    for (let i = 0; i < MAX_CONCURRENT_FETCHERS; i++) {
+        startFetcher(txList);
+    }
+    // startFetcher(txList);
 
     // start render
     await new Promise(res => setTimeout(res, 200));
