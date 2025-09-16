@@ -27,7 +27,7 @@ class Controller {
         if (btn.innerText === "Loading") {
             return;
         }
-        if (this.start == true) {
+        if (this.start === true) {
             this.start = false;
             console.log('start playing video')
             startVideo();
@@ -53,10 +53,23 @@ const videoCtrl = new Controller();
 
 
 window.addEventListener("DOMContentLoaded", function () {
-    console.log("dom loaded")
-    fetchMusicFromBlockchain();
-}, false);
+    console.log("dom loaded");
 
+    const btn = document.getElementById("playbtn");
+    if (btn) {
+        fetchMusicFromBlockchain();
+    } else {
+        console.warn("#playbtn not yet found, retrying...");
+        const observer = new MutationObserver(() => {
+            const lateBtn = document.getElementById("playbtn");
+            if (lateBtn) {
+                fetchMusicFromBlockchain();
+                observer.disconnect();
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+}, false);
 
 async function fetchMusicFromBlockchain() {
     try {
