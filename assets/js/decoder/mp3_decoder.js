@@ -67,13 +67,13 @@ class Controller {
 const videoCtrl = new Controller();
 
 
-window.addEventListener("DOMContentLoaded", function () {
-    console.log("dom loaded")
-    fetchMusicFromBlockchain();
-}, false);
+// window.addEventListener("DOMContentLoaded", function () {
+//     console.log("dom loaded")
+//     fetchMusicFromBlockchain();
+// }, false);
 
 
-async function fetchMusicFromBlockchain() {
+export async function fetchMusicFromBlockchain() {
     // About 페이지가 아직 mount되지 않은 경우를 방지
     if (!document.getElementById('playbtn')) {
         console.warn('fetchMusicFromBlockchain called before About page mounted; skipping this attempt.');

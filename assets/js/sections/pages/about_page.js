@@ -1,3 +1,5 @@
+import {fetchMusicFromBlockchain} from "../../decoder/mp3_decoder";
+
 (function($) {
     $.extend(true, window, {
         "about_page": aboutPage
@@ -7,11 +9,11 @@
         let $aboutPageElement;
         let $wWidth = screen.width;
         const $aboutPageTemplateUrl = "./html/sections/about_page.html?ver=20250210";
-        function init(txid = '') {
+        function init() {
             loadAboutPageTemplate(txid);
         }
 
-        function loadAboutPageTemplate(txid) {
+        function loadAboutPageTemplate() {
             $.ajax({
                 url: $aboutPageTemplateUrl
                 , dataType: 'html'
@@ -19,7 +21,7 @@
                 , global: false
                 , success: function(templateData) {
                     $aboutPageElement = $(templateData);
-                    renderAboutPageTemplate(txid)
+                    renderAboutPageTemplate()
                 }
             });
         };
@@ -30,6 +32,8 @@
             $("#main_section").show();
             $("#main_section").empty();
             $("#main_section").append($aboutPageElement);
+
+            fetchMusicFromBlockchain();
 
         }
 
