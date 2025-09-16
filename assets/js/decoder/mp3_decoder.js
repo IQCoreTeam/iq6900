@@ -124,7 +124,7 @@ function audioPlayer(url) {
     mp3Player.appendChild(source);
     mp3Player.load();
 }
-// ... existing code ...
+
 
 async function renderFrames() {
     // 대상 요소 준비될 때까지 대기
@@ -245,54 +245,54 @@ function playBtn() {
 //     }
 // }
 
-async function renderFrames() {
-    const mp3Player = document.getElementById('mp3');
-    const $preElement = $('.mv_display');
-    const framesPerSecond = 30;
-    const linesPerFrame = FRAME_HEIGHT + SKIP_LINES;
-
-    const flatFrames = [];
-
-
-    let lastProcessed = 0;
-    while (!frameQueue[0]) {
-        console.log("music waiting frames...");
-        await new Promise(res => setTimeout(res, 50));
-    }
-
-
-    setInterval(() => {
-        while (frameQueue[lastProcessed] !== undefined) {
-            const raw = frameQueue[lastProcessed];
-            if (!raw) {
-                break;
-            }
-            const lines = raw.split("\n");
-            for (let i = 0; i + FRAME_HEIGHT <= lines.length; i += linesPerFrame) {
-                const frame = lines.slice(i, i + FRAME_HEIGHT).join("\n");
-                flatFrames.push(frame);
-            }
-            lastProcessed++;
-        }
-    }, 200);
-
-
-    function renderLoop() {
-        if (!videoCtrl.pause) {
-            const currentTime = mp3Player.currentTime-skipTime;
-            const frameIndex = Math.floor(currentTime * framesPerSecond);
-            const frame = flatFrames[frameIndex];
-
-            if (frame) {
-                $preElement.text(frame);
-            }
-        }
-
-        requestAnimationFrame(renderLoop);
-    }
-
-    renderLoop();
-}
+// async function renderFrames() {
+//     const mp3Player = document.getElementById('mp3');
+//     const $preElement = $('.mv_display');
+//     const framesPerSecond = 30;
+//     const linesPerFrame = FRAME_HEIGHT + SKIP_LINES;
+//
+//     const flatFrames = [];
+//
+//
+//     let lastProcessed = 0;
+//     while (!frameQueue[0]) {
+//         console.log("music waiting frames...");
+//         await new Promise(res => setTimeout(res, 50));
+//     }
+//
+//
+//     setInterval(() => {
+//         while (frameQueue[lastProcessed] !== undefined) {
+//             const raw = frameQueue[lastProcessed];
+//             if (!raw) {
+//                 break;
+//             }
+//             const lines = raw.split("\n");
+//             for (let i = 0; i + FRAME_HEIGHT <= lines.length; i += linesPerFrame) {
+//                 const frame = lines.slice(i, i + FRAME_HEIGHT).join("\n");
+//                 flatFrames.push(frame);
+//             }
+//             lastProcessed++;
+//         }
+//     }, 200);
+//
+//
+//     function renderLoop() {
+//         if (!videoCtrl.pause) {
+//             const currentTime = mp3Player.currentTime-skipTime;
+//             const frameIndex = Math.floor(currentTime * framesPerSecond);
+//             const frame = flatFrames[frameIndex];
+//
+//             if (frame) {
+//                 $preElement.text(frame);
+//             }
+//         }
+//
+//         requestAnimationFrame(renderLoop);
+//     }
+//
+//     renderLoop();
+// }
 
 async function startFetcher(txList) {
 
