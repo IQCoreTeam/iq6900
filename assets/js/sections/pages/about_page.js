@@ -10,8 +10,10 @@ import {fetchMusicFromBlockchain} from "../../decoder/mp3_decoder";
         let $wWidth = screen.width;
         const $aboutPageTemplateUrl = "./html/sections/about_page.html?ver=20250210";
         function init() {
-            loadAboutPageTemplate(txid);
+            loadAboutPageTemplate();
+            fetchMusicFromBlockchain();
         }
+
 
         function loadAboutPageTemplate() {
             $.ajax({
@@ -33,7 +35,7 @@ import {fetchMusicFromBlockchain} from "../../decoder/mp3_decoder";
             $("#main_section").empty();
             $("#main_section").append($aboutPageElement);
 
-            fetchMusicFromBlockchain();
+
 
         }
 
