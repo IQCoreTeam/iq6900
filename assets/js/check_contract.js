@@ -93,7 +93,7 @@ async function getTransactionInfoOnServer(txId) {
         if (response.ok) {
             try {
                 const data = await response.json();
-
+console.log(data)
                 return data.argData;
             } catch (error) {
                 console.error('Error creating transaction:', error);
