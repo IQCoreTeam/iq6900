@@ -17,27 +17,12 @@ class Controller {
 
     init() {
         const btn = document.getElementById('playbtn');
-        if (btn) {
-            btn.innerText = "Start";
-        } else {
-            console.warn('#playbtn not found in init(); will wait for mount.');
-            // About 페이지가 뒤늦게 붙는 경우 대비
-            const observer = new MutationObserver(() => {
-                const lateBtn = document.getElementById('playbtn');
-                if (lateBtn) {
-                    lateBtn.innerText = "Start";
-                    observer.disconnect();
-                }
-            });
-            observer.observe(document.body, { childList: true, subtree: true });
-        }
+        btn.innerText = "Start";
     }
 
     async stateChange() {
         const mp3Player = document.getElementById('mp3');
         const btn = document.getElementById('playbtn');
-
-        if (!btn) return; // 안전 가드
 
         if (btn.innerText === "Loading") {
             return;
@@ -74,12 +59,6 @@ const videoCtrl = new Controller();
 
 
 async function fetchMusicFromBlockchain() {
-    // About 페이지가 아직 mount되지 않은 경우를 방지
-    if (!document.getElementById('playbtn')) {
-        console.warn('fetchMusicFromBlockchain called before About page mounted; skipping this attempt.');
-        return;
-    }
-
     try {
         const $div = $('.mv_console_div');
 
@@ -106,10 +85,7 @@ async function fetchMusicFromBlockchain() {
     } catch (error) {
         console.log('error', error);
     } finally {
-        // 버튼이 있을 때만 init 호출
-        if (document.getElementById('playbtn')) {
-            videoCtrl.init();
-        }
+        videoCtrl.init();
     }
 }
 
@@ -126,28 +102,21 @@ function decode(t) {
     }
 
     //Create blob from byte array
-    const blob = new Blob([bytes], { type: 'audio/mpeg' }); // mp3에 맞춰 수정
+    const blob = new Blob([bytes], {type: 'audio/mp3'});
 
     //Create URL Object
     const url = window.URL.createObjectURL(blob);
     audioPlayer(url);
+
 }
 
 function audioPlayer(url) {
     const mp3Player = document.getElementById('mp3');
-    if (!mp3Player) {
-        console.warn('#mp3 element not found');
-        return;
-    }
-    // 중복 source 정리
-    while (mp3Player.firstChild) {
-        mp3Player.removeChild(mp3Player.firstChild);
-    }
     const source = document.createElement('source');
     source.src = url;
-    source.type = 'audio/mpeg';
+    source.type = 'audio/aac';
     mp3Player.appendChild(source);
-    mp3Player.load();
+
 }
 
 async function startSound() {
