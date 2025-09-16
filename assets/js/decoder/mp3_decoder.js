@@ -254,7 +254,7 @@ async function startFetcher(txList) {
             frameQueue[i] = typeof result?.base64Str === "string" ? result.base64Str : fallbackFrame();
 
         } catch (err) {
-            console.warn(`⚠️ Error fetching tx ${txId}:`, err);
+          //  console.warn(`⚠️ Error fetching tx ${txId}:`, err);
             frameQueue[i] = fallbackFrame();
         }
     }
