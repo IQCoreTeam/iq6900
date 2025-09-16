@@ -1,4 +1,3 @@
-import {fetchMusicFromBlockchain} from "../../decoder/mp3_decoder";
 
 (function($) {
     $.extend(true, window, {
