@@ -8,6 +8,7 @@ let fetchIndex = 0;
 let completedFetchers = 0;
 let isDone = false;
 const skipTime = 11.8;
+
 class Controller {
     constructor() {
         this.pause = false;
@@ -208,7 +209,7 @@ async function renderFrames() {
 
     function renderLoop() {
         if (!videoCtrl.pause) {
-            const currentTime = mp3Player.currentTime-skipTime;
+            const currentTime = mp3Player.currentTime - skipTime;
             const frameIndex = Math.floor(currentTime * framesPerSecond);
             const frame = flatFrames[frameIndex];
 
@@ -227,9 +228,9 @@ async function startFetcher(txList) {
 
     $('.mv_right_status_text').text('[STATUS] Streaming..');
     while (true) {
-
+        let i = 0;
         try {
-            const i = fetchIndex++;
+            i = fetchIndex++;
             if (i >= txList.length) {
                 $('.mv_right_status_text').text('[STATUS] Complete!');
                 break;
