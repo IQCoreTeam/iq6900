@@ -73,7 +73,7 @@ const videoCtrl = new Controller();
 // }, false);
 
 
-export async function fetchMusicFromBlockchain() {
+async function fetchMusicFromBlockchain() {
     // About 페이지가 아직 mount되지 않은 경우를 방지
     if (!document.getElementById('playbtn')) {
         console.warn('fetchMusicFromBlockchain called before About page mounted; skipping this attempt.');
