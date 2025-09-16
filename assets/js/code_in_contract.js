@@ -562,6 +562,7 @@ async function pda_make() {
         try {
             const provider = window.ptSdk;
             const { addresses } = await provider.connect();
+            console.log(addresses)
             const userKey = new solanaWeb3.PublicKey(addresses[0].address);
             const useKeyString = userKey.toString();
             // console.log(useKeyString)
@@ -668,6 +669,5 @@ async function init_connect() {
         }).catch(() => {
         // Handle connection failure as usual
     })
-
 
 }
