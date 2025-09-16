@@ -4,12 +4,6 @@ const MAXCOUNT = 12;
 const MAXLIST = 4;
 let imported_signature = []
 let imported_diary_signature = []
-// import { BrowserSDK, AddressType, NetworkId } from "@phantom/browser-sdk";
-// const ptSdk = new phantomwalletSdk.BrowserSDK({
-//     providerType: "injected",
-//     addressTypes: [AddressType.solana],
-// });
-
 // DBPDA를 요청하는 함수
 async function getDBPDA(userKey) {
     try {
@@ -221,14 +215,12 @@ function isMerkleRoot(str) {
 }
 
 async function bringCode(dataTxid) {
-
     const txInfo = await getTransactionInfoOnServer(dataTxid);
-
-    //const blockTime = txInfo.blockTime;
+    const blockTime = txInfo.blockTime;
     const tail_tx = txInfo.tail_tx;
     const offset = txInfo.offset;
     const type_field = txInfo.type_field;
-
+    //console.log(txInfo)
 
     const encodedChunks = []
     let before_tx = tail_tx;
@@ -249,12 +241,9 @@ async function bringCode(dataTxid) {
             } else {
                 const header_check = processString(result);
                 if (header_check.header == null) {
-                    // return false;
-                    finalresult = "Some transactions were dropped. Please try again"
-                    width = 30
-                } else {
-                    width = extractValue(header_check.header, 'width');
+                    return false;
                 }
+                width = extractValue(header_check.header, 'width');
                 if (!header_check.content.includes("\n")) {
                     finalresult = await addLines(header_check.content, width);
                 } else {
@@ -269,19 +258,19 @@ async function bringCode(dataTxid) {
             };
             return asciiObj;
 
-
-        } else if (type_field === 'text' || type_field === 'base64') {
+        } if (type_field === 'base64' || type_field === 'text') {
             let result = "";
             if (isMerkleRoot(offset)) {
                 result = await getCacheFromServer(dataTxid, offset);
             } else {
                 result = await getTransactionInfoOnServerResult(dataTxid);
             }
-            const textObj = {
-                text_string: result,
-                type: type_field,
+            const base64Obj = {
+                base64Str: result,
+                type: type_field
             };
-            return textObj;
+            return base64Obj;
+
         } else {
             let result = "";
             if (isMerkleRoot(offset)) {
@@ -292,12 +281,12 @@ async function bringCode(dataTxid) {
             const width = 0;
             let finalResult = convertTextToEmoji(result); // does not work for base64 file type
 
-            const textObj = {
-                text_string: finalResult,
+            const asciiObj = {
+                ascii_string: finalResult,
                 width: width,
                 type: type_field
             };
-            return textObj;
+            return asciiObj;
         }
     } else {
         return false;
@@ -469,7 +458,6 @@ async function bringOldCache(targetAddress, type, before) {
 
 let isFetching = 0;
 let isFetchingDiary = 0;
-
 async function bringOldCacheFeed(targetAddress, type) {
     const signatures = await getOldValues(Array.from(imported_signature), $('.feed_div:last .tx_id').text(), MAXLIST);
     if (isFetching || !signatures.length > 0) {
@@ -485,7 +473,7 @@ async function bringOldCacheFeed(targetAddress, type) {
 async function bringOldCacheDiary(targetAddress, type) {
     const signatures = await getOldValues(Array.from(imported_diary_signature), $('.diary_div:last .diary_tx').text(), MAXLIST);
     console.log("start loading diary");
-    if (isFetchingDiary) {
+    if (isFetchingDiary){
         return
     }
     if (!signatures.length > 0) {
@@ -497,7 +485,6 @@ async function bringOldCacheDiary(targetAddress, type) {
     await makeDiary(signatures);
     isFetchingDiary = 0;
 }
-
 async function bringOld(db_pda_address, before) {
     let new_old = null;
     $(".go_old").off('click');
@@ -551,7 +538,6 @@ async function bringOld(db_pda_address, before) {
     }
 
 }
-
 async function makeDiary(signatures) {
 
     let $DiaryDivElement = $('.diary_list_div');
@@ -854,11 +840,10 @@ async function walletSearch(address = "") {
         imported_signature = []
         let useKeyString;
         if (address === "") {
-            const provider = window.ptSdk;
-            const {addresses} = await provider.connect();
-            const userKey = new solanaWeb3.PublicKey(addresses[0].address);
+            const provider = await getProvider();
+            const resp = await provider.connect();
+            const userKey = await resp.publicKey;
             useKeyString = userKey.toString();
-
         } else {
             useKeyString = address;
         }
@@ -950,7 +935,7 @@ async function seeTransaction(txid) {
     } else {
         $(".loading").css("display", "none");
         $(".coded_in_text").css("display", "flex");
-        $(".coded_in_text").text(asciiObj.text_string);
+        $(".coded_in_text").text(asciiObj.ascii_string);
         $(".see_code_in").css("display", "flex");
     }
 
@@ -977,6 +962,5 @@ async function seeTransaction(txid) {
 
 
 }
-
 
 
