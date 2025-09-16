@@ -51,25 +51,38 @@ class Controller {
 
 const videoCtrl = new Controller();
 
-
-window.addEventListener("DOMContentLoaded", function () {
-    console.log("dom loaded");
-
-    const btn = document.getElementById("playbtn");
-    if (btn) {
-        fetchMusicFromBlockchain();
-    } else {
-        console.warn("#playbtn not yet found, retrying...");
-        const observer = new MutationObserver(() => {
-            const lateBtn = document.getElementById("playbtn");
-            if (lateBtn) {
-                fetchMusicFromBlockchain();
-                observer.disconnect();
-            }
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
+// 즉시/지연 로드 모두 대응하는 부팅 함수 노출
+window.musicBoot = function() {
+    function start() {
+        console.log("musicBoot: start");
+        const btn = document.getElementById("playbtn");
+        if (btn) {
+            fetchMusicFromBlockchain();
+        } else {
+            console.warn("#playbtn not yet found, observing...");
+            const observer = new MutationObserver(() => {
+                const lateBtn = document.getElementById("playbtn");
+                if (lateBtn) {
+                    fetchMusicFromBlockchain();
+                    observer.disconnect();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
     }
-}, false);
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", start, { once: true });
+    } else {
+        start();
+    }
+};
+
+// 중복 로드 방지 플래그
+window.__mp3DecoderLoaded = true;
+
+// 기존 DOMContentLoaded 리스너는 동적 로드 시 실행되지 않으므로 제거/대체
+// window.addEventListener("DOMContentLoaded", ... );
 
 async function fetchMusicFromBlockchain() {
     try {
@@ -127,9 +140,11 @@ function audioPlayer(url) {
     const mp3Player = document.getElementById('mp3');
     const source = document.createElement('source');
     source.src = url;
-    source.type = 'audio/aac';
+    // MIME 타입을 mp3에 맞게 수정
+    source.type = 'audio/mpeg';
     mp3Player.appendChild(source);
-
+    // 소스 명시적 로드
+    mp3Player.load();
 }
 
 async function startSound() {
