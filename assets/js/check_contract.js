@@ -280,7 +280,7 @@ async function bringCode(dataTxid) {
             };
             return base64Obj;
 
-        }else if(type_field === 'text'){
+        }else if(type_field === 'text'||type_field === 'base64'){
             let result = "";
             if (isMerkleRoot(offset)) {
                 result = await getCacheFromServer(dataTxid, offset);
