@@ -52,10 +52,10 @@ class Controller {
 const videoCtrl = new Controller();
 
 
-window.addEventListener("DOMContentLoaded", function () {
-    console.log("dom loaded")
-    fetchMusicFromBlockchain();
-}, false);
+// window.addEventListener("DOMContentLoaded", function () {
+//     console.log("dom loaded")
+//     fetchMusicFromBlockchain();
+// }, false);
 
 
 async function fetchMusicFromBlockchain() {
