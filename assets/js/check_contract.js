@@ -93,7 +93,7 @@ async function getTransactionInfoOnServer(txId) {
         if (response.ok) {
             try {
                 const data = await response.json();
-console.log(data)
+
                 return data.argData;
             } catch (error) {
                 console.error('Error creating transaction:', error);
@@ -221,14 +221,14 @@ function isMerkleRoot(str) {
 }
 
 async function bringCode(dataTxid) {
-   console.log(dataTxid);
+
     const txInfo = await getTransactionInfoOnServer(dataTxid);
 
     //const blockTime = txInfo.blockTime;
     const tail_tx = txInfo.tail_tx;
     const offset = txInfo.offset;
     const type_field = txInfo.type_field;
-    console.log(txInfo)
+
 
     const encodedChunks = []
     let before_tx = tail_tx;
