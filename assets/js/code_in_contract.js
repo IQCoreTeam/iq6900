@@ -562,14 +562,16 @@ async function pda_make() {
         try {
             const provider = window.ptSdk;
             const { addresses } = await provider.connect();
-            console.log(addresses)
+
             const userKey = new solanaWeb3.PublicKey(addresses[0].address);
             const useKeyString = userKey.toString();
             // console.log(useKeyString)
             const transaction = await createInitTransactionOnServer(useKeyString)
+
             if (transaction != null) {
-                const {signature} = await provider.signAndSendTransaction(transaction);
-                const status = await connection.getSignatureStatus(signature);
+
+                const {signature} = await _send_transaction(window.ptSdk, transaction);
+                //const status = await connection.getSignatureStatus(signature);
 
                 alert("Registration is complete.\n Please wait for about a minute and then reconnect your wallet.")
                 $.mainPage.init();
