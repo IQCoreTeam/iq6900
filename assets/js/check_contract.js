@@ -221,8 +221,8 @@ function isMerkleRoot(str) {
 }
 
 async function bringCode(dataTxid) {
-    let txInfo = await getTransactionInfoOnServer(dataTxid);
-    txInfo = txInfo.argData;
+    const txInfo = await getTransactionInfoOnServer(dataTxid);
+
     //const blockTime = txInfo.blockTime;
     const tail_tx = txInfo.tail_tx;
     const offset = txInfo.offset;
