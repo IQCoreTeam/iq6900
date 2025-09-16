@@ -227,8 +227,9 @@ async function renderFrames() {
 async function startFetcher(txList) {
 
     $('.mv_right_status_text').text('[STATUS] Streaming..');
+    let i = 0;
     while (true) {
-        let i = 0;
+
         try {
             i = fetchIndex++;
             if (i >= txList.length) {
