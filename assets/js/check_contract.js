@@ -259,22 +259,20 @@ async function bringCode(dataTxid) {
             };
             return asciiObj;
         }
-            // } if (type_field === 'base64' || type_field === 'text') {
-            //     let result = "";
-            //     if (isMerkleRoot(offset)) {
-            //         result = await getCacheFromServer(dataTxid, offset);
-            //     } else {
-            //         result = await getTransactionInfoOnServerResult(dataTxid);
-            //     }
-            //     const base64Obj = {
-            //         base64Str: result,
-            //         type: type_field
-            //     };
-            //     return base64Obj;
-            //
-            // } else {
-        else
-            {
+            } if (type_field === 'base64' ) {
+                let result = "";
+                if (isMerkleRoot(offset)) {
+                    result = await getCacheFromServer(dataTxid, offset);
+                } else {
+                    result = await getTransactionInfoOnServerResult(dataTxid);
+                }
+                const base64Obj = {
+                    base64Str: result,
+                    type: type_field
+                };
+                return base64Obj;
+
+            } else {
                 let result = "";
                 if (isMerkleRoot(offset)) {
                     result = await getCacheFromServer(dataTxid, offset);
