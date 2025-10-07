@@ -844,7 +844,8 @@ async function walletSearch(address = "") {
         if (address === "") {
             const provider = await getProvider();
             const resp = await provider.connect();
-            const userKey = await resp.publicKey;
+
+            const userKey = resp.addresses[0].address;
             useKeyString = userKey.toString();
         } else {
             useKeyString = address;
