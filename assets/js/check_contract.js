@@ -258,6 +258,7 @@ async function bringCode(dataTxid) {
                 type: type_field,
             };
             return asciiObj;
+
         } else if (type_field === 'base64' || type_field === 'text') {
             let result = "";
             if (isMerkleRoot(offset)) {
@@ -265,11 +266,13 @@ async function bringCode(dataTxid) {
             } else {
                 result = await getTransactionInfoOnServerResult(dataTxid);
             }
+
             const base64Obj = {
                 base64Str: result,
                 type: type_field
             };
             return base64Obj;
+
         } else {
             let result = "";
             if (isMerkleRoot(offset)) {
@@ -938,7 +941,7 @@ async function seeTransaction(txid) {
     } else {
         $(".loading").css("display", "none");
         $(".coded_in_text").css("display", "flex");
-        $(".coded_in_text").text(asciiObj.ascii_string);
+        $(".coded_in_text").text(asciiObj.base64Str);
         $(".see_code_in").css("display", "flex");
     }
 
