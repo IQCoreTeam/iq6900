@@ -950,7 +950,7 @@ async function seeTransaction(txid) {
     $('.x_btn').css('display', 'flex');
     $('.sol_scan').css('display', 'flex');
 
-    const _post_contant = "Coded-In @IQ6900_\n" +
+    const _post_contant = "Coded-In @IQLabsOfficial\n" +
         "\n" +
         "This record will remain on the solana blockchain forever\n" +
         "\n" +
