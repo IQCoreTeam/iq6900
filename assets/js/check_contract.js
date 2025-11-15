@@ -228,11 +228,12 @@ async function bringCode(dataTxid) {
     if (type_field) {
         if (type_field === "q_image" || type_field === "image" || type_field === "test_image") {
             let result = "";
-            if (isMerkleRoot(offset)) {
-                result = await getCacheFromServer(dataTxid, offset);
-            } else {
-                result = await getTransactionInfoOnServerResult(dataTxid);
-            }
+            // if (isMerkleRoot(offset)) {
+            //     result = await getCacheFromServer(dataTxid, offset);
+            // } else {
+            //     result = await getTransactionInfoOnServerResult(dataTxid);
+            // }
+            result = await getTransactionInfoOnServerResult(dataTxid);
             if (!result) {
                 return false;
             }
@@ -261,12 +262,12 @@ async function bringCode(dataTxid) {
 
         } else if (type_field === 'base64' || type_field === 'text') {
             let result = "";
-            if (isMerkleRoot(offset)) {
-                result = await getCacheFromServer(dataTxid, offset);
-            } else {
-                result = await getTransactionInfoOnServerResult(dataTxid);
-            }
-
+            // if (isMerkleRoot(offset)) {
+            //     result = await getCacheFromServer(dataTxid, offset);
+            // } else {
+            //     result = await getTransactionInfoOnServerResult(dataTxid);
+            // }
+            result = await getTransactionInfoOnServerResult(dataTxid);
             const base64Obj = {
                 base64Str: result,
                 type: type_field
