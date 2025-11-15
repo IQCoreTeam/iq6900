@@ -300,6 +300,7 @@ async function bringCode(dataTxid) {
 
 async function bringType(dataTxid) {
     const txInfo = await getTransactionInfoOnServer(dataTxid);
+    console.log("txInfo",txInfo)
     if (txInfo === undefined) {
         return false;
     }
