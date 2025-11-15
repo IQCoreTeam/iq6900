@@ -276,11 +276,12 @@ async function bringCode(dataTxid) {
 
         } else {
             let result = "";
-            if (isMerkleRoot(offset)) {
-                result = await getCacheFromServer(dataTxid, offset);
-            } else {
-                result = await getTransactionInfoOnServerResult(dataTxid);
-            }
+            result = await getTransactionInfoOnServerResult(dataTxid);
+            // if (isMerkleRoot(offset)) {
+            //     result = await getCacheFromServer(dataTxid, offset);
+            // } else {
+            //     result = await getTransactionInfoOnServerResult(dataTxid);
+            // }
             const width = 0;
             let finalResult = convertTextToEmoji(result); // does not work for base64 file type
 
@@ -313,11 +314,24 @@ async function bringType(dataTxid) {
 async function fetchDataSignatures(address, before = null, limit = MAXCOUNT) {
     const connection = new solanaWeb3.Connection(network);
     let new_before = null;
+
     try {
         const signatures = await connection.getSignaturesForAddress(address, {
             before: before,
             limit: limit,
         });
+        for (let i = 0; i < signatures.length; i++) {
+            const sig = signatures[i].signature;
+            const type = await bringType(sig);
+            console.log("[fetchDataSignatures] sig =", sig, "type =", type);
+
+            if (type !== false) {
+                if (!imported_signature.includes(sig)) {
+                    imported_signature.push(sig);
+                }
+            }
+        }
+        console.log("[fetchDataSignatures] imported_signature =", imported_signature);
 
         new_before = signatures[signatures.length - 1];
         if (new_before != null) {
