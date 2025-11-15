@@ -217,11 +217,11 @@ function isMerkleRoot(str) {
 
 async function bringCode(dataTxid) {
     const txInfo = await getTransactionInfoOnServer(dataTxid);
-    const blockTime = txInfo.blockTime;
+    console.log(txInfo)
     const tail_tx = txInfo.tail_tx;
     const offset = txInfo.offset;
     const type_field = txInfo.type_field;
-    //console.log(txInfo)
+
 
     const encodedChunks = []
     let before_tx = tail_tx;
