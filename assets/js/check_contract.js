@@ -2,6 +2,7 @@ var clicked = false;
 const Q_ADDRESS = "CevDzPg1xRE7P2TXo6z2s5fbYVUT6Q2oCPHMch3AeBvG";
 const MAXCOUNT = 12;
 const MAXLIST = 4;
+const SOLANA_INTERNET_FETCH_LIMIT = 1000;
 let imported_signature = []
 let imported_diary_signature = []
 
@@ -778,12 +779,16 @@ async function bringDataHandler(targetAddress, menu) {
         $(".loading").css('display', 'flex');
 
         imported_signature = []
-        const list = await getCacheListFromServer(targetAddress, menu);
-
-        if (Array.isArray(list)) {
-            for (const item of list) {
-                if (item._id) {
-                    imported_signature.push(item._id);
+        if (menu === "SolanaInternet") {
+            const onchainAddress = new solanaWeb3.PublicKey(targetAddress);
+            await fetchDataSignatures(onchainAddress, null, SOLANA_INTERNET_FETCH_LIMIT);
+        } else {
+            const list = await getCacheListFromServer(targetAddress, menu);
+            if (Array.isArray(list)) {
+                for (const item of list) {
+                    if (item._id) {
+                        imported_signature.push(item._id);
+                    }
                 }
             }
         }
@@ -802,6 +807,7 @@ async function bringDataHandler(targetAddress, menu) {
 
         $(".loading").css('display', 'none');
 
+        $(".go_old").off('click');
         $(".go_old").on('click', async function () {
             await bringOldCache(targetAddress, menu, imported_signature[imported_signature.length - 1]);
         });
@@ -984,5 +990,3 @@ async function seeTransaction(txid) {
 
 
 }
-
-
