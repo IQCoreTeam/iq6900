@@ -1117,7 +1117,7 @@ async function seeTransaction(txid) {
         $(".coded_in_text").css("display", "flex");
         if (asciiObj.base64Str !== undefined && asciiObj.base64Str !== "") {
             $(".coded_in_text").text(asciiObj.base64Str);
-        } else if (asciiObj.ascii_string !== undefined) {
+        } else if (asciiObj.ascii_string !== undefined && asciiObj.ascii_string !== "") {
             $(".coded_in_text").text(asciiObj.ascii_string);
         } else {
             $(".coded_in_text").text("Unsupported content format.");
