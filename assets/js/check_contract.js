@@ -300,17 +300,25 @@ async function bringCode(dataTxid) {
 }
 
 async function bringType(dataTxid) {
-    const txInfo = await getTransactionInfoOnServer(dataTxid);
-    console.log("txInfo",txInfo)
-    if (txInfo === undefined) {
+    try {
+        const txInfo = await getTransactionInfoOnServer(dataTxid);
+        console.log("txInfo", txInfo);
+        if (!txInfo || typeof txInfo !== "object") {
+            console.warn(`[bringType] Missing txInfo for ${dataTxid}`);
+            return false;
+        }
+
+        const type_field = txInfo.type_field;
+        if (type_field === undefined) {
+            console.warn(`[bringType] Missing type_field for ${dataTxid}`);
+            return false;
+        }
+
+        return type_field;
+    } catch (error) {
+        console.error(`[bringType] Failed to load txInfo for ${dataTxid}:`, error);
         return false;
     }
-    const tail_tx = txInfo.tail_tx;
-    const type_field = txInfo.type_field;
-    if (type_field === undefined) {
-        return false;
-    }
-    return type_field;
 }
 
 async function fetchDataSignatures(address, before = null, limit = MAXCOUNT) {
