@@ -2,9 +2,116 @@ var clicked = false;
 const Q_ADDRESS = "CevDzPg1xRE7P2TXo6z2s5fbYVUT6Q2oCPHMch3AeBvG";
 const MAXCOUNT = 12;
 const MAXLIST = 4;
-const SOLANA_INTERNET_FETCH_LIMIT = 12;
+const SOLANA_INTERNET_FETCH_LIMIT = 1000;
 let imported_signature = []
 let imported_diary_signature = []
+let solanaPendingSignatures = [];
+let solanaSignatureCursor = null;
+let solanaCurrentAddress = null;
+let solanaHasMoreSignatures = true;
+
+function normalizeSolanaAddress(address) {
+    if (!address) return null;
+    if (address instanceof solanaWeb3.PublicKey) {
+        return address;
+    }
+    try {
+        return new solanaWeb3.PublicKey(address);
+    } catch (error) {
+        console.error("Invalid Solana address:", error);
+        return null;
+    }
+}
+
+function resetSolanaSignatureState(address = null) {
+    solanaPendingSignatures = [];
+    solanaSignatureCursor = null;
+    solanaHasMoreSignatures = true;
+
+    if (address) {
+        const normalized = normalizeSolanaAddress(address);
+        if (normalized) {
+            solanaCurrentAddress = normalized;
+            return;
+        }
+    }
+
+    solanaCurrentAddress = null;
+}
+
+function ensureSolanaAddressInitialized(address) {
+    if (solanaCurrentAddress) {
+        return true;
+    }
+
+    const normalized = normalizeSolanaAddress(address);
+    if (!normalized) {
+        return false;
+    }
+
+    solanaCurrentAddress = normalized;
+    return true;
+}
+
+async function fetchSolanaSignatureChunk() {
+    if (!solanaCurrentAddress || !solanaHasMoreSignatures) {
+        return false;
+    }
+
+    const connection = new solanaWeb3.Connection(network);
+    const options = {
+        limit: SOLANA_INTERNET_FETCH_LIMIT,
+    };
+
+    if (solanaSignatureCursor) {
+        options.before = solanaSignatureCursor;
+    }
+
+    try {
+        const signatures = await connection.getSignaturesForAddress(solanaCurrentAddress, options);
+        if (!Array.isArray(signatures) || signatures.length === 0) {
+            solanaHasMoreSignatures = false;
+            return false;
+        }
+
+        solanaSignatureCursor = signatures[signatures.length - 1].signature;
+        solanaPendingSignatures.push(...signatures.map(item => item.signature));
+
+        if (signatures.length < SOLANA_INTERNET_FETCH_LIMIT) {
+            solanaHasMoreSignatures = false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error("Error fetching Solana signatures:", error);
+        return false;
+    }
+}
+
+async function ensureSolanaSignatures(requiredTotal) {
+    if (!solanaCurrentAddress) {
+        return;
+    }
+
+    while (imported_signature.length < requiredTotal) {
+        if (!solanaPendingSignatures.length) {
+            const fetched = await fetchSolanaSignatureChunk();
+            if (!fetched) {
+                break;
+            }
+        }
+
+        const nextSignature = solanaPendingSignatures.shift();
+        if (!nextSignature) {
+            continue;
+        }
+
+        const type = await bringType(nextSignature);
+        if (type !== false && !imported_signature.includes(nextSignature)) {
+            imported_signature.push(nextSignature);
+        }
+    }
+}
 
 // DBPDA를 요청하는 함수
 async function getDBPDA(userKey) {
@@ -470,16 +577,24 @@ async function bringOldCache(targetAddress, type, before) {
     }
 
     const lastPValue = $('.transactions_div  .transaction_div:last  .transaction:last .hidden_txt').text();
-    const lastElement = signatureList[signatureList.length - 1];
+    if (type === "SolanaInternet") {
+        if (!solanaCurrentAddress && !ensureSolanaAddressInitialized(targetAddress)) {
+            $(".go_old").css("opacity", "0.3");
+            return;
+        }
 
-    if (type === "SolanaInternet" && lastPValue === lastElement && before != null) {
-        // Fetch more Solana transactions only when cached signatures are exhausted
-        $(".transactions_div").css("display", "none");
-        $(".loading_mini").css("display", "flex");
-        await fetchDataSignatures(targetAddress, before, SOLANA_INTERNET_FETCH_LIMIT);
-        $(".transactions_div").css("display", "flex");
-        $(".loading_mini").css("display", "none");
-        signatureList = Array.from(imported_signature);
+        const lastIndex = signatureList.indexOf(lastPValue);
+        if (lastIndex !== -1) {
+            const requiredTotal = lastIndex + 1 + MAXCOUNT;
+            if (imported_signature.length < requiredTotal) {
+                $(".transactions_div").css("display", "none");
+                $(".loading_mini").css("display", "flex");
+                await ensureSolanaSignatures(requiredTotal);
+                $(".transactions_div").css("display", "flex");
+                $(".loading_mini").css("display", "none");
+            }
+            signatureList = Array.from(imported_signature);
+        }
     }
 
     const signatures = await getOldValues(signatureList, lastPValue);
@@ -817,7 +932,8 @@ async function bringDataHandler(targetAddress, menu) {
         imported_signature = []
         if (menu === "SolanaInternet") {
             const onchainAddress = new solanaWeb3.PublicKey(targetAddress);
-            await fetchDataSignatures(onchainAddress, null, SOLANA_INTERNET_FETCH_LIMIT);
+            resetSolanaSignatureState(onchainAddress);
+            await ensureSolanaSignatures(MAXCOUNT);
         } else {
             const list = await getCacheListFromServer(targetAddress, menu);
             if (Array.isArray(list)) {
