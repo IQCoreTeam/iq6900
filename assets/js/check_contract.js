@@ -1115,7 +1115,13 @@ async function seeTransaction(txid) {
     } else {
         $(".loading").css("display", "none");
         $(".coded_in_text").css("display", "flex");
-        $(".coded_in_text").text(asciiObj.base64Str);
+        if (asciiObj.base64Str !== undefined && asciiObj.base64Str !== "") {
+            $(".coded_in_text").text(asciiObj.base64Str);
+        } else if (asciiObj.ascii_string !== undefined) {
+            $(".coded_in_text").text(asciiObj.ascii_string);
+        } else {
+            $(".coded_in_text").text("Unsupported content format.");
+        }
         $(".see_code_in").css("display", "flex");
     }
 
