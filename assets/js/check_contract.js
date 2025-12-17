@@ -2,7 +2,7 @@ var clicked = false;
 const Q_ADDRESS = "CevDzPg1xRE7P2TXo6z2s5fbYVUT6Q2oCPHMch3AeBvG";
 const MAXCOUNT = 12;
 const MAXLIST = 4;
-const SOLANA_INTERNET_FETCH_LIMIT = 30;
+const SOLANA_INTERNET_FETCH_LIMIT = 12;
 let imported_signature = []
 let imported_diary_signature = []
 
@@ -216,6 +216,11 @@ function isMerkleRoot(str) {
     return base58Alphabet.test(str) && str.length === 44;
 }
 
+function isTransaction(signature) {
+    const base58Alphabet = /^[1-9A-HJ-NP-Za-km-z]+$/;
+    return typeof signature === "string" && base58Alphabet.test(signature) && signature.length >= 80 && signature.length <= 88;
+}
+
 async function bringCode(dataTxid) {
     const txInfo = await getTransactionInfoOnServer(dataTxid);
     console.log(txInfo)
@@ -311,6 +316,11 @@ async function bringType(dataTxid) {
         const type_field = txInfo.type_field;
         if (type_field === undefined) {
             console.warn(`[bringType] Missing type_field for ${dataTxid}`);
+            return false;
+        }
+
+        if (!isTransaction(txInfo.tail_tx)) {
+            console.warn(`[bringType] Invalid tail_tx for ${dataTxid}`);
             return false;
         }
 
@@ -453,8 +463,26 @@ async function fetchAll(type) {
 }
 
 async function bringOldCache(targetAddress, type, before) {
+    let signatureList = Array.from(imported_signature);
+    if (!signatureList.length) {
+        $(".go_old").css("opacity", "0.3");
+        return;
+    }
 
-    const signatures = await getOldValues(Array.from(imported_signature), $('.transactions_div  .transaction_div:last  .transaction:last .hidden_txt').text());
+    const lastPValue = $('.transactions_div  .transaction_div:last  .transaction:last .hidden_txt').text();
+    const lastElement = signatureList[signatureList.length - 1];
+
+    if (type === "SolanaInternet" && lastPValue === lastElement && before != null) {
+        // Fetch more Solana transactions only when cached signatures are exhausted
+        $(".transactions_div").css("display", "none");
+        $(".loading_mini").css("display", "flex");
+        await fetchDataSignatures(targetAddress, before, SOLANA_INTERNET_FETCH_LIMIT);
+        $(".transactions_div").css("display", "flex");
+        $(".loading_mini").css("display", "none");
+        signatureList = Array.from(imported_signature);
+    }
+
+    const signatures = await getOldValues(signatureList, lastPValue);
     if (signatures.length > 0) {
         $('.transactions_div').empty();
 
