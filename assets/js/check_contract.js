@@ -2,7 +2,7 @@ var clicked = false;
 const Q_ADDRESS = "CevDzPg1xRE7P2TXo6z2s5fbYVUT6Q2oCPHMch3AeBvG";
 const MAXCOUNT = 12;
 const MAXLIST = 4;
-const SOLANA_INTERNET_FETCH_LIMIT = 1000;
+const SOLANA_INTERNET_FETCH_LIMIT = 30;
 let imported_signature = []
 let imported_diary_signature = []
 
