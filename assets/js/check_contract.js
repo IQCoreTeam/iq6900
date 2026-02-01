@@ -1134,7 +1134,7 @@ async function seeTransaction(txid) {
         "\n" +
         "This record will remain on the solana blockchain forever\n" +
         "\n" +
-        "Check: https://iq6900.com?txid=" + txid;
+        "Check: https://iqlabs.tech?txid=" + txid;
 
     const twitterIntentUrl = createTwitterIntent(_post_contant);
     $(".x_btn").off("click").on("click", function () {
