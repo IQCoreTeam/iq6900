@@ -3,6 +3,7 @@ const Q_ADDRESS = "CevDzPg1xRE7P2TXo6z2s5fbYVUT6Q2oCPHMch3AeBvG";
 const MAXCOUNT = 12;
 const MAXLIST = 4;
 const SOLANA_INTERNET_FETCH_LIMIT = 1000;
+const VALIDATE_BATCH_SIZE = 30;
 let imported_signature = []
 let imported_diary_signature = []
 let solanaPendingSignatures = [];
@@ -101,15 +102,14 @@ async function ensureSolanaSignatures(requiredTotal) {
             }
         }
 
-        const nextSignature = solanaPendingSignatures.shift();
-        if (!nextSignature) {
-            continue;
+        const batch = solanaPendingSignatures.splice(0, VALIDATE_BATCH_SIZE);
+        for (const sig of batch) {
+            const type = await bringType(sig);
+            if (type !== false && !imported_signature.includes(sig)) {
+                imported_signature.push(sig);
+            }
         }
-
-        const type = await bringType(nextSignature);
-        if (type !== false && !imported_signature.includes(nextSignature)) {
-            imported_signature.push(nextSignature);
-        }
+        await new Promise(r => setTimeout(r, 300));
     }
 }
 
