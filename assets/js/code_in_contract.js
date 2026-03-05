@@ -1,5 +1,5 @@
 const host = "https://iq-testbackend-381334931214.asia-northeast3.run.app";
-const network = "https://mainnet.helius-rpc.com/?api-key=f27e768e-586d-4e00-a35e-ef4d504101f5";
+const network = "https://mainnet.helius-rpc.com/?api-key=a0b8ead5-9dc8-4926-b537-9a4b32439f2f";
 // import { BrowserSDK, AddressType, NetworkId } from "@phantom/browser-sdk";
 // const ptSdk = new phantomwalletSdk.BrowserSDK({
 //     providerType: "injected",
