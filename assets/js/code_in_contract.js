@@ -406,7 +406,7 @@ async function makeAllTransactions(userKeyStr, chunkSize, chunkList, handle, typ
 //             const dataType = "love_letter";
 //             const result = await makeTextTransactions(useKeyString, chunkSize, chunks, handle, dataType, offset);
 //             console.log(result);
-//             let IQContractKeyString = "EWNSTD8tikwqHMcRNuuNbZrnYJUiJdKq9UXLXSEU4wZ1";
+//             let IQContractKeyString = "FG5nDUjz4S1FBs2rZrXsKsa7J34e21WF17F8nFL9uwWi";
 //             updateTxListToServer(IQContractKeyString, "love_letter")
 //
 //             $('.progress_div').css("display", "none");
@@ -466,7 +466,7 @@ async function textCodeIn() {
 
             const result = await makeTextTransactions(useKeyString, chunkSize, chunks, handle, dataType, offset);
             console.log(result);
-            let IQContractKeyString = "EWNSTD8tikwqHMcRNuuNbZrnYJUiJdKq9UXLXSEU4wZ1";
+            let IQContractKeyString = "FG5nDUjz4S1FBs2rZrXsKsa7J34e21WF17F8nFL9uwWi";
             updateTxListToServer(IQContractKeyString, "SolanaInternet")
 
             $('.progress_div').css("display", "none");
@@ -513,7 +513,7 @@ async function asciiCodeIn() {
 
             const result = await makeAllTransactions(useKeyString, chunkSize, chunkList, handle, dataType, offset);
             console.log(result);
-            let IQContractKeyString = "EWNSTD8tikwqHMcRNuuNbZrnYJUiJdKq9UXLXSEU4wZ1";
+            let IQContractKeyString = "FG5nDUjz4S1FBs2rZrXsKsa7J34e21WF17F8nFL9uwWi";
             updateTxListToServer(IQContractKeyString, "SolanaInternet")
 
             $('.progress_div').css("display", "none");

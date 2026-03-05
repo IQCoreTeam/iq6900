@@ -535,7 +535,7 @@ async function bringAfter(target, type, datapoint) {
 
 async function fetchAll(type) {
     imported_signature = new Set(); // ✅ 중복 방지용 Set 사용
-    let IQContractKeyString = "EWNSTD8tikwqHMcRNuuNbZrnYJUiJdKq9UXLXSEU4wZ1";
+    let IQContractKeyString = "FG5nDUjz4S1FBs2rZrXsKsa7J34e21WF17F8nFL9uwWi";
     let lastBlock = 999999999999;
     let hasMoreData = true;
 
@@ -975,7 +975,7 @@ async function bringDataHandler(targetAddress, menu) {
 
 async function publicSearch() {
     try {
-        let IQContractKeyString = "EWNSTD8tikwqHMcRNuuNbZrnYJUiJdKq9UXLXSEU4wZ1";
+        let IQContractKeyString = "FG5nDUjz4S1FBs2rZrXsKsa7J34e21WF17F8nFL9uwWi";
         await bringDataHandler(IQContractKeyString, "SolanaInternet");
     } catch (err) {
         console.error(err);
