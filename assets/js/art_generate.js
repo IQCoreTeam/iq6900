@@ -56,7 +56,7 @@ function Generate_image() {
         formData.append("watermark", false);
     }
 
-    fetch("https://iq.damn.it.com/convert", {
+    fetch("https://ascii.iqlabs.dev/convert", {
         method: "POST",
         body: formData,
     })
