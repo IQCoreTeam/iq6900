@@ -30,6 +30,16 @@
             $("#main_section").append($mainPageElement);
             $('.nav_connect').attr('onclick',"nav_connect()");
             $('.nav_status_before_login').text("Connect");
+
+            // Hide scroll hint on scroll
+            $(window).off('scroll.lp_scroll').on('scroll.lp_scroll', function() {
+                var $hint = $('.lp_scroll_hint');
+                if ($(window).scrollTop() > 100) {
+                    $hint.css('opacity', '0');
+                } else {
+                    $hint.css('opacity', '1');
+                }
+            });
         }
 
         $.extend(this, {

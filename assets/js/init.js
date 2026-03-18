@@ -16,8 +16,9 @@ $(document).ready(function() {
     }else if(menu){
         if(menu == "about"){
             $.aboutPage.init();
-
         }
+    }else{
+        $.mainPage.init();
     }
 
 });
