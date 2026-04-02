@@ -12,14 +12,8 @@
     --juche-dark: #1a0000;
 }
 
-/* Kanibuk font for titles */
-.main_h1,
-.lp_section_title,
-.lp_card_title,
-.lp_big_iq,
-.lp_q_label,
-.lp_h_stat_num,
-.lp_stat_num {
+/* Kanibuk font everywhere */
+* {
     font-family: 'Kanibuk', serif !important;
 }
 
