@@ -39,15 +39,20 @@
         const creditEl = document.getElementById("crt_credit");
         if (!video || !knobsWrap) return;
 
-        function showCredit(i) {
+        const BASE_TEXT = "Tune in. Adjust your antenna. Big brain signals incoming.";
+        const SEP = " &nbsp; ◆ &nbsp; ";
+
+        function setCreditText(html) {
             if (!creditEl) return;
-            const ch = CHANNELS[i];
-            creditEl.classList.remove("show");
-            setTimeout(() => {
-                creditEl.innerHTML = ch.creditHtml || "&nbsp;";
-                creditEl.classList.add("show");
-            }, 200);
+            creditEl.innerHTML = html;
         }
+
+        function showCredit(i) {
+            const ch = CHANNELS[i];
+            setCreditText(BASE_TEXT + SEP + (ch.creditHtml || ""));
+        }
+
+        setCreditText(BASE_TEXT);
 
         let current = 0;
         let playing = false;
