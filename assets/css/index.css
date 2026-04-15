@@ -4420,25 +4420,26 @@ width: auto;
 @media (max-width: 600px) {
     #lp_broadcast { overflow-x: hidden; }
     .crt_label_tl, .crt_label_tr, .crt_label_bl, .crt_label_br { font-size: 0.7rem; }
-    .crt_speaker { width: 60px; height: 18px; background-size: 5px 5px; }
+    .crt_speaker { width: 50px; height: 14px; background-size: 4px 4px; }
     .crt_brand { display: none; }
-    .crt_knobs { gap: 12px; }
-    .crt_knob { width: 40px; height: 40px; }
+    .crt_knobs { gap: 10px; }
+    .crt_knob { width: 32px; height: 32px; }
     .crt_knob_label { display: none; }
-    .crt_tv_panel { margin-top: 14px; padding: 4px 32px 4px 4px; justify-content: space-between; }
-    .crt_tv_wrap { max-width: 100%; padding: 0 12px; box-sizing: border-box; }
-    .crt_tv { max-width: 100%; }
-    .crt_credit { width: 100%; max-width: 100%; padding: 14px 14px 14px 50px; box-sizing: border-box; }
+    .crt_tv_panel { margin-top: 12px; padding: 4px 10px; justify-content: space-between; }
+    .crt_tv_wrap { width: 100%; max-width: 100%; padding: 0; box-sizing: border-box; }
+    .crt_tv { max-width: 100%; padding: 8px 8px 6px 8px; border-radius: 12px; }
+    .crt_tv_bezel { padding: 4px; }
+    .crt_credit { width: 99%; max-width: 99%; padding: 6px 10px; border-radius: 10px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     .crt_credit::before {
         content: "";
-        position: absolute;
-        left: 20px; top: 50%;
+        position: static;
+        flex-shrink: 0;
         width: 14px; height: 14px; border-radius: 50%;
         background: radial-gradient(circle at 35% 35%, #ff5a3c, #7a1a0a 70%);
         box-shadow: 0 0 8px rgba(255,90,60,0.9), inset -1px -1px 2px rgba(0,0,0,0.6);
-        transform: translateY(-50%);
+        transform: none;
         animation: crt_rec 1.2s infinite;
     }
-    .crt_credit_screen { height: 4rem; }
+    .crt_credit_screen { height: 4rem; flex: 1 1 auto; min-width: 0; }
     .crt_credit_text { font-size: 3.5rem; letter-spacing: 0.1em; animation-duration: 32s; }
 }
