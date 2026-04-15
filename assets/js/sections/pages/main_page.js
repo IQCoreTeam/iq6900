@@ -6,7 +6,7 @@
     function mainPage() {
         let $mainPageElement;
         let $wWidth = screen.width;
-        const $mainPageTemplateUrl = "./html/sections/main_page.html?ver=20250209";
+        const $mainPageTemplateUrl = "./html/sections/main_page.html?ver=20260415";
         function init() {
             loadMainPageTemplate();
         }
@@ -28,6 +28,7 @@
             $("#main_section").show();
             $("#main_section").empty();
             $("#main_section").append($mainPageElement);
+            if (window.initBroadcast) { try { window.initBroadcast(); } catch (e) { console.error(e); } }
             $('.nav_connect').attr('onclick',"nav_connect()");
             $('.nav_status_before_login').text("Connect");
 
