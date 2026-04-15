@@ -4217,6 +4217,8 @@ width: auto;
     position: relative;
     width: 100%;
     max-width: 720px;
+    min-width: 0;
+    flex-shrink: 0;
     background: linear-gradient(180deg,#d9d2c4 0%,#b8ad95 55%,#8e8472 100%);
     border-radius: 22px;
     padding: 22px 22px 18px 22px;
@@ -4245,7 +4247,9 @@ width: auto;
     box-shadow:
         inset 0 0 60px rgba(0,0,0,0.9),
         inset 0 0 120px rgba(0,30,0,0.4);
+    contain: layout size;
 }
+.crt_tv, .crt_tv_bezel, .crt_screen { box-sizing: border-box; }
 .crt_video {
     position: absolute;
     inset: 0;
@@ -4406,5 +4410,10 @@ width: auto;
 
 @media (max-width: 600px) {
     .crt_label_tl, .crt_label_tr, .crt_label_bl, .crt_label_br { font-size: 0.7rem; }
-    .crt_speaker { width: 70px; }
+    .crt_speaker { width: 60px; height: 18px; background-size: 5px 5px; }
+    .crt_brand { font-size: 0.65rem; letter-spacing: 0.12em; }
+    .crt_knobs { gap: 14px; }
+    .crt_knob { width: 44px; height: 44px; }
+    .crt_knob_label { font-size: 0.7rem; }
+    .crt_tv_panel { margin-top: 14px; padding: 4px 8px; }
 }
