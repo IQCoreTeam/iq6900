@@ -8,6 +8,12 @@
         },
         {
             id: 2,
+            title: "CODE-IN-Q V2",
+            src: "https://r2.iqlabs.dev/Code-%20IN-Q%20v2.mp4",
+            creditHtml: 'video made by <a href="https://x.com/Lopez_Editz" target="_blank" rel="noopener">@Lopez_Editz</a>'
+        },
+        {
+            id: 3,
             title: "IQ/MUSIC VIDEO",
             src: "https://r2.iqlabs.dev/iqmusicvideo.mp4",
             creditHtml: 'video made by <a href="https://x.com/Im_zo_sol" target="_blank" rel="noopener">@Im_zo_sol</a>'
@@ -40,7 +46,6 @@
         if (!video || !knobsWrap) return;
 
         const BASE_TEXT = "Tune in. Adjust your antenna. Big brain signals incoming.";
-        const SEP = " &nbsp; ◆ &nbsp; ";
 
         function setCreditText(html) {
             if (!creditEl) return;
@@ -49,7 +54,7 @@
 
         function showCredit(i) {
             const ch = CHANNELS[i];
-            setCreditText(BASE_TEXT + SEP + (ch.creditHtml || ""));
+            setCreditText(ch.creditHtml || BASE_TEXT);
         }
 
         setCreditText(BASE_TEXT);
