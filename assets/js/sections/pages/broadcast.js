@@ -49,7 +49,7 @@
 
         function setCreditText(html) {
             if (!creditEl) return;
-            creditEl.innerHTML = html;
+            creditEl.innerHTML = "<span>" + html + "</span><span>" + html + "</span>";
         }
 
         function showCredit(i) {

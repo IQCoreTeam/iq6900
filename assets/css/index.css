@@ -4204,9 +4204,8 @@ width: auto;
 }
 .crt_credit_text {
     position: absolute;
-    left: 100%;
+    left: 0;
     top: 50%;
-    transform: translateY(-50%);
     white-space: nowrap;
     font-family: Consola, monospace;
     font-size: 0.9rem;
@@ -4215,12 +4214,14 @@ width: auto;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     animation: crt_marquee 14s linear infinite;
+    will-change: transform;
 }
+.crt_credit_text > span { padding-right: 4rem; }
 .crt_credit_text a { color: #baffba; text-decoration: underline; text-underline-offset: 2px; }
 .crt_credit_text a:hover { color: #fff; }
 @keyframes crt_marquee {
     0% { transform: translate(0, -50%); }
-    100% { transform: translate(-2000px, -50%); }
+    100% { transform: translate(-50%, -50%); }
 }
 .crt_tv {
     position: relative;
