@@ -1,7 +1,17 @@
 (function () {
     const CHANNELS = [
-        { id: 1, title: "IQ SDK TRAILER", src: "https://r2.iqlabs.dev/IQ%20Labs%20SDK%20Trailer.mp4" },
-        { id: 2, title: "IQ/MUSIC VIDEO", src: "https://r2.iqlabs.dev/iqmusicvideo.mp4" }
+        {
+            id: 1,
+            title: "IQ SDK TRAILER",
+            src: "https://r2.iqlabs.dev/IQ%20Labs%20SDK%20Trailer.mp4",
+            creditHtml: 'video made by <a href="https://x.com/Lopez_Editz" target="_blank" rel="noopener">@Lopez_Editz</a>'
+        },
+        {
+            id: 2,
+            title: "IQ/MUSIC VIDEO",
+            src: "https://r2.iqlabs.dev/iqmusicvideo.mp4",
+            creditHtml: 'video made by <a href="https://x.com/Im_zo_sol" target="_blank" rel="noopener">@Im_zo_sol</a>'
+        }
     ];
 
     const clickSound = new Audio("audio/click.mp3");
@@ -26,7 +36,18 @@
         const labelTime = document.getElementById("crt_label_time");
         const labelCh = document.querySelector(".crt_label_tl");
         const staticEl = document.getElementById("crt_static");
+        const creditEl = document.getElementById("crt_credit");
         if (!video || !knobsWrap) return;
+
+        function showCredit(i) {
+            if (!creditEl) return;
+            const ch = CHANNELS[i];
+            creditEl.classList.remove("show");
+            setTimeout(() => {
+                creditEl.innerHTML = ch.creditHtml || "&nbsp;";
+                creditEl.classList.add("show");
+            }, 200);
+        }
 
         let current = 0;
         let playing = false;
@@ -50,6 +71,7 @@
 
         function handleKnob(i) {
             playClick();
+            showCredit(i);
             if (i === current) {
                 if (playing) {
                     video.pause();
