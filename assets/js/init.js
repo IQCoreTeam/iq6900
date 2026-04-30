@@ -16,6 +16,8 @@ $(document).ready(function() {
     }else if(menu){
         if(menu == "about"){
             $.aboutPage.init();
+        }else if(menu == "tokenomics"){
+            $.tokenomicsPage.init();
         }
     }else{
         $.mainPage.init();

@@ -1,0 +1,231 @@
+
+<!-- HERO -->
+<section id="tk_hero" class="lp_section lp_hero">
+    <div class="lp_hero_inner" style="width: 100%; max-width: 56rem;">
+        <p class="lp_tag">// $IQ Tokenomics</p>
+        <h1 class="main_h1" style="margin-top: 0; text-align: left;">Real Usage.<br>Real Value.</h1>
+        <p class="lp_hero_sub">Every inscription, database write, SolChat message, and on-chain data call through the IQ SDK generates SOL fees, automatically routed into buybacks and community rewards. No $IQ required to build. Every builder makes $IQ more scarce.</p>
+
+        <div class="tk_terminal" aria-label="IQ SDK fee stream readout">
+            <div class="tk_terminal_bar">
+                <span class="tk_terminal_dot tk_terminal_dot_red"></span>
+                <span class="tk_terminal_dot tk_terminal_dot_amber"></span>
+                <span class="tk_terminal_dot tk_terminal_dot_green"></span>
+                <span class="tk_terminal_title">iq_tokenomics.live</span>
+                <span class="tk_terminal_status">REC</span>
+            </div>
+            <div class="tk_terminal_screen">
+                <div class="crt_scanlines"></div>
+                <div id="tk_terminal_lines" class="tk_terminal_lines"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 01 FEE SCHEDULE -->
+<section id="tk_fees" class="lp_section">
+    <p class="lp_tag">// 01 Fee Schedule</p>
+    <h2 class="lp_section_title">Pay Per Byte. Pay In SOL.</h2>
+    <p class="about_text" style="max-width: 40rem;">Any developer or application on Solana using the IQ SDK pays simple, flat SOL fees per transaction. No $IQ tokens required. Frictionless adoption by default.</p>
+    <div class="tk_fee_table">
+        <div class="tk_fee_row tk_fee_head">
+            <span class="lp_tag">Data Size</span>
+            <span class="lp_tag">Range</span>
+            <span class="lp_tag">Fee</span>
+            <span class="lp_tag">Use Cases</span>
+        </div>
+        <div class="tk_fee_row">
+            <div class="lp_card_title" style="margin-bottom: 0;">Basic</div>
+            <div class="lp_card_desc">&lt; 850 bytes</div>
+            <div class="lp_card_title tk_fee_fee" style="margin-bottom: 0;">0.001 SOL</div>
+            <p class="lp_card_desc" style="margin: 0;">SolChat messages, status updates, small JSON payloads, HTTP-style API responses, key-value records</p>
+        </div>
+        <div class="tk_fee_row">
+            <div class="lp_card_title" style="margin-bottom: 0;">Standard</div>
+            <div class="lp_card_desc">850 to 8,500 bytes</div>
+            <div class="lp_card_title tk_fee_fee" style="margin-bottom: 0;">0.003 SOL</div>
+            <p class="lp_card_desc" style="margin: 0;">Database writes, inscriptions, structured data</p>
+        </div>
+        <div class="tk_fee_row">
+            <div class="lp_card_title" style="margin-bottom: 0;">Large</div>
+            <div class="lp_card_desc">&gt; 8,500 bytes</div>
+            <div class="lp_card_title tk_fee_fee" style="margin-bottom: 0;">0.005 SOL</div>
+            <p class="lp_card_desc" style="margin: 0;">Rich content, large dataset storage, bulk ops</p>
+        </div>
+    </div>
+</section>
+
+<!-- 02 FEE ALLOCATION -->
+<section id="tk_alloc" class="lp_section">
+    <p class="lp_tag">// 02 Fee Allocation</p>
+    <h2 class="lp_section_title">Where Every SOL Goes.<span class="tk_info_btn tk_info_btn_title" tabindex="0">i<span class="tk_info_tooltip tk_info_tooltip_wide">
+        <span class="tk_info_label">// straight up</span>
+        <span>Real talk: if monthly revenue stays under $10k, this Treasury allocation is what keeps the lights on and the devs paid. We're not pretending otherwise.</span>
+        <span>This isn't carved in stone. The tokenomics will evolve as the community grows, shaped by community decisions.</span>
+    </span></span></h2>
+    <p class="about_text" style="max-width: 40rem;">100% of collected fees are algorithmically split on-chain at the time of collection. No discretion. No delay.</p>
+
+    <div class="tk_alloc_bar_wrap">
+        <p class="lp_tag" style="margin-bottom: 0.6rem;">// 1.000 SOL collected</p>
+        <div class="tk_alloc_bar">
+            <button type="button" class="tk_alloc_seg tk_alloc_seg_buyback tk_alloc_active" data-alloc="buyback" style="flex: 40;" aria-label="40% Buyback">
+                <span class="tk_alloc_seg_pct">40%</span>
+                <span class="tk_alloc_seg_label">Buyback</span>
+            </button>
+            <button type="button" class="tk_alloc_seg tk_alloc_seg_treasury" data-alloc="treasury" style="flex: 45;" aria-label="45% Treasury">
+                <span class="tk_alloc_seg_pct">45%</span>
+                <span class="tk_alloc_seg_label">Treasury</span>
+            </button>
+            <button type="button" class="tk_alloc_seg tk_alloc_seg_staking" data-alloc="staking" style="flex: 10;" aria-label="10% Community">
+                <span class="tk_alloc_seg_pct">10%</span>
+                <span class="tk_alloc_seg_label">Community</span>
+            </button>
+            <button type="button" class="tk_alloc_seg tk_alloc_seg_lp" data-alloc="lp" style="flex: 5;" aria-label="5% Liquidity">
+                <span class="tk_alloc_seg_pct">5%</span>
+                <span class="tk_alloc_seg_label">LP</span>
+            </button>
+        </div>
+        <p class="lp_tag tk_alloc_hint">// hover any segment</p>
+    </div>
+
+    <div class="tk_alloc_cards">
+        <div class="tk_alloc_card tk_alloc_card_active" data-alloc="buyback">
+            <div class="lp_card_title">
+                <span class="tk_alloc_pct">40%</span>$IQ Buyback Engine
+            </div>
+            <p class="lp_card_desc">Market purchases of $IQ retained by the Treasury as a strategic reserve. Every fee event removes circulating supply from the market.</p>
+        </div>
+        <div class="tk_alloc_card" data-alloc="treasury">
+            <div class="lp_card_title">
+                <span class="tk_alloc_pct">45%</span>Operations Treasury
+            </div>
+            <p class="lp_card_desc">Salaries, servers, marketing, development, and ecosystem grants. Funds the work that ships the SDK and grows the surface area.</p>
+        </div>
+        <div class="tk_alloc_card" data-alloc="staking">
+            <div class="lp_card_title">
+                <span class="tk_alloc_pct">10%</span>Community Rewards Pool
+            </div>
+            <p class="lp_card_desc">Real yield distributed to the $IQ community in SOL or repurchased $IQ. Sourced entirely from SDK transaction fees, not token inflation or emissions.</p>
+        </div>
+        <div class="tk_alloc_card" data-alloc="lp">
+            <div class="lp_card_title">
+                <span class="tk_alloc_pct">5%</span>Liquidity Pool
+            </div>
+            <p class="lp_card_desc">Continuous deepening of the IQ/SOL pair. Tighter spreads, less slippage, healthier markets at every volume tier.</p>
+        </div>
+    </div>
+
+</section>
+
+<!-- 03 FLYWHEEL -->
+<section id="tk_flywheel_section" class="lp_section">
+    <p class="lp_tag">// 03 The Deflationary Flywheel</p>
+    <h2 class="lp_section_title">Builders. Users. Buybacks.</h2>
+    <div class="tk_flywheel">
+        <span class="tk_flywheel_step lp_tag" style="--i:0;">Builders Adopt SDK</span>
+        <span class="tk_flywheel_arrow" style="--i:0;">-&gt;</span>
+        <span class="tk_flywheel_step lp_tag" style="--i:1;">Users Transact On-Chain</span>
+        <span class="tk_flywheel_arrow" style="--i:1;">-&gt;</span>
+        <span class="tk_flywheel_step lp_tag" style="--i:2;">SOL Fees Collected</span>
+        <span class="tk_flywheel_arrow" style="--i:2;">-&gt;</span>
+        <span class="tk_flywheel_step lp_tag" style="--i:3;">$IQ Bought Back</span>
+        <span class="tk_flywheel_arrow" style="--i:3;">-&gt;</span>
+        <span class="tk_flywheel_step lp_tag" style="--i:4;">Supply Shrinks, Value Accrues</span>
+    </div>
+    <p class="about_text" style="max-width: 40rem; margin-top: 2rem;">Passive holders benefit from every transaction without lifting a finger. The more apps build on IQ SDK, the harder $IQ deflates.</p>
+</section>
+
+<!-- 04 ILLUSTRATIVE IMPACT -->
+<section id="tk_impact" class="lp_section">
+    <p class="lp_tag">// 04 Illustrative Impact</p>
+    <h2 class="lp_section_title">10,000 Daily Transactions.</h2>
+    <p class="about_text" style="max-width: 40rem;">Scenario: 10,000 daily transactions at 0.003 SOL average. Numbers below are illustrative. The flywheel scales with adoption.</p>
+    <div class="lp_stats row_flex" style="gap: 3rem; margin-top: 3rem; flex-wrap: wrap;">
+        <div class="column_flex">
+            <span class="lp_stat_num">30 <span style="color:#2BD52D;">SOL</span></span>
+            <span class="lp_stat_label">Daily Fees Collected</span>
+        </div>
+        <div class="column_flex">
+            <span class="lp_stat_num">12 <span style="color:#2BD52D;">SOL</span></span>
+            <span class="lp_stat_label">Routed to Buybacks (40%)</span>
+        </div>
+        <div class="column_flex">
+            <span class="lp_stat_num">~840K <span style="color:#2BD52D;">$IQ</span></span>
+            <span class="lp_stat_label">Bought Back Daily at $0.01</span>
+        </div>
+    </div>
+    <p class="lp_tag" style="margin-top: 2.5rem;">// Illustrative only. Buyback volume scales with adoption and SOL price. As $IQ price rises, fewer tokens are repurchased per cycle. Supply absorption is real regardless.</p>
+</section>
+
+<!-- 05 FUTURE LEVERS -->
+<section id="tk_governance" class="lp_section">
+    <p class="lp_tag">// 05 Future Levers</p>
+    <h2 class="lp_section_title">Shaped. Not Decided.</h2>
+    <p class="about_text" style="max-width: 40rem;">As the protocol matures, the community helps shape which additional flywheel accelerants get activated.</p>
+    <div class="lp_cards_grid">
+        <div class="lp_card">
+            <div class="lp_card_title">SDK Builder Grants</div>
+            <p class="lp_card_desc">Treasury-funded grants to developers building high-volume applications on the IQ SDK, directly accelerating fee generation.</p>
+        </div>
+        <div class="lp_card">
+            <div class="lp_card_title">Revenue Share Expansion</div>
+            <p class="lp_card_desc">Community-driven decision to expand reward allocation as treasury reserves grow.</p>
+        </div>
+        <div class="lp_card">
+            <div class="lp_card_title">Fee Tier Optimization</div>
+            <p class="lp_card_desc">Community-driven adjustments to fee thresholds to maximize adoption or revenue at different growth stages.</p>
+        </div>
+        <div class="lp_card">
+            <div class="lp_card_title">Cross-Chain SDK Expansion</div>
+            <p class="lp_card_desc">Treasury-funded development extending the SDK beyond Solana, multiplying the fee-generating surface area.</p>
+        </div>
+    </div>
+</section>
+
+<!-- OUTRO -->
+<section id="tk_outro" class="lp_section">
+    <p class="lp_tag">// Outro</p>
+    <h2 class="lp_section_title">Every Call. Every Write.<br>Every Message.</h2>
+    <p class="about_text" style="max-width: 40rem;">The IQ SDK is live. Developers are building. Every transaction flows through a fee mechanism designed to make $IQ mathematically scarcer over time. No manual intervention. No team discretion. Just code: usage, fees, buybacks, fewer tokens chasing the same demand.</p>
+    <p class="about_text" style="max-width: 40rem; margin-top: 1rem;">You don't need to do anything to benefit from IQ Labs' growth. You just need to hold $IQ. The more builders choose the IQ SDK, the more relentless the deflation. That is the only promise that matters.</p>
+    <a href="https://dexscreener.com/solana/3uxacfojurya7vh51jvc1dchq3uzk4a7g469q954labs" target="_blank" class="lp_link_btn" style="margin-top: 1.5rem; display: inline-block;">View on DexScreener -&gt;</a>
+</section>
+
+<!-- FOOTER -->
+<div class="lp_footer">
+    <div class="lp_footer_top row_flex space_between">
+        <div class="column_flex" style="gap: 0.3rem;">
+            <div class="lp_card_title" style="font-size: 1.5rem;">IQ Labs</div>
+            <p class="lp_tag">// HIGH IQ TECH SHIPPING</p>
+        </div>
+        <div class="lp_footer_links row_flex" style="gap: 3rem;">
+            <div class="column_flex" style="gap: 0.5rem;">
+                <p class="lp_footer_heading">Products</p>
+                <a href="https://x.com/IQLabsOfficial/status/2020665691897258450" target="_blank">IQ SDK</a>
+                <a href="https://ai.iqlabs.dev/" target="_blank">Clawbal</a>
+                <a href="https://git.iqlabs.dev/5CELw1D5RAho7G8zFMYazPf2rYzgQBoanKb2pHLvzWBE/agent-config" target="_blank">IQGithub</a>
+                <a href="#">iQoogle (Q2)</a>
+            </div>
+            <div class="column_flex" style="gap: 0.5rem;">
+                <p class="lp_footer_heading">Community</p>
+                <a href="https://x.com/IQLabsOfficial" target="_blank">X @IQLabsOfficial</a>
+                <a href="https://t.me/IQLabsPortal" target="_blank">Telegram</a>
+                <a href="https://discord.gg/a9XyqJn2gC" target="_blank">Discord</a>
+            </div>
+            <div class="column_flex" style="gap: 0.5rem;">
+                <p class="lp_footer_heading">Resources</p>
+                <a onclick="$.aboutPage.init();" style="cursor:pointer;">Origins</a>
+                <a href="https://iqlabs.mintlify.app/" target="_blank">Docs</a>
+                <a href="https://docs.google.com/document/d/1yaZcpEFZ7gMmhZxuzQpoW5QzIG_hZsqWnFnujKMP4M8/edit?tab=t.0" target="_blank">Whitepaper</a>
+                <a href="https://x.com/IQLabsOfficial/status/2014131287871627554" target="_blank">Vision</a>
+            </div>
+        </div>
+    </div>
+    <div class="lp_footer_bottom row_flex space_between">
+        <div class="row_flex center" style="gap: 0.5rem;">
+            <img class="bottom_image_logo" src="img/iq_bottom_logo.png">
+            <p style="font-size: 0.7rem;">IQLabs &copy; 2026</p>
+        </div>
+        <p class="lp_tag" style="font-size: 0.6rem;">// POWERED BY BIG BRAIN COMMUNITY</p>
+    </div>
+</div>
