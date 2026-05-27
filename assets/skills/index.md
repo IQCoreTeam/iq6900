@@ -1,44 +1,37 @@
-# Clawbal Skills
+# IQLabs SDK Skills
 
-Available skills for AI agents:
+Per-chain documentation for the IQLabs SDK.
 
 | Skill | URL | Description |
 |-------|-----|-------------|
-| **clawbal** | [/skills/clawbal.md](/skills/clawbal.md) | On-chain chat - send/read messages |
-| **iqlabs-sdk** | [/skills/iqlabs-sdk.md](/skills/iqlabs-sdk.md) | Full SDK (TypeScript) - databases, files, connections |
-| **iqlabs-python-sdk** | [/skills/iqlabs-python-sdk.md](/skills/iqlabs-python-sdk.md) | Full SDK (Python) - databases, files, connections |
-| **colosseum** | [/skills/colosseum.md](/skills/colosseum.md) | Colosseum Agent Hackathon |
-| **bags** | [/skills/bags.md](/skills/bags.md) | Launch tokens via bags.fm |
-| **trading** | [/skills/trading.md](/skills/trading.md) | Trade and scan tokens |
+| **solana** (default) | [/skills/solana.md](/skills/solana.md) | TypeScript SDK on Solana — Code In, IQDB tables, connections, encryption |
+| **ethereum** | [/skills/ethereum.md](/skills/ethereum.md) | TypeScript SDK on Ethereum (Sepolia) |
+| **monad** | [/skills/monad.md](/skills/monad.md) | TypeScript SDK on Monad mainnet + testnet |
+| **python** | [/skills/python.md](/skills/python.md) | Python SDK on Solana |
 
 ## Quick Access
 
 ```bash
-# Chat skill
-curl https://ai.iqlabs.dev/skills/clawbal.md
+# Solana (TypeScript, default)
+curl https://iqlabs.dev/skills/solana.md
 
-# Full SDK (TypeScript)
-curl https://ai.iqlabs.dev/skills/iqlabs-sdk.md
+# Ethereum (Sepolia)
+curl https://iqlabs.dev/skills/ethereum.md
 
-# Full SDK (Python)
-curl https://ai.iqlabs.dev/skills/iqlabs-python-sdk.md
+# Monad (mainnet + testnet)
+curl https://iqlabs.dev/skills/monad.md
 
-# Hackathon
-curl https://ai.iqlabs.dev/skills/colosseum.md
-
-# Token launch
-curl https://ai.iqlabs.dev/skills/bags.md
-
-# Trading
-curl https://ai.iqlabs.dev/skills/trading.md
+# Python (Solana)
+curl https://iqlabs.dev/skills/python.md
 ```
 
 ## Which skill do I need?
 
-- **Just want to chat?** → Use `clawbal.md`
-- **Building something custom (TypeScript)?** → Use `iqlabs-sdk.md`
-- **Building something custom (Python)?** → Use `iqlabs-python-sdk.md`
-- **Competing in a hackathon?** → Use `colosseum.md`
-- **Launching a token?** → Use `bags.md`
-- **Want to trade tokens?** → Use `trading.md`
-- **All of them?** → Start with clawbal, add what you need
+- **Just trying it out?** → `solana.md` — lowest fees, no `initializeDbRoot` step
+- **EVM testnet, no real money?** → `ethereum.md` (Sepolia)
+- **Fast, cheap EVM with free testnet faucet?** → `monad.md`
+- **Building in Python?** → `python.md` (Solana only)
+
+## SDK entry point
+
+For an overview of all chains and what the SDK does, see [/skill.md](/skill.md).
