@@ -399,7 +399,7 @@ const tablePda = iqlabs.contract.getTablePda(dbRootPda, tableSeed, programId);
 
 ## Cross-chain notes
 
-The Solana SDK auto-creates tables on first `writeRow()`. The Ethereum / Monad SDKs require explicit `initializeDbRoot()` + `createTable()` first. Plaintext encryption format is identical across all chains, so the same X25519 keypair derived from a wallet signature decrypts data written on Solana from Ethereum or Monad and vice versa.
+The Solana SDK auto-creates tables on first `writeRow()`. The Ethereum / Monad SDKs require explicit `initializeDbRoot()` + `createTable()` first. The encryption wire format (X25519 / AES-GCM / PBKDF2) is identical across chains, so a ciphertext produced by one SDK can be decrypted by another with the matching key — note that the X25519 key is derived from a wallet *signature*, so Solana and EVM wallets each produce their own keypair.
 
 - Ethereum (Sepolia): `fetch_skill("ethereum")` or https://iqlabs.dev/skills/ethereum.md
 - Monad: `fetch_skill("monad")` or https://iqlabs.dev/skills/monad.md

@@ -128,7 +128,7 @@ const signer = await provider.getSigner();
 
 ## Core concepts
 
-The contract is byte-for-byte identical to the Ethereum deployment, so the four primitives behave exactly the same: **Code In**, **IQDB Tables**, **Connections**, and **Encryption**. See [`fetch_skill("ethereum")`](https://iqlabs.dev/skills/ethereum.md) for the full conceptual walkthrough.
+The contract has the same ABI and same functions as the Ethereum deployment, so the four primitives behave the same way: **Code In**, **IQDB Tables**, **Connections**, and **Encryption**. See [`fetch_skill("ethereum")`](https://iqlabs.dev/skills/ethereum.md) for the full conceptual walkthrough.
 
 Monad-specific differences are limited to:
 
@@ -145,7 +145,7 @@ Monad-specific differences are limited to:
 | `tableCreationFee` | 19.5 MON | 1.95 MON | `createTable` (split 31% feeReceiver / 69% DbRoot creator) |
 | `discountFee` | 3.25 MON | 0.325 MON | replaces `basicFee` on inline path for IQ-token holders |
 
-Testnet fees are exactly 10× cheaper because the faucet drips only modest amounts — full mainnet pricing would make a round trip unreachable for devs.
+Testnet fees are exactly 10× cheaper than mainnet so faucet drips are enough for typical dev round trips.
 
 Free (gas-only): `updateTableTxChainTail`, `updateConnectionTxChainTail`, `updateUserTxChainTail`, `requestConnection`, `manageConnection`, `dbInstructionCodeIn`.
 
@@ -335,7 +335,7 @@ await iqlabs.writer.updateUserMetadata(
 
 ### Encryption
 
-Identical primitives to Solana and Ethereum — same plaintext format, cross-chain compatible.
+Same encryption wire format as Solana and Ethereum (X25519 / AES-GCM / PBKDF2). A ciphertext encrypted on any chain decrypts on any other with the matching key. The X25519 key is wallet-signature-derived, so Solana and EVM wallets each produce their own keypair.
 
 ```typescript
 import { getBytes } from 'ethers';
@@ -453,7 +453,7 @@ async function main() {
 ## Cross-chain notes
 
 - **Same package as Ethereum** (`@iqlabs-official/ethereum-sdk`) — `setNetwork('monad')` is the only switch
-- **Same plaintext format** as Solana — encrypted data round-trips
+- **Same encryption wire format** as Solana — ciphertexts decrypt cross-chain with the matching key (X25519 keys are wallet-derived, so Solana vs EVM wallets have different keypairs)
 - **Same EVM rule** — `initializeDbRoot` + `createTable` are required before `writeRow`
 - **Ethereum (Sepolia):** `fetch_skill("ethereum")` or https://iqlabs.dev/skills/ethereum.md
 - **Solana TS:** `fetch_skill("solana")` or https://iqlabs.dev/skills/solana.md

@@ -457,7 +457,7 @@ pda, bump = Pubkey.find_program_address([seed_bytes, other_seed], program_id)
 
 ## Cross-chain notes
 
-This SDK targets **Solana only**. For EVM (Ethereum / Monad), use the TypeScript SDK `@iqlabs-official/ethereum-sdk`. Encryption format is identical across all SDKs, so encrypted blobs can round-trip across chains and languages.
+This SDK targets **Solana only**. For EVM (Ethereum / Monad), use the TypeScript SDK `@iqlabs-official/ethereum-sdk`. The encryption wire format (X25519 / AES-GCM / PBKDF2) is identical across all SDKs and languages, so a ciphertext produced here can be decrypted by the TypeScript SDK and vice versa with the matching key.
 
 - **Solana TS:** `fetch_skill("solana")` or https://iqlabs.dev/skills/solana.md
 - **Ethereum (Sepolia):** `fetch_skill("ethereum")` or https://iqlabs.dev/skills/ethereum.md

@@ -387,7 +387,7 @@ await iqlabs.writer.updateUserMetadata(signer, JSON.stringify({ name: 'Alice', b
 
 ### Encryption
 
-Identical primitives to Solana — same plaintext format, so encrypted blobs round-trip across chains.
+Same encryption wire format as Solana (X25519 / AES-GCM / PBKDF2), so a ciphertext produced on Solana can be decrypted here with the matching key. The X25519 key itself is derived from a wallet signature, so a Solana keypair and an EVM wallet each produce a different X25519 keypair.
 
 #### `deriveX25519Keypair(signMessage)`
 
@@ -533,7 +533,7 @@ await iqlabs.writer.setTableCreationFee(signer, ethers.parseEther('0.0005'));
 ## Cross-chain notes
 
 - **Tables auto-create on Solana, but not on EVM** — always `initializeDbRoot` + `createTable` before `writeRow`.
-- **Same plaintext format** — Solana ↔ Ethereum ↔ Monad encrypted data round-trips.
-- **Same fee model on Monad** — switch with `setNetwork('monad')`. See [`fetch_skill("monad")`](https://iqlabs.dev/skills/monad.md) for Monad-specific fees, testnet faucet, and chain config.
+- **Same encryption wire format** — a ciphertext encrypted on any chain decrypts on any other with the matching key (X25519 keys are wallet-derived, so Solana vs EVM wallets have different keypairs).
+- **Same fee structure on Monad** (amounts differ) — switch with `setNetwork('monad')`. See [`fetch_skill("monad")`](https://iqlabs.dev/skills/monad.md) for Monad-specific fees, testnet faucet, and chain config.
 - **Solana TS:** `fetch_skill("solana")` or https://iqlabs.dev/skills/solana.md
 - **Python (Solana):** `fetch_skill("python")` or https://iqlabs.dev/skills/python.md

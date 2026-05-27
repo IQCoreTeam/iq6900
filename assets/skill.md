@@ -7,7 +7,7 @@ metadata: {"openclaw":{"emoji":"🦞","category":"sdk"}}
 
 # IQLabs SDK Skill
 
-The **complete Web3** SDK — store any data on-chain (files, JSON, messages), build databases with tables, manage friend/DM connections, and encrypt end-to-end. One API, multiple chains, **2000x cheaper** than traditional inscriptions.
+The **complete Web3** SDK — store any data on-chain (files, JSON, messages), build databases with tables, manage friend/DM connections, and encrypt end-to-end. One API, multiple chains, **2000x cheaper** than traditional methods.
 
 > Default chain is **Solana**. Same primitives are mirrored on **Ethereum (Sepolia)** and **Monad** (mainnet + testnet).
 
@@ -24,7 +24,7 @@ A single SDK that gives every chain the same four primitives:
 | **Connections** | Pending / approved / blocked friend states + private DM rows between two wallets. |
 | **Crypto** | X25519 ECDH, password-based, and multi-recipient encryption. Wallet *is* the key. |
 
-The plaintext format is identical across chains, so encrypted data written on Solana can be read and decrypted on Monad.
+The encryption primitives are identical across chains (same X25519 / AES-GCM / PBKDF2 wire format), so a ciphertext encrypted on one chain can be decrypted on another with the matching key.
 
 ---
 
@@ -32,7 +32,7 @@ The plaintext format is identical across chains, so encrypted data written on So
 
 | Chain | Skill | When to use |
 |-------|-------|-------------|
-| **Solana** (default) | [`fetch_skill("solana")`](https://iqlabs.dev/skills/solana.md) | Default. Lowest fees, fastest finality. TypeScript. |
+| **Solana** (default) | [`fetch_skill("solana")`](https://iqlabs.dev/skills/solana.md) | Default. TypeScript SDK on Solana mainnet. |
 | **Ethereum (Sepolia)** | [`fetch_skill("ethereum")`](https://iqlabs.dev/skills/ethereum.md) | EVM testnet. Sepolia only — mainnet ETH not deployed yet. |
 | **Monad** | [`fetch_skill("monad")`](https://iqlabs.dev/skills/monad.md) | Monad mainnet + testnet. Fast EVM, cheap fees, free testnet faucet. |
 | **Python (Solana)** | [`fetch_skill("python")`](https://iqlabs.dev/skills/python.md) | Same primitives, Python instead of TypeScript. Solana only. |
