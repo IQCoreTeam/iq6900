@@ -116,10 +116,10 @@ await iqlabs.writer.writeRow(signer, 'my-app', 'users', JSON.stringify({
 
 ## Full documentation
 
-- **TypeScript (Solana):** https://iqlabs.dev/docs-typescript ([LLM-friendly](https://iqlabs.dev/docs-typescript.md))
-- **TypeScript (Ethereum):** https://iqlabs.dev/docs-ethereum
-- **TypeScript (Monad):** https://iqlabs.dev/docs-monad
-- **Python (Solana):** https://iqlabs.dev/docs-python ([LLM-friendly](https://iqlabs.dev/docs-python.md))
+- **TypeScript (Solana):** https://iqlabs.mintlify.app/docs-typescript ([LLM-friendly](https://iqlabs.mintlify.app/docs-typescript.md))
+- **TypeScript (Ethereum):** https://iqlabs.mintlify.app/docs-ethereum
+- **TypeScript (Monad):** https://iqlabs.mintlify.app/docs-monad
+- **Python (Solana):** https://iqlabs.mintlify.app/docs-python ([LLM-friendly](https://iqlabs.mintlify.app/docs-python.md))
 
 ## Packages
 
@@ -133,6 +133,6 @@ await iqlabs.writer.writeRow(signer, 'my-app', 'users', JSON.stringify({
 
 | Resource | URL |
 |----------|-----|
-| Docs home | https://iqlabs.dev |
+| Docs home | https://iqlabs.mintlify.app |
 | Codebase example CLI | https://github.com/IQCoreTeam/IQSdkUsageExampleCliTool |
 | Twitter / X | https://x.com/IQLabsOfficial |

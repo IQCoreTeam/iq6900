@@ -8,7 +8,7 @@ description: IQLabs SDK on Monad — TypeScript reference for on-chain data, IQD
 
 The IQLabs Ethereum SDK works on Monad out of the box. Same API, one line to switch networks. Monad is fast and cheap, so everything just works better.
 
-> Full docs: https://iqlabs.dev/docs-monad
+> Full docs: https://iqlabs.mintlify.app/docs-monad
 > npm: `@iqlabs-official/ethereum-sdk` (same package as Ethereum)
 
 > **Monad mainnet and testnet are both live.** New to Monad? Start on testnet with free MON — see [Testnet](#testnet).
@@ -25,7 +25,7 @@ npm i @iqlabs-official/ethereum-sdk
 
 | Mode | Chain ID | Currency | Contract | Default RPC |
 |------|---------:|----------|----------|-------------|
-| `sepolia` | 11155111 | ETH | [`0xB1C16271954c7238672c3666FD22Ee14C6d065Db`](https://sepolia.etherscan.io/address/0xB1C16271954c7238672c3666FD22Ee14C6d065Db) | `https://rpc.sepolia.org` |
+| `sepolia` | 11155111 | ETH | [`0xB1C16271954c7238672c3666FD22Ee14C6d065Db`](https://sepolia.etherscan.io/address/0xB1C16271954c7238672c3666FD22Ee14C6d065Db) | `https://ethereum-sepolia-rpc.publicnode.com` |
 | `monad` | 143 | MON | [`0xeFd9376835076Bf8d83826F6A2277BB5362Cd893`](https://monadvision.com/address/0xeFd9376835076Bf8d83826F6A2277BB5362Cd893) | `https://rpc.monad.xyz` |
 | `monadTestnet` | 10143 | MON | [`0x88af59e58C7E5DcbE7cc12972B90cff3fEEF7223`](https://testnet.monadexplorer.com/address/0x88af59e58C7E5DcbE7cc12972B90cff3fEEF7223) | `https://testnet-rpc.monad.xyz` |
 

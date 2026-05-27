@@ -8,7 +8,7 @@ description: IQLabs SDK on Ethereum (Sepolia) — TypeScript reference for on-ch
 
 The Ethereum port of the IQLabs SDK. Same four primitives (Code In, IQDB tables, connections, encryption) built on `ethers v6` and a single deployed contract.
 
-> Full docs: https://iqlabs.dev/docs-ethereum
+> Full docs: https://iqlabs.mintlify.app/docs-ethereum
 > npm: `@iqlabs-official/ethereum-sdk`
 
 > **Mainnet ETH is not deployed yet.** This SDK currently targets **Sepolia testnet** and **Monad** (see [`fetch_skill("monad")`](https://iqlabs.dev/skills/monad.md)).
@@ -29,7 +29,7 @@ The SDK ships with multiple network modes — default is `sepolia`. Switch once 
 
 | Mode | Chain ID | Currency | Contract | Default RPC |
 |------|---------:|----------|----------|-------------|
-| `sepolia` | 11155111 | ETH | [`0xB1C16271954c7238672c3666FD22Ee14C6d065Db`](https://sepolia.etherscan.io/address/0xB1C16271954c7238672c3666FD22Ee14C6d065Db) | `https://rpc.sepolia.org` |
+| `sepolia` | 11155111 | ETH | [`0xB1C16271954c7238672c3666FD22Ee14C6d065Db`](https://sepolia.etherscan.io/address/0xB1C16271954c7238672c3666FD22Ee14C6d065Db) | `https://ethereum-sepolia-rpc.publicnode.com` |
 | `monad` | 143 | MON | [`0xeFd9376835076Bf8d83826F6A2277BB5362Cd893`](https://monadvision.com/address/0xeFd9376835076Bf8d83826F6A2277BB5362Cd893) | `https://rpc.monad.xyz` |
 
 ```typescript
@@ -49,7 +49,7 @@ Reader RPC priority: explicit `setNetwork(mode, rpcUrl)` / `setRpcUrl(url)` → 
 ```typescript
 import { Wallet, JsonRpcProvider } from 'ethers';
 
-const provider = new JsonRpcProvider('https://rpc.sepolia.org');
+const provider = new JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com');
 const signer = new Wallet(process.env.PRIVATE_KEY!, provider);
 ```
 

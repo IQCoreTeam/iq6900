@@ -8,7 +8,7 @@ description: IQLabs SDK on Solana — TypeScript reference for on-chain data, IQ
 
 The default IQLabs SDK. Store any data on-chain, build databases with token/NFT-gated tables, manage friend/DM connections, and encrypt end-to-end. All four primitives written to Solana via your own keypair.
 
-> Full docs: https://iqlabs.dev/docs-typescript ([LLM-friendly](https://iqlabs.dev/docs-typescript.md))
+> Full docs: https://iqlabs.mintlify.app/docs-typescript ([LLM-friendly](https://iqlabs.mintlify.app/docs-typescript.md))
 > npm: https://www.npmjs.com/package/@iqlabs-official/solana-sdk
 
 ## Install

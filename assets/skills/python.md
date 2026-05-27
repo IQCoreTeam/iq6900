@@ -8,7 +8,7 @@ description: IQLabs SDK on Solana — Python reference for on-chain data, IQDB t
 
 Python port of the IQLabs Solana SDK. Same four primitives (Code In, IQDB tables, connections, encryption), idiomatic Python with `asyncio`.
 
-> Full docs: https://iqlabs.dev/docs-python ([LLM-friendly](https://iqlabs.dev/docs-python.md))
+> Full docs: https://iqlabs.mintlify.app/docs-python ([LLM-friendly](https://iqlabs.mintlify.app/docs-python.md))
 > PyPI: https://pypi.org/project/iqlabs-solana-sdk/
 > GitHub: https://github.com/IQCoreTeam/iqlabs-solana-sdk-python
 
