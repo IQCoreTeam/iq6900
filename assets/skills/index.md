@@ -8,6 +8,7 @@ Per-chain documentation for the IQLabs SDK.
 | **ethereum** | [/skills/ethereum.md](/skills/ethereum.md) | TypeScript SDK on Ethereum (Sepolia) |
 | **monad** | [/skills/monad.md](/skills/monad.md) | TypeScript SDK on Monad mainnet + testnet |
 | **python** | [/skills/python.md](/skills/python.md) | Python SDK on Solana |
+| **iqgit** | [/skills/iqgit.md](/skills/iqgit.md) | On-chain Git: `iq-git-cli`, [git.iqlabs.dev](https://git.iqlabs.dev), and `git-sdk` for agents/apps |
 
 ## Quick Access
 
@@ -23,6 +24,9 @@ curl https://iqlabs.dev/skills/monad.md
 
 # Python (Solana)
 curl https://iqlabs.dev/skills/python.md
+
+# On-Chain Git (CLI + browser + SDK)
+curl https://iqlabs.dev/skills/iqgit.md
 ```
 
 ## Which skill do I need?
@@ -31,6 +35,7 @@ curl https://iqlabs.dev/skills/python.md
 - **EVM testnet, no real money?** → `ethereum.md` (Sepolia)
 - **Fast, cheap EVM with free testnet faucet?** → `monad.md`
 - **Building in Python?** → `python.md` (Solana only)
+- **Need GitHub-style repos on chain?** → `iqgit.md` — CLI, browser frontend, embeddable SDK
 
 ## SDK entry point
 
