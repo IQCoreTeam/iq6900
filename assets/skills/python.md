@@ -429,6 +429,32 @@ connection_pda = contract.get_connection_table_pda(db_root_pda, connection_seed,
 
 ### Utilities
 
+#### Session speed profiles
+
+Many writer/reader calls accept a `speed` parameter (RPS + concurrency dial). Pick a preset or pass raw dials:
+
+```python
+# preset
+await iqlabs.writer.write_row(connection, signer, db_root_id, table_seed, row_json, speed="heavy")
+
+# raw override (any subset of keys; missing dials inherit the default preset)
+await iqlabs.writer.write_row(
+    connection, signer, db_root_id, table_seed, row_json,
+    speed={"max_rps": 80, "max_concurrency_upload": 30},
+)
+```
+
+| Preset | `max_rps` | `max_concurrency` | `max_concurrency_upload` |
+|---|---|---|---|
+| `light` (default) | 2 | 5 | 1 |
+| `medium` | 50 | 50 | 5 |
+| `heavy` | 100 | 100 | 50 |
+| `extreme` | 250 | 250 | 100 |
+
+Profiles are mutable: `iqlabs.utils.SESSION_SPEED_PROFILES["heavy"]["max_rps"] = 200`.
+
+Exports: `SESSION_SPEED_PROFILES`, `DEFAULT_SESSION_SPEED`, `resolve_session_speed`, `resolve_session_config`, type `SessionSpeedOption`.
+
 #### `derive_dm_seed(user_a, user_b)`
 
 Sorted lowercase + keccak256 — order doesn't matter.
