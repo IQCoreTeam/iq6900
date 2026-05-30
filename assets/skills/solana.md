@@ -362,6 +362,36 @@ const plaintext = await iqlabs.crypto.multiDecrypt(alicePrivKey, alicePubHex, en
 
 ### Utilities
 
+#### Session speed profiles
+
+Many writer/reader calls accept a `speed` parameter (RPS + concurrency
+dial). Pick a preset or pass raw dials:
+
+```typescript
+// preset
+await iqlabs.writer.writeRow(connection, signer, dbRootId, tableSeed, rowJson, {
+  speed: 'heavy',
+});
+
+// raw override (any subset; missing dials inherit the default preset)
+await iqlabs.writer.writeRow(connection, signer, dbRootId, tableSeed, rowJson, {
+  speed: { maxRps: 80, maxConcurrencyUpload: 30 },
+});
+```
+
+| Preset | `maxRps` | `maxConcurrency` | `maxConcurrencyUpload` |
+|---|---|---|---|
+| `light` (default) | 2 | 5 | 1 |
+| `medium` | 50 | 50 | 5 |
+| `heavy` | 100 | 100 | 50 |
+| `extreme` | 250 | 250 | 100 |
+
+Profiles are mutable: `iqlabs.utils.SESSION_SPEED_PROFILES.heavy.maxRps = 200`.
+
+Exports: `SESSION_SPEED_PROFILES`, `DEFAULT_SESSION_SPEED`,
+`resolveSessionSpeed`, `resolveSessionConfig`, types `SessionSpeedKey`,
+`SessionSpeedConfig`, `SessionSpeedOption`.
+
 #### `deriveDmSeed(userA, userB)`
 
 Sorted-keccak256 — order doesn't matter.

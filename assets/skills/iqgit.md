@@ -78,6 +78,22 @@ Each push writes three kinds of records:
 
 `push` is checkpointed end-to-end. Each blob's `{ hash → txId }` is appended to `.iqgit/upload-cache.json` on success (synchronous flush). The tree's txId and the commit row's signature are persisted into the pending commit's `meta.json` between steps. If the push dies partway, the next `iqgit push` resumes from the last checkpoint — already-uploaded blobs are reused from cache.
 
+### Upload speed
+
+Default is `light` (Helius free-tier friendly). On a paid RPC, dial it up by preset or raw RPS / concurrency:
+
+```bash
+# preset
+iqgit config speed heavy                # global default
+iqgit push --speed extreme              # one-off
+
+# raw dials (win over preset; any subset works)
+iqgit config rps 80
+iqgit push --rps 120 --concurrency-upload 30
+```
+
+Presets: `light` | `medium` | `heavy` | `extreme`. Raw flags: `--rps`, `--concurrency`, `--concurrency-upload`. Config keys mirror them: `rps`, `concurrency`, `concurrencyUpload`.
+
 ### Gateway routing
 
 Read-heavy commands route through the IQ Gateway HTTP cache by default, with raw RPC as final fallback.
@@ -201,6 +217,29 @@ Import the platform entry **exactly once** before calling any function that hash
 - `bootstrapRegistry` — one-time admin call to initialize the global registry on a fresh network.
 
 `SignerInput` from `@iqlabs-official/solana-sdk` is accepted everywhere a signer is needed: a `Keypair`, web3.js `Signer`, or wallet adapter object with `signTransaction` / `signAllTransactions`.
+
+### Tuning upload speed
+
+Default is `light`. Pick a preset or pass raw dials at construct-time or per-call:
+
+```typescript
+// preset
+const client = new GitClient({ connection, signer, speed: "heavy" });
+
+// raw override (any subset; missing dials inherit default preset)
+const client = new GitClient({
+  connection, signer,
+  speed: { maxRps: 80, maxConcurrencyUpload: 30 },
+});
+
+// per-call (wins over construct-time)
+await client.commit("my-repo", "tweak", scan, { speed: "extreme" });
+await client.commit("my-repo", "tweak", scan, {
+  speed: { maxRps: 120, maxConcurrencyUpload: 40 },
+});
+```
+
+Presets: `light` | `medium` | `heavy` | `extreme`. Raw object accepts `maxRps`, `maxConcurrency`, `maxConcurrencyUpload`.
 
 ### Use cases
 
