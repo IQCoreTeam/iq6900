@@ -1,43 +1,43 @@
 @font-face {
     font-family: Consola;
-    src: url('../fonts/unifont.otf') format('opentype');
+    src: url('../fonts/unifont-subset.woff2') format('woff2');
 }
 @font-face {
     font-family: Montserrat;
-    src: url('../fonts/unifont.otf') format('opentype');
+    src: url('../fonts/unifont-subset.woff2') format('woff2');
 }
 @font-face {
     font-family: IBMPlexMono;
-    src: url('../fonts/unifont.otf') format('opentype');
+    src: url('../fonts/unifont-subset.woff2') format('woff2');
 }
 @font-face {
     font-family: IBMPlexMonoLight;
-    src: url('../fonts/unifont.otf') format('opentype');
+    src: url('../fonts/unifont-subset.woff2') format('woff2');
 }
 @font-face {
     font-family: IBMPlexMonoRegular;
-    src: url('../fonts/unifont.otf') format('opentype');
+    src: url('../fonts/unifont-subset.woff2') format('woff2');
 }
 @font-face {
     font-family: Unifont;
-    src: url('../fonts/unifont.otf') format('opentype');
+    src: url('../fonts/unifont-subset.woff2') format('woff2');
 }
 @font-face {
     font-family: 'Kode Mono';
-    src: url('../fonts/unifont.otf') format('opentype');
+    src: url('../fonts/unifont-subset.woff2') format('woff2');
     font-weight: 100 900;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'Silkscreen Bold';
-    src: url('../fonts/unifont.otf') format('opentype');
+    src: url('../fonts/unifont-subset.woff2') format('woff2');
     font-weight: 700;
     font-style: normal;
 }
 @font-face {
     font-family: 'Silkscreen';
-    src: url('../fonts/unifont.otf') format('opentype');
+    src: url('../fonts/unifont-subset.woff2') format('woff2');
     font-weight: 700;
     font-style: normal;
 }
@@ -45,7 +45,7 @@
 
 @font-face {
     font-family: 'Pixelify Sans';
-    src: url('../fonts/unifont.otf') format('opentype');
+    src: url('../fonts/unifont-subset.woff2') format('woff2');
     font-weight: 100 900;
     font-style: normal;
 }
