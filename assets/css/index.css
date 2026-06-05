@@ -685,13 +685,13 @@ input[type=number] {
 
 @keyframes bounce {
     from {
-        background: url('../img/heart.png') center;
+        background: url('../img/heart.webp') center;
         background-size: cover;
         width: 98%;
         transform: translate(0.2rem, 0.2rem);
     }
     to {
-        background: url('../img/heart.png') center;
+        background: url('../img/heart.webp') center;
         background-size: cover;
         transform: none;
     }
@@ -699,14 +699,14 @@ input[type=number] {
 
 @keyframes bounce_mobile {
     from {
-        background: url('../img/heart.png') center;
+        background: url('../img/heart.webp') center;
         width: 98%;
         height: 98%;
         background-size: cover;
         transform: translate(1rem, 0.6rem);
     }
     to {
-        background: url('../img/heart.png') center;
+        background: url('../img/heart.webp') center;
         background-size: cover;
         transform: none;
     }
