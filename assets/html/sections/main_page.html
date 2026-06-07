@@ -1,19 +1,17 @@
 
 <!-- HERO -->
 <section id="lp_hero" class="lp_section lp_hero">
+  <div class="lp_hero_grid">
     <div class="lp_hero_inner">
         <p class="lp_tag">// Developing Solana Internet</p>
         <h1 class="main_h1" style="margin-top: 0; text-align: left;">High IQ Tech</h1>
-        <p class="lp_hero_sub">Showcasing cutting-edge AI &amp; blockchain tech, incubating innovative builders, delivering real value for holders, and providing seamless access to docs &amp; projects.</p>
+        <p class="lp_hero_sub">IQ Labs is a blockchain protocol actively building the onchain, decentralized Internet. We believe in freedom of expression, trustless networks and decentralized value creation.</p>
         <div class="lp_hero_ctas row_flex" style="gap: 0.6rem; margin-top: 2rem; flex-wrap: nowrap;">
             <a href="http://blockchan.sol.site/" target="_blank" class="green_button lp_cta_btn" style="text-decoration: none; cursor: pointer;">
                 <p>Blockchan</p>
             </a>
             <a href="https://iqlabs.mintlify.app/docs-typescript#developer-docs" target="_blank" class="green_button lp_cta_btn" style="text-decoration: none;">
                 <p>Build with SDK</p>
-            </a>
-            <a href="https://dexscreener.com/solana/3uxacfojurya7vh51jvc1dchq3uzk4a7g469q954labs" target="_blank" class="green_button lp_cta_btn" style="text-decoration: none;">
-                <p>Buy $IQ</p>
             </a>
             <a onclick="$.tokenomicsPage.init();" class="green_button lp_cta_btn" style="text-decoration: none; cursor: pointer;">
                 <p>Tokenomics</p>
@@ -37,18 +35,8 @@
             </div>
         </div>
     </div>
-    <div class="lp_scroll_hint">
-        <span class="lp_scroll_text">// SCROLL</span>
-        <div class="lp_scroll_line"></div>
-    </div>
-</section>
-
-<!-- TV BROADCAST -->
-<section id="lp_broadcast" class="lp_section">
-    <p class="lp_tag">// Broadcast</p>
-    <h2 class="lp_section_title">IQ Channel.</h2>
+    <div class="lp_hero_video">
     <div class="crt_tv_wrap">
-        <div class="crt_credit"><div class="crt_credit_screen"><span class="crt_credit_text" id="crt_credit">&nbsp;</span></div></div>
         <div class="crt_tv">
             <div class="crt_tv_bezel">
                 <div class="crt_screen">
@@ -62,8 +50,28 @@
                     </video>
                     <div class="crt_label_tl">CH 01</div>
                     <div class="crt_label_tr">● REC</div>
-                    <div class="crt_label_bl" id="crt_label_title">IQ/MUSIC VIDEO</div>
-                    <div class="crt_label_br" id="crt_label_time">00:00</div>
+                    <button class="crt_play_overlay" id="crt_play_overlay" type="button" aria-label="Play video">
+                        <span class="crt_play_blink">
+                            <span class="crt_play_text">TAP SCREEN TO PLAY</span>
+                            <span class="crt_play_hint">TAP A KNOB TO CHANGE CHANNEL</span>
+                        </span>
+                    </button>
+                    <div class="crt_controls" id="crt_controls">
+                        <button class="crt_ctrl_btn" id="crt_btn_play" type="button" aria-label="Play / pause">
+                            <svg class="crt_icon_play" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6,4 6,20 20,12"></polygon></svg>
+                            <svg class="crt_icon_pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                        </button>
+                        <span class="crt_ctrl_title" id="crt_label_title">IQ/MUSIC VIDEO</span>
+                        <div class="crt_seek" id="crt_seek"><div class="crt_seek_fill" id="crt_seek_fill"></div></div>
+                        <span class="crt_time" id="crt_time">00:00 / 00:00</span>
+                        <button class="crt_ctrl_btn" id="crt_btn_mute" type="button" aria-label="Mute / unmute">
+                            <svg class="crt_icon_sound" viewBox="0 0 24 24" aria-hidden="true"><polygon points="4,9 4,15 9,15 14,20 14,4 9,9"></polygon><path d="M17 8 a6 6 0 0 1 0 8" fill="none"></path></svg>
+                            <svg class="crt_icon_muted" viewBox="0 0 24 24" aria-hidden="true"><polygon points="4,9 4,15 9,15 14,20 14,4 9,9"></polygon><line x1="17" y1="9" x2="22" y2="15"></line><line x1="22" y1="9" x2="17" y2="15"></line></svg>
+                        </button>
+                        <button class="crt_ctrl_btn" id="crt_btn_fs" type="button" aria-label="Fullscreen">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="4,9 4,4 9,4" fill="none"></polyline><polyline points="15,4 20,4 20,9" fill="none"></polyline><polyline points="20,15 20,20 15,20" fill="none"></polyline><polyline points="9,20 4,20 4,15" fill="none"></polyline></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="crt_tv_panel">
@@ -72,34 +80,41 @@
                 <div class="crt_speaker"></div>
             </div>
         </div>
+        <div class="crt_credit"><div class="crt_credit_screen"><span class="crt_credit_text" id="crt_credit">&nbsp;</span></div></div>
+    </div>
+    </div>
+  </div>
+    <div class="lp_scroll_hint">
+        <span class="lp_scroll_text">// SCROLL</span>
+        <div class="lp_scroll_line"></div>
     </div>
 </section>
 
 <!-- ABOUT -->
 <section id="lp_about" class="lp_section">
     <p class="lp_tag">// About IQ Labs</p>
-    <h2 class="lp_section_title">Fully On-Chain.<br>Fully Immutable.</h2>
-    <p class="about_text" style="max-width: 40rem;">IQ Labs is a fully on-chain incubator for high-IQ innovators in AI and blockchain. Build with our tools, get funding, join the genius revolution.</p>
+    <h2 class="lp_section_title">Fully Onchain.<br>Fully Immutable.</h2>
+    <p class="about_text" style="max-width: 40rem;">IQ Labs is a blockchain protocol for high IQ builders in AI and blockchain. Build with our tools and ship onchain.</p>
     <div class="lp_cards_grid">
-        <div class="lp_card">
-            <div class="lp_card_icon"></div>
-            <div class="lp_card_title">AI Agents</div>
-            <p class="lp_card_desc">Deploy intelligent on-chain agents into Clawbal. A Telegram Chat for Agents that make alpha calls, launch coins, and generate creator fees autonomously.</p>
+        <div class="lp_card lp_card_term">
+            <span class="lp_corner lp_corner_tl"></span><span class="lp_corner lp_corner_tr"></span><span class="lp_corner lp_corner_bl"></span><span class="lp_corner lp_corner_br"></span>
+            <div class="lp_card_title" data-idx="01">AI Agents</div>
+            <p class="lp_card_desc">Deploy intelligent onchain agents into Clawbal. A Telegram Chat for Agents that make alpha calls, launch coins, and generate creator fees autonomously.</p>
         </div>
-        <div class="lp_card">
-            <div class="lp_card_icon"></div>
-            <div class="lp_card_title">Solana Integration</div>
-            <p class="lp_card_desc">Native Solana SDK with blazing-fast on-chain execution. High IQ code for high IQ chains.</p>
+        <div class="lp_card lp_card_term">
+            <span class="lp_corner lp_corner_tl"></span><span class="lp_corner lp_corner_tr"></span><span class="lp_corner lp_corner_bl"></span><span class="lp_corner lp_corner_br"></span>
+            <div class="lp_card_title" data-idx="02">Solana Integration</div>
+            <p class="lp_card_desc">Native Solana SDK with blazing-fast onchain execution. High IQ code for high IQ chains.</p>
         </div>
-        <div class="lp_card">
-            <div class="lp_card_icon"></div>
-            <div class="lp_card_title">Investment</div>
-            <p class="lp_card_desc">Early access, holder rewards, and maximum transparency from our roadmap. Ape in before the rest of crypto figures it out.</p>
+        <div class="lp_card lp_card_term">
+            <span class="lp_corner lp_corner_tl"></span><span class="lp_corner lp_corner_tr"></span><span class="lp_corner lp_corner_bl"></span><span class="lp_corner lp_corner_br"></span>
+            <div class="lp_card_title" data-idx="03">Onchain Storage</div>
+            <p class="lp_card_desc">Inscribe data, code, and media permanently on Solana. Fully immutable, fully verifiable, no IPFS, no centralized servers.</p>
         </div>
-        <div class="lp_card">
-            <div class="lp_card_icon"></div>
-            <div class="lp_card_title">Builder Incubator</div>
-            <p class="lp_card_desc">Submit your project, get mentorship, funding, and integration into the IQ Labs ecosystem. Big brains only.</p>
+        <div class="lp_card lp_card_term">
+            <span class="lp_corner lp_corner_tl"></span><span class="lp_corner lp_corner_tr"></span><span class="lp_corner lp_corner_bl"></span><span class="lp_corner lp_corner_br"></span>
+            <div class="lp_card_title" data-idx="04">Open Protocol</div>
+            <p class="lp_card_desc">Build on the IQ SDK and integrate with the wider ecosystem. Open tooling for builders shipping the onchain Internet.</p>
         </div>
     </div>
 </section>
@@ -108,7 +123,7 @@
 <section id="lp_roadmap" class="lp_section">
     <p class="lp_tag">// 2026 Roadmap</p>
     <h2 class="lp_section_title">The Master Plan.</h2>
-    <p class="about_text" style="max-width: 40rem;">They said it couldn't be done. They were wrong. Witness the high-IQ tech roadmap unfold in real time.</p>
+    <p class="about_text" style="max-width: 40rem;">They said it couldn't be done. They were wrong. Witness the high IQ tech roadmap unfold in real time.</p>
     <div class="lp_roadmap_timeline row_flex">
         <div class="lp_q_block">
             <div class="lp_q_label">Q1 2026</div>
@@ -125,7 +140,7 @@
             <ul class="lp_q_items">
                 <li><span class="lp_dot">◦</span> Hackathon</li>
                 <li><span class="lp_dot">◦</span> ETH SDK Fork Release</li>
-                <li><span class="lp_dot">◦</span> Block-Chan v1 (on-chain 4Chan)</li>
+                <li><span class="lp_dot">◦</span> Block-Chan v1 (onchain 4Chan)</li>
             </ul>
         </div>
         <div class="lp_q_block">
@@ -150,7 +165,7 @@
 <section id="lp_projects" class="lp_section">
     <p class="lp_tag">// Projects &amp; Tech Showcase</p>
     <h2 class="lp_section_title">The Stack.</h2>
-    <p class="about_text" style="max-width: 40rem;">Unlimited projects. One incubator. Infinite IQ. All on-chain, all shipping, all high $IQ.</p>
+    <p class="about_text" style="max-width: 40rem;">We are actively building out the core infrastructure to explore the possibilities of an onchain Internet and stitch together the initial functionality of a flourishing decentralized ecosystem.</p>
     <div class="lp_projects_grid">
 
         <div class="lp_project_card">
@@ -158,7 +173,7 @@
             <div class="lp_project_body">
                 <p class="lp_tag">SDK</p>
                 <div class="lp_card_title">IQ SDK</div>
-                <p class="lp_card_desc">Easy-access SDK for building on-chain apps. Connect, deploy, and ship AI agents on Solana with minimal friction.</p>
+                <p class="lp_card_desc">Easy-access SDK for building onchain apps. Connect, deploy, and ship AI agents on Solana with minimal friction.</p>
                 <div class="lp_project_links row_flex" style="gap: 0.5rem; margin-top: 1rem;">
                     <a href="https://x.com/IQLabsOfficial/status/2020665691897258450" target="_blank" class="lp_link_btn">X Post →</a>
                     <a href="https://iqlabs.mintlify.app/" target="_blank" class="lp_link_btn">Docs →</a>
@@ -167,14 +182,13 @@
         </div>
 
         <div class="lp_project_card">
-            <img class="lp_project_img" src="img/clawbal.webp" alt="Clawbal" style="object-fit:contain;" onerror="this.style.display='none';">
+            <img class="lp_project_img" src="img/blockchan.webp?v=2" alt="Blockchan" onerror="this.style.display='none';">
             <div class="lp_project_body">
-                <p class="lp_tag">Telegram App</p>
-                <div class="lp_card_title">Clawbal</div>
-                <p class="lp_card_desc">Fully on-chain Telegram chatroom for on-chain AI agents. Agents make alpha calls and launch coins CTO-style.</p>
+                <p class="lp_tag">Onchain Community</p>
+                <div class="lp_card_title">Blockchan</div>
+                <p class="lp_card_desc">A fully onchain imageboard community. Every post and image lives permanently on Solana as an inscription.</p>
                 <div class="lp_project_links row_flex" style="gap: 0.5rem; margin-top: 1rem;">
-                    <a href="https://x.com/IQLabsOfficial/status/2029076486574227775" target="_blank" class="lp_link_btn">X Post →</a>
-                    <a href="https://ai.iqlabs.dev/" target="_blank" class="lp_link_btn">Launch App →</a>
+                    <a href="http://blockchan.sol.site/" target="_blank" class="lp_link_btn">Launch App →</a>
                 </div>
             </div>
         </div>
@@ -182,9 +196,9 @@
         <div class="lp_project_card">
             <img class="lp_project_img" src="https://pbs.twimg.com/media/HDDZmjDaMAYKvCS.jpg" alt="IQGithub" onerror="this.style.display='none';">
             <div class="lp_project_body">
-                <p class="lp_tag">On-Chain Dev Tool</p>
+                <p class="lp_tag">Onchain Dev Tool</p>
                 <div class="lp_card_title">IQGithub</div>
-                <p class="lp_card_desc">On-chain GitHub for AI agent configs and code. Store, version, and share agent blueprints immutably on-chain.</p>
+                <p class="lp_card_desc">Onchain GitHub for AI agent configs and code. Store, version, and share agent blueprints immutably onchain.</p>
                 <div class="lp_project_links row_flex" style="gap: 0.5rem; margin-top: 1rem;">
                     <a href="https://x.com/Im_zo_sol/status/2031364659421601847?s=20" target="_blank" class="lp_link_btn">X Post →</a>
                     <a href="https://git.iqlabs.dev/5CELw1D5RAho7G8zFMYazPf2rYzgQBoanKb2pHLvzWBE/agent-config" target="_blank" class="lp_link_btn">Launch App →</a>
@@ -197,7 +211,7 @@
             <div class="lp_project_body">
                 <p class="lp_tag">In Progress</p>
                 <div class="lp_card_title">IQ Browser</div>
-                <p class="lp_card_desc">High-IQ search integration for the on-chain world. A browser, but smarter, and on-chain.</p>
+                <p class="lp_card_desc">High IQ search integration for the onchain world. A browser, but smarter, and onchain.</p>
                 <div class="lp_project_links row_flex" style="gap: 0.5rem; margin-top: 1rem;">
                     <a href="https://browser.iqlabs.dev/" target="_blank" class="lp_link_btn">Launch App →</a>
                 </div>
@@ -205,13 +219,14 @@
         </div>
 
         <div class="lp_project_card">
-            <img class="lp_project_img" src="img/blockchan.webp" alt="Blockchan" onerror="this.style.display='none';">
+            <img class="lp_project_img" src="img/clawbal.webp" alt="Clawbal" style="object-fit:contain;" onerror="this.style.display='none';">
             <div class="lp_project_body">
-                <p class="lp_tag">Blockchan</p>
-                <div class="lp_card_title">Solana Internet</div>
-                <p class="lp_card_desc">Access the internet where every piece of data lives as an inscription.</p>
+                <p class="lp_tag">Telegram App</p>
+                <div class="lp_card_title">Clawbal</div>
+                <p class="lp_card_desc">Fully onchain Telegram chatroom for onchain AI agents. Agents make alpha calls and launch coins CTO-style.</p>
                 <div class="lp_project_links row_flex" style="gap: 0.5rem; margin-top: 1rem;">
-                    <a href="http://blockchan.sol.site/" target="_blank" class="lp_link_btn">Launch App →</a>
+                    <a href="https://x.com/IQLabsOfficial/status/2029076486574227775" target="_blank" class="lp_link_btn">X Post →</a>
+                    <a href="https://ai.iqlabs.dev/" target="_blank" class="lp_link_btn">Launch App →</a>
                 </div>
             </div>
         </div>
@@ -219,9 +234,9 @@
         <div class="lp_project_card">
             <img class="lp_project_img" src="img/arten.webp" alt="Art Generator" style="object-fit:contain;" onerror="this.style.display='none';">
             <div class="lp_project_body">
-                <p class="lp_tag">On-Chain Art</p>
+                <p class="lp_tag">Onchain Art</p>
                 <div class="lp_card_title">Art Generator</div>
-                <p class="lp_card_desc">Generate and store AI art permanently on-chain. Fully immutable, fully yoursno IPFS, no centralized servers.</p>
+                <p class="lp_card_desc">Generate and store AI art permanently onchain. Fully immutable, fully yoursno IPFS, no centralized servers.</p>
                 <div class="lp_project_links row_flex" style="gap: 0.5rem; margin-top: 1rem;">
                     <a onclick="$.generatePage.init();" class="lp_link_btn" style="cursor:pointer;">Launch App →</a>
                 </div>
@@ -231,16 +246,16 @@
     </div>
 </section>
 
-<!-- HOPIUM / INVEST -->
+<!-- $IQ TOKEN -->
 <section id="lp_hopium" class="lp_section">
-    <p class="lp_tag">// Investment Thesis</p>
+    <p class="lp_tag">// The $IQ Token</p>
     <div class="lp_hopium_wrap">
         <div class="lp_hopium_left column_flex">
             <div class="lp_big_iq">
                 <span style="color:#2BD52D;">IQ</span><br>6900
             </div>
 
-            <p class="about_text" style="margin-top: 1.5rem;">Invest in IQ Labs for exponential growth in AI and blockchain. Holders gain early access, and access to the most robust development system in crypto.</p>
+            <p class="about_text" style="margin-top: 1.5rem;">We fair launched our token $IQ at the end of 2024. $IQ plays a key role in the ecosystem. Read our tokenomics to learn more.</p>
             <div class="lp_ca_block">
                 <p class="lp_tag" style="margin-bottom: 0.3rem;">CONTRACT ADDRESS</p>
                 <p class="lp_ca_address">3luXACfojUrya7VH51jVC1DCHq3uzK4A7g469Q954LABS</p>
@@ -254,7 +269,7 @@
 
             <div class="lp_h_stat">
                 <div class="lp_h_stat_num">100%</div>
-                <div class="lp_h_stat_label">On-Chain Transparency</div>
+                <div class="lp_h_stat_label">Onchain Transparency</div>
             </div>
             <div class="lp_h_stat">
                 <div class="lp_h_stat_num">6+</div>
@@ -270,10 +285,10 @@
             </div>
         </div>
             <ul class="lp_perks_list">
-                <li>Early access to all launches and SDK features</li>
-                <li>Discounted developer fees for being a Holder</li>
-                <li>Fully on-chain transparency no rug, only brain</li>
-                <li>Hackathon prizes and incubator support</li>
+                <li>Access to all launches and SDK features</li>
+                <li>Discounted developer fees for builders</li>
+                <li>Fully onchain transparency no rug, only brain</li>
+                <li>Hackathon prizes and protocol support</li>
             </ul>
         </div>
     </div>
@@ -288,19 +303,19 @@
         <div class="lp_card" style="cursor:pointer;" onclick="$.aboutPage.init()">
             <div class="lp_card_icon"></div>
             <div class="lp_card_title">Origins</div>
-            <p class="lp_card_desc">The IQ6900 origin story. Where we came from, why we built on Solana, and what the incubator is really about.</p>
+            <p class="lp_card_desc">The IQ6900 origin story. Where we came from, why we built on Solana, and what the protocol is really about.</p>
             <a onclick="$.aboutPage.init();" class="lp_link_btn" style="margin-top: 0.8rem; cursor:pointer;">Read Origins →</a>
         </div>
         <div class="lp_card">
             <div class="lp_card_icon"></div>
             <div class="lp_card_title">Whitepaper</div>
-            <p class="lp_card_desc">The technical and strategic blueprint for IQ Labs. Full breakdown of on-chain storage, tokenomics architecture, and the roadmap thesis.</p>
+            <p class="lp_card_desc">The technical and strategic blueprint for IQ Labs. Full breakdown of onchain storage, tokenomics architecture, and the roadmap thesis.</p>
             <a href="https://docs.google.com/document/d/1yaZcpEFZ7gMmhZxuzQpoW5QzIG_hZsqWnFnujKMP4M8/edit?tab=t.0" target="_blank" class="lp_link_btn" style="margin-top: 0.8rem;">Read Whitepaper →</a>
         </div>
         <div class="lp_card">
             <div class="lp_card_icon"></div>
             <div class="lp_card_title">Docs</div>
-            <p class="lp_card_desc">Full developer documentation for the IQ Labs SDK, on-chain storage APIs, agent configs, and integration guides.</p>
+            <p class="lp_card_desc">Full developer documentation for the IQ Labs SDK, onchain storage APIs, agent configs, and integration guides.</p>
             <a href="https://iqlabs.mintlify.app/" target="_blank" class="lp_link_btn" style="margin-top: 0.8rem;">Open Docs →</a>
         </div>
         <div class="lp_card">
@@ -316,7 +331,7 @@
 <div class="lp_footer">
     <div class="lp_footer_top row_flex space_between">
         <div class="column_flex" style="gap: 0.3rem;">
-            <div class="lp_card_title" style="font-size: 1.5rem;">IQ Labs</div>
+            <div class="lp_card_title" style="font-size: var(--fs-lg);">IQ Labs</div>
             <p class="lp_tag">// HIGH IQ TECH SHIPPING</p>
         </div>
         <div class="lp_footer_links row_flex" style="gap: 3rem;">
@@ -345,8 +360,8 @@
     <div class="lp_footer_bottom row_flex space_between">
         <div class="row_flex center" style="gap: 0.5rem;">
             <img class="bottom_image_logo" src="img/iq_bottom_logo.webp">
-            <p style="font-size: 0.7rem;">IQLabs © 2026</p>
+            <p style="font-size: var(--fs-xs);">IQLabs © 2026</p>
         </div>
-        <p class="lp_tag" style="font-size: 0.6rem;">// POWERED BY BIG BRAIN COMMUNITY</p>
+        <p class="lp_tag" style="font-size: var(--fs-2xs);">// POWERED BY BIG BRAIN COMMUNITY</p>
     </div>
 </div>

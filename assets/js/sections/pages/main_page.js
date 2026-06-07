@@ -6,7 +6,7 @@
     function mainPage() {
         let $mainPageElement;
         let $wWidth = screen.width;
-        const $mainPageTemplateUrl = "./html/sections/main_page.html?ver=20260426e";
+        const $mainPageTemplateUrl = "./html/sections/main_page.html?ver=20260607e";
         function init() {
             loadMainPageTemplate();
         }
@@ -29,6 +29,7 @@
             $("#main_section").empty();
             $("#main_section").append($mainPageElement);
             if (window.initBroadcast) { try { window.initBroadcast(); } catch (e) { console.error(e); } }
+            if (window.initReveal) { try { window.initReveal(); } catch (e) { console.error(e); } }
             $('.nav_connect').attr('onclick',"nav_connect()");
             $('.nav_status_before_login').text("Connect");
 
