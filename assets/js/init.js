@@ -18,6 +18,8 @@ $(document).ready(function() {
             $.aboutPage.init();
         }else if(menu == "tokenomics"){
             $.tokenomicsPage.init();
+        }else if(menu == "ascii-maker"){
+            $.generatePage.init();
         }
     }else{
         $.mainPage.init();
