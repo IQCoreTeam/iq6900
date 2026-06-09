@@ -1,7 +1,3 @@
-document.getElementById("imageUpload").addEventListener("change", function () {
-    Generate_image()
-});
-
 function Check_input(x) {
     if (x === null || x === undefined || x.trim() === "") {
         return null;

@@ -6,7 +6,7 @@
     function generatePage() {
         let $generatePageElement;
         let $wWidth = screen.width;
-        const $generatePageTemplateUrl = "./html/sections/generate_page.html?ver=20250209";
+        const $generatePageTemplateUrl = "./html/sections/generate_page.html?ver=20260609";
         function init() {
             loadGeneratePageTemplate();
         }
@@ -28,6 +28,9 @@
             $("#main_section").show();
             $("#main_section").empty();
             $("#main_section").append($generatePageElement);
+            $("#imageUpload").on("change", function () {
+                Generate_image();
+            });
         }
 
         $.extend(this, {
