@@ -1,7 +1,7 @@
 ---
 name: iqlabs-sdk
-version: 2.0.0
-description: IQLabs SDK — on-chain data, IQDB tables, friend connections, and end-to-end encryption across Solana, Ethereum (Sepolia), and Monad
+version: 2.1.0
+description: IQLabs SDK — on-chain data, IQDB tables, friend connections, and end-to-end encryption across Solana, Ethereum (Sepolia), Monad, and Robinhood Chain
 metadata: {"openclaw":{"emoji":"🦞","category":"sdk"}}
 ---
 
@@ -9,7 +9,7 @@ metadata: {"openclaw":{"emoji":"🦞","category":"sdk"}}
 
 The **complete Web3** SDK — store any data on-chain (files, JSON, messages), build databases with tables, manage friend/DM connections, and encrypt end-to-end. One API, multiple chains, **2000x cheaper** than traditional methods.
 
-> Default chain is **Solana**. Same primitives are mirrored on **Ethereum (Sepolia)** and **Monad** (mainnet + testnet).
+> Default chain is **Solana**. Same primitives are mirrored on **Ethereum (Sepolia)**, **Monad** (mainnet + testnet), and **Robinhood Chain** (mainnet).
 
 ---
 
@@ -35,6 +35,7 @@ The encryption primitives are identical across chains (same X25519 / AES-GCM / P
 | **Solana** (default) | [`fetch_skill("solana")`](https://iqlabs.dev/skills/solana.md) | Default. TypeScript SDK on Solana mainnet. |
 | **Ethereum (Sepolia)** | [`fetch_skill("ethereum")`](https://iqlabs.dev/skills/ethereum.md) | EVM testnet. Sepolia only — mainnet ETH not deployed yet. |
 | **Monad** | [`fetch_skill("monad")`](https://iqlabs.dev/skills/monad.md) | Monad mainnet + testnet. Fast EVM, cheap fees, free testnet faucet. |
+| **Robinhood Chain** | [`fetch_skill("robinhood")`](https://iqlabs.dev/skills/robinhood.md) | Robinhood Chain mainnet (chain ID 4663). Ethereum-compatible L2, gas in ETH, sub-cent gas. |
 | **Python (Solana)** | [`fetch_skill("python")`](https://iqlabs.dev/skills/python.md) | Same primitives, Python instead of TypeScript. Solana only. |
 
 Fetch a chain's docs with `curl https://iqlabs.dev/skills/<chain>.md` or via the `fetch_skill` tool if your runtime exposes it.
@@ -97,7 +98,7 @@ The Ethereum / Monad SDKs share the same surface — only the package and signer
 import iqlabs from '@iqlabs-official/ethereum-sdk';
 import { Wallet, JsonRpcProvider } from 'ethers';
 
-iqlabs.setNetwork('monad'); // or 'sepolia' / 'monadTestnet'
+iqlabs.setNetwork('monad'); // or 'sepolia' / 'monadTestnet' / 'robinhood'
 const signer = new Wallet(process.env.PRIVATE_KEY!, new JsonRpcProvider('https://rpc.monad.xyz'));
 
 // Tables must be initialized once on EVM (Solana auto-creates)
@@ -119,6 +120,7 @@ await iqlabs.writer.writeRow(signer, 'my-app', 'users', JSON.stringify({
 - **TypeScript (Solana):** https://iqlabs.mintlify.app/docs-typescript ([LLM-friendly](https://iqlabs.mintlify.app/docs-typescript.md))
 - **TypeScript (Ethereum):** https://iqlabs.mintlify.app/docs-ethereum
 - **TypeScript (Monad):** https://iqlabs.mintlify.app/docs-monad
+- **TypeScript (Robinhood Chain):** https://iqlabs.mintlify.app/docs-robinhood
 - **Python (Solana):** https://iqlabs.mintlify.app/docs-python ([LLM-friendly](https://iqlabs.mintlify.app/docs-python.md))
 
 ## Packages
@@ -126,7 +128,7 @@ await iqlabs.writer.writeRow(signer, 'my-app', 'users', JSON.stringify({
 | Chain | Package | Repo |
 |-------|---------|------|
 | Solana (TS) | `@iqlabs-official/solana-sdk` | https://www.npmjs.com/package/@iqlabs-official/solana-sdk |
-| Ethereum + Monad (TS) | `@iqlabs-official/ethereum-sdk` | https://www.npmjs.com/package/@iqlabs-official/ethereum-sdk |
+| Ethereum + Monad + Robinhood (TS) | `@iqlabs-official/ethereum-sdk` | https://www.npmjs.com/package/@iqlabs-official/ethereum-sdk |
 | Solana (Python) | `iqlabs-solana-sdk` | https://pypi.org/project/iqlabs-solana-sdk/ |
 
 ## Useful URLs

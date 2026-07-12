@@ -29,8 +29,9 @@ The SDK ships with multiple network modes — default is `sepolia`. Switch once 
 
 | Mode | Chain ID | Currency | Contract | Default RPC |
 |------|---------:|----------|----------|-------------|
-| `sepolia` | 11155111 | ETH | [`0xB1C16271954c7238672c3666FD22Ee14C6d065Db`](https://sepolia.etherscan.io/address/0xB1C16271954c7238672c3666FD22Ee14C6d065Db) | `https://ethereum-sepolia-rpc.publicnode.com` |
-| `monad` | 143 | MON | [`0xeFd9376835076Bf8d83826F6A2277BB5362Cd893`](https://monadvision.com/address/0xeFd9376835076Bf8d83826F6A2277BB5362Cd893) | `https://rpc.monad.xyz` |
+| `sepolia` | 11155111 | ETH | [`0x246A08D9fdD9b3990A88eD1f2DF1A87239839F07`](https://sepolia.etherscan.io/address/0x246A08D9fdD9b3990A88eD1f2DF1A87239839F07) | `https://ethereum-sepolia-rpc.publicnode.com` |
+| `monad` | 143 | MON | [`0x7ae06f87Cf93606DA2BD6A281afB28028cAE233D`](https://monadvision.com/address/0x7ae06f87Cf93606DA2BD6A281afB28028cAE233D) | `https://rpc.monad.xyz` |
+| `robinhood` | 4663 | ETH | [`0x88af59e58C7E5DcbE7cc12972B90cff3fEEF7223`](https://robinhoodchain.blockscout.com/address/0x88af59e58C7E5DcbE7cc12972B90cff3fEEF7223) | `https://rpc.mainnet.chain.robinhood.com` |
 
 ```typescript
 import iqlabs from '@iqlabs-official/ethereum-sdk';
@@ -535,5 +536,6 @@ await iqlabs.writer.setTableCreationFee(signer, ethers.parseEther('0.0005'));
 - **Tables auto-create on Solana, but not on EVM** — always `initializeDbRoot` + `createTable` before `writeRow`.
 - **Same encryption wire format** — a ciphertext encrypted on any chain decrypts on any other with the matching key (X25519 keys are wallet-derived, so Solana vs EVM wallets have different keypairs).
 - **Same fee structure on Monad** (amounts differ) — switch with `setNetwork('monad')`. See [`fetch_skill("monad")`](https://iqlabs.dev/skills/monad.md) for Monad-specific fees, testnet faucet, and chain config.
+- **Robinhood Chain mainnet** (ETH gas, chain ID 4663) — switch with `setNetwork('robinhood')` (SDK v0.3.0+). See [`fetch_skill("robinhood")`](https://iqlabs.dev/skills/robinhood.md).
 - **Solana TS:** `fetch_skill("solana")` or https://iqlabs.dev/skills/solana.md
 - **Python (Solana):** `fetch_skill("python")` or https://iqlabs.dev/skills/python.md
