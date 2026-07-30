@@ -3865,10 +3865,22 @@ width: auto;
 }
 
 .lp_ca_block {
+    position: relative;
     border: rgba(43, 213, 45, 0.2) solid 0.06rem;
-    border-left: #2BD52D solid 0.2rem;
     padding: 1.2rem;
 }
+/* registration-mark corners instead of the left accent bar */
+.lp_ca_block::before,
+.lp_ca_block::after {
+    content: '';
+    position: absolute;
+    width: 0.7rem; height: 0.7rem;
+    border: 0.08rem solid rgba(43, 213, 45, 0.9);
+    pointer-events: none;
+}
+.lp_ca_block::before { top: -0.08rem; left: -0.08rem; border-right: 0; border-bottom: 0; }
+.lp_ca_block::after  { bottom: -0.08rem; right: -0.08rem; border-left: 0; border-top: 0; }
+.lp_ca_block .lp_tag::before { content: '// '; opacity: 0.55; }
 
 .lp_ca_ticker {
     font-family: IBMPlexMonoMedium, monospace;
@@ -3994,8 +4006,28 @@ width: auto;
     display: none;
 }
 
+/* ── TABLET (601–1024): desktop layout, but 1.2dvw rem shrinks type too far.
+   Hold a readable rem floor and nudge the smallest tokens up. ── */
+@media (min-width: 601px) and (max-width: 1024px) {
+    :root, html, body { font-size: calc(9px + 0.35vw); }
+    :root {
+        --fs-3xs: 0.55rem;
+        --fs-2xs: 0.65rem;
+        --fs-xs: 0.8rem;
+        --fs-sm: 0.95rem;
+    }
+}
+
 /* ── LANDING PAGE MOBILE ── */
 @media (max-width: 600px) {
+
+    /* Readable rem floor: pure 1.2dvw leaves ~4.7px rem on a 390px phone
+       (body text ~11px). 1.85dvw ≈ 7.2px rem @390, capped for continuity
+       with the tablet band at 600px. */
+    :root, html, body { font-size: clamp(6.4px, 1.85dvw, 11.2px); }
+    :root { --mv-width: min(50rem, calc(100vw - 8rem)); }
+
+    .full_div { padding: 6rem 4rem; }
 
     /*
      * Base rem on 600px mobile = 1.2dvw = ~4.7px
@@ -4006,27 +4038,34 @@ width: auto;
      * Override lp_section padding to compensate.
      */
 
-    /* ── Top Bar ── */
+    /* ── Top Bar (re-enabled on mobile: logo + social icons) ── */
+    .pc_menu { display: flex; }
+
     .lp_top_bar {
-        height: 10rem;
-        padding: 0 3rem;
+        height: 8rem;
+        padding: 0 4rem;
     }
 
     .lp_top_bar .main_title {
-        width: 16rem;
+        width: 14rem;
     }
 
     .lp_top_bar_right {
         gap: 2rem;
     }
 
-    .lp_top_bar_links a {
-        font-size: var(--fs-base);
+    /* text links don't fit at phone width — hero CTAs cover these routes */
+    .lp_top_bar_links {
+        display: none;
+    }
+
+    .lp_top_bar .nav_icons {
+        gap: 2.2rem !important;
     }
 
     .lp_top_bar .nav_icons img {
-        width: 3.5rem;
-        height: 3.5rem;
+        width: 4rem;
+        height: 4rem;
     }
 
     /* ── Kill double padding from .full_div on lp sections ── */
@@ -4038,7 +4077,7 @@ width: auto;
     /* ── HERO ── */
     .lp_hero {
         min-height: 85dvh;
-        padding-top: 6rem;
+        padding-top: 11rem; /* clear the fixed 8rem top bar */
         align-items: flex-start;
     }
 
@@ -4996,19 +5035,33 @@ width: auto;
     margin-top: 1.2rem;
 }
 .tk_alloc_card {
+    position: relative;
     border: rgba(43,213,45,0.15) solid 0.06rem;
-    border-left: rgba(43,213,45,0.4) solid 0.2rem;
     border-radius: 0.2rem;
     padding: 1rem 1.2rem;
     opacity: 0.45;
     transition: opacity 0.25s, border-color 0.25s, background 0.25s;
 }
+.tk_alloc_card::before,
+.tk_alloc_card::after {
+    content: '';
+    position: absolute;
+    width: 0.6rem; height: 0.6rem;
+    border: 0.08rem solid #2BD52D;
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+}
+.tk_alloc_card::before { top: -0.08rem; left: -0.08rem; border-right: 0; border-bottom: 0; }
+.tk_alloc_card::after  { bottom: -0.08rem; right: -0.08rem; border-left: 0; border-top: 0; }
 .tk_alloc_card:hover { opacity: 0.85; }
 .tk_alloc_card.tk_alloc_card_active {
     opacity: 1;
-    border-left-color: #2BD52D;
+    border-color: rgba(43,213,45,0.5);
     background: rgba(43,213,45,0.04);
 }
+.tk_alloc_card.tk_alloc_card_active::before,
+.tk_alloc_card.tk_alloc_card_active::after { opacity: 1; }
 /* Info icon next to a section title - minimal outlined badge */
 .tk_info_btn_title {
     width: 1.35rem;
