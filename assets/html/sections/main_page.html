@@ -56,7 +56,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.9);backdrop-filter:blur(6px);padding:13px 20px">
       <img src="img/text_logo.webp" alt="IQLabs" onclick="$.mainPage.init()" style="height:20px;display:block;cursor:pointer;filter:brightness(0) invert(0.93) sepia(0.18) saturate(1.2) brightness(0.98)">
       <div id="rd_nav_links" style="display:flex;gap:28px;font:500 10px 'Kode Mono',monospace;letter-spacing:.18em">
-        <a href="#about">ABOUT</a><a href="#roadmap">ROADMAP</a><a href="#stack">THE STACK</a><a href="#token">$IQ</a><a href="#resources">RESOURCES</a><a href="https://iqlabs.mintlify.app/" target="_blank">DOCS</a>
+        <a href="#about">ABOUT</a><a href="#roadmap">ROADMAP</a><a href="#stack">THE STACK</a><a href="#token">$IQ</a><a onclick="$.tokenomicsPage.init()" style="cursor:pointer">TOKENOMICS</a><a href="#resources">RESOURCES</a><a href="https://iqlabs.mintlify.app/" target="_blank">DOCS</a>
       </div>
       <div style="display:flex;gap:16px;font:500 10px 'Kode Mono',monospace;letter-spacing:.14em">
         <a href="https://x.com/IQLabsOfficial" target="_blank">[X]</a><a href="https://t.me/IQLabsPortal" target="_blank">[TG]</a><a href="https://discord.gg/a9XyqJn2gC" target="_blank">[DC]</a>
@@ -89,8 +89,9 @@
           <div style="font:500 9px 'Kode Mono',monospace;letter-spacing:.22em;opacity:.55">CONTRACT ADDRESS</div>
           <div style="font:500 10.5px/1.8 'Kode Mono',monospace;word-break:break-all;margin-top:8px">3luXACfojUrya7VH51jVC1DCHq3uzK4A7g469Q954LABS</div>
         </div>
-        <div style="margin-top:auto;border-top:1px solid #e8e4d6;padding:10px 16px">
-          <a href="https://dexscreener.com/solana/3uxacfojurya7vh51jvc1dchq3uzk4a7g469q954labs" target="_blank" style="font:500 10px 'Kode Mono',monospace;letter-spacing:.14em;border-bottom:1px solid rgba(232,228,214,.5);padding-bottom:2px">VIEW ON DEXSCREENER →</a>
+        <div style="margin-top:auto;border-top:1px solid #e8e4d6;padding:10px 16px;display:flex;flex-direction:column;gap:8px">
+          <a onclick="$.tokenomicsPage.init()" style="font:600 10px 'Kode Mono',monospace;letter-spacing:.14em;border-bottom:1px solid rgba(232,228,214,.5);padding-bottom:2px;cursor:pointer;align-self:flex-start">VIEW TOKENOMICS →</a>
+          <a href="https://dexscreener.com/solana/3uxacfojurya7vh51jvc1dchq3uzk4a7g469q954labs" target="_blank" style="font:500 10px 'Kode Mono',monospace;letter-spacing:.14em;border-bottom:1px solid rgba(232,228,214,.5);padding-bottom:2px;align-self:flex-start">VIEW ON DEXSCREENER →</a>
         </div>
       </div>
       <div data-reveal="220" style="padding:14px 18px 13px;display:flex;flex-direction:column;border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.85);backdrop-filter:blur(4px)">
@@ -184,7 +185,7 @@
         </div>
         <div class="rd-proj">
           <img src="img/arten.webp" alt="Art Generator" onerror="this.style.display='none'" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-bottom:1px solid rgba(232,228,214,.6);filter:saturate(.78) brightness(.88) contrast(1.04) sepia(.12)">
-          <div style="padding:14px 16px;display:flex;flex-direction:column;flex:1"><div style="font:600 9px 'Kode Mono',monospace;letter-spacing:.16em;opacity:.6">ONCHAIN ART</div><div style="font:700 13px 'Kode Mono',monospace;margin-top:5px">ART GENERATOR</div><p style="margin:8px 0 0;font:500 10px/1.9 'Kode Mono',monospace;opacity:.65">Generate and store AI art permanently onchain. Fully immutable, fully yours. No IPFS, no centralized servers.</p><div style="margin-top:auto;padding-top:10px;font:600 10px 'Kode Mono',monospace"><a onclick="$.generatePage.init()" style="border-bottom:1px solid rgba(232,228,214,.6);cursor:pointer">LAUNCH APP →</a></div></div>
+          <div style="padding:14px 16px;display:flex;flex-direction:column;flex:1"><div style="font:600 9px 'Kode Mono',monospace;letter-spacing:.16em;opacity:.6">ASCII ART</div><div style="font:700 13px 'Kode Mono',monospace;margin-top:5px">ART GENERATOR</div><p style="margin:8px 0 0;font:500 10px/1.9 'Kode Mono',monospace;opacity:.65">Turn any image into ASCII art. Upload a picture, dial in the character size and spacing, drop the IQ logo on top, and download your own text-art remix.</p><div style="margin-top:auto;padding-top:10px;font:600 10px 'Kode Mono',monospace"><a onclick="$.generatePage.init()" style="border-bottom:1px solid rgba(232,228,214,.6);cursor:pointer">LAUNCH APP →</a></div></div>
         </div>
       </div>
     </div>
