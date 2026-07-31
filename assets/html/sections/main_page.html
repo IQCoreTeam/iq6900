@@ -59,8 +59,16 @@
       <div id="rd_nav_links" style="display:flex;gap:28px;font:500 10px 'Kode Mono',monospace;letter-spacing:.18em">
         <a href="#about">ABOUT</a><a href="#roadmap">ROADMAP</a><a href="#stack">THE STACK</a><a href="#token">$IQ</a><a onclick="$.tokenomicsPage.init()" style="cursor:pointer">TOKENOMICS</a><a href="#resources">RESOURCES</a><a href="https://iqlabs.mintlify.app/" target="_blank">DOCS</a>
       </div>
-      <div style="display:flex;gap:16px;font:500 10px 'Kode Mono',monospace;letter-spacing:.14em">
+      <div style="display:flex;gap:16px;align-items:center;font:500 10px 'Kode Mono',monospace;letter-spacing:.14em">
         <a href="https://x.com/IQLabsOfficial" target="_blank">[X]</a><a href="https://t.me/IQLabsPortal" target="_blank">[TG]</a><a href="https://discord.gg/a9XyqJn2gC" target="_blank">[DC]</a>
+        <div id="rd_lang" style="position:relative">
+          <a id="rd_lang_btn" onclick="window.iqLang&&iqLang.toggle()" style="cursor:pointer">[EN ▾]</a>
+          <div id="rd_lang_menu" style="display:none;position:absolute;right:0;top:24px;border:1px solid #e8e4d6;border-radius:6px;background:rgba(20,19,16,.97);padding:6px 0;min-width:104px;z-index:30">
+            <a onclick="iqLang.set('en')" style="display:block;padding:6px 14px;cursor:pointer">ENGLISH</a>
+            <a onclick="iqLang.set('ko')" style="display:block;padding:6px 14px;cursor:pointer">한국어</a>
+            <a onclick="iqLang.set('ru')" style="display:block;padding:6px 14px;cursor:pointer">РУССКИЙ</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>

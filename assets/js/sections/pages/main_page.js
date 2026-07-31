@@ -6,7 +6,7 @@
     function mainPage() {
         let $mainPageElement;
         let $wWidth = screen.width;
-        const $mainPageTemplateUrl = "./html/sections/main_page.html?ver=20260731c";
+        const $mainPageTemplateUrl = "./html/sections/main_page.html?ver=20260801a";
         function init() {
             loadMainPageTemplate();
         }
@@ -34,6 +34,7 @@
             if (window.initBroadcast) { try { window.initBroadcast(); } catch (e) { console.error(e); } }
             if (window.initRdReveal) { window.initRdReveal('#main_section'); }
             if (window.initRdScrollSpy) { window.initRdScrollSpy('#rd_nav_links a[href^="#"]'); }
+            if (window.iqLang) { window.iqLang.applySaved(); }
         }
 
         $.extend(this, {

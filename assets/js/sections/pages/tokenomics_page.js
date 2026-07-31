@@ -6,7 +6,7 @@
 
     function tokenomicsPage() {
         let $tokenomicsPageElement;
-        const $tokenomicsPageTemplateUrl = "./html/sections/tokenomics_page.html?ver=20260731b";
+        const $tokenomicsPageTemplateUrl = "./html/sections/tokenomics_page.html?ver=20260801a";
 
         function init() {
             loadTokenomicsPageTemplate();
@@ -34,6 +34,7 @@
             $(window).scrollTop(0);
             if (window.initRdReveal) { window.initRdReveal('#main_section'); }
             if (window.initRdScrollSpy) { window.initRdScrollSpy('#rd_nav_links a[href^="#"], #rd_rail_links a[href^="#"]'); }
+            if (window.iqLang) { window.iqLang.applySaved(); }
         }
 
         $.extend(this, {
