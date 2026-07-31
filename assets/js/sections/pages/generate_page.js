@@ -25,6 +25,7 @@
         };
 
         function renderGeneratePageTemplate() {
+            $(".pc_menu").css("display", "");
             $("#main_section").show();
             $("#main_section").empty();
             $("#main_section").append($generatePageElement);
