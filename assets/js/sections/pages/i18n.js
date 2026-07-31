@@ -48,6 +48,10 @@
         ["DOCS", "문서", "ДОКИ"],
 
         // ── landing hero ──
+        // Hero display title: sized against Zen Dots "HIGH IQ" (~5.5em). Keep
+        // each replacement line under ~5.7em in its display font or it clips.
+        ["HIGH IQ", "높은 IQ", "ВЫСОКИЙ"],
+        ["TECH", "기술", "IQ ТЕХ"],
         ["$IQ TOKEN", "$IQ 토큰", "ТОКЕН $IQ"],
         ["▶ LIVE", "▶ 라이브", "▶ ЛАЙВ"],
         ["FAIR LAUNCH", "페어 런치", "ЧЕСТНЫЙ ЗАПУСК"],
