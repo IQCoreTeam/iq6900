@@ -33,7 +33,7 @@
             $("#main_section").append($mainPageElement);
             if (window.initBroadcast) { try { window.initBroadcast(); } catch (e) { console.error(e); } }
             if (window.initRdReveal) { window.initRdReveal('#main_section'); }
-            if (window.initRdScrollSpy) { window.initRdScrollSpy('#rd_nav_links'); }
+            if (window.initRdScrollSpy) { window.initRdScrollSpy('#rd_nav_links a[href^="#"]'); }
         }
 
         $.extend(this, {

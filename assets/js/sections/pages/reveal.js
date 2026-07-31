@@ -92,29 +92,33 @@
     // ── Scroll-spy: brighten the nav link for the section currently in view ──
     // Only one spy is active at a time; the previous window listener is removed
     // on re-init so route changes never stack handlers.
-    window.initRdScrollSpy = function (navSel) {
-        var nav = document.querySelector(navSel);
-        if (!nav) return;
-        var items = Array.prototype.slice.call(nav.querySelectorAll('a[href^="#"]'))
+    window.initRdScrollSpy = function (linkSel) {
+        // linkSel selects the anchor elements directly, so one call can cover
+        // several nav groups (e.g. top bar + side rail). Multiple links may
+        // point at the same section; all of them light up together.
+        var items = Array.prototype.slice.call(document.querySelectorAll(linkSel))
             .map(function (a) {
-                var s = document.getElementById(a.getAttribute('href').slice(1));
-                return s ? { a: a, s: s } : null;
+                var href = a.getAttribute('href') || '';
+                if (href.charAt(0) !== '#') return null;
+                var s = document.getElementById(href.slice(1));
+                return s ? { a: a, id: href.slice(1), s: s } : null;
             })
             .filter(Boolean);
         if (!items.length) return;
 
-        var ticking = false, cur = null;
+        var ticking = false, curId = null;
         function update() {
             ticking = false;
-            var line = window.innerHeight * 0.3, best = items[0], bestTop = -Infinity;
+            var line = window.innerHeight * 0.3, bestId = items[0].id, bestTop = -Infinity;
             items.forEach(function (it) {
                 var top = it.s.getBoundingClientRect().top;
-                if (top <= line && top > bestTop) { bestTop = top; best = it; }
+                if (top <= line && top > bestTop) { bestTop = top; bestId = it.id; }
             });
-            if (best && best.a !== cur) {
-                items.forEach(function (it) { it.a.classList.remove('rd-nav-active'); });
-                best.a.classList.add('rd-nav-active');
-                cur = best.a;
+            if (bestId !== curId) {
+                curId = bestId;
+                items.forEach(function (it) {
+                    it.a.classList.toggle('rd-nav-active', it.id === bestId);
+                });
             }
         }
         function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
