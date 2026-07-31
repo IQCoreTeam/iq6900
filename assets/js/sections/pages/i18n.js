@@ -341,6 +341,22 @@
         el.__iqFontLang = lang;
     }
 
+    // Hangul glyphs read optically larger than Latin caps at the same px, so
+    // the hero display title gets a per-language size override. RU (Asrocuus)
+    // is already width-fitted at the original size.
+    var HERO_SIZE = { ko: "clamp(40px, calc(12.8vw - 12px), 240px)" };
+    function tweakHero(lang) {
+        var el = document.getElementById("rd_hero_title");
+        if (!el) return;
+        if (el.__iqSize === undefined) {
+            el.__iqSize = el.style.fontSize;
+            el.__iqLH = el.style.lineHeight;
+        }
+        var s = HERO_SIZE[lang];
+        el.style.fontSize = s || el.__iqSize;
+        el.style.lineHeight = s ? "1.02" : el.__iqLH;
+    }
+
     function resetFont(el) {
         if (!el || el.__iqFontLang === undefined) return;
         el.style.fontFamily = el.__iqInlineFF || "";
@@ -375,6 +391,7 @@
             n.nodeValue = orig.replace(key, tr);
             patchFont(n.parentElement, lang);
         }
+        tweakHero(lang);
         var btn = document.getElementById("rd_lang_btn");
         if (btn) btn.textContent = "[" + lang.toUpperCase() + " ▾]";
     }
