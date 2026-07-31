@@ -1,230 +1,236 @@
+<div class="rd_root">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;500;600;700&family=Rubik+Mono+One&family=Orbitron:wght@700;800;900&family=Zen+Dots&display=swap');
 
-<!-- HERO -->
-<section id="tk_hero" class="lp_section lp_hero">
-    <div class="lp_hero_inner" style="width: 100%; max-width: 56rem;">
-        <p class="lp_tag">// $IQ Tokenomics</p>
-        <h1 class="main_h1" style="margin-top: 0; text-align: left;">Real Usage.<br>Real Value.</h1>
-        <p class="lp_hero_sub">Every inscription, database write, SolChat message, and onchain data call through the IQ SDK generates SOL fees, automatically routed into buybacks and community rewards. No $IQ required to build. Every builder makes $IQ more scarce.</p>
+.full_div{padding:0 !important}
+#main_section{align-items:stretch !important}
 
-        <div class="tk_terminal" aria-label="IQ SDK fee stream readout">
-            <div class="tk_terminal_bar">
-                <span class="tk_terminal_dot tk_terminal_dot_red"></span>
-                <span class="tk_terminal_dot tk_terminal_dot_amber"></span>
-                <span class="tk_terminal_dot tk_terminal_dot_green"></span>
-                <span class="tk_terminal_title">iq_tokenomics.live</span>
-                <span class="tk_terminal_status">REC</span>
-            </div>
-            <div class="tk_terminal_screen">
-                <div class="crt_scanlines"></div>
-                <div id="tk_terminal_lines" class="tk_terminal_lines"></div>
-            </div>
-        </div>
+.rd_root{width:100%;color:#e8e4d6;font-family:'Kode Mono',monospace}
+.rd_root a{color:#e8e4d6;text-decoration:none}
+.rd_root a:hover{color:#fff}
+.rd_bg_tint{position:fixed;inset:0;background:rgba(20,19,16,.32);z-index:0;pointer-events:none}
+.rd_page{position:relative;z-index:1;color:#e8e4d6}
+
+@keyframes rd_tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes rd_wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes rd_blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+#rd_nav_links a{padding-bottom:3px;background:linear-gradient(#e8e4d6,#e8e4d6) left bottom/0% 1px no-repeat;transition:background-size .35s cubic-bezier(.2,.7,.2,1)}
+#rd_nav_links a:hover{background-size:100% 1px}
+#rd_nav_links a.rd-nav-active{background-size:100% 1px;color:#fff}
+#rd_footer_links a{align-self:flex-start;width:fit-content;background:linear-gradient(#e8e4d6,#e8e4d6) left bottom/0% 1px no-repeat;transition:background-size .35s cubic-bezier(.2,.7,.2,1)}
+#rd_footer_links a:hover{background-size:100% 1px}
+
+.rd-feat{border:1px solid rgba(232,228,214,.6);border-radius:6px;padding:16px;transition:border-color .35s,background .35s}
+.rd-feat:hover{border-color:#e8e4d6;background:rgba(232,228,214,.05)}
+.rd-feerow{transition:background .35s}
+.rd-feerow:hover{background:rgba(232,228,214,.05)}
+.rd_root a.rd-btn-solid{background:#e8e4d6;color:#1b1a17;padding:12px 20px;border-radius:4px;font-weight:700;transition:all .35s cubic-bezier(.2,.7,.2,1)}
+.rd_root a.rd-btn-solid:hover{background:#fff;color:#141310;transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.45)}
+.rd-btn-ghost{border:1px solid #e8e4d6;padding:11px 20px;border-radius:4px;transition:all .35s cubic-bezier(.2,.7,.2,1)}
+.rd-btn-ghost:hover{background:rgba(232,228,214,.16);transform:translateY(-2px)}
+
+.rd_root [data-reveal].rd-reveal{opacity:0;transform:translateY(16px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.rd_root [data-reveal].rd-in{opacity:1;transform:none}
+
+@media (max-width:940px){
+  #rd_hero_grid{grid-template-columns:1fr !important}
+  #rd_impact_grid{grid-template-columns:1fr !important}
+  #rd_footer_links{gap:24px !important}
+}
+@media (max-width:760px){
+  #rd_nav_links{display:none !important}
+  #rd_fee_row{grid-template-columns:1fr 1fr !important}
+}
+</style>
+
+<div class="rd_bg_tint"></div>
+
+<div class="rd_page">
+
+  <div style="position:sticky;top:0;z-index:10;padding:12px 16px 0">
+    <div style="display:flex;justify-content:space-between;align-items:center;border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.9);backdrop-filter:blur(6px);padding:13px 20px">
+      <img src="img/text_logo.webp" alt="IQLabs" onclick="$.mainPage.init()" style="height:20px;display:block;cursor:pointer;filter:brightness(0) invert(0.93) sepia(0.18) saturate(1.2) brightness(0.98)">
+      <div id="rd_nav_links" style="display:flex;gap:26px;font:500 10px 'Kode Mono',monospace;letter-spacing:.18em">
+        <a href="#fees">FEES</a><a href="#alloc">ALLOCATION</a><a href="#flywheel">FLYWHEEL</a><a href="#impact">IMPACT</a><a href="#levers">LEVERS</a><a href="https://iqlabs.mintlify.app/" target="_blank">DOCS</a>
+      </div>
+      <div style="display:flex;gap:16px;font:500 10px 'Kode Mono',monospace;letter-spacing:.14em">
+        <a href="https://x.com/IQLabsOfficial" target="_blank">[X]</a><a href="https://t.me/IQLabsPortal" target="_blank">[TG]</a><a href="https://discord.gg/a9XyqJn2gC" target="_blank">[DC]</a>
+      </div>
     </div>
-</section>
+  </div>
 
-<!-- 01 FEE SCHEDULE -->
-<section id="tk_fees" class="lp_section">
-    <p class="lp_tag">// 01 Fee Schedule</p>
-    <h2 class="lp_section_title">Pay Per Byte. Pay In SOL.</h2>
-    <p class="about_text" style="max-width: 40rem;">Any developer or application on Solana using the IQ SDK pays simple, flat SOL fees per transaction. No $IQ tokens required. Frictionless adoption by default.</p>
-    <div class="tk_fee_table">
-        <div class="tk_fee_row tk_fee_head">
-            <span class="lp_tag">Data Size</span>
-            <span class="lp_tag">Range</span>
-            <span class="lp_tag">Fee</span>
-            <span class="lp_tag">Use Cases</span>
-        </div>
-        <div class="tk_fee_row">
-            <div class="lp_card_title" style="margin-bottom: 0;">Basic</div>
-            <div class="lp_card_desc">&lt; 850 bytes</div>
-            <div class="lp_card_title tk_fee_fee" style="margin-bottom: 0;">0.001 SOL</div>
-            <p class="lp_card_desc" style="margin: 0;">SolChat messages, status updates, small JSON payloads, HTTP-style API responses, key-value records</p>
-        </div>
-        <div class="tk_fee_row">
-            <div class="lp_card_title" style="margin-bottom: 0;">Standard</div>
-            <div class="lp_card_desc">850 to 8,500 bytes</div>
-            <div class="lp_card_title tk_fee_fee" style="margin-bottom: 0;">0.003 SOL</div>
-            <p class="lp_card_desc" style="margin: 0;">Database writes, inscriptions, structured data</p>
-        </div>
-        <div class="tk_fee_row">
-            <div class="lp_card_title" style="margin-bottom: 0;">Large</div>
-            <div class="lp_card_desc">&gt; 8,500 bytes</div>
-            <div class="lp_card_title tk_fee_fee" style="margin-bottom: 0;">0.005 SOL</div>
-            <p class="lp_card_desc" style="margin: 0;">Rich content, large dataset storage, bulk ops</p>
-        </div>
-    </div>
-</section>
-
-<!-- 02 FEE ALLOCATION -->
-<section id="tk_alloc" class="lp_section">
-    <p class="lp_tag">// 02 Fee Allocation</p>
-    <h2 class="lp_section_title">Where Every SOL Goes.<span class="tk_info_btn tk_info_btn_title" tabindex="0">i<span class="tk_info_tooltip tk_info_tooltip_wide">
-        <span class="tk_info_label">// straight up</span>
-        <span>Real talk: if monthly revenue stays under $10k, all of it could go toward keeping the lights on and the devs paid. We're not pretending otherwise.</span>
-        <span>This isn't carved in stone. The tokenomics will evolve as the community grows, shaped by community decisions.</span>
-    </span></span></h2>
-    <p class="about_text" style="max-width: 40rem;">100% of collected fees are algorithmically split onchain at the time of collection. No discretion. No delay.</p>
-
-    <div class="tk_alloc_bar_wrap">
-        <div class="tk_alloc_bar">
-            <button type="button" class="tk_alloc_seg tk_alloc_seg_buyback tk_alloc_active" data-alloc="buyback" style="flex: 40;" aria-label="40% Buyback">
-                <span class="tk_alloc_seg_pct">40%</span>
-                <span class="tk_alloc_seg_label">Buyback</span>
-            </button>
-            <button type="button" class="tk_alloc_seg tk_alloc_seg_treasury" data-alloc="treasury" style="flex: 45;" aria-label="45% Treasury">
-                <span class="tk_alloc_seg_pct">45%</span>
-                <span class="tk_alloc_seg_label">Treasury</span>
-            </button>
-            <button type="button" class="tk_alloc_seg tk_alloc_seg_staking" data-alloc="staking" style="flex: 10;" aria-label="10% Community">
-                <span class="tk_alloc_seg_pct">10%</span>
-                <span class="tk_alloc_seg_label">Community</span>
-            </button>
-            <button type="button" class="tk_alloc_seg tk_alloc_seg_lp" data-alloc="lp" style="flex: 5;" aria-label="5% Liquidity">
-                <span class="tk_alloc_seg_pct">5%</span>
-                <span class="tk_alloc_seg_label">LP</span>
-            </button>
-        </div>
-        <p class="lp_tag tk_alloc_hint">// hover any segment</p>
+  <div style="padding:12px 16px 20px">
+    <div style="border:1px solid #e8e4d6;border-radius:8px;overflow:hidden;background:rgba(20,19,16,.85);backdrop-filter:blur(4px)">
+      <div style="display:flex;white-space:nowrap;animation:rd_tick 42s linear infinite;font:500 10.5px 'Kode Mono',monospace;letter-spacing:.22em;padding:8px 0;opacity:.92">
+        <span style="padding:0 22px">// $IQ TOKENOMICS</span><span style="opacity:.6">▚▞</span><span style="padding:0 22px">PAY PER BYTE. PAY IN SOL.</span><span style="padding:0 22px">100% ONCHAIN FEE SPLIT</span><span style="opacity:.6">▞▚</span><span style="padding:0 22px">DEFLATIONARY FLYWHEEL</span><span style="padding:0 22px">NO RUG, ONLY BRAIN</span>
+        <span style="padding:0 22px">// $IQ TOKENOMICS</span><span style="opacity:.6">▚▞</span><span style="padding:0 22px">PAY PER BYTE. PAY IN SOL.</span><span style="padding:0 22px">100% ONCHAIN FEE SPLIT</span><span style="opacity:.6">▞▚</span><span style="padding:0 22px">DEFLATIONARY FLYWHEEL</span><span style="padding:0 22px">NO RUG, ONLY BRAIN</span>
+      </div>
     </div>
 
-    <div class="tk_alloc_cards">
-        <div class="tk_alloc_card tk_alloc_card_active" data-alloc="buyback">
-            <div class="lp_card_title">
-                <span class="tk_alloc_pct">40%</span>$IQ Buyback Engine
-            </div>
-            <p class="lp_card_desc">Market purchases of $IQ retained by the Treasury as a strategic reserve. Every fee event removes circulating supply from the market.</p>
-        </div>
-        <div class="tk_alloc_card" data-alloc="treasury">
-            <div class="lp_card_title">
-                <span class="tk_alloc_pct">45%</span>Operations Treasury
-            </div>
-            <p class="lp_card_desc">Salaries, servers, marketing, development, and ecosystem grants. Funds the work that ships the SDK and grows the surface area.</p>
-        </div>
-        <div class="tk_alloc_card" data-alloc="staking">
-            <div class="lp_card_title">
-                <span class="tk_alloc_pct">10%</span>Community Rewards Pool
-            </div>
-            <p class="lp_card_desc">Real yield distributed to the $IQ community in SOL or repurchased $IQ. Sourced entirely from SDK transaction fees, not token inflation or emissions.</p>
-        </div>
-        <div class="tk_alloc_card" data-alloc="lp">
-            <div class="lp_card_title">
-                <span class="tk_alloc_pct">5%</span>Liquidity Pool
-            </div>
-            <p class="lp_card_desc">Continuous deepening of the IQ/SOL pair. Tighter spreads, less slippage, healthier markets at every volume tier.</p>
-        </div>
+    <div style="padding:14px 10px 4px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px">
+      <div style="font:400 clamp(40px,calc(11vw - 8px),190px)/0.98 'Zen Dots','Orbitron',monospace;letter-spacing:0;white-space:nowrap;text-shadow:0 4px 40px rgba(0,0,0,.8);animation:rd_wipe 1.6s cubic-bezier(.2,.7,.2,1) .15s both">REAL USAGE.<br>REAL VALUE.</div>
+      <img src="img/coinlogo.webp" alt="IQ" style="width:clamp(52px,8vw,124px);height:auto;flex-shrink:0;margin-bottom:.6vw;filter:brightness(0) invert(0.93) sepia(0.18) saturate(1.2) brightness(0.98);opacity:.95;animation:rd_wipe 1.3s cubic-bezier(.2,.7,.2,1) .5s both">
     </div>
 
-</section>
-
-<!-- 03 FLYWHEEL -->
-<section id="tk_flywheel_section" class="lp_section">
-    <p class="lp_tag">// 03 The Deflationary Flywheel</p>
-    <h2 class="lp_section_title">Builders. Users. Buybacks.</h2>
-    <div class="tk_flywheel">
-        <span class="tk_flywheel_step lp_tag" style="--i:0;">Builders Adopt SDK</span>
-        <span class="tk_flywheel_arrow" style="--i:0;">-&gt;</span>
-        <span class="tk_flywheel_step lp_tag" style="--i:1;">Users Transact Onchain</span>
-        <span class="tk_flywheel_arrow" style="--i:1;">-&gt;</span>
-        <span class="tk_flywheel_step lp_tag" style="--i:2;">SOL Fees Collected</span>
-        <span class="tk_flywheel_arrow" style="--i:2;">-&gt;</span>
-        <span class="tk_flywheel_step lp_tag" style="--i:3;">$IQ Bought Back</span>
-        <span class="tk_flywheel_arrow" style="--i:3;">-&gt;</span>
-        <span class="tk_flywheel_step lp_tag" style="--i:4;">Supply Shrinks, Value Accrues</span>
+    <div id="rd_hero_grid" style="display:grid;grid-template-columns:1fr 380px;gap:10px;margin-top:12px">
+      <div data-reveal="120" style="padding:16px 18px;display:flex;flex-direction:column;border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.85);backdrop-filter:blur(4px)">
+        <div style="font:600 11px 'Kode Mono',monospace;letter-spacing:.2em;opacity:.7">// $IQ TOKENOMICS</div>
+        <p style="margin:12px 0 0;font:500 11px/1.95 'Kode Mono',monospace;opacity:.72;max-width:520px">Every inscription, database write, SolChat message, and onchain data call through the IQ SDK generates SOL fees, automatically routed into buybacks and community rewards. No $IQ required to build. Every builder makes $IQ more scarce.</p>
+        <div style="margin-top:auto;display:flex;gap:8px;font:500 10px 'Kode Mono',monospace;letter-spacing:.12em;flex-wrap:wrap;padding-top:16px">
+          <a href="https://dexscreener.com/solana/3uxacfojurya7vh51jvc1dchq3uzk4a7g469q954labs" target="_blank" class="rd-btn-solid">VIEW ON DEXSCREENER →</a>
+          <a href="https://docs.google.com/document/d/1yaZcpEFZ7gMmhZxuzQpoW5QzIG_hZsqWnFnujKMP4M8/edit?tab=t.0" target="_blank" class="rd-btn-ghost">READ WHITEPAPER</a>
+        </div>
+      </div>
+      <div data-reveal="260" style="border:1px solid #e8e4d6;border-radius:8px;overflow:hidden;background:rgba(20,19,16,.85);backdrop-filter:blur(4px);display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:8px;border-bottom:1px solid #e8e4d6;padding:11px 16px;font:500 10px 'Kode Mono',monospace;letter-spacing:.14em">
+          <span style="width:9px;height:9px;border-radius:50%;background:#e0554e"></span><span style="width:9px;height:9px;border-radius:50%;background:#e0a84e"></span><span style="width:9px;height:9px;border-radius:50%;background:#2BD52D"></span>
+          <span style="margin-left:6px;opacity:.8">iq_tokenomics.live</span><span style="margin-left:auto;opacity:.6">REC ●</span>
+        </div>
+        <div style="position:relative;flex:1;padding:14px 16px;font:500 10px/2.1 'Kode Mono',monospace">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1.5px,transparent 1.5px 3px);pointer-events:none"></div>
+          <div style="opacity:.55">&gt; stream --fees --live</div>
+          <div>&gt; inscribe 852B <span style="opacity:.55">........</span> <span style="color:#2BD52D">0.001 SOL</span></div>
+          <div>&gt; db.write 4.2KB <span style="opacity:.55">......</span> <span style="color:#2BD52D">0.003 SOL</span></div>
+          <div style="opacity:.75">&gt; split 40/45/10/5 onchain ✓</div>
+          <div>&gt; bulk.store 21KB <span style="opacity:.55">.....</span> <span style="color:#2BD52D">0.005 SOL</span></div>
+          <div style="opacity:.75">&gt; $IQ buyback executed ✓</div>
+          <div>&gt; supply <span style="color:#2BD52D">▼</span> demand <span style="color:#2BD52D">▲</span><span style="display:inline-block;width:8px;height:13px;background:#2BD52D;margin-left:6px;vertical-align:-2px;animation:rd_blink 1s step-end infinite"></span></div>
+        </div>
+      </div>
     </div>
-    <p class="about_text" style="max-width: 40rem; margin-top: 2rem;">Passive holders benefit from every transaction without lifting a finger. The more apps build on IQ SDK, the harder $IQ deflates.</p>
-</section>
 
-<!-- 04 ILLUSTRATIVE IMPACT -->
-<section id="tk_impact" class="lp_section">
-    <p class="lp_tag">// 04 Illustrative Impact</p>
-    <h2 class="lp_section_title">10,000 Daily Transactions.</h2>
-    <p class="about_text" style="max-width: 40rem;">Scenario: 10,000 daily transactions at 0.003 SOL average. Numbers below are illustrative. The flywheel scales with adoption.</p>
-    <div class="lp_stats row_flex" style="gap: 3rem; margin-top: 3rem; flex-wrap: wrap;">
-        <div class="column_flex">
-            <span class="lp_stat_num">30 <span style="color:#2BD52D;">SOL</span></span>
-            <span class="lp_stat_label">Daily Fees Collected</span>
-        </div>
-        <div class="column_flex">
-            <span class="lp_stat_num">12 <span style="color:#2BD52D;">SOL</span></span>
-            <span class="lp_stat_label">Routed to Buybacks (40%)</span>
-        </div>
-        <div class="column_flex">
-            <span class="lp_stat_num">~840K <span style="color:#2BD52D;">$IQ</span></span>
-            <span class="lp_stat_label">Bought Back Daily at $0.01</span>
-        </div>
+    <div data-reveal="380" style="display:flex;justify-content:space-between;margin-top:10px;border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.85);backdrop-filter:blur(4px);padding:11px 20px;font:500 10px 'Kode Mono',monospace;letter-spacing:.2em;opacity:.9">
+      <span>PAY PER BYTE</span><span>100% ONCHAIN SPLIT</span><span>NO $IQ TO BUILD</span><span style="opacity:.6">SCROLL ↓</span>
     </div>
-    <p class="lp_tag" style="margin-top: 2.5rem;">// Illustrative only. Buyback volume scales with adoption and SOL price. As $IQ price rises, fewer tokens are repurchased per cycle. Supply absorption is real regardless.</p>
-</section>
+  </div>
 
-<!-- 05 FUTURE LEVERS -->
-<section id="tk_governance" class="lp_section">
-    <p class="lp_tag">// 05 Future Levers</p>
-    <h2 class="lp_section_title">Shaped. Not Decided.</h2>
-    <p class="about_text" style="max-width: 40rem;">As the protocol matures, the community helps shape which additional flywheel accelerants get activated.</p>
-    <div class="lp_cards_grid">
-        <div class="lp_card">
-            <div class="lp_card_title">SDK Builder Grants</div>
-            <p class="lp_card_desc">Treasury-funded grants to developers building high-volume applications on the IQ SDK, directly accelerating fee generation.</p>
-        </div>
-        <div class="lp_card">
-            <div class="lp_card_title">Revenue Share Expansion</div>
-            <p class="lp_card_desc">Community-driven decision to expand reward allocation as treasury reserves grow.</p>
-        </div>
-        <div class="lp_card">
-            <div class="lp_card_title">Fee Tier Optimization</div>
-            <p class="lp_card_desc">Community-driven adjustments to fee thresholds to maximize adoption or revenue at different growth stages.</p>
-        </div>
-        <div class="lp_card">
-            <div class="lp_card_title">Cross-Chain SDK Expansion</div>
-            <p class="lp_card_desc">Treasury-funded development extending the SDK beyond Solana, multiplying the fee-generating surface area.</p>
-        </div>
-    </div>
-</section>
+  <div style="height:90px;display:flex;align-items:center;justify-content:center;gap:16px;font:500 9.5px 'Kode Mono',monospace;letter-spacing:.3em;color:rgba(232,228,214,.6)"><span>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span><span>001 / FEE SCHEDULE</span><span>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span></div>
 
-<!-- OUTRO -->
-<section id="tk_outro" class="lp_section">
-    <p class="lp_tag">// Outro</p>
-    <h2 class="lp_section_title">Every Call. Every Write.<br>Every Message.</h2>
-    <p class="about_text" style="max-width: 40rem;">The IQ SDK is live. Developers are building. Every transaction flows through a fee mechanism designed to make $IQ mathematically scarcer over time. No manual intervention. No team discretion. Just code: usage, fees, buybacks, fewer tokens chasing the same demand.</p>
-    <p class="about_text" style="max-width: 40rem; margin-top: 1rem;">You don't need to do anything to benefit from IQ Labs' growth. You just need to hold $IQ. The more builders choose the IQ SDK, the more relentless the deflation. That is the only promise that matters.</p>
-    <a href="https://dexscreener.com/solana/3uxacfojurya7vh51jvc1dchq3uzk4a7g469q954labs" target="_blank" class="lp_link_btn" style="margin-top: 1.5rem; display: inline-block;">View on DexScreener -&gt;</a>
-</section>
+  <section id="fees" style="padding:0 16px">
+    <div data-reveal="0" style="border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.88);backdrop-filter:blur(4px);padding:26px 28px">
+      <div style="font:600 11px 'Kode Mono',monospace;letter-spacing:.2em;opacity:.7">001 // FEE SCHEDULE</div>
+      <h2 style="margin:12px 0 0;font:400 clamp(24px,3.4vw,40px)/1.1 'Zen Dots','Rubik Mono One',monospace">PAY PER BYTE. PAY IN SOL.</h2>
+      <p style="margin:14px 0 0;font:500 11px/2 'Kode Mono',monospace;opacity:.7;max-width:560px">Any developer or application on Solana using the IQ SDK pays simple, flat SOL fees per transaction. No $IQ tokens required. Frictionless adoption by default.</p>
+      <div style="margin-top:22px;border:1px solid rgba(232,228,214,.6);border-radius:6px;overflow:hidden">
+        <div id="rd_fee_row" style="display:grid;grid-template-columns:110px 150px 110px 1fr;gap:14px;padding:11px 16px;border-bottom:1px solid rgba(232,228,214,.4);font:600 9px 'Kode Mono',monospace;letter-spacing:.16em;opacity:.6">
+          <span>DATA SIZE</span><span>RANGE</span><span>FEE</span><span>USE CASES</span>
+        </div>
+        <div class="rd-feerow" style="display:grid;grid-template-columns:110px 150px 110px 1fr;gap:14px;padding:14px 16px;border-bottom:1px solid rgba(232,228,214,.22)">
+          <div style="font:700 12px 'Kode Mono',monospace">Basic</div><div style="font:500 10px/1.7 'Kode Mono',monospace;opacity:.65">&lt; 850 bytes</div><div style="font:700 12px 'Kode Mono',monospace;color:#2BD52D">0.001 SOL</div><p style="margin:0;font:500 10px/1.7 'Kode Mono',monospace;opacity:.65">SolChat messages, status updates, small JSON payloads, HTTP-style API responses, key-value records</p>
+        </div>
+        <div class="rd-feerow" style="display:grid;grid-template-columns:110px 150px 110px 1fr;gap:14px;padding:14px 16px;border-bottom:1px solid rgba(232,228,214,.22)">
+          <div style="font:700 12px 'Kode Mono',monospace">Standard</div><div style="font:500 10px/1.7 'Kode Mono',monospace;opacity:.65">850 to 8,500 bytes</div><div style="font:700 12px 'Kode Mono',monospace;color:#2BD52D">0.003 SOL</div><p style="margin:0;font:500 10px/1.7 'Kode Mono',monospace;opacity:.65">Database writes, inscriptions, structured data</p>
+        </div>
+        <div class="rd-feerow" style="display:grid;grid-template-columns:110px 150px 110px 1fr;gap:14px;padding:14px 16px">
+          <div style="font:700 12px 'Kode Mono',monospace">Large</div><div style="font:500 10px/1.7 'Kode Mono',monospace;opacity:.65">&gt; 8,500 bytes</div><div style="font:700 12px 'Kode Mono',monospace;color:#2BD52D">0.005 SOL</div><p style="margin:0;font:500 10px/1.7 'Kode Mono',monospace;opacity:.65">Rich content, large dataset storage, bulk ops</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<!-- FOOTER -->
-<div class="lp_footer">
-    <div class="lp_footer_top row_flex space_between">
-        <div class="column_flex" style="gap: 0.3rem;">
-            <div class="lp_card_title" style="font-size: var(--fs-lg);">IQ Labs</div>
-            <p class="lp_tag">// HIGH IQ TECH SHIPPING</p>
-        </div>
-        <div class="lp_footer_links row_flex" style="gap: 3rem;">
-            <div class="column_flex" style="gap: 0.5rem;">
-                <p class="lp_footer_heading">Products</p>
-                <a href="https://x.com/IQLabsOfficial/status/2020665691897258450" target="_blank">IQ SDK</a>
-                <a href="https://ai.iqlabs.dev/" target="_blank">Clawbal</a>
-                <a href="https://git.iqlabs.dev/5CELw1D5RAho7G8zFMYazPf2rYzgQBoanKb2pHLvzWBE/agent-config" target="_blank">IQGithub</a>
-                <a href="#">iQoogle (Q2)</a>
-            </div>
-            <div class="column_flex" style="gap: 0.5rem;">
-                <p class="lp_footer_heading">Community</p>
-                <a href="https://x.com/IQLabsOfficial" target="_blank">X @IQLabsOfficial</a>
-                <a href="https://t.me/IQLabsPortal" target="_blank">Telegram</a>
-                <a href="https://discord.gg/a9XyqJn2gC" target="_blank">Discord</a>
-            </div>
-            <div class="column_flex" style="gap: 0.5rem;">
-                <p class="lp_footer_heading">Resources</p>
-                <a onclick="$.aboutPage.init();" style="cursor:pointer;">Origins</a>
-                <a href="https://iqlabs.mintlify.app/" target="_blank">Docs</a>
-                <a href="https://docs.google.com/document/d/1yaZcpEFZ7gMmhZxuzQpoW5QzIG_hZsqWnFnujKMP4M8/edit?tab=t.0" target="_blank">Whitepaper</a>
-                <a href="https://x.com/IQLabsOfficial/status/2014131287871627554" target="_blank">Vision</a>
-            </div>
-        </div>
+  <div style="height:90px;display:flex;align-items:center;justify-content:center;gap:16px;font:500 9.5px 'Kode Mono',monospace;letter-spacing:.3em;color:rgba(232,228,214,.6)"><span>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span><span>002 / FEE ALLOCATION</span><span>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span></div>
+
+  <section id="alloc" style="padding:0 16px">
+    <div data-reveal="0" style="border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.88);backdrop-filter:blur(4px);padding:26px 28px">
+      <div style="font:600 11px 'Kode Mono',monospace;letter-spacing:.2em;opacity:.7">002 // FEE ALLOCATION</div>
+      <h2 style="margin:12px 0 0;font:400 clamp(24px,3.4vw,40px)/1.1 'Zen Dots','Rubik Mono One',monospace">WHERE EVERY SOL GOES.</h2>
+      <p style="margin:14px 0 0;font:500 11px/2 'Kode Mono',monospace;opacity:.7;max-width:560px">100% of collected fees are algorithmically split onchain at the time of collection. No discretion. No delay.</p>
+      <div style="display:flex;gap:4px;margin-top:22px;height:64px;font:600 10px 'Kode Mono',monospace">
+        <div style="flex:40;background:#e8e4d6;color:#141310;border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span style="font-size:15px">40%</span><span style="letter-spacing:.1em">BUYBACK</span></div>
+        <div style="flex:45;background:rgba(232,228,214,.62);color:#141310;border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span style="font-size:15px">45%</span><span style="letter-spacing:.1em">TREASURY</span></div>
+        <div style="flex:10;background:rgba(232,228,214,.32);border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span style="font-size:15px">10%</span><span style="letter-spacing:.06em;font-size:8px">COMMUNITY</span></div>
+        <div style="flex:5;background:rgba(232,228,214,.18);border-radius:5px;display:flex;align-items:center;justify-content:center"><span style="font-size:11px">5%</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:14px">
+        <div class="rd-feat"><div style="font:700 12px 'Kode Mono',monospace"><span style="color:#2BD52D;margin-right:8px">40%</span>$IQ Buyback Engine</div><p style="margin:9px 0 0;font:500 10px/1.9 'Kode Mono',monospace;opacity:.65">Market purchases of $IQ retained by the Treasury as a strategic reserve. Every fee event removes circulating supply from the market.</p></div>
+        <div class="rd-feat"><div style="font:700 12px 'Kode Mono',monospace"><span style="color:#2BD52D;margin-right:8px">45%</span>Operations Treasury</div><p style="margin:9px 0 0;font:500 10px/1.9 'Kode Mono',monospace;opacity:.65">Salaries, servers, marketing, development, and ecosystem grants. Funds the work that ships the SDK and grows the surface area.</p></div>
+        <div class="rd-feat"><div style="font:700 12px 'Kode Mono',monospace"><span style="color:#2BD52D;margin-right:8px">10%</span>Community Rewards Pool</div><p style="margin:9px 0 0;font:500 10px/1.9 'Kode Mono',monospace;opacity:.65">Real yield distributed to the $IQ community in SOL or repurchased $IQ. Sourced entirely from SDK transaction fees, not token inflation or emissions.</p></div>
+        <div class="rd-feat"><div style="font:700 12px 'Kode Mono',monospace"><span style="color:#2BD52D;margin-right:8px">5%</span>Liquidity Pool</div><p style="margin:9px 0 0;font:500 10px/1.9 'Kode Mono',monospace;opacity:.65">Continuous deepening of the IQ/SOL pair. Tighter spreads, less slippage, healthier markets at every volume tier.</p></div>
+      </div>
+      <p style="margin:16px 0 0;font:500 10px/1.85 'Kode Mono',monospace;opacity:.5;max-width:640px">// straight up: if monthly revenue stays under $10k, most of it keeps the lights on and the devs paid. This is not carved in stone. The tokenomics evolve as the community grows.</p>
     </div>
-    <div class="lp_footer_bottom row_flex space_between">
-        <div class="row_flex center" style="gap: 0.5rem;">
-            <img class="bottom_image_logo" src="img/iq_bottom_logo.webp">
-            <p style="font-size: var(--fs-xs);">IQLabs &copy; 2026</p>
-        </div>
-        <p class="lp_tag" style="font-size: var(--fs-2xs);">// POWERED BY BIG BRAIN COMMUNITY</p>
+  </section>
+
+  <div style="height:90px;display:flex;align-items:center;justify-content:center;gap:16px;font:500 9.5px 'Kode Mono',monospace;letter-spacing:.3em;color:rgba(232,228,214,.6)"><span>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span><span>003 / DEFLATIONARY FLYWHEEL</span><span>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span></div>
+
+  <section id="flywheel" style="padding:0 16px">
+    <div data-reveal="0" style="border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.88);backdrop-filter:blur(4px);padding:26px 28px">
+      <div style="font:600 11px 'Kode Mono',monospace;letter-spacing:.2em;opacity:.7">003 // THE DEFLATIONARY FLYWHEEL</div>
+      <h2 style="margin:12px 0 0;font:400 clamp(24px,3.4vw,40px)/1.1 'Zen Dots','Rubik Mono One',monospace">BUILDERS. USERS. BUYBACKS.</h2>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;margin-top:22px;font:600 10.5px 'Kode Mono',monospace;letter-spacing:.06em">
+        <span style="border:1px solid rgba(232,228,214,.6);border-radius:5px;padding:11px 15px">Builders Adopt SDK</span><span style="opacity:.55;color:#2BD52D">→</span>
+        <span style="border:1px solid rgba(232,228,214,.6);border-radius:5px;padding:11px 15px">Users Transact Onchain</span><span style="opacity:.55;color:#2BD52D">→</span>
+        <span style="border:1px solid rgba(232,228,214,.6);border-radius:5px;padding:11px 15px">SOL Fees Collected</span><span style="opacity:.55;color:#2BD52D">→</span>
+        <span style="border:1px solid rgba(232,228,214,.6);border-radius:5px;padding:11px 15px">$IQ Bought Back</span><span style="opacity:.55;color:#2BD52D">→</span>
+        <span style="border:1px solid #e8e4d6;border-radius:5px;padding:11px 15px;background:rgba(232,228,214,.08)">Supply Shrinks, Value Accrues</span>
+      </div>
+      <p style="margin:22px 0 0;font:500 11px/2 'Kode Mono',monospace;opacity:.7;max-width:560px">Passive holders benefit from every transaction without lifting a finger. The more apps build on IQ SDK, the harder $IQ deflates.</p>
     </div>
+  </section>
+
+  <div style="height:90px;display:flex;align-items:center;justify-content:center;gap:16px;font:500 9.5px 'Kode Mono',monospace;letter-spacing:.3em;color:rgba(232,228,214,.6)"><span>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span><span>004 / ILLUSTRATIVE IMPACT</span><span>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span></div>
+
+  <section id="impact" style="padding:0 16px">
+    <div data-reveal="0" style="border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.88);backdrop-filter:blur(4px);padding:26px 28px">
+      <div style="font:600 11px 'Kode Mono',monospace;letter-spacing:.2em;opacity:.7">004 // ILLUSTRATIVE IMPACT</div>
+      <h2 style="margin:12px 0 0;font:400 clamp(24px,3.4vw,40px)/1.1 'Zen Dots','Rubik Mono One',monospace">10,000 DAILY TRANSACTIONS.</h2>
+      <p style="margin:14px 0 0;font:500 11px/2 'Kode Mono',monospace;opacity:.7;max-width:560px">Scenario: 10,000 daily transactions at 0.003 SOL average. Numbers below are illustrative. The flywheel scales with adoption.</p>
+      <div id="rd_impact_grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px">
+        <div style="border:1px solid rgba(232,228,214,.6);border-radius:6px;padding:20px 18px"><div style="font:400 34px 'Zen Dots','Rubik Mono One',monospace">30 <span style="color:#2BD52D;font-size:20px">SOL</span></div><div style="margin-top:8px;font:500 9.5px 'Kode Mono',monospace;letter-spacing:.1em;opacity:.6">DAILY FEES COLLECTED</div></div>
+        <div style="border:1px solid rgba(232,228,214,.6);border-radius:6px;padding:20px 18px"><div style="font:400 34px 'Zen Dots','Rubik Mono One',monospace">12 <span style="color:#2BD52D;font-size:20px">SOL</span></div><div style="margin-top:8px;font:500 9.5px 'Kode Mono',monospace;letter-spacing:.1em;opacity:.6">ROUTED TO BUYBACKS (40%)</div></div>
+        <div style="border:1px solid rgba(232,228,214,.6);border-radius:6px;padding:20px 18px"><div style="font:400 30px 'Zen Dots','Rubik Mono One',monospace">~840K <span style="color:#2BD52D;font-size:18px">$IQ</span></div><div style="margin-top:8px;font:500 9.5px 'Kode Mono',monospace;letter-spacing:.1em;opacity:.6">BOUGHT BACK DAILY AT $0.01</div></div>
+      </div>
+      <p style="margin:20px 0 0;font:500 10px/1.85 'Kode Mono',monospace;opacity:.5;max-width:660px">// Illustrative only. Buyback volume scales with adoption and SOL price. As $IQ price rises, fewer tokens are repurchased per cycle. Supply absorption is real regardless.</p>
+    </div>
+  </section>
+
+  <div style="height:90px;display:flex;align-items:center;justify-content:center;gap:16px;font:500 9.5px 'Kode Mono',monospace;letter-spacing:.3em;color:rgba(232,228,214,.6)"><span>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span><span>005 / FUTURE LEVERS</span><span>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span></div>
+
+  <section id="levers" style="padding:0 16px">
+    <div data-reveal="0" style="border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.88);backdrop-filter:blur(4px);padding:26px 28px">
+      <div style="font:600 11px 'Kode Mono',monospace;letter-spacing:.2em;opacity:.7">005 // FUTURE LEVERS</div>
+      <h2 style="margin:12px 0 0;font:400 clamp(24px,3.4vw,40px)/1.1 'Zen Dots','Rubik Mono One',monospace">SHAPED. NOT DECIDED.</h2>
+      <p style="margin:14px 0 0;font:500 11px/2 'Kode Mono',monospace;opacity:.7;max-width:560px">As the protocol matures, the community helps shape which additional flywheel accelerants get activated.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:22px">
+        <div class="rd-feat"><div style="font:700 12px 'Kode Mono',monospace">SDK Builder Grants</div><p style="margin:9px 0 0;font:500 10px/1.9 'Kode Mono',monospace;opacity:.65">Treasury-funded grants to developers building high-volume applications on the IQ SDK, directly accelerating fee generation.</p></div>
+        <div class="rd-feat"><div style="font:700 12px 'Kode Mono',monospace">Revenue Share Expansion</div><p style="margin:9px 0 0;font:500 10px/1.9 'Kode Mono',monospace;opacity:.65">Community-driven decision to expand reward allocation as treasury reserves grow.</p></div>
+        <div class="rd-feat"><div style="font:700 12px 'Kode Mono',monospace">Fee Tier Optimization</div><p style="margin:9px 0 0;font:500 10px/1.9 'Kode Mono',monospace;opacity:.65">Community-driven adjustments to fee thresholds to maximize adoption or revenue at different growth stages.</p></div>
+        <div class="rd-feat"><div style="font:700 12px 'Kode Mono',monospace">Cross-Chain SDK Expansion</div><p style="margin:9px 0 0;font:500 10px/1.9 'Kode Mono',monospace;opacity:.65">Treasury-funded development extending the SDK beyond Solana, multiplying the fee-generating surface area.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div style="height:90px;display:flex;align-items:center;justify-content:center;gap:16px;font:500 9.5px 'Kode Mono',monospace;letter-spacing:.3em;color:rgba(232,228,214,.6)"><span>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span><span>EOF / HOLD $IQ.</span><span>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span></div>
+
+  <section id="outro" style="padding:0 16px">
+    <div data-reveal="0" style="border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.9);backdrop-filter:blur(4px);padding:30px 28px">
+      <h2 style="margin:0;font:400 clamp(24px,3.4vw,42px)/1.12 'Zen Dots','Rubik Mono One',monospace">EVERY CALL. EVERY WRITE.<br>EVERY MESSAGE.</h2>
+      <p style="margin:16px 0 0;font:500 11px/2 'Kode Mono',monospace;opacity:.72;max-width:620px">The IQ SDK is live. Developers are building. Every transaction flows through a fee mechanism designed to make $IQ mathematically scarcer over time. No manual intervention. No team discretion. Just code: usage, fees, buybacks, fewer tokens chasing the same demand.</p>
+      <p style="margin:12px 0 0;font:500 11px/2 'Kode Mono',monospace;opacity:.72;max-width:620px">You don't need to do anything to benefit from IQ Labs' growth. You just need to hold $IQ. The more builders choose the IQ SDK, the more relentless the deflation. That is the only promise that matters.</p>
+      <a href="https://dexscreener.com/solana/3uxacfojurya7vh51jvc1dchq3uzk4a7g469q954labs" target="_blank" class="rd-btn-solid" style="display:inline-block;margin-top:20px;padding:12px 22px;font-size:10px;letter-spacing:.12em">VIEW ON DEXSCREENER →</a>
+    </div>
+  </section>
+
+  <div style="padding:16px">
+    <div data-reveal="0" style="border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.9);backdrop-filter:blur(4px);overflow:hidden">
+      <div style="overflow:hidden;border-bottom:1px solid #e8e4d6"><div style="display:flex;white-space:nowrap;animation:rd_tick 40s linear infinite;font:500 11px 'Kode Mono',monospace;letter-spacing:.14em;padding:8px 0">
+        <span style="padding:0 22px">// HIGH IQ TECH SHIPPING</span><span style="opacity:.6">▚▞</span><span style="padding:0 22px">PAY PER BYTE, PAY IN SOL</span><span style="padding:0 22px">100% ONCHAIN SPLIT</span><span style="opacity:.6">▞▚</span><span style="padding:0 22px">NO RUG, ONLY BRAIN</span><span style="padding:0 22px">// HIGH IQ TECH SHIPPING</span><span style="opacity:.6">▚▞</span><span style="padding:0 22px">PAY PER BYTE, PAY IN SOL</span><span style="padding:0 22px">100% ONCHAIN SPLIT</span><span style="opacity:.6">▞▚</span><span style="padding:0 22px">NO RUG, ONLY BRAIN</span>
+        <span style="padding:0 22px">// HIGH IQ TECH SHIPPING</span><span style="opacity:.6">▚▞</span><span style="padding:0 22px">PAY PER BYTE, PAY IN SOL</span><span style="padding:0 22px">100% ONCHAIN SPLIT</span><span style="opacity:.6">▞▚</span><span style="padding:0 22px">NO RUG, ONLY BRAIN</span><span style="padding:0 22px">// HIGH IQ TECH SHIPPING</span><span style="opacity:.6">▚▞</span><span style="padding:0 22px">PAY PER BYTE, PAY IN SOL</span><span style="padding:0 22px">100% ONCHAIN SPLIT</span><span style="opacity:.6">▞▚</span><span style="padding:0 22px">NO RUG, ONLY BRAIN</span>
+      </div></div>
+      <div style="display:flex;justify-content:space-between;gap:30px;padding:24px 28px;flex-wrap:wrap">
+        <div><img src="img/text_logo.webp" alt="IQLabs" style="height:26px;display:block;filter:brightness(0) invert(0.93) sepia(0.18) saturate(1.2) brightness(0.98)"><div style="font:600 9.5px 'Kode Mono',monospace;letter-spacing:.16em;opacity:.6;margin-top:10px">// HIGH IQ TECH SHIPPING</div></div>
+        <div id="rd_footer_links" style="display:flex;gap:44px;font:500 10.5px/2.1 'Kode Mono',monospace;flex-wrap:wrap">
+          <div><div style="font-weight:700;opacity:.6;letter-spacing:.12em">PRODUCTS</div><a href="https://x.com/IQLabsOfficial/status/2020665691897258450" target="_blank" style="display:block">IQ SDK</a><a href="https://git.iqlabs.dev/5CELw1D5RAho7G8zFMYazPf2rYzgQBoanKb2pHLvzWBE/agent-config" target="_blank" style="display:block">IQGITHUB</a><a href="https://browser.iqlabs.dev/" target="_blank" style="display:block">IQ BROWSER</a></div>
+          <div><div style="font-weight:700;opacity:.6;letter-spacing:.12em">COMMUNITY</div><a href="https://x.com/IQLabsOfficial" target="_blank" style="display:block">X @IQLABSOFFICIAL</a><a href="https://t.me/IQLabsPortal" target="_blank" style="display:block">TELEGRAM</a><a href="https://discord.gg/a9XyqJn2gC" target="_blank" style="display:block">DISCORD</a></div>
+          <div><div style="font-weight:700;opacity:.6;letter-spacing:.12em">RESOURCES</div><a href="https://iqlabs.mintlify.app/" target="_blank" style="display:block">DOCS</a><a href="https://docs.google.com/document/d/1yaZcpEFZ7gMmhZxuzQpoW5QzIG_hZsqWnFnujKMP4M8/edit?tab=t.0" target="_blank" style="display:block">WHITEPAPER</a><a href="https://x.com/IQLabsOfficial/status/2014131287871627554" target="_blank" style="display:block">VISION</a></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:12px 28px;border-top:1px solid rgba(232,228,214,.4);font:600 9.5px 'Kode Mono',monospace;letter-spacing:.14em;opacity:.7">
+        <span>IQLABS © 2026</span><span>// POWERED BY BIG BRAIN COMMUNITY</span>
+      </div>
+    </div>
+  </div>
+
+</div>
 </div>
