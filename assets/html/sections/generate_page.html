@@ -1,176 +1,232 @@
 <script type="text/javascript" src="js/art_generate.js?ver=20260609"></script>
 
-<div class="background_div">
-    <div class="background_black"></div>
-    <div class="background_Linear_color"></div>
-</div>
+<div class="rd_root">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;500;600;700&family=Rubik+Mono+One&family=Orbitron:wght@700;800;900&family=Zen+Dots&display=swap');
 
-<div class="nav_bar row_flex nav_bar_mobile">
-    <div class="row_flex">
-        <img class="nav_title" onclick="$.mainPage.init()" src="img/text_logo.webp" alt="IQLabs">
-        <img class="nav_menu_arrow" onclick="navigator_on()" src="img/down.svg">
-    </div>
-    <div class="nav_connect" onclick="$.onchainPage.init()">
-        <div class="simple_button_green">
-            <p>App</p>
+/* Full-bleed the redesign inside the SPA shell. These only live while the
+   generator is mounted; routing empties #main_section and removes this style. */
+.full_div{padding:0 !important}
+#main_section{align-items:stretch !important}
+
+.rd_root{width:100%;color:#e8e4d6;font-family:'Kode Mono',monospace}
+.rd_root a{color:#e8e4d6;text-decoration:none}
+.rd_root a:hover{color:#fff}
+.rd_bg_tint{position:fixed;inset:0;background:rgba(20,19,16,.32);z-index:0;pointer-events:none}
+.rd_page{position:relative;z-index:1;color:#e8e4d6}
+
+@keyframes rd_tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes rd_wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes rd_blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+.rd-homebtn{display:flex;align-items:center;gap:8px;font:600 10px 'Kode Mono',monospace;letter-spacing:.14em;border:1px solid rgba(232,228,214,.5);border-radius:4px;padding:7px 12px;cursor:pointer;transition:all .3s cubic-bezier(.2,.7,.2,1)}
+.rd-homebtn:hover{border-color:#e8e4d6;background:rgba(232,228,214,.1)}
+.rd_root [data-reveal].rd-reveal{opacity:0;transform:translateY(16px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.rd_root [data-reveal].rd-in{opacity:1;transform:none}
+
+/* ── Generator tool ── */
+#gen_grid{display:grid;grid-template-columns:320px 1fr;gap:12px;margin-top:12px;align-items:stretch}
+.gen_panel{border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.88);backdrop-filter:blur(4px);display:flex;flex-direction:column;overflow:hidden}
+.gen_phead{border-bottom:1px solid #e8e4d6;padding:11px 16px;font:600 10px 'Kode Mono',monospace;letter-spacing:.2em;display:flex;justify-content:space-between;align-items:center}
+
+/* control rows */
+.gen_ctrl{border-bottom:1px solid rgba(232,228,214,.28);padding:15px 16px;display:flex;flex-direction:column;gap:10px}
+.gen_ctrl_label{font:600 10px 'Kode Mono',monospace;letter-spacing:.16em;opacity:.75}
+.gen_ctrl_hint{font:500 9px 'Kode Mono',monospace;letter-spacing:.06em;opacity:.4}
+.gen_stepper{display:flex;align-items:stretch;border:1px solid rgba(232,228,214,.55);border-radius:5px;overflow:hidden;width:fit-content}
+.gen_step_btn{width:34px;background:transparent;border:none;color:#e8e4d6;font:700 15px 'Kode Mono',monospace;cursor:pointer;transition:background .25s}
+.gen_step_btn:hover{background:rgba(232,228,214,.14)}
+.gen_step_btn:active{background:rgba(232,228,214,.26)}
+.gen_step_val{width:56px;text-align:center;background:transparent;border:none;border-left:1px solid rgba(232,228,214,.4);border-right:1px solid rgba(232,228,214,.4);color:#e8e4d6;font:600 13px 'Kode Mono',monospace;-moz-appearance:textfield}
+.gen_step_val::-webkit-inner-spin-button,.gen_step_val::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.gen_step_val:focus{outline:none}
+
+/* logo toggle */
+.gen_toggle_row{display:flex;align-items:center;justify-content:space-between}
+#checkbox{position:absolute;opacity:0;pointer-events:none}
+.gen_switch{width:46px;height:24px;border:1px solid rgba(232,228,214,.55);border-radius:20px;position:relative;cursor:pointer;transition:border-color .3s,background .3s}
+.gen_switch::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#e8e4d6;transition:transform .28s cubic-bezier(.2,.7,.2,1),background .28s}
+#checkbox:checked + .gen_switch{background:rgba(232,228,214,.16);border-color:#e8e4d6}
+#checkbox:checked + .gen_switch::after{transform:translateX(22px)}
+#checkbox:focus-visible + .gen_switch{outline:2px solid #e8e4d6;outline-offset:2px}
+
+/* monitor */
+.gen_screen{position:relative;flex:1;min-height:360px;background:#0b0b09;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.gen_scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1.5px,transparent 1.5px 3px);pointer-events:none;z-index:3}
+.contents_input{position:absolute;inset:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;z-index:2}
+.custom-file-upload{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;cursor:pointer;border:1.5px dashed rgba(232,228,214,.45);border-radius:10px;padding:38px 46px;transition:border-color .3s,background .3s,transform .35s cubic-bezier(.2,.7,.2,1)}
+.custom-file-upload:hover{border-color:#e8e4d6;background:rgba(232,228,214,.05);transform:translateY(-2px)}
+.upload_img_logo{width:38px;opacity:.75}
+.rd_root .custom-file-upload .file-name{font:600 12px 'Kode Mono',monospace;letter-spacing:.14em;color:#e8e4d6}
+.gen_drop_hint{font:500 9.5px 'Kode Mono',monospace;letter-spacing:.16em;opacity:.4}
+.generate_result{position:absolute;inset:0;width:100%;height:100%;z-index:2}
+.generate_result_img{width:100%;height:100%;object-fit:contain}
+
+.retry{margin:0;width:auto;display:flex;align-items:center;gap:7px;font:600 9.5px 'Kode Mono',monospace;letter-spacing:.14em;border:1px solid rgba(232,228,214,.45);border-radius:4px;padding:5px 11px;cursor:pointer;transition:border-color .3s,background .3s}
+.retry:hover{border-color:#e8e4d6;background:rgba(232,228,214,.08)}
+.retry_img{width:12px;height:12px;opacity:.85}
+
+.after_gen_png{display:none;width:auto;border-top:1px solid #e8e4d6;padding:14px 16px;flex-direction:row;gap:10px;align-items:stretch}
+.re_gen{margin:0;background:transparent;flex:1;display:flex;align-items:center;justify-content:center;border:1px solid #e8e4d6;border-radius:4px;padding:11px 16px;cursor:pointer;transition:all .3s cubic-bezier(.2,.7,.2,1)}
+.re_gen:hover{background:rgba(232,228,214,.14);transform:translateY(-2px)}
+.re_gen p{margin:0;font:600 10px 'Kode Mono',monospace;letter-spacing:.14em;color:#e8e4d6 !important}
+.img_download{flex:1;display:flex;align-items:center;justify-content:center;gap:9px;background:#e8e4d6;border-radius:4px;padding:12px 16px;font:700 10px 'Kode Mono',monospace;letter-spacing:.14em;color:#1b1a17 !important;cursor:pointer;transition:all .3s cubic-bezier(.2,.7,.2,1)}
+.img_download:hover{background:#fff;color:#141310 !important;transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.img_download img{width:14px;filter:brightness(0)}
+
+@media (max-width:940px){
+  #gen_grid{grid-template-columns:1fr !important}
+  .gen_screen{min-height:300px}
+}
+@media (max-width:760px){
+  #rd_nav_links{display:none !important}
+  .gen_screen{min-height:260px}
+  .custom-file-upload{padding:28px 30px}
+}
+@media (max-width:620px){
+  /* The logo already routes home and the footer has a home link, so drop the
+     text HOME button here to keep the top bar from overflowing on phones. */
+  .rd-homebtn{display:none !important}
+}
+@media (max-width:560px){
+  .after_gen_png{flex-direction:column}
+  .gen_hero_title{font-size:30px !important}
+  .gen_phead{font-size:9px;letter-spacing:.14em}
+}
+</style>
+
+<div class="rd_bg_tint"></div>
+
+<div class="rd_page">
+
+  <div style="position:sticky;top:0;z-index:10;padding:12px 16px 0">
+    <div style="display:flex;justify-content:space-between;align-items:center;border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.9);backdrop-filter:blur(6px);padding:13px 20px">
+      <div style="display:flex;align-items:center;gap:16px">
+        <a onclick="$.mainPage.init()" class="rd-homebtn">← HOME</a>
+        <a onclick="$.mainPage.init()" style="cursor:pointer"><img src="img/text_logo.webp" alt="IQLabs" style="height:20px;display:block;filter:brightness(0) invert(0.93) sepia(0.18) saturate(1.2) brightness(0.98)"></a>
+      </div>
+      <div id="rd_nav_links" style="display:flex;gap:26px;font:500 10px 'Kode Mono',monospace;letter-spacing:.18em">
+        <span style="opacity:.55">// ASCII ART GENERATOR</span>
+      </div>
+      <div style="display:flex;gap:16px;align-items:center;font:500 10px 'Kode Mono',monospace;letter-spacing:.14em">
+        <a href="https://x.com/IQLabsOfficial" target="_blank">[X]</a><a href="https://t.me/IQLabsPortal" target="_blank">[TG]</a><a href="https://discord.gg/a9XyqJn2gC" target="_blank">[DC]</a>
+        <div id="rd_lang" style="position:relative">
+          <a id="rd_lang_btn" onclick="window.iqLang&&iqLang.toggle()" style="cursor:pointer">[EN ▾]</a>
+          <div id="rd_lang_menu" style="display:none;position:absolute;right:0;top:24px;border:1px solid #e8e4d6;border-radius:6px;background:rgba(20,19,16,.97);padding:6px 0;min-width:104px;z-index:30">
+            <a onclick="iqLang.set('en')" style="display:block;padding:6px 14px;cursor:pointer">ENGLISH</a>
+            <a onclick="iqLang.set('ko')" style="display:block;padding:6px 14px;cursor:pointer">한국어</a>
+            <a onclick="iqLang.set('ru')" style="display:block;padding:6px 14px;cursor:pointer">РУССКИЙ</a>
+          </div>
         </div>
+      </div>
     </div>
-</div>
-<div class="navigator_menu">
-    <div class="navigator_menu_list column_flex">
-        <a href="https://docs.google.com/document/d/1yaZcpEFZ7gMmhZxuzQpoW5QzIG_hZsqWnFnujKMP4M8/edit?tab=t.0"
-           target="_blank">WhitePaper</a>
-        <a onclick="$.aboutPage.init()">
-            About $IQ</a>
-        <a href="https://iqlabs.mintlify.app/" target="_blank">Docs</a>
-        <a style="visibility: hidden;">Hidden Space</a>
+  </div>
 
-        <a onclick="alert('Coming soon')">Community</a>
-        <a href="https://drive.google.com/drive/folders/1UlXr8WzTECgxWKgV6ixR3TXg7lzEA_W5?usp=sharing"
-           target="_blank">BrandKit</a>
-
-        <a style="visibility: hidden;">Hidden Space</a>
-
-        <a href="https://x.com/im_zo_sol" target="_blank">Contact Us</a>
-        <a onclick="alert('Coming soon')">Partners</a>
-        <a href="https://store.fun/iq" target="_blank">IQ Merch</a>
-
+  <div style="padding:12px 16px 0">
+    <div style="border:1px solid #e8e4d6;border-radius:8px;overflow:hidden;background:rgba(20,19,16,.85);backdrop-filter:blur(4px)">
+      <div style="display:flex;white-space:nowrap;animation:rd_tick 38s linear infinite;font:500 10.5px 'Kode Mono',monospace;letter-spacing:.22em;padding:8px 0;opacity:.92">
+        <span style="padding:0 22px">// ASCII ART GENERATOR</span><span style="opacity:.6">▚▞</span><span style="padding:0 22px">TURN ANY IMAGE INTO TEXT ART</span><span style="padding:0 22px">ADJUST. GENERATE. DOWNLOAD.</span><span style="opacity:.6">▞▚</span><span style="padding:0 22px">IQ TEXT-ART REMIX</span><span style="padding:0 22px">HIGH IQ ART</span>
+        <span style="padding:0 22px">// ASCII ART GENERATOR</span><span style="opacity:.6">▚▞</span><span style="padding:0 22px">TURN ANY IMAGE INTO TEXT ART</span><span style="padding:0 22px">ADJUST. GENERATE. DOWNLOAD.</span><span style="opacity:.6">▞▚</span><span style="padding:0 22px">IQ TEXT-ART REMIX</span><span style="padding:0 22px">HIGH IQ ART</span>
+      </div>
     </div>
-    <div class="row_flex nav_icons navigator_menu_icons">
-        <img  onclick="window.open('https://t.me/IQLabsPortal')" src="img/telegram.svg" alt="Telegram">
-        <img  onclick="window.open('https://x.com/IQLabsOfficial')" src="img/x.svg" alt="X">
-        <img  onclick="alert('Update Soon')"  src="img/github.svg" alt="Github">
+  </div>
 
-    </div>
-</div>
+  <div style="padding:14px 16px 22px">
+    <div data-reveal="60" style="border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.88);backdrop-filter:blur(4px);padding:24px 26px">
+      <div style="font:600 11px 'Kode Mono',monospace;letter-spacing:.2em;opacity:.7">// ASCII ART GENERATOR</div>
+      <h1 class="gen_hero_title" style="margin:14px 0 0;font:400 clamp(30px,4.6vw,58px)/1.06 'Zen Dots','Orbitron',monospace;letter-spacing:0;text-shadow:0 4px 40px rgba(0,0,0,.8);animation:rd_wipe 1.3s cubic-bezier(.2,.7,.2,1) .15s both">IMAGE → ASCII.</h1>
+      <p style="margin:16px 0 0;font:500 11px/1.95 'Kode Mono',monospace;opacity:.72;max-width:520px">Turn any image into text art. Adjust the character size and spacing, drop the IQ logo on top, then generate and download your own ASCII remix.</p>
 
-<div class="img_button retry">
-    <div class="row_flex"><img class="retry_img" src="img/img_logo.svg">
-        <p class="retry_txt" style="color: #2BD52D">Art Generator</p></div>
-</div>
+      <div id="gen_grid">
 
-<div class="upload_image gen_upload" >
-    <div class="contents_input">
+        <div class="gen_panel">
+          <div class="gen_phead"><span>// CONTROLS</span><span style="opacity:.55;font-weight:500">[ 01 ]</span></div>
 
-
-        <label for="imageUpload" class="custom-file-upload">
-            <img class="upload_img_logo" src="img/img_logo_white.svg">
-            <a class="file-name">Select Image</a>
-        </label>
-
-        <input
-                type="file"
-                id="imageUpload"
-                accept="image/*"
-                style="display: none"
-        />
-    </div>
-    <div class="generate_result">
-        <img class="generate_result_img" alt="result">
-    </div>
-</div>
-
-
-<div class="gen_menus row_flex" >
-    <div class="gen_menu row_flex center">
-        <p class="manage_info" >Font size</p>
-        <div class="row_flex center">
-            <input type='button'
-                   class="arrow_button left_arrow"
-                   onclick="
-                       const number = parseInt($('#font_input').val());
-                       if(number>5)
-                       $('#font_input').val(number-1)
-                        "
-            />
-
-            <input type="number" id="font_input" class='input_number' min="5" max="50" value="8" readonly>
-
-            <input type='button'
-                   class="arrow_button right_arrow"
-                   onclick="
-                       const number = parseInt($('#font_input').val());
-                       if(number<50)
-                       $('#font_input').val(number+1)
-                        "
-            />
-        </div>
-    </div>
-    <div class="gen_menu row_flex center">
-        <p class="manage_info">Distance</p>
-        <div class="row_flex center">
-            <input type='button'
-                   class="arrow_button left_arrow"
-                   onclick="
-                       const number = parseInt($('#distance_input').val());
-                       if(number>-50)
-                       $('#distance_input').val(number-1)
-                        "
-            />
-
-            <input type="number" id="distance_input" class='input_number' min="-50" max="50" value="-2" readonly>
-
-            <input type='button'
-                   class="arrow_button right_arrow"
-                   onclick="
-                       const number = parseInt($('#distance_input').val());
-                       if(number<50)
-                       $('#distance_input').val(number+1)
-                        "
-            />
-        </div>
-    </div>
-</div>
-</div>
-<div class="check_div">
-    <p class="check_title">Logo</p>
-    <input type="checkbox" id="checkbox"/>
-    <label class="check" for="checkbox"></label>
-</div>
-
-<div class="after_gen_png">
-    <div class="green_button re_gen"  onclick="Generate_image()">
-        <p style="color: #989898">Re-Generate</p>
-    </div>
-
-    <div class="img_button">
-        <div class="row_flex">
-            <img src="img/gen_logo.svg">
-            <a class="img_download">Download</a>
-        </div>
-    </div>
-</div>
-<div class="pc_bottom_nav">
-
-    <div class=" bottom_partners">
-        <div class="moving_partners">
-            <img src="img/eliza.svg" style="height: 1.7rem">
-            <img src="img/origin_trail.svg">
-            <img src="img/soon.svg" style="height: 1.8rem;margin-right: 1rem">
-        </div>
-        <div class="moving_partners">
-            <img src="img/eliza.svg" style="height: 1.7rem; margin-left: 1rem">
-            <img src="img/origin_trail.svg">
-            <img src="img/soon.svg" style="height: 1.8rem">
-        </div>
-    </div>
-
-    <div class="bottom_hr"></div>
-    <div class="row_flex space_between  " style="width: 92%;margin-top: 2rem; margin-bottom: 2rem">
-        <div class="row_flex center">
-            <div class="row_flex ">
-                <img class="bottom_image_logo" src="img/iq_bottom_logo.webp">
-                <p style="font-size: var(--fs-xs)">IQLabs © 2026</p>
+          <div class="gen_ctrl">
+            <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="gen_ctrl_label">FONT SIZE</span><span class="gen_ctrl_hint">5 to 50</span></div>
+            <div class="gen_stepper">
+              <input type="button" class="gen_step_btn" value="−"
+                     onclick="const number=parseInt($('#font_input').val()); if(number>5) $('#font_input').val(number-1)">
+              <input type="number" id="font_input" class="gen_step_val" min="5" max="50" value="8" readonly>
+              <input type="button" class="gen_step_btn" value="+"
+                     onclick="const number=parseInt($('#font_input').val()); if(number<50) $('#font_input').val(number+1)">
             </div>
-            <div class="row_flex nav_icons bottom_icons" style="margin-top: 0.3rem">
-                <img src="img/telegram.svg" alt="Telegram">
-                <img src="img/x.svg" alt="X">
-                <img src="img/github.svg" alt="Github">
+            <span class="gen_ctrl_hint">Smaller size packs in more characters.</span>
+          </div>
+
+          <div class="gen_ctrl">
+            <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="gen_ctrl_label">SPACING</span><span class="gen_ctrl_hint">-50 to 50</span></div>
+            <div class="gen_stepper">
+              <input type="button" class="gen_step_btn" value="−"
+                     onclick="const number=parseInt($('#distance_input').val()); if(number>-50) $('#distance_input').val(number-1)">
+              <input type="number" id="distance_input" class="gen_step_val" min="-50" max="50" value="-2" readonly>
+              <input type="button" class="gen_step_btn" value="+"
+                     onclick="const number=parseInt($('#distance_input').val()); if(number<50) $('#distance_input').val(number+1)">
             </div>
+            <span class="gen_ctrl_hint">Distance between characters.</span>
+          </div>
+
+          <div class="gen_ctrl">
+            <div class="gen_toggle_row">
+              <span class="gen_ctrl_label">IQ LOGO</span>
+              <input type="checkbox" id="checkbox"/>
+              <label class="gen_switch" for="checkbox"></label>
+            </div>
+            <span class="gen_ctrl_hint">Stamp the IQ logo onto the output.</span>
+          </div>
+
+          <div style="padding:15px 16px;margin-top:auto;font:500 9.5px/1.8 'Kode Mono',monospace;letter-spacing:.06em;opacity:.5">&gt; Set your options, then select an image on the right to generate.</div>
         </div>
-        <div class="menu_list row_flex center" style="gap: 1rem">
-            <a onclick="alert('Coming soon')" style="font-size: var(--fs-xs)">Trademark Policy</a>
-            <a onclick="alert('Coming soon')" style="font-size: var(--fs-xs)">Legal & Privacy</a>
+
+        <div class="gen_panel">
+          <div class="gen_phead">
+            <span>OUTPUT // ascii.iqlabs.dev</span>
+            <div class="retry" onclick="">
+              <img class="retry_img" src="img/img_logo.svg" alt="">
+              <span class="retry_txt">Art Generator</span>
+            </div>
+          </div>
+
+          <div class="gen_screen">
+            <div class="gen_scan"></div>
+
+            <div class="contents_input">
+              <label for="imageUpload" class="custom-file-upload">
+                <img class="upload_img_logo" src="img/img_logo_white.svg" alt="">
+                <a class="file-name">Select Image</a>
+                <span class="gen_drop_hint">PNG / JPG / WEBP</span>
+              </label>
+              <input type="file" id="imageUpload" accept="image/*" style="display:none"/>
+            </div>
+
+            <div class="generate_result">
+              <img class="generate_result_img" alt="result">
+            </div>
+          </div>
+
+          <div class="after_gen_png">
+            <div class="re_gen" onclick="Generate_image()">
+              <p>RE-GENERATE</p>
+            </div>
+            <a class="img_download">
+              <img src="img/gen_logo.svg" alt="">DOWNLOAD
+            </a>
+          </div>
         </div>
+
+      </div>
     </div>
+  </div>
+
+  <div style="padding:0 16px 16px">
+    <div style="border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.9);backdrop-filter:blur(4px);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding:16px 24px">
+      <div style="display:flex;align-items:center;gap:12px"><img src="img/text_logo.webp" alt="IQLabs" style="height:20px;filter:brightness(0) invert(0.93) sepia(0.18) saturate(1.2) brightness(0.98)"><span style="font:600 9.5px 'Kode Mono',monospace;letter-spacing:.16em;opacity:.6">IQLABS © 2026</span></div>
+      <div style="display:flex;gap:22px;font:500 10px 'Kode Mono',monospace;letter-spacing:.14em">
+        <a onclick="$.mainPage.init()" style="cursor:pointer">← BACK TO HOME</a>
+        <a href="https://iqlabs.mintlify.app/" target="_blank">DOCS</a>
+      </div>
+    </div>
+  </div>
+
+</div>
 </div>

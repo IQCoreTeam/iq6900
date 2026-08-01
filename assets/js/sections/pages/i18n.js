@@ -44,6 +44,7 @@
         ["ROADMAP", "로드맵", "РОАДМАП"],
         ["THE STACK", "스택", "СТЕК"],
         ["TOKENOMICS", "토크노믹스", "ТОКЕНОМИКА"],
+        ["ART GENERATOR", "아트 생성기", "ГЕНЕРАТОР АРТА"],
         ["RESOURCES", "리소스", "РЕСУРСЫ"],
         ["DOCS", "문서", "ДОКИ"],
 
@@ -291,7 +292,34 @@
          "IQ 랩스의 성장에서 혜택을 받기 위해 무언가 할 필요는 없습니다. $IQ를 들고 있으면 됩니다. 더 많은 빌더가 IQ SDK를 선택할수록 디플레이션은 더 집요해집니다. 그것이 중요한 유일한 약속입니다.",
          "Чтобы выигрывать от роста IQ Labs, делать ничего не нужно. Нужно просто держать $IQ. Чем больше билдеров выбирают IQ SDK, тем беспощаднее дефляция. Это единственное обещание, которое имеет значение."],
         ["PAY PER BYTE, PAY IN SOL", "바이트당 지불, SOL로 지불", "ПЛАТИ ЗА БАЙТ, ПЛАТИ В SOL"],
-        ["100% ONCHAIN SPLIT", "100% 온체인 분배", "100% ОНЧЕЙН-СПЛИТ"]
+        ["100% ONCHAIN SPLIT", "100% 온체인 분배", "100% ОНЧЕЙН-СПЛИТ"],
+
+        // ── ascii art generator page ──
+        // ("Select Image" and "Art Generator" are left untranslated on purpose:
+        //  art_generate.js rewrites those nodes at runtime and would revert them.)
+        ["// ASCII ART GENERATOR", "// 아스키 아트 생성기", "// ГЕНЕРАТОР ASCII-АРТА"],
+        ["TURN ANY IMAGE INTO TEXT ART", "어떤 이미지든 텍스트 아트로", "ЛЮБАЯ КАРТИНКА В ТЕКСТ-АРТ"],
+        ["ADJUST. GENERATE. DOWNLOAD.", "조절. 생성. 다운로드.", "НАСТРОЙ. СГЕНЕРИРУЙ. СКАЧАЙ."],
+        ["IQ TEXT-ART REMIX", "IQ 텍스트 아트 리믹스", "IQ ТЕКСТ-АРТ РЕМИКС"],
+        ["HIGH IQ ART", "하이 IQ 아트", "HIGH IQ АРТ"],
+        ["IMAGE → ASCII.", "이미지 → 아스키.", "КАРТИНКА → ASCII."],
+        ["Turn any image into text art. Adjust the character size and spacing, drop the IQ logo on top, then generate and download your own ASCII remix.",
+         "어떤 이미지든 텍스트 아트로 바꿔보세요. 글자 크기와 간격을 조절하고, IQ 로고를 얹은 뒤, 나만의 아스키 리믹스를 생성하고 다운로드하세요.",
+         "Преврати любую картинку в текст-арт. Настрой размер и шаг символов, добавь логотип IQ, затем сгенерируй и скачай свой ASCII-ремикс."],
+        ["// CONTROLS", "// 설정", "// НАСТРОЙКИ"],
+        ["FONT SIZE", "글자 크기", "РАЗМЕР ШРИФТА"],
+        ["SPACING", "간격", "ИНТЕРВАЛ"],
+        ["IQ LOGO", "IQ 로고", "ЛОГОТИП IQ"],
+        ["Smaller size packs in more characters.", "크기가 작을수록 더 많은 글자가 들어갑니다.", "Чем меньше размер, тем больше символов."],
+        ["Distance between characters.", "글자 사이의 간격.", "Расстояние между символами."],
+        ["Stamp the IQ logo onto the output.", "결과물에 IQ 로고를 찍습니다.", "Ставит логотип IQ на результат."],
+        ["> Set your options, then select an image on the right to generate.",
+         "> 옵션을 설정한 뒤, 오른쪽에서 이미지를 선택하면 생성됩니다.",
+         "> Настрой опции, затем выбери картинку справа, чтобы сгенерировать."],
+        ["RE-GENERATE", "다시 생성", "СГЕНЕРИРОВАТЬ СНОВА"],
+        ["DOWNLOAD", "다운로드", "СКАЧАТЬ"],
+        ["← HOME", "← 홈", "← ДОМОЙ"],
+        ["← BACK TO HOME", "← 홈으로 돌아가기", "← НА ГЛАВНУЮ"]
     ];
 
     var LANG_IX = { ko: 1, ru: 2 };
