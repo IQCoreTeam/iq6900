@@ -129,7 +129,7 @@
         ["DOCS →", "문서 →", "ДОКИ →"],
         ["LAUNCH APP →", "앱 실행 →", "ОТКРЫТЬ →"],
         ["READ THE THREAD →", "스레드 읽기 →", "ЧИТАТЬ ТРЕД →"],
-        ["DOWNLOAD →", "다운로드 →", "СКАЧАТЬ →"],
+        ["DOWNLOAD ▾", "다운로드 ▾", "СКАЧАТЬ ▾"],
 
         // ── landing token ──
         ["WE FAIR LAUNCHED OUR TOKEN $IQ AT THE END OF 2024. $IQ PLAYS A KEY ROLE IN THE ECOSYSTEM. READ OUR TOKENOMICS TO LEARN MORE.",

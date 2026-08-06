@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="robots" content="index,follow"/>
+<meta name="description" content="Install AgentNet from the Solana dApp Store on your Seeker phone."/>
+<title>AgentNet on Seeker - IQLabs</title>
+<link rel="icon" href="/img/coinlogo.webp"/>
+<style>
+  :root{
+    --bg:#080b08;
+    --panel:#0d120d;
+    --line:#1c261c;
+    --text:#cdd6cd;
+    --muted:#8ea08e;
+    --head:#e8ffe8;
+    --accent:#2BD52D;
+    --code-bg:#111811;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    line-height:1.75;
+    font-size:15px;
+    min-height:100dvh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .card{
+    width:100%;
+    max-width:460px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:28px 26px;
+  }
+  .tag{color:var(--muted);font-size:11px;letter-spacing:.18em}
+  h1{color:var(--head);font-size:22px;margin:10px 0 0;letter-spacing:.02em}
+  p{color:var(--text);margin:14px 0 0;font-size:13px}
+  .muted{color:var(--muted);font-size:12px}
+  a.btn{
+    display:block;
+    text-align:center;
+    margin-top:18px;
+    padding:13px 16px;
+    border-radius:6px;
+    text-decoration:none;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:.08em;
+  }
+  a.primary{background:var(--accent);color:#04120a}
+  a.ghost{border:1px solid var(--line);color:var(--head)}
+  a.ghost:hover,a.primary:hover{filter:brightness(1.12)}
+  code{
+    display:block;
+    background:var(--code-bg);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:10px 12px;
+    margin-top:8px;
+    font-size:12px;
+    word-break:break-all;
+    color:var(--head);
+  }
+  .foot{margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="tag">IQLABS // AGENTNET</div>
+  <h1>Install AgentNet on Seeker</h1>
+  <p>AgentNet runs a full AI agent on your phone. Skills are soulbound NFTs on Solana and your reputation lives in your wallet.</p>
+  <p class="muted">On a Seeker phone this page opens the AgentNet listing in the Solana dApp Store. If nothing happens, tap the button below.</p>
+  <a class="btn primary" href="solanadappstore://details?id=com.iqlabs.agentnet">OPEN IN DAPP STORE</a>
+  <a class="btn ghost" href="https://github.com/IQCoreTeam/AgentNet/releases/tag/android-latest" target="_blank" rel="noopener">DOWNLOAD APK INSTEAD</a>
+  <div class="foot">
+    <div class="muted">Not on a Seeker phone? The dApp Store link only works there. On any other Android phone, sideload the APK above. On desktop, install the CLI:</div>
+    <code>npm i -g @iqlabs-official/agentnet-cli</code>
+  </div>
+</div>
+<script>
+  // The dApp Store scheme only resolves on devices that ship the store app.
+  // Everywhere else the redirect is a silent no-op, so the buttons stay as
+  // the real path and this is just a convenience for Seeker users.
+  if (/Android/i.test(navigator.userAgent)) {
+    setTimeout(function () {
+      location.href = "solanadappstore://details?id=com.iqlabs.agentnet";
+    }, 400);
+  }
+</script>
+</body>
+</html>
