@@ -64,16 +64,8 @@ p{margin:14px 0 0;font:500 10.5px/1.9 'Kode Mono',monospace;opacity:.7}
 .ghost:hover{background:rgba(232,228,214,.16);transform:translateY(-2px)}
 .btns{margin-top:20px}
 .foot{margin-top:22px;border-top:1px solid rgba(232,228,214,.4);padding-top:16px}
-code{
-  display:block;
-  border:1px solid rgba(232,228,214,.6);
-  border-radius:4px;
-  padding:11px 12px;
-  margin-top:10px;
-  font:600 10.5px 'Kode Mono',monospace;
-  word-break:break-all;
-  user-select:all;
-}
+.row{display:flex;gap:10px;margin-top:12px}
+.row .btn{flex:1;margin-top:0;cursor:pointer}
 </style>
 </head>
 <body>
@@ -93,11 +85,15 @@ code{
     </div>
     <div class="foot">
       <div class="tag">NOT ON A SEEKER PHONE?</div>
-      <p style="margin-top:10px">The dApp Store link only works there. On any other Android phone, sideload the APK above. On desktop, install the CLI:</p>
-      <code>npm i -g @iqlabs-official/agentnet-cli</code>
+      <p style="margin-top:10px">The dApp Store link only works there. On any other Android phone, sideload the APK above. On desktop, use the CLI or the VS Code extension:</p>
+      <div class="row">
+        <a class="btn ghost" onclick="window.agentnetDownload&&agentnetDownload.openCli()">CLI</a>
+        <a class="btn ghost" href="https://marketplace.visualstudio.com/items?itemName=iqlabs.agentnet-vscode" target="_blank" rel="noopener">VS CODE</a>
+      </div>
     </div>
   </div>
 </div>
+<script src="/js/sections/pages/agentnet_download.js?ver=20260806b"></script>
 <script>
   // The dApp Store scheme only resolves on devices that ship the store app.
   // Everywhere else the redirect is a silent no-op, so the buttons stay as

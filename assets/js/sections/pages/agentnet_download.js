@@ -3,10 +3,11 @@
 // its hover transform would turn position:fixed into position:absolute.
 (function () {
     var CLI_CMD = "npm i -g @iqlabs-official/agentnet-cli";
+    var VSCODE_URL = "https://marketplace.visualstudio.com/items?itemName=iqlabs.agentnet-vscode";
     var ITEMS = [
         { label: "CLI", sub: "NPM GLOBAL INSTALL", action: "cli" },
         { label: "ANDROID APK", sub: "SIDELOAD BEFORE THE PLAY STORE LAUNCH", href: "https://github.com/IQCoreTeam/AgentNet/releases/tag/android-latest" },
-        { label: "VS CODE", sub: "MARKETPLACE EXTENSION", href: "https://marketplace.visualstudio.com/items?itemName=iqlabs.agentnet-vscode" },
+        { label: "VS CODE", sub: "MARKETPLACE EXTENSION", href: VSCODE_URL },
         { label: "SEEKER", sub: "SOLANA DAPP STORE", href: "/agentnet/seeker/" }
     ];
 
@@ -80,5 +81,7 @@
     });
     window.addEventListener("scroll", close, true);
 
-    window.agentnetDownload = { toggle: toggle };
+    // openCli / vscodeUrl are reused by the standalone Seeker page (/agentnet/seeker/),
+    // so the "type this in your terminal" popup has a single source of truth.
+    window.agentnetDownload = { toggle: toggle, openCli: openCliPopup, vscodeUrl: VSCODE_URL };
 })();
