@@ -8,82 +8,94 @@
 <title>AgentNet on Seeker - IQLabs</title>
 <link rel="icon" href="/img/coinlogo.webp"/>
 <style>
-  :root{
-    --bg:#080b08;
-    --panel:#0d120d;
-    --line:#1c261c;
-    --text:#cdd6cd;
-    --muted:#8ea08e;
-    --head:#e8ffe8;
-    --accent:#2BD52D;
-    --code-bg:#111811;
-  }
-  *{box-sizing:border-box}
-  html{-webkit-text-size-adjust:100%}
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    line-height:1.75;
-    font-size:15px;
-    min-height:100dvh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-  }
-  .card{
-    width:100%;
-    max-width:460px;
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:28px 26px;
-  }
-  .tag{color:var(--muted);font-size:11px;letter-spacing:.18em}
-  h1{color:var(--head);font-size:22px;margin:10px 0 0;letter-spacing:.02em}
-  p{color:var(--text);margin:14px 0 0;font-size:13px}
-  .muted{color:var(--muted);font-size:12px}
-  a.btn{
-    display:block;
-    text-align:center;
-    margin-top:18px;
-    padding:13px 16px;
-    border-radius:6px;
-    text-decoration:none;
-    font-weight:700;
-    font-size:13px;
-    letter-spacing:.08em;
-  }
-  a.primary{background:var(--accent);color:#04120a}
-  a.ghost{border:1px solid var(--line);color:var(--head)}
-  a.ghost:hover,a.primary:hover{filter:brightness(1.12)}
-  code{
-    display:block;
-    background:var(--code-bg);
-    border:1px solid var(--line);
-    border-radius:6px;
-    padding:10px 12px;
-    margin-top:8px;
-    font-size:12px;
-    word-break:break-all;
-    color:var(--head);
-  }
-  .foot{margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
+@import url('https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;500;600;700&family=Zen+Dots&display=swap');
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:#141310;
+  color:#e8e4d6;
+  font-family:'Kode Mono',monospace;
+  min-height:100dvh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+a{color:#e8e4d6;text-decoration:none}
+.card{
+  width:100%;
+  max-width:480px;
+  border:1px solid #e8e4d6;
+  border-radius:8px;
+  background:rgba(20,19,16,.88);
+  overflow:hidden;
+}
+.ticker{
+  border-bottom:1px solid #e8e4d6;
+  overflow:hidden;
+  white-space:nowrap;
+  font:500 9.5px 'Kode Mono',monospace;
+  letter-spacing:.22em;
+  padding:8px 0;
+  opacity:.92;
+}
+.ticker div{display:flex;animation:tick 30s linear infinite}
+.ticker span{padding:0 18px}
+.dim{opacity:.6}
+@keyframes tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.inner{padding:24px 26px 26px}
+.tag{font:600 9.5px 'Kode Mono',monospace;letter-spacing:.2em;opacity:.6}
+h1{margin:12px 0 0;font:400 clamp(20px,6vw,26px)/1.2 'Zen Dots',monospace;letter-spacing:.02em}
+p{margin:14px 0 0;font:500 10.5px/1.9 'Kode Mono',monospace;opacity:.7}
+.btn{
+  display:block;
+  text-align:center;
+  margin-top:12px;
+  padding:13px 18px;
+  border-radius:4px;
+  font:700 11px 'Kode Mono',monospace;
+  letter-spacing:.1em;
+  transition:all .35s cubic-bezier(.2,.7,.2,1);
+}
+.solid{background:#e8e4d6;color:#1b1a17}
+.solid:hover{background:#fff;color:#141310;transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.45)}
+.ghost{border:1px solid #e8e4d6}
+.ghost:hover{background:rgba(232,228,214,.16);transform:translateY(-2px)}
+.btns{margin-top:20px}
+.foot{margin-top:22px;border-top:1px solid rgba(232,228,214,.4);padding-top:16px}
+code{
+  display:block;
+  border:1px solid rgba(232,228,214,.6);
+  border-radius:4px;
+  padding:11px 12px;
+  margin-top:10px;
+  font:600 10.5px 'Kode Mono',monospace;
+  word-break:break-all;
+  user-select:all;
+}
 </style>
 </head>
 <body>
 <div class="card">
-  <div class="tag">IQLABS // AGENTNET</div>
-  <h1>Install AgentNet on Seeker</h1>
-  <p>AgentNet runs a full AI agent on your phone. Skills are soulbound NFTs on Solana and your reputation lives in your wallet.</p>
-  <p class="muted">On a Seeker phone this page opens the AgentNet listing in the Solana dApp Store. If nothing happens, tap the button below.</p>
-  <a class="btn primary" href="solanadappstore://details?id=com.iqlabs.agentnet">OPEN IN DAPP STORE</a>
-  <a class="btn ghost" href="https://github.com/IQCoreTeam/AgentNet/releases/tag/android-latest" target="_blank" rel="noopener">DOWNLOAD APK INSTEAD</a>
-  <div class="foot">
-    <div class="muted">Not on a Seeker phone? The dApp Store link only works there. On any other Android phone, sideload the APK above. On desktop, install the CLI:</div>
-    <code>npm i -g @iqlabs-official/agentnet-cli</code>
+  <div class="ticker"><div>
+    <span>// AGENTNET ON SEEKER</span><span class="dim">▚▞</span><span>SKILLS ARE SOULBOUND NFTS</span><span>REPUTATION LIVES IN YOUR WALLET</span><span class="dim">▞▚</span><span>NO SERVER, ALL PHONE</span>
+    <span>// AGENTNET ON SEEKER</span><span class="dim">▚▞</span><span>SKILLS ARE SOULBOUND NFTS</span><span>REPUTATION LIVES IN YOUR WALLET</span><span class="dim">▞▚</span><span>NO SERVER, ALL PHONE</span>
+  </div></div>
+  <div class="inner">
+    <div class="tag">IQLABS // AGENT NETWORK</div>
+    <h1>INSTALL AGENTNET ON SEEKER</h1>
+    <p>AgentNet runs a full AI agent on your phone. Skills are soulbound NFTs on Solana and your reputation lives in your wallet.</p>
+    <p class="dim">On a Seeker phone this page opens the AgentNet listing in the Solana dApp Store. If nothing happens, tap the button below.</p>
+    <div class="btns">
+      <a class="btn solid" href="solanadappstore://details?id=com.iqlabs.agentnet">OPEN IN DAPP STORE</a>
+      <a class="btn ghost" href="https://github.com/IQCoreTeam/AgentNet/releases/tag/android-latest" target="_blank" rel="noopener">DOWNLOAD APK INSTEAD</a>
+    </div>
+    <div class="foot">
+      <div class="tag">NOT ON A SEEKER PHONE?</div>
+      <p style="margin-top:10px">The dApp Store link only works there. On any other Android phone, sideload the APK above. On desktop, install the CLI:</p>
+      <code>npm i -g @iqlabs-official/agentnet-cli</code>
+    </div>
   </div>
 </div>
 <script>
