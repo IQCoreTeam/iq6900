@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <meta name="robots" content="index,follow"/>
-<meta name="description" content="Install AgentNet from the Solana dApp Store on your Seeker phone."/>
+<meta name="description" content="Install AgentNet on Solana Seeker from the dApp Store, or on any Android from Google Play."/>
 <title>AgentNet on Seeker - IQLabs</title>
 <link rel="icon" href="/img/coinlogo.webp"/>
 <style>
@@ -56,6 +56,7 @@ p{margin:14px 0 0;font:500 10.5px/1.9 'Kode Mono',monospace;opacity:.7}
   border-radius:4px;
   font:700 11px 'Kode Mono',monospace;
   letter-spacing:.1em;
+  cursor:pointer;
   transition:all .35s cubic-bezier(.2,.7,.2,1);
 }
 .solid{background:#e8e4d6;color:#1b1a17}
@@ -65,7 +66,41 @@ p{margin:14px 0 0;font:500 10.5px/1.9 'Kode Mono',monospace;opacity:.7}
 .btns{margin-top:20px}
 .foot{margin-top:22px;border-top:1px solid rgba(232,228,214,.4);padding-top:16px}
 .row{display:flex;gap:10px;margin-top:12px}
-.row .btn{flex:1;margin-top:0;cursor:pointer}
+.row .btn{flex:1;margin-top:0}
+.see{
+  display:inline-block;
+  margin-top:6px;
+  cursor:pointer;
+  font:700 9.5px 'Kode Mono',monospace;
+  letter-spacing:.18em;
+  opacity:.75;
+  border-bottom:1px solid rgba(232,228,214,.5);
+}
+.see .car{display:inline-block;transition:transform .3s}
+.see.open .car{transform:rotate(180deg)}
+.more{display:none}
+.more.open{display:block}
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:70;
+  background:rgba(0,0,0,.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+.modal{
+  border:1px solid #e8e4d6;
+  border-radius:8px;
+  background:rgba(20,19,16,.97);
+  backdrop-filter:blur(6px);
+  padding:22px 24px;
+  max-width:420px;
+  width:100%;
+}
+.modal .head{display:flex;justify-content:space-between;align-items:center}
+.modal .x{cursor:pointer;font:700 12px 'Kode Mono',monospace}
 </style>
 </head>
 <body>
@@ -78,30 +113,71 @@ p{margin:14px 0 0;font:500 10.5px/1.9 'Kode Mono',monospace;opacity:.7}
     <div class="tag">IQLABS // AGENT NETWORK</div>
     <h1>INSTALL AGENTNET ON SEEKER</h1>
     <p>AgentNet runs a full AI agent on your phone. Skills are soulbound NFTs on Solana and your reputation lives in your wallet.</p>
-    <p class="dim">On a Seeker phone this page opens the AgentNet listing in the Solana dApp Store. If nothing happens, tap the button below.</p>
+    <p class="dim">On a Solana Seeker, install straight from the dApp Store. On any other device, get it on Google Play.</p>
     <div class="btns">
-      <a class="btn solid" href="solanadappstore://details?id=com.iqlabs.agentnet">OPEN IN DAPP STORE</a>
-      <a class="btn ghost" href="https://github.com/IQCoreTeam/AgentNet/releases/tag/android-latest" target="_blank" rel="noopener">DOWNLOAD APK INSTEAD</a>
+      <a class="btn solid" onclick="openDappStore()">OPEN IN DAPP STORE</a>
+      <a class="btn ghost" href="https://play.google.com/store/apps/details?id=com.iqlabs.agentnet" target="_blank" rel="noopener">GET IT ON GOOGLE PLAY</a>
     </div>
     <div class="foot">
-      <div class="tag">NOT ON A SEEKER PHONE?</div>
-      <p style="margin-top:10px">The dApp Store link only works there. On any other Android phone, sideload the APK above. On desktop, use the CLI or the VS Code extension:</p>
-      <div class="row">
-        <a class="btn ghost" onclick="window.agentnetDownload&&agentnetDownload.openCli()">CLI</a>
-        <a class="btn ghost" href="https://marketplace.visualstudio.com/items?itemName=iqlabs.agentnet-vscode" target="_blank" rel="noopener">VS CODE</a>
+      <a class="see" onclick="toggleMore(this)">MORE WAYS TO INSTALL <span class="car">▾</span></a>
+      <div class="more" id="more">
+        <a class="btn ghost" href="https://github.com/IQCoreTeam/AgentNet/releases/tag/android-latest" target="_blank" rel="noopener">ANDROID APK (SIDELOAD)</a>
+        <div class="row">
+          <a class="btn ghost" onclick="window.agentnetDownload&&agentnetDownload.openCli()">CLI</a>
+          <a class="btn ghost" href="https://marketplace.visualstudio.com/items?itemName=iqlabs.agentnet-vscode" target="_blank" rel="noopener">VS CODE</a>
+        </div>
       </div>
     </div>
   </div>
 </div>
-<script src="/js/sections/pages/agentnet_download.js?ver=20260806b"></script>
+<script src="/js/sections/pages/agentnet_download.js?ver=20260807a"></script>
 <script>
-  // The dApp Store scheme only resolves on devices that ship the store app.
-  // Everywhere else the redirect is a silent no-op, so the buttons stay as
-  // the real path and this is just a convenience for Seeker users.
-  if (/Android/i.test(navigator.userAgent)) {
+  // Single source of truth for the three install targets.
+  var DAPP_URL = "solanadappstore://details?id=com.iqlabs.agentnet";
+  var PLAY_URL = "https://play.google.com/store/apps/details?id=com.iqlabs.agentnet";
+  var APK_URL  = "https://github.com/IQCoreTeam/AgentNet/releases/tag/android-latest";
+
+  function toggleMore(el) {
+    document.getElementById("more").classList.toggle("open");
+    el.classList.toggle("open");
+  }
+
+  // The dApp Store scheme resolves only on phones that ship the store app (Seeker).
+  // Attempt it in a hidden iframe so a device without the store never hits a
+  // browser error page; if the app grabs the scheme the page is backgrounded and
+  // visibilitychange flips `opened`. If it stays visible past the timeout we know
+  // there is no dApp Store here, so we show the Seeker-only popup instead.
+  function openDappStore() {
+    var opened = false;
+    function onHide() { if (document.hidden) opened = true; }
+    document.addEventListener("visibilitychange", onHide);
+    var ifr = document.createElement("iframe");
+    ifr.style.display = "none";
+    ifr.src = DAPP_URL;
+    document.body.appendChild(ifr);
     setTimeout(function () {
-      location.href = "solanadappstore://details?id=com.iqlabs.agentnet";
-    }, 400);
+      document.removeEventListener("visibilitychange", onHide);
+      ifr.remove();
+      if (!opened) showSeekerOnly();
+    }, 1400);
+  }
+
+  function showSeekerOnly() {
+    if (document.getElementById("seeker-only")) return;
+    var o = document.createElement("div");
+    o.id = "seeker-only";
+    o.className = "overlay";
+    o.innerHTML =
+      '<div class="modal">' +
+      '<div class="head"><span class="tag">SEEKER ONLY</span><a class="x" data-x>[X]</a></div>' +
+      '<p>The Solana dApp Store listing opens on a Solana Seeker phone. On this device, get AgentNet from Google Play or sideload the APK.</p>' +
+      '<div class="btns">' +
+      '<a class="btn solid" href="' + PLAY_URL + '" target="_blank" rel="noopener">GET IT ON GOOGLE PLAY</a>' +
+      '<a class="btn ghost" href="' + APK_URL + '" target="_blank" rel="noopener">DOWNLOAD APK</a>' +
+      '</div></div>';
+    o.onclick = function (e) { if (e.target === o) o.remove(); };
+    o.querySelector("[data-x]").onclick = function () { o.remove(); };
+    document.body.appendChild(o);
   }
 </script>
 </body>
