@@ -1,0 +1,101 @@
+<!-- Code-In v2 section (Model B). Styles are scoped under #ci2; the page module
+     js/sections/pages/code_in_v2.js drives it through window.iqCodein. -->
+<div id="ci2">
+<style>
+#ci2{font-family:'Kode Mono',monospace;color:#e8e4d6;padding:14px 16px 40px;max-width:1120px;margin:0 auto}
+#ci2 .bar{display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(232,228,214,.35);padding:11px 16px;font-size:12px;letter-spacing:.14em}
+#ci2 .dot{width:9px;height:9px;border-radius:50%}
+#ci2 .panel{border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.88);overflow:hidden}
+#ci2 .body{padding:18px 20px}
+#ci2 .tabs{display:flex;gap:8px;font-size:11px;letter-spacing:.1em}
+#ci2 .tab{border:1px solid rgba(232,228,214,.5);border-radius:4px;padding:7px 14px;cursor:pointer;opacity:.6}
+#ci2 .tab.on{background:#e8e4d6;color:#1b1a17;opacity:1;font-weight:700}
+#ci2 .btn{background:#e8e4d6;color:#1b1a17;border:none;border-radius:4px;padding:10px 16px;font:700 11px 'Kode Mono',monospace;letter-spacing:.1em;cursor:pointer}
+#ci2 .btn.ghost{background:transparent;color:#e8e4d6;border:1px solid rgba(232,228,214,.5)}
+#ci2 textarea{width:100%;box-sizing:border-box;min-height:110px;background:rgba(0,0,0,.35);color:#e8e4d6;border:1px solid rgba(232,228,214,.5);border-radius:5px;font:500 12px/1.7 'Kode Mono',monospace;padding:12px}
+#ci2 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+#ci2 .rec{border:1px solid rgba(232,228,214,.5);border-radius:5px;overflow:hidden;cursor:pointer}
+#ci2 .rec .th{height:88px;display:flex;align-items:center;justify-content:center;white-space:pre;text-align:center;font:500 10px/1.3 'Kode Mono',monospace;border-bottom:1px solid rgba(232,228,214,.25);color:#2BD52D;overflow:hidden}
+#ci2 .rec .m{padding:7px 9px;font-size:10px;opacity:.7}
+#ci2 .meter div{display:flex;justify-content:space-between;padding:6px 12px;border-bottom:1px dotted rgba(232,228,214,.25);font-size:12px}
+#ci2 .meter .total{color:#2BD52D;border-top:1px solid rgba(232,228,214,.35);font-weight:700}
+#ci2 .prog{position:relative;height:26px;border:1px solid rgba(232,228,214,.5);border-radius:4px;overflow:hidden;background:rgba(0,0,0,.3)}
+#ci2 .prog i{position:absolute;inset:0;width:0;background:repeating-linear-gradient(90deg,rgba(232,228,214,.9) 0 6px,transparent 6px 9px);transition:width .4s}
+#ci2 .prog span{position:absolute;inset:0;text-align:center;line-height:26px;font-size:11px;font-weight:700;color:#fff}
+#ci2 .muted{opacity:.55;font-size:10px}
+#ci2 .modal{position:fixed;inset:0;z-index:60;background:rgba(4,6,4,.72);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:26px 16px;overflow:auto}
+#ci2 .hide{display:none}
+#ci2 .pill{position:fixed;right:18px;bottom:18px;z-index:65;border:1px solid rgba(43,213,45,.6);border-radius:6px;background:rgba(20,19,16,.96);padding:12px 16px;font:700 10px 'Kode Mono',monospace;letter-spacing:.12em;color:#2BD52D;cursor:pointer}
+</style>
+
+  <div class="bar" style="border:1px solid #e8e4d6;border-radius:8px;margin-bottom:14px;background:rgba(20,19,16,.9)">
+    <span class="dot" style="background:#e0554e"></span><span class="dot" style="background:#e0a84e"></span><span class="dot" style="background:#2BD52D"></span>
+    <span style="margin-left:6px;opacity:.8">// CODE IN</span>
+    <span id="ci2_who" style="margin-left:auto;opacity:.7">not connected</span>
+    <button id="ci2_connect" class="btn" style="margin-left:12px">CONNECT WALLET</button>
+    <button id="ci2_new" class="btn hide" style="margin-left:8px">+ NEW INSCRIPTION</button>
+  </div>
+
+  <div class="panel">
+    <div class="bar"><span style="opacity:.8">board.exe</span>
+      <span class="tabs" style="margin-left:auto">
+        <span id="ci2_tab_feed" class="tab on">GLOBAL FEED</span>
+        <span id="ci2_tab_mine" class="tab">MY INVENTORY</span>
+      </span>
+    </div>
+    <div class="body">
+      <p id="ci2_cap" class="muted" style="margin:0 0 12px">feed = getSignaturesForAddress(feed table), newest first</p>
+      <div id="ci2_grid" class="grid"></div>
+      <p id="ci2_empty" class="muted hide" style="text-align:center;padding:30px 0">nothing here yet.</p>
+      <p class="muted" style="margin-top:14px">// board renders images and audio only, sandboxed. uploaded content never runs as script.</p>
+    </div>
+  </div>
+
+  <!-- inscribe modal -->
+  <div id="ci2_modal" class="modal hide">
+    <div class="panel" style="width:640px;max-width:100%">
+      <div class="bar"><span id="ci2_win" style="opacity:.8">code_in.exe</span>
+        <span style="margin-left:auto;opacity:.6">v1 4KB</span>
+        <span id="ci2_min" class="tab" style="margin-left:10px;opacity:.7">min</span>
+        <span id="ci2_close" class="tab" style="margin-left:6px;opacity:.7">x</span>
+      </div>
+      <div class="body">
+        <!-- compose -->
+        <div id="ci2_compose">
+          <div class="tabs" style="margin-bottom:12px">
+            <span class="tab on" data-kind="text">TEXT</span>
+            <span class="tab" data-kind="ascii" title="reuses the art generator">ASCII</span>
+            <span class="tab" data-kind="image">IMAGE</span>
+            <span class="tab" data-kind="file">FILE</span>
+          </div>
+          <textarea id="ci2_text">gm. on-chain forever.</textarea>
+          <div class="meter" style="border:1px solid rgba(232,228,214,.4);border-radius:5px;margin-top:14px">
+            <div><span class="muted" style="font-size:12px;opacity:.6">size</span><span id="ci2_size">-</span></div>
+            <div><span class="muted" style="font-size:12px;opacity:.6">chunks &middot; v1 4KB</span><span id="ci2_chunks">-</span></div>
+            <div class="total"><span>fund burner (est)</span><span id="ci2_total">-</span></div>
+          </div>
+          <p id="ci2_overcap" class="muted hide" style="color:#e0a84e;margin-top:8px">over the 32KB browser cap. add your own RPC for speed, or use the SDK / CLI.</p>
+          <button id="ci2_go" class="btn" style="width:100%;margin-top:14px">FUND + INSCRIBE / 1 SIGNATURE</button>
+          <p class="muted" style="margin-top:10px">burner is derived from one signature, reused, and swept back when done.</p>
+        </div>
+        <!-- progress -->
+        <div id="ci2_progress" class="hide">
+          <p class="muted" style="letter-spacing:.2em">// WRITING TO SOLANA &mdash; keep this tab open</p>
+          <div class="prog" style="margin-top:14px"><i id="ci2_bar"></i><span id="ci2_pct">starting</span></div>
+          <p id="ci2_log" class="muted" style="margin-top:12px"></p>
+        </div>
+        <!-- done -->
+        <div id="ci2_done" class="hide" style="text-align:center;padding:14px 0">
+          <div style="font:400 30px 'Zen Dots',monospace;color:#2BD52D">INSCRIBED.</div>
+          <p id="ci2_sig" class="muted" style="margin-top:12px"></p>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:16px">
+            <button id="ci2_view" class="btn">VIEW ON BOARD</button>
+            <button id="ci2_again" class="btn ghost">INSCRIBE AGAIN</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ci2_pill" class="pill hide">upload running &mdash; view</div>
+</div>
