@@ -151,4 +151,6 @@
 
     $.extend(this, { init });
   }
+
+  $.code_in_v2 = new CodeInV2();
 })(jQuery);
