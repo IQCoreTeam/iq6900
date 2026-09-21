@@ -12,8 +12,10 @@ import { estimateCost } from "./cost.js";
 const TX_FEE = 5000;
 
 // Derive the burner once per session (see burner.js) and pass it in, so the
-// user signs signMessage once rather than on every inscription.
-export async function inscribe({ connection, wallet, burner, kind, body }) {
+// user signs signMessage once rather than on every inscription. speed and
+// onProgress flow to the SDK: the caller passes a faster speed when the user
+// registered their own RPC, and onProgress drives the progress bar.
+export async function inscribe({ connection, wallet, burner, kind, body, speed, onProgress }) {
   const row = JSON.stringify({ kind, body, who: wallet.publicKey.toBase58() });
   const bytes = new TextEncoder().encode(row).length;
 
@@ -24,7 +26,7 @@ export async function inscribe({ connection, wallet, burner, kind, body }) {
   await topUp(connection, wallet, burner.publicKey, total);
 
   const userInvPda = contract.getUserInventoryPda(wallet.publicKey, programId);
-  const sig = await writer.writeRow(connection, burner, dbRootSeed, feedSeed, row, false, [userInvPda]);
+  const sig = await writer.writeRow(connection, burner, dbRootSeed, feedSeed, row, false, [userInvPda], { speed, onProgress });
 
   await sweep(connection, burner, wallet.publicKey);
   return { sig };
