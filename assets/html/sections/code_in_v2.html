@@ -213,6 +213,16 @@
           <p class="muted" style="margin:0 0 4px;color:#e0a84e">warning: whether a large write lands depends on your RPC. a free-tier or rate-limited endpoint is fine for small notes, but a big file can stall or fail mid-upload - use a paid/fast RPC for large inscriptions.</p>
           <div style="display:flex;gap:8px;margin-top:12px"><input id="ci2_rpc" placeholder="https://mainnet.helius-rpc.com/?api-key=..."><button id="ci2_rpc_apply" class="btn" style="white-space:nowrap">USE RPC</button></div>
           <p class="muted" style="margin:8px 0 0"><a href="https://www.helius.dev/" target="_blank">how to get a free RPC (Helius) &#8599;</a><span style="opacity:.7"> &middot; it never sees your keys.</span></p>
+          <p class="muted" style="margin:14px 0 4px;color:#2BD52D">UPLOAD SPEED</p>
+          <p class="muted" style="margin:0 0 8px">chunks per second. your RPC must keep up or you hit 429s: auto picks safely; heavy/extreme need a strong paid RPC.</p>
+          <div id="ci2_spd_row" style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="tab spd" data-speed="auto">AUTO</span>
+            <span class="tab spd" data-speed="light">LIGHT 2/s</span>
+            <span class="tab spd" data-speed="medium">MEDIUM 50/s</span>
+            <span class="tab spd" data-speed="heavy">HEAVY 100/s</span>
+            <span class="tab spd" data-speed="extreme">EXTREME 250/s</span>
+          </div>
+          <p class="muted" style="margin:10px 0 0">really big file? honestly, <span id="ci2_rpc_sdklink" style="text-decoration:underline;cursor:pointer">use the SDK / CLI</span> - it is the steady path.</p>
         </div>
         <div id="ci2_cap_sdk" class="hide">
           <p class="muted" style="margin:0 0 8px">for large or automated inscriptions, run it off-browser with the SDK / CLI:</p>
@@ -237,31 +247,21 @@ await writer.writeRow(conn, signer,
         <span id="ci2_big_close" class="tab" style="margin-left:auto;opacity:.7">x</span>
       </div>
       <div class="body" style="max-height:74vh;overflow:auto">
-        <p class="muted" style="margin:0 0 12px">the shared RPC is fine up to ~32KB. for a BIG file (MBs), do this:</p>
+        <p class="muted" style="margin:0 0 12px">the shared RPC is fine up to ~32KB. for a really BIG file (MBs): <span style="color:#e8e4d6">honestly, use the SDK / CLI.</span> the browser flow works, but off-browser is the steady path.</p>
 
-        <p class="muted" style="margin:0 0 4px;color:#2BD52D">1. GET A FAST RPC</p>
-        <p class="muted" style="margin:0 0 8px">buy or claim a good endpoint (Helius etc.). paid tiers = higher rate limits = faster and far more reliable. it never sees your keys.</p>
+        <p class="muted" style="margin:0 0 4px;color:#2BD52D">1. THE REAL ANSWER: THE SDK</p>
+        <p class="muted" style="margin:0 0 8px">writeRow into our feed table and it shows up on this board: db_root <span style="color:#e8e4d6">iq6900-codein-feed-v1</span>, table <span style="color:#e8e4d6">global-feed</span>, columns kind / body / who.</p>
+        <p class="muted" style="margin:0 0 14px">sdk docs: <a href="https://iqlabs.mintlify.app/docs-typescript" target="_blank">iqlabs.mintlify.app/docs-typescript &#8599;</a></p>
+
+        <p class="muted" style="margin:0 0 4px;color:#2BD52D">2. STAYING IN THE BROWSER? GET A FAST RPC + SET SPEED</p>
+        <p class="muted" style="margin:0 0 8px">buy or claim a good endpoint (Helius etc.); paid tiers = higher rate limits = far more reliable. the RPC menu below also holds the upload speed setting (auto / light / medium / heavy / extreme).</p>
         <div style="display:flex;gap:10px;margin:0 0 14px">
-          <button id="ci2_big_rpc" class="btn">ADD YOUR RPC</button>
+          <button id="ci2_big_rpc" class="btn">ADD RPC + SET SPEED</button>
           <a class="btn ghost" style="text-decoration:none;display:inline-flex;align-items:center" href="https://www.helius.dev/" target="_blank">GET ONE (HELIUS) &#8599;</a>
         </div>
 
-        <p class="muted" style="margin:0 0 4px;color:#2BD52D">2. SET UPLOAD SPEED</p>
-        <p class="muted" style="margin:0 0 8px">chunks per second. your RPC must keep up, or you hit 429s: auto picks safely; heavy/extreme need a strong paid RPC.</p>
-        <div id="ci2_spd_row" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px">
-          <span class="tab spd" data-speed="auto">AUTO</span>
-          <span class="tab spd" data-speed="light">LIGHT 2/s</span>
-          <span class="tab spd" data-speed="medium">MEDIUM 50/s</span>
-          <span class="tab spd" data-speed="heavy">HEAVY 100/s</span>
-          <span class="tab spd" data-speed="extreme">EXTREME 250/s</span>
-        </div>
-
         <p class="muted" style="margin:0 0 4px;color:#2BD52D">3. IF IT STALLS, NOTHING IS LOST</p>
-        <p class="muted" style="margin:0 0 14px">solana congestion or a weak RPC can stall an upload. this site keeps your funds in your session account, refunds them when a write gives up, and RETRY reuses them. still, for really big files the steadiest path is the SDK / CLI below.</p>
-
-        <p class="muted" style="margin:0 0 4px;color:#2BD52D">4. WRITE TO THIS BOARD FROM THE SDK</p>
-        <p class="muted" style="margin:0 0 8px">writeRow into our feed table and it shows up here: db_root <span style="color:#e8e4d6">iq6900-codein-feed-v1</span>, table <span style="color:#e8e4d6">global-feed</span>, columns kind / body / who.</p>
-        <p class="muted" style="margin:0 0 14px">sdk docs: <a href="https://iqlabs.mintlify.app/docs-typescript" target="_blank">iqlabs.mintlify.app/docs-typescript &#8599;</a></p>
+        <p class="muted" style="margin:0 0 14px">solana congestion or a weak RPC can stall an upload. this site keeps your funds in your session account, refunds them when a write gives up, and RETRY reuses them.</p>
 
         <p class="muted" style="margin:0 0 4px;color:#2BD52D">BIG ONES WE INSCRIBED</p>
         <p class="muted" style="margin:0">
