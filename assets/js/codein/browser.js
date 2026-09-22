@@ -23,9 +23,13 @@ const CLUSTER = DEFAULT_RPC.indexOf("devnet") >= 0 ? "devnet" : "mainnet-beta";
 const RPC_KEY = "iq6900_rpc_" + CLUSTER;
 let activeRpc = DEFAULT_RPC;
 // Restore the user's own RPC across reloads (localStorage stays client-side,
-// never sent to a server) so the board keeps reading on devnet even if the
-// gateway is briefly unavailable (reads then fall back to this RPC).
-try { const saved = localStorage.getItem(RPC_KEY); if (saved) activeRpc = saved; } catch (e) {}
+// never sent to a server). First drop the legacy, non-cluster-namespaced key,
+// which could hold a devnet endpoint that 403s on mainnet, so old testers reset
+// to the working default on the next load.
+try {
+  localStorage.removeItem("iq6900_rpc");
+  const saved = localStorage.getItem(RPC_KEY); if (saved) activeRpc = saved;
+} catch (e) {}
 setRpcUrl(activeRpc);
 
 // Reads go through the gateway (a hosted cache that assembles rows from chain),
