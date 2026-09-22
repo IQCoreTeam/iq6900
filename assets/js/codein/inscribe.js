@@ -7,9 +7,12 @@
 import { contract, writer } from "@iqlabs-official/solana-sdk";
 import { SystemProgram, Transaction } from "@solana/web3.js";
 import { dbRootSeed, feedSeed, programId } from "./feed.js";
-import { estimateCost } from "./cost.js";
+import { estimateCost } from "./cost.js?v=2";
 
 const TX_FEE = 5000;
+// A system account may not be left with 0 < balance < rent-exempt minimum, so
+// the funding transfer must leave the wallet either empty or above this.
+const RENT_MIN = 890880;
 
 // Derive the burner once per session (see burner.js) and pass it in, so the
 // user signs signMessage once rather than on every inscription. speed and
@@ -28,7 +31,10 @@ export async function inscribe({ connection, wallet, burner, kind, body, speed, 
   const userInvPda = contract.getUserInventoryPda(wallet.publicKey, programId);
   const sig = await writer.writeRow(connection, burner, dbRootSeed, feedSeed, row, false, [userInvPda], { speed, onProgress });
 
-  await sweep(connection, burner, wallet.publicKey);
+  // Best-effort: the inscription is already on-chain, so a sweep hiccup must
+  // not surface as a failure. Leftover stays in the burner and shrinks the
+  // next topUp anyway.
+  await sweep(connection, burner, wallet.publicKey).catch((e) => console.warn("[code-in] sweep skipped:", e && e.message));
   return { sig };
 }
 
@@ -41,10 +47,14 @@ async function topUp(connection, wallet, burnerPubkey, target) {
   // Fail early with a clear message when the connected wallet cannot cover the
   // transfer + fee, instead of a cryptic "Transaction simulation failed".
   const walletBal = await connection.getBalance(wallet.publicKey);
-  if (walletBal < need + TX_FEE) {
+  // RENT_MIN: paying exactly the shortfall would otherwise leave a dust balance
+  // below rent exemption, which the runtime rejects as
+  // "account (0) with insufficient funds for rent".
+  if (walletBal < need + TX_FEE + RENT_MIN) {
     throw new Error(
-      "insufficient SOL in your wallet: need ~" + ((need + TX_FEE) / 1e9).toFixed(4) +
-      " SOL, have " + (walletBal / 1e9).toFixed(4) + " SOL. fund the connected wallet and retry.",
+      "insufficient SOL in your wallet: need ~" + ((need + TX_FEE + RENT_MIN) / 1e9).toFixed(4) +
+      " SOL (~0.0009 of it must stay in your wallet for rent), have " +
+      (walletBal / 1e9).toFixed(4) + " SOL. fund the connected wallet and retry.",
     );
   }
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
@@ -53,7 +63,28 @@ async function topUp(connection, wallet, burnerPubkey, target) {
   );
   const signed = await wallet.signTransaction(tx);
   const sig = await sendRaw(connection, signed);
-  await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
+  const landed = await confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight);
+  if (!landed && (await connection.getBalance(burnerPubkey)) < target) {
+    throw new Error("funding transfer expired before confirmation (congested RPC). nothing was spent; retry, or add your own RPC.");
+  }
+}
+
+// Confirm a tx, but do not trust "block height exceeded" blindly: on congested
+// public RPCs the tx frequently lands anyway, so poll its status before giving
+// up. Returns false only when the signature never shows up as confirmed.
+async function confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight) {
+  try {
+    await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
+    return true;
+  } catch (e) {
+    if (!e || e.name !== "TransactionExpiredBlockheightExceededError") throw e;
+    for (let i = 0; i < 5; i++) {
+      const st = (await connection.getSignatureStatuses([sig])).value[0];
+      if (st && (st.confirmationStatus === "confirmed" || st.confirmationStatus === "finalized")) return true;
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+    return false;
+  }
 }
 
 // Send a signed tx, folding any preflight simulation logs into the thrown error
@@ -78,5 +109,5 @@ async function sweep(connection, burner, to) {
   );
   tx.sign(burner);
   const sig = await sendRaw(connection, tx);
-  await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
+  await confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight);
 }
