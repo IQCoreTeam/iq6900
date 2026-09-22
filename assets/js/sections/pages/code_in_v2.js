@@ -184,8 +184,7 @@
       }
     }
 
-    // share to X: link the gateway view page, which renders the inscription so
-    // the tweet card shows it. solscan: the on-chain tx. help: the how-to popup.
+    // Share the site's direct record link; opening it loads the board + viewer.
     function shareToX() {
       if (!currentSig) return;
       const text = "my inscription, on-chain forever via @IQLabsOfficial code-in";
