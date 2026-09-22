@@ -128,9 +128,11 @@ async function sendRaw(connection, signed) {
   }
 }
 
-async function sweep(connection, burner, to) {
+// Exported so the UI can also refund the burner to the wallet after a write
+// ultimately gives up. Returns the lamports sent back (0 when nothing to send).
+export async function sweep(connection, burner, to) {
   const balance = await connection.getBalance(burner.publicKey);
-  if (balance <= TX_FEE) return;
+  if (balance <= TX_FEE) return 0;
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
   const tx = new Transaction({ recentBlockhash: blockhash, feePayer: burner.publicKey }).add(
     SystemProgram.transfer({ fromPubkey: burner.publicKey, toPubkey: to, lamports: balance - TX_FEE }),
@@ -138,4 +140,5 @@ async function sweep(connection, burner, to) {
   tx.sign(burner);
   const sig = await sendRaw(connection, tx);
   await confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight);
+  return balance - TX_FEE;
 }
