@@ -7,7 +7,7 @@
 import { contract, writer } from "@iqlabs-official/solana-sdk";
 import { SystemProgram, Transaction } from "@solana/web3.js";
 import { dbRootSeed, feedSeed, programId } from "./feed.js";
-import { estimateCost } from "./cost.js?v=2";
+import { estimateCost } from "./cost.js?v=3";
 
 const TX_FEE = 5000;
 // A system account may not be left with 0 < balance < rent-exempt minimum, so
@@ -18,7 +18,7 @@ const RENT_MIN = 890880;
 // user signs signMessage once rather than on every inscription. speed and
 // onProgress flow to the SDK: the caller passes a faster speed when the user
 // registered their own RPC, and onProgress drives the progress bar.
-export async function inscribe({ connection, wallet, burner, kind, body, speed, onProgress }) {
+export async function inscribe({ connection, wallet, burner, kind, body, speed, onProgress, onRetry }) {
   const row = JSON.stringify({ kind, body, who: wallet.publicKey.toBase58() });
   const bytes = new TextEncoder().encode(row).length;
 
@@ -29,7 +29,25 @@ export async function inscribe({ connection, wallet, burner, kind, body, speed, 
   await topUp(connection, wallet, burner.publicKey, total);
 
   const userInvPda = contract.getUserInventoryPda(wallet.publicKey, programId);
-  const sig = await writer.writeRow(connection, burner, dbRootSeed, feedSeed, row, false, [userInvPda], { speed, onProgress });
+  // One in-place retry: the burner keeps the funds and chunks are cheap to
+  // re-send, and the SDK already absorbs false blockheight expiries at the
+  // chunk level. Kept at one pass to stay clear of rate limits; beyond that
+  // the UI offers a manual RETRY that reuses the burner balance.
+  let sig;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      sig = await writer.writeRow(connection, burner, dbRootSeed, feedSeed, row, false, [userInvPda], { speed, onProgress });
+      break;
+    } catch (e) {
+      if (attempt >= 2) throw e;
+      console.warn("[code-in] write attempt " + attempt + " did not finish, retrying:", e && e.message);
+      if (onRetry) onRetry(attempt);
+      // Top the burner back up for the extra session; usually a no-op thanks
+      // to the sweep margin, and init rent drops out once the init landed.
+      const stillFirst = firstTime && !(await connection.getAccountInfo(burnerInv));
+      await topUp(connection, wallet, burner.publicKey, estimateCost(bytes, { firstTime: stillFirst }).total);
+    }
+  }
 
   // Best-effort: the inscription is already on-chain, so a sweep hiccup must
   // not surface as a failure. Leftover stays in the burner and shrinks the

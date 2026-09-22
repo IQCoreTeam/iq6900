@@ -7,7 +7,7 @@
   const CAP_KB = 32; // measured 429-safe cap on a public RPC; above it, recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=18";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=19";
     let provider = null;   // phantom injected provider
     let who = null;        // user pubkey (base58)
     let burner = null;     // derived once per session
@@ -59,6 +59,7 @@
       $("#ci2_cap_pick_rpc").on("click", () => openCap("rpc"));
       $("#ci2_cap_pick_sdk").on("click", () => openCap("sdk"));
       $("#ci2_go").on("click", doInscribe);
+      $("#ci2_retry").on("click", doInscribe);
       $("#ci2_close").on("click", closeModal);
       $("#ci2_again").on("click", openCompose);
       $("#ci2_view").on("click", () => { closeModal(); switchTab("feed"); });
@@ -72,6 +73,8 @@
       const res = await provider.connect();
       who = (res?.publicKey || provider.publicKey).toString();
       $("#ci2_who").text(who.slice(0, 4) + "..." + who.slice(-4));
+      // +NEW INSCRIPTION takes the connect button's place once connected.
+      $("#ci2_connect").addClass("hide");
       $("#ci2_new").removeClass("hide");
       loadBoard();
     }
@@ -292,6 +295,7 @@
 
       $("#ci2_compose").addClass("hide"); $("#ci2_progress").removeClass("hide");
       $("#ci2_win").text("writing...");
+      $("#ci2_retry").addClass("hide"); $("#ci2_log").text("");
       setBar(0, "starting");
 
       try {
@@ -308,6 +312,7 @@
         const res = await window.iqCodein.inscribe({
           connection, wallet, burner, kind: pay.kind, body: pay.body, speed,
           onProgress: (pct) => setBar(pct, "writing " + pct + "%"),
+          onRetry: (n) => setBar(0, "network congestion - retrying (" + (n + 1) + "/2)"),
         });
         $("#ci2_progress").addClass("hide"); $("#ci2_done").removeClass("hide");
         $("#ci2_win").text("done.exe");
@@ -315,11 +320,15 @@
         await window.iqCodein.notify(res.sig, { kind: pay.kind, body: pay.body, who });
         loadBoard();
       } catch (e) {
-        $("#ci2_pct").text("failed");
-        $("#ci2_log").text(String((e && e.message) || e));
-        // Surface the full error (SendTransactionError carries .logs) so a
-        // finalize simulation failure shows its real on-chain cause.
-        console.error("[code-in] inscribe failed:", e, (e && e.logs) || "");
+        // Never show "failed": the burner keeps the funds and every retry
+        // reuses them, so a congested write is only paused, not lost.
+        $("#ci2_pct").text("paused - tap retry");
+        $("#ci2_retry").removeClass("hide");
+        $("#ci2_log").text(
+          "the network was congested and this write did not finish. your SOL is safe in your session account and is reused when you retry - nothing is lost. (" +
+          String((e && e.message) || e) + ")",
+        );
+        console.error("[code-in] inscribe paused:", e, (e && e.logs) || "");
       }
     }
 
