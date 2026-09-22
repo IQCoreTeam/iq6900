@@ -37,13 +37,36 @@ export async function inscribe({ connection, wallet, burner, kind, body, speed, 
 async function topUp(connection, wallet, burnerPubkey, target) {
   const have = await connection.getBalance(burnerPubkey);
   if (have >= target) return;
+  const need = target - have;
+  // Fail early with a clear message when the connected wallet cannot cover the
+  // transfer + fee, instead of a cryptic "Transaction simulation failed".
+  const walletBal = await connection.getBalance(wallet.publicKey);
+  if (walletBal < need + TX_FEE) {
+    throw new Error(
+      "insufficient SOL in your wallet: need ~" + ((need + TX_FEE) / 1e9).toFixed(4) +
+      " SOL, have " + (walletBal / 1e9).toFixed(4) + " SOL. fund the connected wallet and retry.",
+    );
+  }
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
   const tx = new Transaction({ recentBlockhash: blockhash, feePayer: wallet.publicKey }).add(
-    SystemProgram.transfer({ fromPubkey: wallet.publicKey, toPubkey: burnerPubkey, lamports: target - have }),
+    SystemProgram.transfer({ fromPubkey: wallet.publicKey, toPubkey: burnerPubkey, lamports: need }),
   );
   const signed = await wallet.signTransaction(tx);
-  const sig = await connection.sendRawTransaction(signed.serialize());
+  const sig = await sendRaw(connection, signed);
   await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
+}
+
+// Send a signed tx, folding any preflight simulation logs into the thrown error
+// so the UI shows the real on-chain cause, not just "simulation failed".
+async function sendRaw(connection, signed) {
+  try {
+    return await connection.sendRawTransaction(signed.serialize());
+  } catch (e) {
+    let logs = e && e.logs;
+    if (!logs && e && typeof e.getLogs === "function") { try { logs = await e.getLogs(connection); } catch (_) {} }
+    if (logs && logs.length) e.message = (e.message || "send failed") + " | logs: " + logs.join(" ; ");
+    throw e;
+  }
 }
 
 async function sweep(connection, burner, to) {
@@ -54,6 +77,6 @@ async function sweep(connection, burner, to) {
     SystemProgram.transfer({ fromPubkey: burner.publicKey, toPubkey: to, lamports: balance - TX_FEE }),
   );
   tx.sign(burner);
-  const sig = await connection.sendRawTransaction(tx.serialize());
+  const sig = await sendRaw(connection, tx);
   await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
 }
