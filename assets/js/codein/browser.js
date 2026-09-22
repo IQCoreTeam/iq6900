@@ -16,17 +16,17 @@ import { feedTablePda, programId } from "./feed.js";
 // writes get steadier once the user points activeRpc at a single endpoint of
 // their own (the over-cap flow surfaces this for large uploads).
 const DEFAULT_RPC = "https://api.mainnet-beta.solana.com";
-const RPC_KEY = "iq6900_rpc";
+// The feed's cluster (from DEFAULT_RPC), used for the Solscan link. It also
+// namespaces the saved-RPC key, so a devnet-era override never carries over to
+// mainnet writes (a stale devnet endpoint returned 403 after the mainnet flip).
+const CLUSTER = DEFAULT_RPC.indexOf("devnet") >= 0 ? "devnet" : "mainnet-beta";
+const RPC_KEY = "iq6900_rpc_" + CLUSTER;
 let activeRpc = DEFAULT_RPC;
 // Restore the user's own RPC across reloads (localStorage stays client-side,
 // never sent to a server) so the board keeps reading on devnet even if the
 // gateway is briefly unavailable (reads then fall back to this RPC).
 try { const saved = localStorage.getItem(RPC_KEY); if (saved) activeRpc = saved; } catch (e) {}
 setRpcUrl(activeRpc);
-
-// The feed's cluster (from DEFAULT_RPC), used for the Solscan link, not the
-// user's own RPC which could point elsewhere.
-const CLUSTER = DEFAULT_RPC.indexOf("devnet") >= 0 ? "devnet" : "mainnet-beta";
 
 // Reads go through the gateway (a hosted cache that assembles rows from chain),
 // not per-tx RPC, so opening the board is one HTTP call instead of a 429 storm.
