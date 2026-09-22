@@ -344,7 +344,14 @@
           if (back > 0) note = "your ~" + (back / 1e9).toFixed(4) + " SOL went back to your wallet - retry will re-fund it. ";
         } catch (_) { /* refund could not land; funds stay in the burner */ }
         if (!note) note = "your SOL is safe in your session account and is reused when you retry - nothing is lost. ";
-        $("#ci2_log").text("the network was congested and this write did not finish. " + note + "(" + String((e && e.message) || e) + ")");
+        // Blame congestion only when the error looks like congestion; anything
+        // else is shown as what it is so a code bug can't hide behind "network".
+        const msg = String((e && e.message) || e);
+        const congested = /block height|expired|429|rate.?limit|congest|timed? ?out|simulation/i.test(msg);
+        const head = congested
+          ? "the network was congested and this write did not finish. "
+          : "this write stopped on an unexpected error. ";
+        $("#ci2_log").text(head + note + "(" + msg + ")");
         console.error("[code-in] inscribe paused:", e, (e && e.logs) || "");
       }
     }
