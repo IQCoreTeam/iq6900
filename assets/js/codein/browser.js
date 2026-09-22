@@ -7,7 +7,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { setRpcUrl, reader, contract } from "@iqlabs-official/solana-sdk";
 import { deriveBurner } from "./burner.js";
 import { estimateCost } from "./cost.js?v=2";
-import { inscribe } from "./inscribe.js?v=2";
+import { inscribe } from "./inscribe.js?v=3";
 import { feedTablePda, programId } from "./feed.js";
 
 // Live default write RPC. NOTE: api.mainnet-beta.solana.com 403s every browser

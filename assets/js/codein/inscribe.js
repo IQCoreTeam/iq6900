@@ -57,15 +57,25 @@ async function topUp(connection, wallet, burnerPubkey, target) {
       (walletBal / 1e9).toFixed(4) + " SOL. fund the connected wallet and retry.",
     );
   }
-  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-  const tx = new Transaction({ recentBlockhash: blockhash, feePayer: wallet.publicKey }).add(
-    SystemProgram.transfer({ fromPubkey: wallet.publicKey, toPubkey: burnerPubkey, lamports: need }),
-  );
-  const signed = await wallet.signTransaction(tx);
-  const sig = await sendRaw(connection, signed);
-  const landed = await confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight);
-  if (!landed && (await connection.getBalance(burnerPubkey)) < target) {
-    throw new Error("funding transfer expired before confirmation (congested RPC). nothing was spent; retry, or add your own RPC.");
+  // An expired tx can never land after lastValidBlockHeight, so re-sending
+  // with a fresh blockhash cannot double-spend; and the shortfall is
+  // recomputed, so a transfer that did land makes the retry a no-op.
+  // Each attempt asks the wallet to sign again.
+  for (let attempt = 0; ; attempt++) {
+    const shortfall = target - (await connection.getBalance(burnerPubkey));
+    if (shortfall <= 0) return;
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    const tx = new Transaction({ recentBlockhash: blockhash, feePayer: wallet.publicKey }).add(
+      SystemProgram.transfer({ fromPubkey: wallet.publicKey, toPubkey: burnerPubkey, lamports: shortfall }),
+    );
+    const signed = await wallet.signTransaction(tx);
+    const sig = await sendRaw(connection, signed);
+    const landed = await confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight);
+    if (landed || (await connection.getBalance(burnerPubkey)) >= target) return;
+    if (attempt >= 1) {
+      throw new Error("funding transfer expired twice (congested RPC). nothing was spent; retry, or add your own RPC.");
+    }
+    console.warn("[code-in] funding transfer expired, retrying with a fresh blockhash");
   }
 }
 
