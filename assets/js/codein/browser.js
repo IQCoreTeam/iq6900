@@ -131,9 +131,14 @@ window.iqCodein = {
     const out = await reader.readCodeIn(sig);
     try { return JSON.parse(out.data); } catch (e) { return { kind: "text", body: out.data || "" }; }
   },
-  // Share targets: the gateway view page renders the inscription (so a tweet
-  // card shows it), and the Solscan tx link proves it on-chain.
-  viewUrl: (sig) => `${GATEWAYS[0]}/view/${sig}`,
+  // Open the site's board and record viewer directly, without wallet connection.
+  // Keep legacy ?txid= links on their original reader.
+  viewUrl: (sig) => {
+    const url = new URL(window.location.pathname, window.location.origin);
+    url.searchParams.set("menu", "codein");
+    url.searchParams.set("post", sig);
+    return url.href;
+  },
   solscanUrl: (sig) => `https://solscan.io/tx/${sig}${CLUSTER === "devnet" ? "?cluster=devnet" : ""}`,
   cluster: CLUSTER,
   // Image -> ASCII, mirroring the site art generator's brightness ramp
