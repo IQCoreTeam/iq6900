@@ -8,7 +8,7 @@ const CHUNK_BYTES = 3600; // v1 4KB chunk payload budget (constants.ts CHUNK_SIZ
 const CODE_IN_FEE = 500000; // 0.0005 SOL on-chain write fee (measured on mainnet)
 const SESSION_RENT = 1545120; // session PDA rent
 const INIT_RENT = 50000000; // user_inventory + code_account, first inscription only (devnet-measured ~0.05 SOL)
-const MARGIN = 2000000; // headroom for fee variance
+const MARGIN = 4000000; // headroom for fee variance + one retry session (swept back)
 
 export function estimateCost(byteLength, { firstTime }) {
   const chunks = Math.max(1, Math.ceil(byteLength / CHUNK_BYTES));
