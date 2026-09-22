@@ -9,6 +9,17 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
 
+    <!-- Code-In v2: SDK reads process.env at load, so shim it before any module; importmap must precede the first module script. -->
+    <script>window.process = window.process || { env: {} };</script>
+    <script type="importmap">
+    {
+      "imports": {
+        "@solana/web3.js": "https://cdn.jsdelivr.net/npm/@solana/web3.js@1.99.0/+esm",
+        "@iqlabs-official/solana-sdk": "https://cdn.jsdelivr.net/npm/@iqlabs-official/solana-sdk@0.3.2/+esm"
+      }
+    }
+    </script>
+
     <script type="module">
         import {BrowserSDK, AddressType ,NetworkId} from 'https://cdn.jsdelivr.net/npm/@phantom/browser-sdk@0.3.8/+esm'
 
@@ -24,6 +35,8 @@
     <script src="https://bundle.run/buffer@6.0.3"></script>
 
     <!--My js-->
+    <script type="module" src="js/codein/browser.js?ver=14"></script>
+    <script type="text/javascript" src="js/sections/pages/code_in_v2.js?ver=20"></script>
     <script type="text/javascript" src="js/sections/pages/code_in_hub_page.js?ver=20250211"></script>
     <script type="text/javascript" src="js/sections/pages/main_page.js?ver=20260806a"></script>
     <script type="text/javascript" src="js/sections/pages/i18n.js?ver=20260806a"></script>
@@ -36,7 +49,7 @@
 
     <script type="text/javascript" src="js/sections/pages/onchain_page.js?ver=20250210"></script>
     <script type="text/javascript" src="js/sections/pages/generate_page.js?ver=20260801e"></script>
-    <script type="text/javascript" src="js/init.js?ver=20260609"></script>
+    <script type="text/javascript" src="js/init.js?ver=20260922"></script>
     <script type="text/javascript" src="js/code_in_contract.js?ver=20250843"></script>
     <script type="text/javascript" src="js/check_contract.js?ver=20250849"></script>
     <script type="text/javascript" src="js/compress.js?ver=20250209"></script>
@@ -75,6 +88,7 @@
                     <a onclick="document.getElementById('lp_projects').scrollIntoView({behavior:'smooth'});" style="cursor:pointer;">The Stack</a>
                     <a onclick="$.tokenomicsPage.init();" style="cursor:pointer;">Tokenomics</a>
                     <a onclick="$.generatePage.init();" style="cursor:pointer;">Art Generator</a>
+                    <a onclick="$.code_in_v2.init();" style="cursor:pointer;">Code In</a>
                     <a href="https://iqlabs.mintlify.app/" target="_blank" style="cursor:pointer;">Docs</a>
                 </div>
                 <div class="row_flex nav_icons" style="gap: 0.8rem;">

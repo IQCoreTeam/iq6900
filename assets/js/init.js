@@ -3,13 +3,14 @@ function getQueryParams() {
     const urlParams = new URLSearchParams(window.location.search);
     return {
         txid: urlParams.get('txid'),
-        menu: urlParams.get('menu')
+        menu: urlParams.get('menu'),
+        post: urlParams.get('post')
     };
 }
 
 
 $(document).ready(function() {
-    const { txid,menu } = getQueryParams();
+    const { txid,menu,post } = getQueryParams();
     if (txid) {
         $.onchainPage.init();
         $('.bump').css('display', 'none');
@@ -20,6 +21,8 @@ $(document).ready(function() {
             $.tokenomicsPage.init();
         }else if(menu == "ascii-maker"){
             $.generatePage.init();
+        }else if(menu == "codein"){
+            $.code_in_v2.init(post);
         }
     }else{
         $.mainPage.init();
