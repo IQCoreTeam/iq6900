@@ -10,12 +10,12 @@ import { estimateCost } from "./cost.js";
 import { inscribe } from "./inscribe.js";
 import { feedTablePda, programId } from "./feed.js";
 
-// Live default: writes go to public mainnet (the feed table lives on mainnet).
-// The public RPC is load-balanced, so the finalize preflight can hit a node that
-// has not yet seen the just-uploaded chunks and fail simulation -- that is why
-// writes get steadier once the user points activeRpc at a single endpoint of
-// their own (the over-cap flow surfaces this for large uploads).
-const DEFAULT_RPC = "https://api.mainnet-beta.solana.com";
+// Live default write RPC. NOTE: api.mainnet-beta.solana.com 403s every browser
+// request (it blocks any call carrying an Origin header), so it cannot be the
+// default for a client that writes. publicnode is a free, keyless, CORS-open
+// mainnet endpoint (ACAO:*) that serves the write-path methods, so writes work
+// out of the box; heavy/large uploads can still set their own RPC (over-cap flow).
+const DEFAULT_RPC = "https://solana-rpc.publicnode.com";
 // The feed's cluster (from DEFAULT_RPC), used for the Solscan link. It also
 // namespaces the saved-RPC key, so a devnet-era override never carries over to
 // mainnet writes (a stale devnet endpoint returned 403 after the mainnet flip).
