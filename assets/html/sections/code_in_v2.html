@@ -42,6 +42,8 @@
 /* top padding clears the fixed site nav so the modal title bar is never cut */
 #ci2 .modal{position:fixed;inset:0;z-index:60;background:rgba(4,6,4,.72);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:96px 16px 30px;overflow:auto}
 #ci2 .modal.mcenter{align-items:center;padding:24px}
+/* the RPC/speed menu opens from inside other popups (big-file guide), so it must stack above them */
+#ci2 #ci2_cap_modal{z-index:70}
 #ci2 .hide{display:none}
 #ci2 .upl input{display:none}
 #ci2 .upl{cursor:pointer;display:inline-block}

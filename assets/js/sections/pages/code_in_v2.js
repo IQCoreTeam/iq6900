@@ -7,7 +7,7 @@
   const CAP_KB = 32; // measured 429-safe cap on a public RPC; above it, recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=21";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=22";
     let provider = null;   // phantom injected provider
     let who = null;        // user pubkey (base58)
     let burner = null;     // derived once per session
