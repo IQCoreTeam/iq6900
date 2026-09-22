@@ -1,4 +1,4 @@
-// inscribe.js — the write flow for one inscription (Model B).
+// inscribe.js - the write flow for one inscription (Model B).
 // The user's wallet only signs the funding transfer; the reused burner signs
 // every chunk (v1 4KB, no popups) and writes the row into the feed table while
 // referencing the user's inventory PDA, so getSignaturesForAddress finds the

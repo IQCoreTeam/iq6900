@@ -13,9 +13,14 @@ testing. Plan and diagrams: IQCoreTeam/iq6900 issue #3.
   account-init rent is paid once per user (inscribe #1 0.0516 SOL, reused #2
   0.0010 SOL).
 - Inscribe writes into the global feed table and references the user
-  inventory PDA, so one write is discoverable by getSignaturesForAddress under
-  both the board (feed table) and my inventory (user PDA). readTableRows
-  restores rows. No contract change.
+  inventory PDA, so one write is discoverable under both the board (feed
+  table) and my inventory (user PDA). No contract change.
+- Reads go through the gateway (gateway.iqlabs.dev), not per-tx RPC, so
+  opening the board is one cached HTTP call instead of a 429 storm. After a
+  confirmed write we POST /table/{pda}/notify so the row shows immediately.
+  Same pattern as iq-chan (see its src/lib/gateway.ts). The gateway is
+  MAINNET-ONLY: on devnet it 500s and the board reads back empty (handled
+  gracefully) -- to see the board populate, put the feed on mainnet.
 - Free-RPC size cap measured at 32KB (0 x429 at light 2rps, ~59s); 64KB+ hits
   429s (recovered). Above the cap, recommend own RPC or the SDK.
 
@@ -24,7 +29,8 @@ testing. Plan and diagrams: IQCoreTeam/iq6900 issue #3.
 - `burner.js` deriveBurner(signMessage)
 - `cost.js` estimateCost(bytes, { firstTime })
 - `inscribe.js` fund (user signs once) -> writeRow(feed, [userInv]) -> sweep
-- `browser.js` ESM bridge, exposes window.iqCodein and fires "iqcodein:ready"
+- `browser.js` ESM bridge, exposes window.iqCodein (writes via RPC, reads +
+  notify via the gateway) and fires "iqcodein:ready"
 - `admin/setup-feed.mjs` one-time db_root + createTable
 - `test/devnet.mjs`, `test/speed.mjs` node checks (need a funded keypair arg)
 - UI: `../../html/sections/code_in_v2.html` + `../sections/pages/code_in_v2.js`,
@@ -43,8 +49,10 @@ feed table 3p1BeC2h2YeR51n4yGp4shv21P6QQ6q6phev2JDN54gA).
 2. Test in a browser (importmap/ESM need http, not file://):
    - cd iq6900/assets && python3 -m http.server 8080
    - open http://localhost:8080 , click "Code In", connect Phantom, inscribe a
-     text note, confirm it appears on the board and under My Inventory
-   - the default RPC is public devnet; the feed table above is on devnet
+     text note; the write goes to public devnet and the sig shows on success
+   - NOTE: the board reads from the mainnet-only gateway, so on devnet the
+     board stays empty even after a successful write. Visual board/My-Inventory
+     confirmation needs the feed on mainnet (step 4).
 
 3. Fill out the full design (see Code In Flow.dc.html): ASCII (generator
    settings), image, file types; the XSS-safety popup; the over-cap screen;

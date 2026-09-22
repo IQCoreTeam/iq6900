@@ -1,4 +1,4 @@
-// feed.js — the single source of truth for the global feed's on-chain identity.
+// feed.js - the single source of truth for the global feed's on-chain identity.
 // Every surface (board reads, inscribe writes, the one-time setup) derives its
 // PDAs from here, so the feed can never drift between callers.
 import { contract, utils } from "@iqlabs-official/solana-sdk";

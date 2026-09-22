@@ -1,4 +1,4 @@
-// burner.js — deterministic per-user signing wallet, derived from one wallet
+// burner.js - deterministic per-user signing wallet, derived from one wallet
 // signature. Same wallet + same message always yields the same keypair, so we
 // store nothing at rest and the burner is reused: its one-time account-init
 // rent is paid once per user instead of once per inscription.

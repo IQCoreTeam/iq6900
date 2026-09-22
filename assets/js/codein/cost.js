@@ -1,4 +1,4 @@
-// cost.js — exact lamports to top the burner up to for one inscription.
+// cost.js - exact lamports to top the burner up to for one inscription.
 // firstTime adds the burner's one-time user_init rent (user_inventory plus
 // code_account), which is only paid on a user's very first inscription because
 // the burner is reused. The funder over-provisions slightly and the leftover
