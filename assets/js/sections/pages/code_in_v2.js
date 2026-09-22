@@ -4,10 +4,10 @@
 (function ($) {
   $.extend(true, window, { code_in_v2: CodeInV2 });
 
-  const CAP_KB = 32; // measured 429-safe cap on a public RPC; above it, recommend own RPC / SDK
+  const CAP_KB = 256; // mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=25";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=26";
     let provider = null;   // phantom injected provider
     let who = null;        // user pubkey (base58)
     let burner = null;     // derived once per session
@@ -257,13 +257,13 @@
       $("#ci2_size").text((bytes / 1024).toFixed(1) + " KB");
       $("#ci2_chunks").text("x " + est.chunks);
       $("#ci2_total").text((est.total / 1e9).toFixed(4) + " SOL");
-      // The 32KB cap only binds on the shared public RPC; a user RPC lifts it.
+      // The 256KB cap only binds on the shared public RPC; a user RPC lifts it.
       const overCap = bytes / 1024 > CAP_KB && !window.iqCodein.hasOwnRpc();
       $("#ci2_overcap").toggleClass("hide", !overCap);
       // Over cap the button stays clickable but becomes the "choose RPC/SDK" CTA
       // (doInscribe routes it to the cap modal); disable only when there's nothing to write.
       $("#ci2_go").prop("disabled", !pay.body)
-        .text(overCap ? "OVER 32KB - ADD RPC OR USE SDK" : "FUND + INSCRIBE / 1 SIGNATURE");
+        .text(overCap ? "OVER 256KB - ADD RPC OR USE SDK" : "FUND + INSCRIBE / 1 SIGNATURE");
     }
 
     function openBigFile() { markSpeed(); $("#ci2_big_modal").removeClass("hide"); }

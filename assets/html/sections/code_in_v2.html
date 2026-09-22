@@ -132,7 +132,7 @@
             <div class="total"><span>fund burner (est)</span><span id="ci2_total">-</span></div>
           </div>
           <p id="ci2_firstnote" class="muted" style="margin:6px 2px 0;opacity:.5">first inscription includes a one-time account rent; every later one costs far less.</p>
-          <p id="ci2_overcap" class="muted hide" style="color:#e0a84e;margin-top:8px;cursor:pointer">over the 32KB public-RPC cap. <u>add your own RPC</u> for larger, steadier writes, or use the SDK / CLI.</p>
+          <p id="ci2_overcap" class="muted hide" style="color:#e0a84e;margin-top:8px;cursor:pointer">over the 256KB public-RPC cap. <u>add your own RPC</u> for larger, steadier writes, or use the SDK / CLI.</p>
           <button id="ci2_go" class="btn" style="width:100%;margin-top:14px">FUND + INSCRIBE / 1 SIGNATURE</button>
           <p class="muted" style="margin-top:10px">burner is derived from one signature, reused, and swept back when done. <span id="ci2_rpc_link" style="text-decoration:underline;cursor:pointer">connection: shared RPC</span></p>
         </div>
@@ -211,7 +211,7 @@
       </div>
       <div class="body">
         <div id="ci2_cap_choice">
-          <p class="muted" style="margin:0 0 14px">this inscription is over the 32KB public-RPC cap. choose how to continue:</p>
+          <p class="muted" style="margin:0 0 14px">this inscription is over the 256KB public-RPC cap. choose how to continue:</p>
           <div style="display:flex;gap:10px">
             <button id="ci2_cap_pick_rpc" class="btn" style="flex:1">ADD YOUR OWN RPC</button>
             <button id="ci2_cap_pick_sdk" class="btn ghost" style="flex:1">USE SDK / CLI</button>
@@ -255,7 +255,7 @@ await writer.writeRow(conn, signer,
         <span id="ci2_big_close" class="tab" style="margin-left:auto;opacity:.7">x</span>
       </div>
       <div class="body" style="max-height:74vh;overflow:auto">
-        <p class="muted" style="margin:0 0 12px">the shared RPC is fine up to ~32KB. for a really BIG file (MBs): <span style="color:#e8e4d6">honestly, use the SDK / CLI.</span> the browser flow works, but off-browser is the steady path.</p>
+        <p class="muted" style="margin:0 0 12px">the shared RPC is fine up to ~256KB (a 256KB write takes about a minute). for a really BIG file (MBs): <span style="color:#e8e4d6">honestly, use the SDK / CLI.</span> the browser flow works, but off-browser is the steady path.</p>
 
         <p class="muted" style="margin:0 0 4px;color:#2BD52D">1. THE REAL ANSWER: THE SDK</p>
         <p class="muted" style="margin:0 0 8px">writeRow into our feed table and it shows up on this board: db_root <span style="color:#e8e4d6">iq6900-codein-feed-v1</span>, table <span style="color:#e8e4d6">global-feed</span>, columns kind / body / who.</p>
