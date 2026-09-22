@@ -7,7 +7,7 @@
   const CAP_KB = 32; // measured 429-safe cap on a public RPC; above it, recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=19";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=20";
     let provider = null;   // phantom injected provider
     let who = null;        // user pubkey (base58)
     let burner = null;     // derived once per session
@@ -53,6 +53,10 @@
       $("#ci2_more").on("click", () => loadBoard(boardCursor));
       $("#ci2_scroll").on("scroll", onBoardScroll);
       $("#ci2_overcap").on("click", () => openCap("choice"));
+      $("#ci2_bigfile").on("click", openBigFile);
+      $("#ci2_big_close").on("click", () => $("#ci2_big_modal").addClass("hide"));
+      $("#ci2_big_rpc").on("click", () => openCap("rpc"));
+      $("#ci2_spd_row .spd").on("click", function () { window.iqCodein.setSpeed($(this).attr("data-speed")); markSpeed(); });
       $("#ci2_rpc_link").on("click", () => openCap("rpc"));
       $("#ci2_rpc_apply").on("click", applyRpc);
       $("#ci2_cap_close").on("click", () => $("#ci2_cap_modal").addClass("hide"));
@@ -261,6 +265,12 @@
         .text(overCap ? "OVER 32KB - ADD RPC OR USE SDK" : "FUND + INSCRIBE / 1 SIGNATURE");
     }
 
+    function openBigFile() { markSpeed(); $("#ci2_big_modal").removeClass("hide"); }
+    function markSpeed() {
+      const s = window.iqCodein.getSpeed();
+      $("#ci2_spd_row .spd").each(function () { $(this).toggleClass("on", $(this).attr("data-speed") === s); });
+    }
+
     // over-cap flow: a modal with choice -> rpc | sdk. The connection link jumps
     // straight to rpc; the disabled-looking cap CTA opens the choice.
     function openCap(view) {
@@ -308,7 +318,8 @@
         }
         const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
         const connection = window.iqCodein.connect();
-        const speed = window.iqCodein.recommendSpeed(window.iqCodein.hasOwnRpc());
+        const manual = window.iqCodein.getSpeed();
+        const speed = manual !== "auto" ? manual : window.iqCodein.recommendSpeed(window.iqCodein.hasOwnRpc());
         const res = await window.iqCodein.inscribe({
           connection, wallet, burner, kind: pay.kind, body: pay.body, speed,
           onProgress: (pct) => setBar(pct, "writing " + pct + "%"),

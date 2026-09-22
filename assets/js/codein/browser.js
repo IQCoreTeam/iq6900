@@ -56,6 +56,11 @@ const feedTable = feedTablePda.toBase58();
 // light for a public RPC (429-safe to ~32KB); medium once the user brings their own.
 export const recommendSpeed = (isOwnRpc) => (isOwnRpc ? "medium" : "light");
 
+// Manual speed override from the big-file popup; "auto" defers to recommendSpeed.
+const SPEED_KEY = "iq6900_speed";
+const getSpeed = () => { try { return localStorage.getItem(SPEED_KEY) || "auto"; } catch (e) { return "auto"; } };
+const setSpeed = (s) => { try { s === "auto" ? localStorage.removeItem(SPEED_KEY) : localStorage.setItem(SPEED_KEY, s); } catch (e) {} };
+
 window.iqCodein = {
   connect: (rpc) => new Connection(rpc || activeRpc, "confirmed"),
   setRpc: (rpc) => { activeRpc = rpc || DEFAULT_RPC; try { rpc ? localStorage.setItem(RPC_KEY, rpc) : localStorage.removeItem(RPC_KEY); } catch (e) {} setRpcUrl(activeRpc); },
@@ -66,6 +71,8 @@ window.iqCodein = {
   inscribe,
   sweep,
   recommendSpeed,
+  getSpeed,
+  setSpeed,
   feedTable,
   // board = the global feed table rows; mine = the user's assets (the gateway
   // resolves the inventory PDA our writes reference). The SDK reader returns the
