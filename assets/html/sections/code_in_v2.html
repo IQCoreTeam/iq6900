@@ -269,7 +269,7 @@ await writer.writeRow(conn, signer,
         </div>
 
         <p class="muted" style="margin:0 0 4px;color:#2BD52D">3. IF IT STALLS, NOTHING IS LOST</p>
-        <p class="muted" style="margin:0 0 14px">solana congestion or a weak RPC can stall an upload. this site keeps your funds in your session account, refunds them when a write gives up, and RETRY reuses them.</p>
+        <p class="muted" style="margin:0 0 14px">solana congestion or a weak RPC can stall an upload, but nothing is lost: an interrupted upload resumes from where it stopped - already-landed chunks are skipped, so RETRY only sends what is missing. your funds stay in your session account and are refunded if a write gives up.</p>
 
         <p class="muted" style="margin:0 0 4px;color:#2BD52D">BIG ONES WE INSCRIBED</p>
         <p class="muted" style="margin:0">
