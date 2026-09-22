@@ -320,14 +320,18 @@
         await window.iqCodein.notify(res.sig, { kind: pay.kind, body: pay.body, who });
         loadBoard();
       } catch (e) {
-        // Never show "failed": the burner keeps the funds and every retry
-        // reuses them, so a congested write is only paused, not lost.
+        // Never show "failed": refund the burner to the wallet and say so.
+        // When even the refund can't land, the funds still sit in the burner
+        // and the next retry reuses them, so nothing is ever lost.
         $("#ci2_pct").text("paused - tap retry");
         $("#ci2_retry").removeClass("hide");
-        $("#ci2_log").text(
-          "the network was congested and this write did not finish. your SOL is safe in your session account and is reused when you retry - nothing is lost. (" +
-          String((e && e.message) || e) + ")",
-        );
+        let note = "";
+        try {
+          const back = burner ? await window.iqCodein.sweep(window.iqCodein.connect(), burner, provider.publicKey) : 0;
+          if (back > 0) note = "your ~" + (back / 1e9).toFixed(4) + " SOL went back to your wallet - retry will re-fund it. ";
+        } catch (_) { /* refund could not land; funds stay in the burner */ }
+        if (!note) note = "your SOL is safe in your session account and is reused when you retry - nothing is lost. ";
+        $("#ci2_log").text("the network was congested and this write did not finish. " + note + "(" + String((e && e.message) || e) + ")");
         console.error("[code-in] inscribe paused:", e, (e && e.logs) || "");
       }
     }
