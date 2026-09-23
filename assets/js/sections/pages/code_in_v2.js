@@ -148,6 +148,12 @@
     // ID3v2 metadata (title / artist / cover art) parsed client-side from the
     // audio's own bytes. Tags render via .text() and cover art becomes a Blob
     // URL gated to image/* mimes, so uploaded content still never runs as script.
+    // Filename embedded in the data URL by withName() at upload time.
+    function fileNameOf(body) {
+      const m = /^data:[^,]*;name=([^;,]*)/.exec(body);
+      try { return m ? decodeURIComponent(m[1]) : ""; } catch (e) { return ""; }
+    }
+
     const id3Cache = new Map(); // key -> {title, artist, album, coverUrl} | null
     function id3Of(key, body) {
       if (id3Cache.has(key)) return id3Cache.get(key);
@@ -226,7 +232,13 @@
         } else $th.text("|> mp3");
         return;
       }
-      if (obj.kind === "file") { $th.text("[ file ]"); return; }
+      if (obj.kind === "file") {
+        const name = fileNameOf(body);
+        const sub = /^data:\w+\/([\w.+-]+)/.exec(body);
+        $th.addClass("txt").text(name ? "[ " + name + " ]"
+          : (sub && sub[1] !== "octet-stream" ? "[ file: " + sub[1] + " ]" : "[ file ]"));
+        return;
+      }
       if (obj.kind === "ascii") { $th.addClass("art").text(body.slice(0, 800)); return; } // exact spacing
       $th.addClass("txt").text(body.slice(0, 140)); // text wraps within the fixed-height box
     }
@@ -256,7 +268,12 @@
         }
         $b.html($w.append($("<audio>").attr({ src: body, controls: true })));
       }
-      else if (obj.kind === "file") $b.html($("<a>").attr({ href: body, download: "codein-file" }).addClass("btn").text("DOWNLOAD FILE"));
+      else if (obj.kind === "file") {
+        const name = fileNameOf(body);
+        const $w = $("<div>").css("text-align", "center");
+        if (name) $w.append($("<div>").addClass("muted").css("margin-bottom", "8px").text(name));
+        $b.html($w.append($("<a>").attr({ href: body, download: name || "codein-file" }).addClass("btn").text("DOWNLOAD FILE")));
+      }
       else {
         // green record body, matching the design viewer; ascii keeps pre, text wraps
         const $pre = $("<pre>").addClass("vpre").text(body);
@@ -313,9 +330,17 @@
       catch (e) { $("#ci2_ascii_out").text("could not read that image."); }
       refreshCost();
     }
+    // The inscription stores only a data URL, so the picked file's name is kept
+    // inside it as an RFC 2397 parameter (data:<mime>;name=<urlencoded>;base64,)
+    // and read back for display and download. Old posts without it show mime only.
+    function withName(dataUrl, name) {
+      const at = dataUrl.indexOf(";base64,");
+      if (at < 0 || !name) return dataUrl;
+      return dataUrl.slice(0, at) + ";name=" + encodeURIComponent(name) + dataUrl.slice(at);
+    }
     function readUpload(file, done) {
       const r = new FileReader();
-      r.onload = () => { uploadBody = r.result; done(); refreshCost(); };
+      r.onload = () => { uploadBody = withName(r.result, file.name); done(); refreshCost(); };
       r.readAsDataURL(file);
     }
     function onImageFile() {
