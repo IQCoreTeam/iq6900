@@ -1,0 +1,151 @@
+
+> test
+> node --experimental-vm-modules --test *.test.cjs
+
+TAP version 13
+# (node:76270) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: rent quote handles fresh accounts
+ok 1 - rent quote handles fresh accounts
+  ---
+  duration_ms: 2.122751
+  ...
+# Subtest: rent quote handles legacy accounts
+ok 2 - rent quote handles legacy accounts
+  ---
+  duration_ms: 0.911402
+  ...
+# Subtest: rent quote handles initialized accounts
+ok 3 - rent quote handles initialized accounts
+  ---
+  duration_ms: 0.860616
+  ...
+# Subtest: rent quote handles foreign-owner accounts
+ok 4 - rent quote handles foreign-owner accounts
+  ---
+  duration_ms: 1.35482
+  ...
+# Subtest: a failed rent quote prevents returning an invented budget
+ok 5 - a failed rent quote prevents returning an invented budget
+  ---
+  duration_ms: 0.869243
+  ...
+# Subtest: existing uploader automatically returns confirmed media and waits for the matching acknowledgement
+ok 6 - existing uploader automatically returns confirmed media and waits for the matching acknowledgement
+  ---
+  duration_ms: 174.378991
+  ...
+# [code-in] inscribe paused: Error: fixture upload rejected
+#     at Object.inscribe (<uploader-checkout>/tests/handoff.test.cjs:23:61)
+#     at HTMLButtonElement.doInscribe (eval at mount (<uploader-checkout>/tests/handoff.test.cjs:25:4), <anonymous>:587:39)
+# Subtest: failed inscription never sends a completion
+ok 7 - failed inscription never sends a completion
+  ---
+  duration_ms: 100.61476
+  ...
+# Subtest: production uploader rejects return origin https://blockchan.sol.site.evil.invalid
+ok 8 - production uploader rejects return origin https://blockchan.sol.site.evil.invalid
+  ---
+  duration_ms: 48.656373
+  ...
+# Subtest: production uploader rejects return origin https://blockchan.sol.site/path
+ok 9 - production uploader rejects return origin https://blockchan.sol.site/path
+  ---
+  duration_ms: 29.932969
+  ...
+# Subtest: production uploader rejects return origin null
+ok 10 - production uploader rejects return origin null
+  ---
+  duration_ms: 32.367318
+  ...
+# Subtest: production uploader rejects return origin http://localhost:3207
+ok 11 - production uploader rejects return origin http://localhost:3207
+  ---
+  duration_ms: 31.05084
+  ...
+# Subtest: completed link remains available when the posting window has closed
+ok 12 - completed link remains available when the posting window has closed
+  ---
+  duration_ms: 69.484308
+  ...
+# Subtest: HOOD IN keeps the EVM adapter and does not return an EVM hash as a Solana attachment
+ok 13 - HOOD IN keeps the EVM adapter and does not return an EVM hash as a Solana attachment
+  ---
+  duration_ms: 32.061009
+  ...
+# (node:76276) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: sweep reports normal-error accurately
+ok 14 - sweep reports normal-error accurately
+  ---
+  duration_ms: 2.661217
+  ...
+# Subtest: sweep reports polled-error accurately
+ok 15 - sweep reports polled-error accurately
+  ---
+  duration_ms: 1.092854
+  ...
+# Subtest: sweep reports never-confirmed accurately
+ok 16 - sweep reports never-confirmed accurately
+  ---
+  duration_ms: 1.780744
+  ...
+# Subtest: sweep reports success accurately
+ok 17 - sweep reports success accurately
+  ---
+  duration_ms: 1.068459
+  ...
+# Subtest: failed funding does not start an inscription
+ok 18 - failed funding does not start an inscription
+  ---
+  duration_ms: 1.330654
+  ...
+# Subtest: feed treats record metadata as text, not HTML
+ok 19 - feed treats record metadata as text, not HTML
+  ---
+  duration_ms: 123.660214
+  ...
+# Subtest: file records cannot create executable download links
+ok 20 - file records cannot create executable download links
+  ---
+  duration_ms: 51.299428
+  ...
+# Subtest: preserves image/png media rendering
+ok 21 - preserves image/png media rendering
+  ---
+  duration_ms: 39.922551
+  ...
+# Subtest: preserves audio/wav media rendering
+ok 22 - preserves audio/wav media rendering
+  ---
+  duration_ms: 35.781107
+  ...
+# Subtest: preserves application/octet-stream media rendering
+ok 23 - preserves application/octet-stream media rendering
+  ---
+  duration_ms: 27.088501
+  ...
+# Subtest: text inscriptions remain inert text
+ok 24 - text inscriptions remain inert text
+  ---
+  duration_ms: 45.019984
+  ...
+# Subtest: legacy music does not request chain data on unrelated pages
+ok 25 - legacy music does not request chain data on unrelated pages
+  ---
+  duration_ms: 11.751741
+  ...
+# Subtest: legacy demo still fetches when its controls are mounted
+ok 26 - legacy demo still fetches when its controls are mounted
+  ---
+  duration_ms: 10.462605
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 26
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 786.003738
