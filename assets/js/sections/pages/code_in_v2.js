@@ -90,7 +90,7 @@
       $("#ci2_tab_feed").toggleClass("on", t === "feed");
       $("#ci2_tab_mine").toggleClass("on", t === "mine");
       $("#ci2_cap").text(t === "mine"
-        ? "my inventory = your posts on this board, newest first"
+        ? "my inventory = your inscriptions, newest first"
         : "feed = the global board, newest first. click a post to view or share.");
       loadBoard();
     }
@@ -112,20 +112,20 @@
       }
       try {
         if (tab === "mine" && !who) { $("#ci2_empty").text("connect to see yours."); return; }
-        // MY INVENTORY = board rows whose who column is the connected wallet.
-        // Browser posts are signed by the burner, so the gateway's per-address
-        // asset index never lists them under the wallet; the row's who does.
-        let rows = [], cursor = before || null, hops = 0;
-        do {
+        // MY INVENTORY = the wallet-derived inventory PDA index. Burner-signed
+        // posts land there too, since the code-in touches the user's PDA.
+        let rows = [], cursor = null;
+        if (tab === "mine") {
+          let res = { rows: [] };
+          try { res = await window.iqCodein.readMine(who, 50); } catch (e) { /* leave empty */ }
+          rows = res.rows || [];
+        } else {
           let res = { rows: [], nextCursor: null };
-          try { res = await window.iqCodein.readBoard(24, cursor); } catch (e) { break; }
-          if (gen !== boardGen) return; // superseded mid-flight
-          const page = res.rows || [];
-          rows = rows.concat(tab === "mine" ? page.filter(r => String((r.row || r).who || "") === who) : page);
+          try { res = await window.iqCodein.readBoard(24, before || null); } catch (e) { /* leave empty */ }
+          rows = res.rows || [];
           cursor = res.nextCursor;
-          hops++;
-        } while (tab === "mine" && !rows.length && cursor && hops < 5);
-        if (gen !== boardGen) return;
+        }
+        if (gen !== boardGen) return; // superseded mid-flight
         rows.forEach((it) => {
           const obj = it.row || it;
           const sig = obj.__txSignature || it.__txSignature || it.signature || "";
