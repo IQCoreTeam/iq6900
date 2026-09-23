@@ -16,7 +16,7 @@ The local IQ inscription attachment flow passed with installed Phantom. This is 
 2. The local gateway served `audio/wav`; downloaded bytes matched the original exactly. [Byte comparison](../tests/evidence/phantom-devnet-20260923/media-readback.json).
 3. Actual thread and reply posting completed. The direct thread route read both back through the gateway. Browser audio playback reached `ended=true`, duration `0.25`, with no media error.
 4. [Ten successful receipts](../tests/evidence/phantom-devnet-20260923/final-receipts.json) were finalized with `err=null`: funding, inscription, refund, initial board setup, thread and reply. The reply reused the existing audio inscription.
-5. 83 frontend tests, 30 uploader tests and frontend typecheck passed. Desktop and 390px mobile composer layouts were inspected; temporary viewport override was reset.
+5. 83 frontend tests, 30 uploader tests, frontend typecheck, and fresh Solana and Robinhood production server builds passed. Desktop and 390px mobile composer layouts were inspected; temporary viewport override was reset.
 
 Only public devnet was used, verified against genesis `EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG`. Private keys were not exported. Slow wallet approvals produced rejected `BlockhashNotFound` preflights; fresh requests succeeded. Those failed attempts are not counted as landed transactions.
 
