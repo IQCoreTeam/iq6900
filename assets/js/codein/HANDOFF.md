@@ -61,3 +61,24 @@ feed table 3p1BeC2h2YeR51n4yGp4shv21P6QQ6q6phev2JDN54gA).
 4. Mainnet: run `RPC=<mainnet> node admin/setup-feed.mjs <owner.json>` to create
    the feed there, point browser.js DEFAULT_RPC + the importmap at mainnet or
    the gateway, then merge to master.
+
+## Hood In (Robinhood Chain mirror, 2026-09-24)
+
+The same page module now drives two chains. `?menu=codein` loads the solana
+adapter (browser.js, Model B burner); `?menu=hoodin` dynamic-imports evm.js
+(Model A: the USER WALLET signs each tx sequentially, no burner - EVM
+inventory is keyed by msg.sender, so a burner would break it). Both adapters
+register in window.iqCodeinChains and expose the same window.iqCodein surface;
+code_in_v2.js branches only on isEvm() for wallet flow, cost units and copy.
+Theme = CSS variables in code_in_v2.html (#ci2 cream vs #ci2.hood green, from
+Hood In Flow.dc.html).
+
+EVM feed: db_root "iq6900-codein-feed-v1" / table "global-feed" on Robinhood
+mainnet (chainId 4663, contract 0x88af59e5..., created 2026-09-23 by
+0x29f31849..., key in ~/Desktop/deploy/robinhood-deployer.key.txt). Reads go
+through gateway.iqlabs.dev with ?network=robinhood (__txHash is mirrored to
+__txSignature); "my inventory" filters the feed by the who column because
+writeRow does not touch the per-user codeIn chain. Cap = 25 signatures
+(sigs = 2 inline, else batches+2 at ~94KB base64/batch), over it the cap modal
+offers SDK or an explicit continue. The public RPC (rpc.mainnet.chain.
+robinhood.com) is CORS-open; the wallet broadcasts txs through its own RPC.

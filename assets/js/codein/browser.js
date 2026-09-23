@@ -9,6 +9,7 @@ import { deriveBurner } from "./burner.js";
 import { estimateCost } from "./cost.js?v=3";
 import { inscribe, sweep } from "./inscribe.js?v=5";
 import { feedTablePda, programId } from "./feed.js";
+import { toAscii } from "./ascii.js?v=1";
 
 // Live default write RPC. NOTE: api.mainnet-beta.solana.com 403s every browser
 // request (it blocks any call carrying an Origin header), so it cannot be the
@@ -141,41 +142,7 @@ window.iqCodein = {
   },
   solscanUrl: (sig) => `https://solscan.io/tx/${sig}${CLUSTER === "devnet" ? "?cluster=devnet" : ""}`,
   cluster: CLUSTER,
-  // Image -> ASCII, mirroring the site art generator's brightness ramp
-  // (js/art_generate_text.js imgToAsciiArt). step = sampling stride; smaller =
-  // more detail and more characters. Kept here so it has no page coupling.
-  // Text port of the Art Generator backend (rust-asciiart-api /convert), which
-  // only renders PNG/GIF: same 700px height, Nearest resize, weighted
-  // brightness, char ramp and step = font_size + density. Same inputs give the
-  // same picture as ascii.iqlabs.dev, just as inscribable text.
-  toAscii: (dataUrl, fontSize = 8, density = -2, outputHeight = 700) =>
-    new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.onerror = () => reject(new Error("image load failed"));
-      img.onload = () => {
-        const w = Math.max(1, Math.floor(outputHeight * (img.width / img.height))); // as u32 truncates
-        const cv = document.createElement("canvas");
-        cv.width = w; cv.height = outputHeight;
-        const ctx = cv.getContext("2d");
-        ctx.imageSmoothingEnabled = false; // backend resizes with Nearest
-        ctx.drawImage(img, 0, 0, w, outputHeight);
-        const px = ctx.getImageData(0, 0, w, outputHeight).data;
-        const step = Math.max(1, fontSize + density);
-        const lines = [];
-        for (let y = 0; y < outputHeight; y += step) {
-          let line = "";
-          for (let x = 0; x < w; x += step) {
-            const i = (y * w + x) * 4;
-            const b = Math.floor(px[i] * 0.3 + px[i + 1] * 0.59 + px[i + 2] * 0.11); // as u8 truncates
-            line += (px[i + 3] === 0 || b <= 50) ? " " : b <= 101 ? "'" : b <= 139 ? ":" : b <= 169 ? "i" : b <= 199 ? "I" : b <= 209 ? "J" : "$";
-          }
-          lines.push(line.replace(/ +$/, "")); // trailing spaces draw nothing
-        }
-        resolve(lines.join("\n"));
-      };
-      img.src = dataUrl;
-    }),
+  toAscii, // shared image -> ASCII port of the art generator (ascii.js)
   // Best-effort after a confirmed write: tells the gateway to cache the new tx
   // and inject the row, so the board shows it before the next re-index. Never
   // block or fail the inscription on this (the write is already on chain).
@@ -194,4 +161,7 @@ window.iqCodein = {
     return false;
   },
 };
+// Chain registry: the page module swaps window.iqCodein between adapters when
+// the route moves between ?menu=codein (this file) and ?menu=hoodin (evm.js).
+window.iqCodeinChains = Object.assign(window.iqCodeinChains || {}, { solana: window.iqCodein });
 window.dispatchEvent(new Event("iqcodein:ready"));
