@@ -19,6 +19,7 @@
     let currentSig = "";   // post shown in the view modal, for the share link
     let boardCursor = null; // gateway nextCursor for pagination
     let boardLoading = false; // guard so scroll + button don't double-fetch a page
+    let boardGen = 0;      // load generation; a fresh load supersedes in-flight ones
 
     function init(post) {
       $.ajax({ url: templateUrl, dataType: "html", type: "get", global: false, success: (html) => {
@@ -89,32 +90,44 @@
       $("#ci2_tab_feed").toggleClass("on", t === "feed");
       $("#ci2_tab_mine").toggleClass("on", t === "mine");
       $("#ci2_cap").text(t === "mine"
-        ? "my inventory = your inscriptions, newest first (via gateway)"
-        : "feed = the global board, newest first (via gateway)");
+        ? "my inventory = your posts on this board, newest first"
+        : "feed = the global board, newest first. click a post to view or share.");
       loadBoard();
     }
 
     // before = a page cursor (from the scroll or LOAD MORE); omit it for a fresh
-    // load, which clears the grid. New rows are always appended, so paging never
-    // re-renders. boardLoading serializes so the scroll and button never overlap.
+    // load, which clears the grid. A fresh load supersedes any in-flight one
+    // (generation token), so tab switches never get silently dropped; only
+    // pagination stays serialized. Late responses from an older load are thrown
+    // away instead of rendered into the wrong tab.
     async function loadBoard(before) {
-      if (boardLoading) return;
+      if (before && (boardLoading || !boardCursor)) return;
+      const gen = ++boardGen;
       boardLoading = true;
+      const grid = $("#ci2_grid");
+      if (!before) {
+        grid.empty(); boardCursor = null;
+        $("#ci2_more").addClass("hide");
+        $("#ci2_empty").text("loading...").removeClass("hide");
+      }
       try {
-        const grid = $("#ci2_grid");
-        if (!before) { grid.empty(); $("#ci2_empty").addClass("hide"); $("#ci2_more").addClass("hide"); boardCursor = null; }
-        if (tab === "mine" && !who) { $("#ci2_empty").text("connect to see yours.").removeClass("hide"); return; }
-        let res = { rows: [], nextCursor: null };
-        try { res = tab === "mine" ? await window.iqCodein.readMine(who, 24, before) : await window.iqCodein.readBoard(24, before); } catch (e) { /* leave empty */ }
-        const items = res.rows || [];
-        if (!before && !items.length) {
-          // Mainnet reads go through the gateway, so an empty result is a real
-          // empty board (no own-RPC needed to load it).
-          $("#ci2_empty").text("nothing here yet.").removeClass("hide");
-          return;
-        }
-        items.forEach((it) => {
-          const obj = it.row || it; // board = the row itself; mine = the asset's cached row
+        if (tab === "mine" && !who) { $("#ci2_empty").text("connect to see yours."); return; }
+        // MY INVENTORY = board rows whose who column is the connected wallet.
+        // Browser posts are signed by the burner, so the gateway's per-address
+        // asset index never lists them under the wallet; the row's who does.
+        let rows = [], cursor = before || null, hops = 0;
+        do {
+          let res = { rows: [], nextCursor: null };
+          try { res = await window.iqCodein.readBoard(24, cursor); } catch (e) { break; }
+          if (gen !== boardGen) return; // superseded mid-flight
+          const page = res.rows || [];
+          rows = rows.concat(tab === "mine" ? page.filter(r => String((r.row || r).who || "") === who) : page);
+          cursor = res.nextCursor;
+          hops++;
+        } while (tab === "mine" && !rows.length && cursor && hops < 5);
+        if (gen !== boardGen) return;
+        rows.forEach((it) => {
+          const obj = it.row || it;
           const sig = obj.__txSignature || it.__txSignature || it.signature || "";
           const owner = String(obj.who || "");
           const who2 = owner ? owner.slice(0, 4) + "..." + owner.slice(-4) : "";
@@ -123,9 +136,11 @@
           if (sig) card.css("cursor", "pointer").on("click", () => openPost(sig, obj));
           grid.append(card);
         });
-        boardCursor = res.nextCursor;
+        boardCursor = cursor;
+        if (grid.children().length) $("#ci2_empty").addClass("hide");
+        else $("#ci2_empty").text(tab === "mine" ? "no inscriptions from this wallet yet." : "nothing here yet.").removeClass("hide");
         $("#ci2_more").toggleClass("hide", !boardCursor);
-      } finally { boardLoading = false; }
+      } finally { if (gen === boardGen) boardLoading = false; }
     }
 
     // Relative age from the gateway's __blockTime (unix seconds), like the design.
