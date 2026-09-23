@@ -7,7 +7,7 @@
   const CAP_KB = 256; // mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=28";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=29";
     let provider = null;   // phantom injected provider
     let who = null;        // user pubkey (base58)
     let burner = null;     // derived once per session
@@ -45,7 +45,7 @@
       $("#ci2_ascii_size").on("input", reAscii);
       $("#ci2_image_file").on("change", onImageFile);
       $("#ci2_file_file").on("change", onFileFile);
-      $("#ci2_view_close").on("click", () => $("#ci2_view_modal").addClass("hide"));
+      $("#ci2_view_close, #ci2_view_dot").on("click", () => $("#ci2_view_modal").addClass("hide"));
       $("#ci2_view_x").on("click", shareToX);
       $("#ci2_view_scan").on("click", () => $("#ci2_help_modal").removeClass("hide"));
       $("#ci2_help_close").on("click", () => $("#ci2_help_modal").addClass("hide"));
