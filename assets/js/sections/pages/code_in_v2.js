@@ -7,7 +7,7 @@
   const CAP_KB = 256; // mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=29";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=30";
     let provider = null;   // phantom injected provider
     let who = null;        // user pubkey (base58)
     let burner = null;     // derived once per session
@@ -42,7 +42,7 @@
       $("#ci2 .tab[data-kind]").on("click", function () { selectKind($(this).attr("data-kind")); });
       $("#ci2_text").on("input", refreshCost);
       $("#ci2_ascii_file").on("change", onAsciiFile);
-      $("#ci2_ascii_size").on("input", reAscii);
+      $("#ci2_ascii_size, #ci2_ascii_dist").on("input", reAscii);
       $("#ci2_image_file").on("change", onImageFile);
       $("#ci2_file_file").on("change", onFileFile);
       $("#ci2_view_close, #ci2_view_dot").on("click", () => $("#ci2_view_modal").addClass("hide"));
@@ -340,8 +340,10 @@
     }
     async function reAscii() {
       if (!asciiSrc) return;
-      const step = parseInt($("#ci2_ascii_size").val(), 10) || 8;
-      try { asciiBody = await window.iqCodein.toAscii(asciiSrc, step); $("#ci2_ascii_out").text(asciiBody); }
+      // Same knobs and ranges as the Art Generator (font 5-50, distance -50-50).
+      const fontSize = Math.min(50, Math.max(5, parseInt($("#ci2_ascii_size").val(), 10) || 8));
+      const density = Math.min(50, Math.max(-50, parseInt($("#ci2_ascii_dist").val(), 10) || -2));
+      try { asciiBody = await window.iqCodein.toAscii(asciiSrc, fontSize, density); $("#ci2_ascii_out").text(asciiBody); }
       catch (e) { $("#ci2_ascii_out").text("could not read that image."); }
       refreshCost();
     }
