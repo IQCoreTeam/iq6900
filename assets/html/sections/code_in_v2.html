@@ -164,6 +164,13 @@
         <div id="ci2_done" class="hide" style="text-align:center;padding:14px 0">
           <div style="font:400 30px 'Zen Dots',monospace;color:#2BD52D">INSCRIBED.</div>
           <p id="ci2_sig" class="muted" style="margin-top:12px"></p>
+          <label for="ci2_share_link">Inscription link</label>
+          <input id="ci2_share_link" type="url" readonly style="width:100%;box-sizing:border-box;margin:8px 0" />
+          <div style="display:flex;gap:10px;justify-content:center">
+            <button id="ci2_copy_link" class="btn ghost" type="button">COPY LINK</button>
+            <a id="ci2_open_link" class="btn ghost" target="_blank" rel="noopener noreferrer">OPEN INSCRIPTION</a>
+          </div>
+          <p id="ci2_link_status" class="muted" role="status">Keep this link, or paste it into Attachment URL if automatic attachment does not finish.</p>
           <p id="ci2_donenote" class="muted" style="margin-top:6px;opacity:.55">// the one-time account rent is paid once - your next inscriptions cost far less.</p>
           <div style="display:flex;gap:10px;justify-content:center;margin-top:16px">
             <button id="ci2_view" class="btn">VIEW ON BOARD</button>

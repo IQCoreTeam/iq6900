@@ -111,6 +111,16 @@
       $("#ci2_help_close").on("click", () => $("#ci2_help_modal").addClass("hide"));
       $("#ci2_help_go").on("click", openScan);
       $("#ci2_help_copy").on("click", copyScan);
+      $("#ci2_copy_link").on("click", async () => {
+        const input = document.getElementById("ci2_share_link");
+        try {
+          await navigator.clipboard.writeText(input.value);
+          $("#ci2_link_status").text("Link copied. You can paste it into Attachment URL.");
+        } catch (_) {
+          input.focus(); input.select();
+          $("#ci2_link_status").text("Select and copy the link above, then paste it into Attachment URL.");
+        }
+      });
       $("#ci2_more").on("click", () => loadBoard(boardCursor));
       $("#ci2_scroll").on("scroll", onBoardScroll);
       $("#ci2_overcap").on("click", () => openCap("choice"));
@@ -132,7 +142,7 @@
       if (isEvm()) applyHoodTheme();
       if (window.iqCodein.hasOwnRpc()) $("#ci2_rpc_link").text("connection: custom RPC");
       refreshCost();
-      loadBoard();
+      if (!attachment) loadBoard();
       if (attachment) {
         $("#ci2_again").addClass("hide");
         $("#ci2_done").append('<p id="ci2_return_status" role="status"></p><button id="ci2_return" class="btn" type="button">ATTACH TO POST AGAIN</button>');
@@ -180,7 +190,7 @@
       // +NEW INSCRIPTION takes the connect button's place once connected.
       $("#ci2_connect").addClass("hide");
       $("#ci2_new").removeClass("hide");
-      loadBoard();
+      if (!attachment) loadBoard();
     }
 
     function switchTab(t) {
@@ -583,8 +593,12 @@
         $("#ci2_win").text("done.exe");
         $("#ci2_sig").text((isEvm() ? "tx: " : "sig: ") + res.sig.slice(0, 12) + "..." + res.sig.slice(-8));
         if (isEvm()) $("#ci2_donenote").text("// the storage fee charges once, at the final step. every tx before it is gas only.");
+        const shareLink = window.iqCodein.viewUrl(res.sig);
+        $("#ci2_share_link").val(shareLink);
+        $("#ci2_open_link").attr("href", shareLink);
+        $("#ci2_link_status").text("Keep this link, or paste it into Attachment URL if automatic attachment does not finish.");
         await window.iqCodein.notify(res.sig, { kind: pay.kind, body: pay.body, who });
-        loadBoard();
+        if (!attachment) loadBoard();
         if (attachment) {
           attachment.signature = res.sig;
           $("#ci2_return").removeClass("hide");
