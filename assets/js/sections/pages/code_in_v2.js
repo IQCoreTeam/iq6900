@@ -118,7 +118,10 @@
           const sig = obj.__txSignature || it.__txSignature || it.signature || "";
           const owner = String(obj.who || "");
           const who2 = owner ? owner.slice(0, 4) + "..." + owner.slice(-4) : "";
-          const card = $('<div class="rec"><div class="th"></div><div class="m"><span class="tag">' + (obj.kind || "text") + '</span> <span class="ago">' + relTime(obj.__blockTime) + '</span><div class="own">' + who2 + "</div></div></div>");
+          const card = $('<div class="rec"><div class="th"></div><div class="m"><span class="tag"></span> <span class="ago"></span><div class="own"></div></div></div>');
+          card.find(".tag").text(String(obj.kind || "text"));
+          card.find(".ago").text(relTime(obj.__blockTime));
+          card.find(".own").text(who2);
           renderThumb(card.find(".th"), obj);
           if (sig) card.css("cursor", "pointer").on("click", () => openPost(sig, obj));
           grid.append(card);
@@ -174,7 +177,7 @@
       const $b = $("#ci2_view_body");
       if (body.slice(0, 11) === "data:image/") $b.html($("<img>").attr("src", body).css({ borderRadius: "5px" }));
       else if (body.slice(0, 11) === "data:audio/") $b.html($("<audio>").attr({ src: body, controls: true }));
-      else if (obj.kind === "file") $b.html($("<a>").attr({ href: body, download: "codein-file" }).addClass("btn").text("DOWNLOAD FILE"));
+      else if (obj.kind === "file" && body.startsWith("data:")) $b.html($("<a>").attr({ href: body, download: "codein-file" }).addClass("btn").text("DOWNLOAD FILE"));
       else {
         // green record body, matching the design viewer; ascii keeps pre, text wraps
         const $pre = $("<pre>").addClass("vpre").text(body);
@@ -252,7 +255,7 @@
     function refreshCost() {
       const pay = currentPayload();
       const bytes = new TextEncoder().encode(JSON.stringify({ kind: pay.kind, body: pay.body, who: who || "" })).length;
-      const est = window.iqCodein.estimateCost(bytes, { firstTime: !burner });
+      const est = window.iqCodein.estimateCost(bytes);
       $("#ci2_size").text((bytes / 1024).toFixed(1) + " KB");
       $("#ci2_chunks").text("x " + est.chunks);
       $("#ci2_total").text((est.total / 1e9).toFixed(4) + " SOL");
