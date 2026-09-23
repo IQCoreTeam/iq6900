@@ -9,6 +9,7 @@ import { deriveBurner } from "./burner.js";
 import { estimateCost } from "./cost.js?v=4";
 import { inscribe, sweep } from "./inscribe.js?v=6";
 import { feedTablePda, programId } from "./feed.js";
+import { toAscii } from "./ascii.js?v=1";
 
 // Live default write RPC. NOTE: api.mainnet-beta.solana.com 403s every browser
 // request (it blocks any call carrying an Origin header), so it cannot be the
@@ -141,32 +142,7 @@ window.iqCodein = {
   },
   solscanUrl: (sig) => `https://solscan.io/tx/${sig}${CLUSTER === "devnet" ? "?cluster=devnet" : ""}`,
   cluster: CLUSTER,
-  // Image -> ASCII, mirroring the site art generator's brightness ramp
-  // (js/art_generate_text.js imgToAsciiArt). step = sampling stride; smaller =
-  // more detail and more characters. Kept here so it has no page coupling.
-  toAscii: (dataUrl, step = 8, outputHeight = 240) =>
-    new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.onerror = () => reject(new Error("image load failed"));
-      img.onload = () => {
-        const w = Math.max(1, Math.floor(outputHeight * (img.width / img.height)));
-        const cv = document.createElement("canvas");
-        cv.width = w; cv.height = outputHeight;
-        const ctx = cv.getContext("2d");
-        ctx.drawImage(img, 0, 0, w, outputHeight);
-        const px = ctx.getImageData(0, 0, w, outputHeight).data;
-        const ramp = (b, a) => (a === 0 || b < 51) ? " " : b < 102 ? "'" : b < 140 ? ":" : b < 170 ? "i" : b < 200 ? "I" : b < 210 ? "J" : "$";
-        const lines = [];
-        for (let y = 0; y < outputHeight; y += step) {
-          let line = "";
-          for (let x = 0; x < w; x += step) { const i = (y * w + x) * 4; line += ramp((px[i] + px[i + 1] + px[i + 2]) / 3, px[i + 3]); }
-          lines.push(line);
-        }
-        resolve(lines.join("\n"));
-      };
-      img.src = dataUrl;
-    }),
+  toAscii, // shared image -> ASCII port of the art generator (ascii.js)
   // Best-effort after a confirmed write: tells the gateway to cache the new tx
   // and inject the row, so the board shows it before the next re-index. Never
   // block or fail the inscription on this (the write is already on chain).
@@ -185,4 +161,7 @@ window.iqCodein = {
     return false;
   },
 };
+// Chain registry: the page module swaps window.iqCodein between adapters when
+// the route moves between ?menu=codein (this file) and ?menu=hoodin (evm.js).
+window.iqCodeinChains = Object.assign(window.iqCodeinChains || {}, { solana: window.iqCodein });
 window.dispatchEvent(new Event("iqcodein:ready"));

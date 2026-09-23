@@ -23,6 +23,8 @@ $(document).ready(function() {
             $.generatePage.init();
         }else if(menu == "codein"){
             $.code_in_v2.init(post);
+        }else if(menu == "hoodin"){
+            $.code_in_v2.init(post, "evm"); // same page, robinhood adapter + hood theme
         }
     }else{
         $.mainPage.init();
