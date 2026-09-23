@@ -8,7 +8,7 @@ const jquery = require('jquery');
 const assets = path.resolve(__dirname, '../assets');
 const source = (file) => fs.readFileSync(path.join(assets, file), 'utf8');
 
-async function viewer(t, row) {
+async function viewer(t, row, chain = 'solana') {
   const dom = new JSDOM('<div id="main_section"></div>', {
     url: 'http://localhost/?menu=codein', runScripts: 'outside-only',
   });
@@ -18,13 +18,15 @@ async function viewer(t, row) {
   w.TextEncoder = TextEncoder;
   w.iqCodein = {
     hasOwnRpc: () => false,
-    estimateCost: () => ({ chunks: 1, total: 1 }),
+    estimateCost: () => ({ chunks: 1, total: 1, sigs: 2, totalLabel: '0.00012 ETH + gas' }),
     readBoard: async () => ({ rows: [row], nextCursor: null }),
     readOne: async () => row,
+    meta: { boardTitle: 'board.exe · robinhood', maxSigs: 25, connLabel: 'connection: robinhood public rpc', scanLabel: 'EXPLORER' },
   };
+  w.iqCodeinChains = { solana: w.iqCodein, evm: w.iqCodein };
   w.$.ajax = ({ success }) => success(source('html/sections/code_in_v2.html'));
   w.eval(source('js/sections/pages/code_in_v2.js'));
-  w.$.code_in_v2.init('synthetic-signature');
+  w.$.code_in_v2.init('synthetic-signature', chain);
   await new Promise(setImmediate);
   return w;
 }
@@ -35,6 +37,26 @@ test('feed treats record metadata as text, not HTML', async (t) => {
   assert.equal(w.document.querySelector('#ci2_grid .tag').textContent, kind);
   assert.equal(w.document.querySelectorAll('#ci2_grid .m img, #ci2_grid .m svg').length, 0);
 });
+
+for (const chain of ['solana', 'evm']) {
+  test(`${chain} retains uploaded filenames and inert metadata after the merge`, async t => {
+    const name = '<img src=x onerror=alert(1)> 世界.txt';
+    const body = `data:application/octet-stream;name=${encodeURIComponent(name)};base64,AA==`;
+    const w = await viewer(t, { kind: 'file', body }, chain);
+    assert.equal(w.$('#ci2_view_body a').attr('download'), name);
+    assert.equal(w.$('#ci2_view_body a').attr('href'), body);
+    assert.equal(w.$('#ci2_view_body img').length, 0);
+    assert.equal(w.$('#ci2').hasClass('hood'), chain === 'evm');
+    assert.equal(w.$('#ci2_total_label').text(), chain === 'evm' ? 'on-chain fee (est)' : 'funding budget (est)');
+  });
+
+  test(`${chain} retains named audio playback and filename fallback`, async t => {
+    const body = 'data:audio/wav;name=hello%20world.wav;base64,AA==';
+    const w = await viewer(t, { kind: 'file', body }, chain);
+    assert.equal(w.$('#ci2_view_body audio').attr('src'), body);
+    assert.equal(w.$('#ci2_view_body .t1').text(), 'hello world.wav');
+  });
+}
 
 test('file records cannot create executable download links', async (t) => {
   const w = await viewer(t, { kind: 'file', body: 'javascript:window.injected=true' });
