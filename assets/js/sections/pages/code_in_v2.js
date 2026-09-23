@@ -26,6 +26,43 @@
     let boardLoading = false; // guard so scroll + button don't double-fetch a page
     let boardGen = 0;      // load generation; a fresh load supersedes in-flight ones
 
+    // Opt-in return flow for the two posting apps. Only a public inscription
+    // signature crosses this boundary; wallet and burner material stay here.
+    const params = new URLSearchParams(window.location.search);
+    let attachment = null;
+    try {
+      const origin = params.get("attachmentOrigin");
+      const requestId = params.get("attachmentRequest") || "";
+      const url = new URL(origin);
+      const loopback = ["localhost", "127.0.0.1", "[::1]"];
+      const local = loopback.includes(window.location.hostname) && loopback.includes(url.hostname) && ["http:", "https:"].includes(url.protocol);
+      const allowed = ["https://blockchan.sol.site", "https://hoodchan.xyz", "https://blockchan.ar.io"].includes(origin);
+      if (window.opener && url.origin === origin && (allowed || local) && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) {
+        attachment = { origin, requestId, opener: window.opener, signature: null };
+      }
+    } catch (_) { /* Normal standalone upload, or an invalid return request. */ }
+
+    function returnAttachment() {
+      if (!attachment?.signature) return;
+      if (attachment.opener.closed) {
+        $("#ci2_return_status").text("Your post window closed. Your inscription is saved and can be opened from the board.");
+        return;
+      }
+      try {
+        attachment.opener.postMessage({ type: "iq:attachment-complete", requestId: attachment.requestId,
+          network: "solana", signature: attachment.signature }, attachment.origin);
+        $("#ci2_return_status").text("Returning the attachment to your post…");
+      } catch (_) {
+        $("#ci2_return_status").text("Could not reach your post window. Your inscription is saved; you can retry attaching it.");
+      }
+    }
+    window.addEventListener("message", (event) => {
+      if (!attachment?.signature || event.origin !== attachment.origin || event.source !== attachment.opener ||
+          event.data?.requestId !== attachment.requestId || event.data.type !== "iq:attachment-accepted") return;
+      $("#ci2_return_status").text("Attachment added to your post. You can return to the post window.");
+      $("#ci2_return").addClass("hide");
+    });
+
     function init(post, chainName) {
       chain = chainName === "evm" ? "evm" : "solana";
       who = null; burner = null; bigAck = false; // route switch = fresh wallet state
@@ -96,6 +133,16 @@
       if (window.iqCodein.hasOwnRpc()) $("#ci2_rpc_link").text("connection: custom RPC");
       refreshCost();
       loadBoard();
+      if (attachment) {
+        $("#ci2_again").addClass("hide");
+        $("#ci2_done").append('<p id="ci2_return_status" role="status"></p><button id="ci2_return" class="btn" type="button">ATTACH TO POST AGAIN</button>');
+        $("#ci2_return").on("click", returnAttachment);
+        $("#ci2 .tab[data-kind=\"text\"], #ci2 .tab[data-kind=\"ascii\"]").hide();
+        $("#ci2_file_file, #ci2_image_file").attr("accept", "image/png,image/jpeg,image/gif,image/webp,image/avif,audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/aac,audio/flac,video/mp4,video/webm,video/ogg");
+        selectKind("file");
+        openCompose();
+        attachment.opener.postMessage({ type: "iq:attachment-ready", requestId: attachment.requestId }, attachment.origin);
+      }
     }
 
     // Same template, hood skin: swap the theme tokens (CSS class) and the
@@ -487,6 +534,10 @@
       if (!who) { await connect(); if (!who) return; }
       const pay = currentPayload();
       if (!pay.body) return;
+      if (attachment && (!/^data:(image\/(png|jpeg|gif|webp|avif)|audio\/(mpeg|mp3|wav|x-wav|ogg|mp4|aac|flac)|video\/(mp4|webm|ogg));base64,/i.test(pay.body) || window.iqCodein.cluster !== "mainnet-beta")) {
+        alert("Choose a supported image, audio or video file on the posting app's Solana network.");
+        return;
+      }
       const bytes = new TextEncoder().encode(JSON.stringify({ kind: pay.kind, body: pay.body, who })).length;
       if (overCapNow(bytes)) { openCap("choice"); return; }
 
@@ -534,6 +585,11 @@
         if (isEvm()) $("#ci2_donenote").text("// the storage fee charges once, at the final step. every tx before it is gas only.");
         await window.iqCodein.notify(res.sig, { kind: pay.kind, body: pay.body, who });
         loadBoard();
+        if (attachment) {
+          attachment.signature = res.sig;
+          $("#ci2_return").removeClass("hide");
+          returnAttachment();
+        }
       } catch (e) {
         // Never show "failed". solana: refund the burner to the wallet and say
         // so; when even the refund can't land, the funds sit in the burner and
