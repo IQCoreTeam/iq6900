@@ -1,0 +1,49 @@
+
+> test
+> node --experimental-vm-modules --test *.test.cjs
+
+(node:92661) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ rent quote handles fresh accounts (1.973542ms)
+✔ rent quote handles legacy accounts (0.558084ms)
+✔ rent quote handles initialized accounts (0.506417ms)
+✔ rent quote handles foreign-owner accounts (0.746334ms)
+✔ a failed rent quote prevents returning an invented budget (1.425125ms)
+✔ existing uploader automatically returns confirmed media and waits for the matching acknowledgement (136.397458ms)
+[code-in] inscribe paused: Error: fixture upload rejected
+    at Object.inscribe (/Users/nubs/Git/iq6900-ready-20260923/tests/handoff.test.cjs:23:61)
+    at HTMLButtonElement.doInscribe (eval at mount (/Users/nubs/Git/iq6900-ready-20260923/tests/handoff.test.cjs:25:4), <anonymous>:587:39) 
+✔ failed inscription never sends a completion (71.961041ms)
+✔ production uploader rejects return origin https://blockchan.sol.site.evil.invalid (27.002166ms)
+✔ production uploader rejects return origin https://blockchan.sol.site/path (17.821458ms)
+✔ production uploader rejects return origin null (20.658042ms)
+✔ production uploader rejects return origin http://localhost:3207 (15.486334ms)
+✔ completed link remains available when the posting window has closed (60.903209ms)
+✔ HOOD IN keeps the EVM adapter and does not return an EVM hash as a Solana attachment (19.210083ms)
+(node:92664) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ sweep reports normal-error accurately (2.383833ms)
+✔ sweep reports polled-error accurately (1.0135ms)
+✔ sweep reports never-confirmed accurately (0.897708ms)
+✔ sweep reports success accurately (1.342917ms)
+✔ failed funding does not start an inscription (0.842875ms)
+✔ feed treats record metadata as text, not HTML (91.378208ms)
+✔ solana retains uploaded filenames and inert metadata after the merge (26.957333ms)
+✔ solana retains named audio playback and filename fallback (25.360458ms)
+✔ evm retains uploaded filenames and inert metadata after the merge (19.367625ms)
+✔ evm retains named audio playback and filename fallback (20.353625ms)
+✔ file records cannot create executable download links (17.227125ms)
+✔ preserves image/png media rendering (22.602583ms)
+✔ preserves audio/wav media rendering (16.863792ms)
+✔ preserves application/octet-stream media rendering (20.069709ms)
+✔ text inscriptions remain inert text (16.870458ms)
+✔ legacy music does not request chain data on unrelated pages (5.899084ms)
+✔ legacy demo still fetches when its controls are mounted (6.914125ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 724.688917

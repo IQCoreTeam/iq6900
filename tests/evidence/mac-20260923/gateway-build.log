@@ -1,0 +1,6 @@
+$ bun build src/server.ts --outdir dist --target bun
+Bundled 856 modules in 86ms
+
+  server.js                           3.20 MB  (entry point)
+  resvgjs.darwin-arm64-h8sackw6.node  3.54 MB  (asset)
+

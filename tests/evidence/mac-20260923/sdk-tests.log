@@ -1,0 +1,21 @@
+✔ confirmation rejects execution errors in both confirmation paths (4.2305ms)
+✔ successful confirmations and false expiry still succeed (0.843083ms)
+✔ an execution failure is not resent with a fresh signature (72.362416ms)
+✔ transport errors propagate rather than becoming success (0.510959ms)
+✔ counter points past an unfinished session: resume only its missing chunks (987.922875ms)
+✔ an already uploaded but unfinished session submits no chunks (26.537708ms)
+✔ wallet signers retain the resumed session and sequence (18.61625ms)
+✔ different bytes, encoding, or extra indexes start a new session (2553.067667ms)
+✔ a finalized previous session is never reused (823.868084ms)
+✔ conflicting historical chunks are never reused, regardless of response order (1692.950333ms)
+✔ unavailable history fails before any writes (4.758583ms)
+✔ explicit reuse cannot overwrite different content or a finalized session (7.267792ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7538.493208
+session completeness: 11 cases passed (bulk + sequential + unfinalized, Korean text)

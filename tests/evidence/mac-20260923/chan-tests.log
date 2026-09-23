@@ -1,0 +1,212 @@
+$ bun test tests && bun test ./tests/server/share-route.case.ts && bun test ./tests/server/gateway-fallback.case.ts && bun test ./tests/server/attachment-route.case.ts && bun test ./tests/home-progress.case.tsx && bun test ./tests/inscription-attachment.case.tsx && bun test ./tests/attachment-handoff.case.tsx && bun test ./tests/local-inscription-reference.case.ts
+bun test v1.3.14 (d1632b29)
+
+tests/solana-tranches.test.tsx:
+47 |         logMissingProviderError('read', 'publicKey');
+48 |         return null;
+49 |     },
+50 | });
+51 | function logMissingProviderError(action, property) {
+52 |     const error = new Error(`You have tried to ${action} "${property}" on a WalletContext without providing one. ` +
+                           ^
+error: You have tried to read "publicKey" on a WalletContext without providing one. Make sure to render a WalletProvider as an ancestor of the component that uses WalletContext.
+      at logMissingProviderError (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/@solana/wallet-adapter-react/lib/esm/useWallet.js:52:23)
+      at get (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/@solana/wallet-adapter-react/lib/esm/useWallet.js:47:9)
+      at SolanaTrade (/Users/nubs/Git/iq-chan-ready-20260923/src/components/solana-trade.tsx:14:21)
+      at react_stack_bottom_frame (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:25904:20)
+      at renderWithHooks (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:7662:22)
+      at updateFunctionComponent (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:10166:19)
+      at runWithFiberInDEV (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at performUnitOfWork (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:17641:22)
+      at workLoopSync (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+
+(pass) Solana chart ignores signatures, requires an indexed mint and chooses the deepest matching pool [111.80ms]
+(pass) Tranches follows IQ on Solana and Robinhood, without appearing on other chains [11.42ms]
+47 |         logMissingProviderError('read', 'publicKey');
+48 |         return null;
+49 |     },
+50 | });
+51 | function logMissingProviderError(action, property) {
+52 |     const error = new Error(`You have tried to ${action} "${property}" on a WalletContext without providing one. ` +
+                           ^
+error: You have tried to read "publicKey" on a WalletContext without providing one. Make sure to render a WalletProvider as an ancestor of the component that uses WalletContext.
+      at logMissingProviderError (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/@solana/wallet-adapter-react/lib/esm/useWallet.js:52:23)
+      at get (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/@solana/wallet-adapter-react/lib/esm/useWallet.js:47:9)
+      at SolanaTrade (/Users/nubs/Git/iq-chan-ready-20260923/src/components/solana-trade.tsx:14:21)
+      at react_stack_bottom_frame (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:25904:20)
+      at renderWithHooks (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:7662:22)
+      at updateFunctionComponent (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:10166:19)
+      at runWithFiberInDEV (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at performUnitOfWork (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:17641:22)
+      at workLoopSync (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (/Users/nubs/Git/iq-chan-ready-20260923/node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+
+(pass) Solana token chart renders on a Technology post, not only Tranches [37.37ms]
+
+tests/posting-forms.test.tsx:
+(pass) standard waits for its attachment before posting (complete) [47.70ms]
+(pass) standard waits for its attachment before posting (cancel) [29.25ms]
+(pass) standard waits for its attachment before posting (blocked) [25.51ms]
+(pass) quick waits for its attachment before posting (complete) [44.72ms]
+(pass) quick waits for its attachment before posting (cancel) [31.10ms]
+(pass) quick waits for its attachment before posting (blocked) [23.83ms]
+(pass) standard posting preserves drafts on failure, prevents duplicate submits, and clears only on success [60.28ms]
+(pass) quick posting preserves drafts on failure, prevents duplicate submits, and clears only on success [44.54ms]
+(pass) quick reply opens disconnected and connects without submitting [30.43ms]
+
+tests/solana-trade.test.tsx:
+(pass) native trades expire before signing, discard stale wallet quotes and never execute a rejected signature [131.24ms]
+
+tests/notify-gateway.test.ts:
+Gateway notification failed (503); the post is already confirmed.
+Gateway notification unavailable; the post is already confirmed.
+(pass) notification reports HTTP and network failures without rejecting a confirmed write [0.77ms]
+Gateway notification unavailable; the post is already confirmed.
+(pass) a stalled notification is aborted within the deadline [4000.96ms]
+
+tests/share-links.test.ts:
+(pass) share URLs retain localhost and route static mirrors to the right public chain [0.15ms]
+(pass) share targets validate both chain identities and reject injected paths [0.19ms]
+(pass) preview palettes match the existing app stylesheet [0.45ms]
+
+tests/inscription-reference.test.ts:
+(pass) Solana share links and bare signatures resolve independently of the current board [0.18ms]
+(pass) EVM references retain their network [0.06ms]
+(pass) unknown hosts, devnet links and executable URLs are not inscription references [0.05ms]
+(pass) only the explicitly configured local uploader is accepted for devnet previews [0.11ms]
+
+tests/jupiter-swap.test.ts:
+(pass) Jupiter orders reject mismatched tokens, amounts, wallets and zero minimums [0.98ms]
+(pass) execution requires the reviewed message and a confirmed success response [0.95ms]
+(pass) optional referral charges exactly 125 bps and rejects silent fee fallback [0.51ms]
+(pass) timeouts preserve the signed receipt; status checks never execute again [1.37ms]
+(pass) Jupiter rejection is distinct from ambiguous errors and malformed responses [0.66ms]
+
+tests/post-links.test.tsx:
+(pass) post copy reports success only after writing a URL and exposes the URL on failure [16.24ms]
+(pass) post copy handles both networks without navigating and resets when the target changes [6.46ms]
+(pass) IQ Profile is Solana-only and Reply uses the existing quote handler [13.89ms]
+
+tests/evm-wallet.test.tsx:
+(pass) first load never calls the default wallet router or asks any wallet to connect [6.15ms]
+(pass) selected MetaMask survives reload without calling Phantom or requesting permissions again [14.56ms]
+(pass) late EIP-6963 discovery restores only the saved wallet and ignores duplicate announcements [4.39ms]
+(pass) locked or revoked accounts stay disconnected without permission prompts [8.83ms]
+(pass) Disconnect clears the preference, removes listeners and prevents reload reconnection [5.95ms]
+(pass) a delayed account read cannot reconnect after Disconnect [4.68ms]
+(pass) switching selected wallets removes the previous wallet's account listeners [9.78ms]
+(pass) permission rejection is not persisted, while disabled storage still allows explicit connection [4.50ms]
+(pass) a different chain switches only on explicit connect, including add-then-switch [3.63ms]
+(pass) WalletConnect restores an existing session without another pairing request [6.44ms]
+(pass) an expired WalletConnect session does not open pairing UI on reload [9.38ms]
+(pass) a WalletConnect-only browser uses the picker before starting a connection [17.28ms]
+(pass) disconnect during signer lookup prevents a stale signer from being returned [7.63ms]
+(pass) the explicitly selected legacy wallet restores silently on reload [11.17ms]
+(pass) signer lookup fails without requesting permission if the account is no longer authorized [7.42ms]
+
+tests/attachment.test.tsx:
+(pass) attachments support video controls, image expansion, failures and unsafe URLs [22.07ms]
+
+tests/solana-sdk-profile.test.ts:
+(pass) browser wallet stays on the supported legacy profile without exposing a secret key [0.98ms]
+
+tests/post-refresh.test.tsx:
+(pass) confirmed reply survives stale/error reads, reconciles once, and does not leak to another thread [7.34ms]
+(pass) new threads and board quick replies remain visible through stale refreshes [12.67ms]
+(pass) an older board refresh cannot overwrite the current board [4.99ms]
+
+ 50 pass
+ 0 fail
+ 295 expect() calls
+Ran 50 tests across 12 files. [5.95s]
+bun test v1.3.14 (d1632b29)
+
+tests/server/share-route.case.ts:
+(pass) image responses contain a completed PNG with its exact byte length [1674.53ms]
+(pass) PNG stream failures return a non-cacheable error and allow a retry [708.44ms]
+(pass) reply metadata uses the selected reply, escapes content, and preserves its anchor [10.21ms]
+(pass) missing replies and gateway outages do not produce misleading cached cards [1.33ms]
+(pass) browsers and social crawlers receive the same server-rendered metadata [2.46ms]
+(pass) the browser handoff preserves existing Solana deep links when metadata is unavailable [382.21ms]
+(pass) share metadata and image links use the incoming host behind a container proxy [0.54ms]
+(pass) card image requests reject arbitrary hosts, local paths and redirect destinations [0.84ms]
+(pass) both actual logos decode to bounded PNG thumbnails [37.08ms]
+(pass) invalid and oversized attachments fall back without retaining the response stream [41.44ms]
+(pass) an image body that stalls after headers is aborted by its deadline [3001.22ms]
+
+ 11 pass
+ 0 fail
+ 160 expect() calls
+Ran 11 tests across 1 file. [5.89s]
+bun test v1.3.14 (d1632b29)
+
+tests/server/gateway-fallback.case.ts:
+(pass) restored gateway handles failed Solana reads but is skipped for EVM [1.93ms]
+Gateway notification unavailable; the post is already confirmed.
+(pass) confirmed Solana posts notify every configured gateway once despite a failed primary [0.98ms]
+
+ 2 pass
+ 0 fail
+ 11 expect() calls
+Ran 2 tests across 1 file. [30.00ms]
+bun test v1.3.14 (d1632b29)
+
+tests/server/attachment-route.case.ts:
+(pass) resolver restricts outbound targets and validates extracted media [11.46ms]
+(pass) resolver cancels rejected content and handles provider failures [0.45ms]
+
+ 2 pass
+ 0 fail
+ 14 expect() calls
+Ran 2 tests across 1 file. [37.00ms]
+bun test v1.3.14 (d1632b29)
+
+tests/home-progress.case.tsx:
+(pass) svm: a slow board and unloaded image do not hide completed boards [190.43ms]
+(pass) evm: a slow board and unloaded image do not hide completed boards [69.25ms]
+(pass) failed boards are disclosed while successful threads remain visible [23.58ms]
+(pass) an old request cannot populate a changed board selection [35.65ms]
+(pass) a total outage is not presented as an empty site [35.36ms]
+(pass) an empty board configuration finishes without requests [40.00ms]
+
+ 6 pass
+ 0 fail
+ 28 expect() calls
+Ran 6 tests across 1 file. [1244.00ms]
+bun test v1.3.14 (d1632b29)
+
+tests/inscription-attachment.case.tsx:
+(pass) renders image/png from a Solana transaction through one gateway request [90.87ms]
+(pass) renders audio/wav from a Solana transaction through one gateway request [14.58ms]
+(pass) renders video/mp4 from a Solana transaction through one gateway request [7.39ms]
+(pass) HoodChan uses its EVM network without a Solana RPC [15.26ms]
+(pass) unsupported returned content displays an error and never an iframe [9.10ms]
+(pass) ordinary audio URLs retain native playback without gateway lookups [13.32ms]
+
+ 6 pass
+ 0 fail
+ 15 expect() calls
+Ran 6 tests across 1 file. [646.00ms]
+bun test v1.3.14 (d1632b29)
+
+tests/attachment-handoff.case.tsx:
+(pass) only the matching uploader window/origin/request can attach a valid Solana result [148.46ms]
+(pass) blocked popup preserves the draft and gives a retry message [25.16ms]
+(pass) cancelled request ignores late results without closing the upload window [25.62ms]
+(pass) a replacement request rejects an earlier upload result [28.39ms]
+
+ 4 pass
+ 0 fail
+ 16 expect() calls
+Ran 4 tests across 1 file. [782.00ms]
+bun test v1.3.14 (d1632b29)
+
+tests/local-inscription-reference.case.ts:
+(pass) configured local uploader links work on either posting chain [0.64ms]
+(pass) a local uploader setting does not admit other origins, ports or credentials [0.22ms]
+
+ 2 pass
+ 0 fail
+ 9 expect() calls
+Ran 2 tests across 1 file. [22.00ms]
