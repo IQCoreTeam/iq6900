@@ -7,7 +7,7 @@
   const CAP_KB = 256; // mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=27";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=28";
     let provider = null;   // phantom injected provider
     let who = null;        // user pubkey (base58)
     let burner = null;     // derived once per session
@@ -145,6 +145,68 @@
       if (el.scrollHeight - el.scrollTop - el.clientHeight < 160) loadBoard(boardCursor);
     }
 
+    // ID3v2 metadata (title / artist / cover art) parsed client-side from the
+    // audio's own bytes. Tags render via .text() and cover art becomes a Blob
+    // URL gated to image/* mimes, so uploaded content still never runs as script.
+    const id3Cache = new Map(); // key -> {title, artist, album, coverUrl} | null
+    function id3Of(key, body) {
+      if (id3Cache.has(key)) return id3Cache.get(key);
+      let meta = null;
+      try { meta = parseId3(body); } catch (e) { meta = null; }
+      id3Cache.set(key, meta);
+      return meta;
+    }
+    function parseId3(body) {
+      const at = body.indexOf("base64,");
+      if (at < 0) return null;
+      const b64 = body.slice(at + 7);
+      const head = Uint8Array.from(atob(b64.slice(0, 16)), c => c.charCodeAt(0));
+      if (head[0] !== 0x49 || head[1] !== 0x44 || head[2] !== 0x33) return null; // "ID3"
+      const ver = head[3];
+      if (ver < 3 || ver > 4) return null;
+      const tagSize = (head[6] << 21) | (head[7] << 14) | (head[8] << 7) | head[9];
+      const total = Math.min(tagSize + 10, Math.floor(b64.length * 3 / 4));
+      const d = Uint8Array.from(atob(b64.slice(0, Math.ceil(total / 3) * 4)), c => c.charCodeAt(0));
+      let p = 10;
+      if (head[5] & 0x40) { // skip extended header
+        p += ver === 4
+          ? ((d[p] << 21) | (d[p + 1] << 14) | (d[p + 2] << 7) | d[p + 3])
+          : 4 + ((d[p] << 24) | (d[p + 1] << 16) | (d[p + 2] << 8) | d[p + 3]);
+      }
+      const out = {};
+      while (p + 10 <= d.length) {
+        if (d[p] === 0) break; // hit padding
+        const id = String.fromCharCode(d[p], d[p + 1], d[p + 2], d[p + 3]);
+        const sz = ver === 4
+          ? ((d[p + 4] << 21) | (d[p + 5] << 14) | (d[p + 6] << 7) | d[p + 7])
+          : ((d[p + 4] << 24) | (d[p + 5] << 16) | (d[p + 6] << 8) | d[p + 7]);
+        const start = p + 10, end = start + sz;
+        if (sz <= 0 || end > d.length) break;
+        if (id === "TIT2" || id === "TPE1" || id === "TALB") {
+          const enc = d[start];
+          const label = enc === 1 ? "utf-16" : enc === 2 ? "utf-16be" : enc === 3 ? "utf-8" : "windows-1252";
+          let text = "";
+          try { text = new TextDecoder(label).decode(d.subarray(start + 1, end)); } catch (e) { /* leave empty */ }
+          text = text.replace(/\0+$/, "").replace(/^\0+/, "").trim();
+          if (id === "TIT2") out.title = text;
+          else if (id === "TPE1") out.artist = text;
+          else out.album = text;
+        } else if (id === "APIC" && !out.coverUrl) {
+          const enc = d[start];
+          let q = start + 1;
+          while (q < end && d[q] !== 0) q++;
+          const mime = String.fromCharCode.apply(null, d.subarray(start + 1, q));
+          q += 2; // null terminator + picture type byte
+          if (enc === 1 || enc === 2) { while (q + 1 < end && (d[q] !== 0 || d[q + 1] !== 0)) q += 2; q += 2; }
+          else { while (q < end && d[q] !== 0) q++; q += 1; }
+          if (mime.slice(0, 6) === "image/" && q < end)
+            out.coverUrl = URL.createObjectURL(new Blob([d.subarray(q, end)], { type: mime }));
+        }
+        p = end;
+      }
+      return (out.title || out.artist || out.coverUrl) ? out : null;
+    }
+
     // Render by the data-URL mime, not the kind, so an mp3 uploaded via FILE
     // still shows an audio thumb. Only images/audio render inline (safe, no
     // script execution); other files show a tag and download in the viewer.
@@ -152,7 +214,18 @@
       const body = String(obj.body || "");
       $th.removeClass("txt art");
       if (body.slice(0, 11) === "data:image/") { $th.html($("<img>").attr("src", body)); return; }
-      if (body.slice(0, 11) === "data:audio/") { $th.text("|> mp3"); return; }
+      if (body.slice(0, 11) === "data:audio/") {
+        const meta = id3Of(obj.__txSignature || body.length + body.slice(-24), body);
+        if (meta) {
+          const $tr = $("<div>").addClass("track");
+          if (meta.coverUrl) $tr.append($("<img>").attr("src", meta.coverUrl));
+          $tr.append($("<div>").addClass("tt")
+            .append($("<div>").addClass("t1").text("|> " + (meta.title || "mp3")))
+            .append($("<div>").addClass("t2").text(meta.artist || "")));
+          $th.html($tr);
+        } else $th.text("|> mp3");
+        return;
+      }
       if (obj.kind === "file") { $th.text("[ file ]"); return; }
       if (obj.kind === "ascii") { $th.addClass("art").text(body.slice(0, 800)); return; } // exact spacing
       $th.addClass("txt").text(body.slice(0, 140)); // text wraps within the fixed-height box
@@ -173,7 +246,16 @@
       const body = String(obj.body || "");
       const $b = $("#ci2_view_body");
       if (body.slice(0, 11) === "data:image/") $b.html($("<img>").attr("src", body).css({ borderRadius: "5px" }));
-      else if (body.slice(0, 11) === "data:audio/") $b.html($("<audio>").attr({ src: body, controls: true }));
+      else if (body.slice(0, 11) === "data:audio/") {
+        const meta = id3Of(sig, body);
+        const $w = $("<div>").addClass("vtrack");
+        if (meta && meta.coverUrl) $w.append($("<img>").attr("src", meta.coverUrl));
+        if (meta && (meta.title || meta.artist)) {
+          $w.append($("<div>").addClass("t1").text(meta.title || ""));
+          $w.append($("<div>").addClass("t2").text([meta.artist, meta.album].filter(Boolean).join("  ·  ")));
+        }
+        $b.html($w.append($("<audio>").attr({ src: body, controls: true })));
+      }
       else if (obj.kind === "file") $b.html($("<a>").attr({ href: body, download: "codein-file" }).addClass("btn").text("DOWNLOAD FILE"));
       else {
         // green record body, matching the design viewer; ascii keeps pre, text wraps
