@@ -1,5 +1,7 @@
 # Coordinated Mac preparation — no PR or deployment approval
 
+**Latest checkpoint:** [real Phantom devnet run and inscription-only composer](phantom-devnet-20260923.md). That run supersedes the real-Phantom gap below. The original simulation evidence remains separate historical evidence. Manual URL entry has since been removed at Nubs' request. Production and physical mobile-wallet checks remain open.
+
 This supplements the [other PC's handoff](https://github.com/NubsCarson/iq6900/blob/handoff/attachments-sep23/docs/attachment-handoff-sep23.md). Its changes and history are incorporated, not overwritten. These are new preparation branches; existing PR branches and readiness were left alone.
 
 ## Tested sources
@@ -22,7 +24,7 @@ Peer handoffs incorporated: uploader `0fe014347d8d40182affbc1d11b52d7d46a43578`,
 - Normal PostForm and QuickReply now block submission while an attachment upload is pending. Completing, cancelling, manually replacing or closing it unlocks posting. Popup blocking does not lock the draft. Returning an attachment does not automatically submit a post.
 - Added component and local-origin regression coverage and tests preserving named media on both uploader chains.
 
-## Independent Mac checks
+## Earlier simulation checks
 
 - Gateway: **160 tests passed**, TypeScript and production build passed; all three loopback cache tests were included.
 - SDK: **12 confirmation/resume tests and 11 completeness cases passed**, plus TypeScript build at the source commit above.
@@ -41,7 +43,7 @@ Peer handoffs incorporated: uploader `0fe014347d8d40182affbc1d11b52d7d46a43578`,
 ![Narrow-viewport quick reply after popup closes](../tests/evidence/mac-20260923/closed-popup-hood-mobile.png)
 ![Narrow-viewport quick reply after media returns](../tests/evidence/mac-20260923/returned-hood-mobile.png)
 
-## Remaining checks before production readiness
+## Remaining checks recorded before the real Phantom run
 
 1. Real Phantom/MetaMask and real-device checks remain unverified by this Mac run. Respect the user's no-real-inscriptions boundary; do not spend funds or publish a post based on this document.
 2. Verify deployed cross-origin opener/COOP/CSP behavior and deploy gateway media support before enabling frontend references. Old primary gateways can stop fallback on 404. The frontend's media limit remains checked after download.
