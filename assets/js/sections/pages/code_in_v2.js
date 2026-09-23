@@ -225,11 +225,12 @@
         if (meta) {
           const $tr = $("<div>").addClass("track");
           if (meta.coverUrl) $tr.append($("<img>").attr("src", meta.coverUrl));
+          // ID3 title wins; the embedded filename is the fallback label
           $tr.append($("<div>").addClass("tt")
-            .append($("<div>").addClass("t1").text("|> " + (meta.title || "mp3")))
+            .append($("<div>").addClass("t1").text("|> " + (meta.title || fileNameOf(body) || "mp3")))
             .append($("<div>").addClass("t2").text(meta.artist || "")));
           $th.html($tr);
-        } else $th.text("|> mp3");
+        } else $th.text("|> " + (fileNameOf(body) || "mp3"));
         return;
       }
       if (obj.kind === "file") {
@@ -259,13 +260,12 @@
       const $b = $("#ci2_view_body");
       if (body.slice(0, 11) === "data:image/") $b.html($("<img>").attr("src", body).css({ borderRadius: "5px" }));
       else if (body.slice(0, 11) === "data:audio/") {
-        const meta = id3Of(sig, body);
+        const meta = id3Of(sig, body) || {};
         const $w = $("<div>").addClass("vtrack");
-        if (meta && meta.coverUrl) $w.append($("<img>").attr("src", meta.coverUrl));
-        if (meta && (meta.title || meta.artist)) {
-          $w.append($("<div>").addClass("t1").text(meta.title || ""));
-          $w.append($("<div>").addClass("t2").text([meta.artist, meta.album].filter(Boolean).join("  ·  ")));
-        }
+        if (meta.coverUrl) $w.append($("<img>").attr("src", meta.coverUrl));
+        const label = meta.title || fileNameOf(body); // ID3 title wins, then filename
+        if (label) $w.append($("<div>").addClass("t1").text(label));
+        if (meta.artist || meta.album) $w.append($("<div>").addClass("t2").text([meta.artist, meta.album].filter(Boolean).join("  ·  ")));
         $b.html($w.append($("<audio>").attr({ src: body, controls: true })));
       }
       else if (obj.kind === "file") {
