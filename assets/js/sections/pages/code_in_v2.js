@@ -116,10 +116,10 @@
         const input = document.getElementById("ci2_share_link");
         try {
           await navigator.clipboard.writeText(input.value);
-          $("#ci2_link_status").text("Link copied. You can paste it into Attachment URL.");
+          $("#ci2_link_status").text("Inscription link copied.");
         } catch (_) {
           input.focus(); input.select();
-          $("#ci2_link_status").text("Select and copy the link above, then paste it into Attachment URL.");
+          $("#ci2_link_status").text("Select and copy the inscription link above.");
         }
       });
       $("#ci2_more").on("click", () => loadBoard(boardCursor));
@@ -597,7 +597,7 @@
         const shareLink = window.iqCodein.viewUrl(res.sig);
         $("#ci2_share_link").val(shareLink);
         $("#ci2_open_link").attr("href", shareLink);
-        $("#ci2_link_status").text("Keep this link, or paste it into Attachment URL if automatic attachment does not finish.");
+        $("#ci2_link_status").text(attachment ? "Returning your inscription to the post…" : "Keep this link to your inscription.");
         await window.iqCodein.notify(res.sig, { kind: pay.kind, body: pay.body, who });
         if (!attachment) loadBoard();
         if (attachment) {
