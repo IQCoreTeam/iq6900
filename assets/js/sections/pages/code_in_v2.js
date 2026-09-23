@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=31";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=32";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -37,7 +37,7 @@
       const loopback = ["localhost", "127.0.0.1", "[::1]"];
       const local = loopback.includes(window.location.hostname) && loopback.includes(url.hostname) && ["http:", "https:"].includes(url.protocol);
       const allowed = ["https://blockchan.sol.site", "https://hoodchan.xyz", "https://blockchan.ar.io"].includes(origin);
-      if (window.opener && url.origin === origin && (allowed || local) && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) {
+      if (params.get("menu") !== "hoodin" && window.opener && url.origin === origin && (allowed || local) && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) {
         attachment = { origin, requestId, opener: window.opener, signature: null };
       }
     } catch (_) { /* Normal standalone upload, or an invalid return request. */ }
@@ -65,6 +65,7 @@
 
     function init(post, chainName) {
       chain = chainName === "evm" ? "evm" : "solana";
+      if (isEvm()) attachment = null; // Automatic returns currently carry Solana signatures only.
       who = null; burner = null; bigAck = false; // route switch = fresh wallet state
       $.ajax({ url: templateUrl, dataType: "html", type: "get", global: false, success: (html) => {
         $("#main_section").show().empty().append($(html));
@@ -544,7 +545,7 @@
       if (!who) { await connect(); if (!who) return; }
       const pay = currentPayload();
       if (!pay.body) return;
-      if (attachment && (!/^data:(image\/(png|jpeg|gif|webp|avif)|audio\/(mpeg|mp3|wav|x-wav|ogg|mp4|aac|flac)|video\/(mp4|webm|ogg));base64,/i.test(pay.body) || window.iqCodein.cluster !== "mainnet-beta")) {
+      if (attachment && (!/^data:(image\/(png|jpeg|gif|webp|avif)|audio\/(mpeg|mp3|wav|x-wav|ogg|mp4|aac|flac)|video\/(mp4|webm|ogg))(?:;name=(?:[A-Za-z0-9_.!~*'()-]|%[0-9a-f]{2})*)?;base64,/i.test(pay.body) || window.iqCodein.cluster !== "mainnet-beta")) {
         alert("Choose a supported image, audio or video file on the posting app's Solana network.");
         return;
       }
