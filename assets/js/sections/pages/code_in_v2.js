@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=32";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=33";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -29,6 +29,18 @@
     function init(post, chainName) {
       chain = chainName === "evm" ? "evm" : "solana";
       who = null; burner = null; bigAck = false; // route switch = fresh wallet state
+      // Keep the route in the URL so refreshing stays on this board instead of
+      // falling back to the home page (stack cards call init() directly).
+      try {
+        const menu = isEvm() ? "hoodin" : "codein";
+        const url = new URL(window.location.href);
+        if (url.searchParams.get("menu") !== menu) {
+          url.searchParams.set("menu", menu);
+          url.searchParams.delete("post");
+          if (post) url.searchParams.set("post", post);
+          history.pushState({ menu }, "", url);
+        }
+      } catch (e) {}
       $.ajax({ url: templateUrl, dataType: "html", type: "get", global: false, success: (html) => {
         $("#main_section").show().empty().append($(html));
         ready(() => { wire(); if (post) openPost(post); });
@@ -57,6 +69,7 @@
     function wire() {
       provider = window.phantom?.solana || window.solana || null;
       $("#ci2_connect").on("click", connect);
+      $("#ci2_home_dot").on("click", () => { window.location.href = window.location.pathname; });
       $("#ci2_new").on("click", openCompose);
       $("#ci2_tab_feed").on("click", () => switchTab("feed"));
       $("#ci2_tab_mine").on("click", () => switchTab("mine"));
@@ -104,6 +117,7 @@
       const M = window.iqCodein.meta;
       $("#ci2").addClass("hood");
       $("#ci2_board_title").text(M.boardTitle);
+      $("#ci2_page_title").text("// HOOD IN");
       $("#ci2_win").text("hood_in.exe");
       $("#ci2_chunks_label").text("txs (each = 1 wallet signature)");
       $("#ci2_total_label").text("on-chain fee (est)");
