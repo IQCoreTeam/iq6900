@@ -500,11 +500,17 @@
           // the batch progress the SDK reports.
           const est = window.iqCodein.estimateCost(bytes);
           setBar(0, "signature 1/" + est.sigs + " - approve in your wallet");
+          // The SDK progress only covers the data batches; the last 2
+          // signatures (row commit + tail pointer) come after it hits 100%.
+          // Scale the bar to the SIGNATURE count so it never sits full while
+          // the wallet still asks for more.
           res = await window.iqCodein.inscribe({
             kind: pay.kind, body: pay.body, who,
             onProgress: (pct) => {
               const batchesDone = Math.round((pct / 100) * est.chunks);
-              setBar(pct, "signature " + Math.min(est.sigs, batchesDone + 1) + "/" + est.sigs + " - writing " + pct + "%");
+              const scaled = Math.round((batchesDone / est.sigs) * 100);
+              if (pct >= 100) setBar(scaled, "signature " + (est.chunks + 1) + "/" + est.sigs + " - finalizing, approve the last " + (est.sigs - est.chunks) + " in your wallet");
+              else setBar(scaled, "signature " + Math.min(est.sigs, batchesDone + 1) + "/" + est.sigs + " - writing");
             },
           });
         } else {
