@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=31";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=32";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
