@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=32";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=34";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -67,6 +67,18 @@
       chain = chainName === "evm" ? "evm" : "solana";
       if (isEvm()) attachment = null; // Automatic returns currently carry Solana signatures only.
       who = null; burner = null; bigAck = false; // route switch = fresh wallet state
+      // Keep the route in the URL so refreshing stays on this board instead of
+      // falling back to the home page (stack cards call init() directly).
+      try {
+        const menu = isEvm() ? "hoodin" : "codein";
+        const url = new URL(window.location.href);
+        if (url.searchParams.get("menu") !== menu) {
+          url.searchParams.set("menu", menu);
+          url.searchParams.delete("post");
+          if (post) url.searchParams.set("post", post);
+          history.pushState({ menu }, "", url);
+        }
+      } catch (e) {}
       $.ajax({ url: templateUrl, dataType: "html", type: "get", global: false, success: (html) => {
         $("#main_section").show().empty().append($(html));
         ready(() => { wire(); if (post) openPost(post); });
@@ -95,6 +107,7 @@
     function wire() {
       provider = window.phantom?.solana || window.solana || null;
       $("#ci2_connect").on("click", connect);
+      $("#ci2_home_dot").on("click", () => { window.location.href = window.location.pathname; });
       $("#ci2_new").on("click", openCompose);
       $("#ci2_tab_feed").on("click", () => switchTab("feed"));
       $("#ci2_tab_mine").on("click", () => switchTab("mine"));
@@ -162,6 +175,7 @@
       const M = window.iqCodein.meta;
       $("#ci2").addClass("hood");
       $("#ci2_board_title").text(M.boardTitle);
+      $("#ci2_page_title").text("// HOOD IN");
       $("#ci2_win").text("hood_in.exe");
       $("#ci2_chunks_label").text("txs (each = 1 wallet signature)");
       $("#ci2_total_label").text("on-chain fee (est)");
@@ -565,11 +579,17 @@
           // the batch progress the SDK reports.
           const est = window.iqCodein.estimateCost(bytes);
           setBar(0, "signature 1/" + est.sigs + " - approve in your wallet");
+          // The SDK progress only covers the data batches; the last 2
+          // signatures (row commit + tail pointer) come after it hits 100%.
+          // Scale the bar to the SIGNATURE count so it never sits full while
+          // the wallet still asks for more.
           res = await window.iqCodein.inscribe({
             kind: pay.kind, body: pay.body, who,
             onProgress: (pct) => {
               const batchesDone = Math.round((pct / 100) * est.chunks);
-              setBar(pct, "signature " + Math.min(est.sigs, batchesDone + 1) + "/" + est.sigs + " - writing " + pct + "%");
+              const scaled = Math.round((batchesDone / est.sigs) * 100);
+              if (pct >= 100) setBar(scaled, "signature " + (est.chunks + 1) + "/" + est.sigs + " - finalizing, approve the last " + (est.sigs - est.chunks) + " in your wallet");
+              else setBar(scaled, "signature " + Math.min(est.sigs, batchesDone + 1) + "/" + est.sigs + " - writing");
             },
           });
         } else {
