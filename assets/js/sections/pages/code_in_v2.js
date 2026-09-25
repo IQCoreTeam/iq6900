@@ -564,6 +564,8 @@
         if (isEvm()) {
           note = /user rejected|denied|4001/i.test(msg)
             ? "you canceled the signature in your wallet - tap retry when ready. "
+            : /-32603|could not coalesce|Unexpected error/i.test(msg)
+            ? "your wallet could not broadcast this tx through its Robinhood RPC (a network hiccup, or a weak RPC saved for chain 4663 in your wallet). retry usually works; if it keeps failing, set the Robinhood Chain RPC in your wallet to https://rpc.mainnet.chain.robinhood.com. nothing was spent. "
             : "nothing but tiny gas was spent (the storage fee only charges at the final tx). retry starts a fresh write. ";
         } else {
           try {
