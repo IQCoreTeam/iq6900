@@ -37,7 +37,7 @@
       const loopback = ["localhost", "127.0.0.1", "[::1]"];
       const local = loopback.includes(window.location.hostname) && loopback.includes(url.hostname) && ["http:", "https:"].includes(url.protocol);
       const allowed = ["https://blockchan.sol.site", "https://hoodchan.xyz", "https://blockchan.ar.io"].includes(origin);
-      if (params.get("menu") !== "hoodin" && window.opener && url.origin === origin && (allowed || local) && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) {
+      if (window.opener && url.origin === origin && (allowed || local) && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) {
         attachment = { origin, requestId, opener: window.opener, signature: null };
       }
     } catch (_) { /* Normal standalone upload, or an invalid return request. */ }
@@ -50,7 +50,7 @@
       }
       try {
         attachment.opener.postMessage({ type: "iq:attachment-complete", requestId: attachment.requestId,
-          network: "solana", signature: attachment.signature }, attachment.origin);
+          network: isEvm() ? "robinhood" : "solana", signature: attachment.signature }, attachment.origin);
         $("#ci2_return_status").text("Returning the attachment to your post…");
       } catch (_) {
         $("#ci2_return_status").text("Could not reach your post window. Your inscription is saved; you can retry attaching it.");
@@ -65,7 +65,6 @@
 
     function init(post, chainName) {
       chain = chainName === "evm" ? "evm" : "solana";
-      if (isEvm()) attachment = null; // Automatic returns currently carry Solana signatures only.
       who = null; burner = null; bigAck = false; // route switch = fresh wallet state
       // Keep the route in the URL so refreshing stays on this board instead of
       // falling back to the home page (stack cards call init() directly).
@@ -125,14 +124,14 @@
       $("#ci2_help_close").on("click", () => $("#ci2_help_modal").addClass("hide"));
       $("#ci2_help_go").on("click", openScan);
       $("#ci2_help_copy").on("click", copyScan);
-      $("#ci2_copy_link").on("click", async () => {
-        const input = document.getElementById("ci2_share_link");
+      $("#ci2_copy_link, #ci2_copy_tx").on("click", async function () {
+        const input = document.getElementById(this.id === "ci2_copy_tx" ? "ci2_tx_id" : "ci2_share_link");
         try {
           await navigator.clipboard.writeText(input.value);
-          $("#ci2_link_status").text("Inscription link copied.");
+          $("#ci2_link_status").text("Copied.");
         } catch (_) {
           input.focus(); input.select();
-          $("#ci2_link_status").text("Select and copy the inscription link above.");
+          $("#ci2_link_status").text("Select and copy the highlighted value.");
         }
       });
       $("#ci2_more").on("click", () => loadBoard(boardCursor));
@@ -559,8 +558,8 @@
       if (!who) { await connect(); if (!who) return; }
       const pay = currentPayload();
       if (!pay.body) return;
-      if (attachment && (!/^data:(image\/(png|jpeg|gif|webp|avif)|audio\/(mpeg|mp3|wav|x-wav|ogg|mp4|aac|flac)|video\/(mp4|webm|ogg))(?:;name=(?:[A-Za-z0-9_.!~*'()-]|%[0-9a-f]{2})*)?;base64,/i.test(pay.body) || window.iqCodein.cluster !== "mainnet-beta")) {
-        alert("Choose a supported image, audio or video file on the posting app's Solana network.");
+      if (attachment && (!/^data:(image\/(png|jpeg|gif|webp|avif)|audio\/(mpeg|mp3|wav|x-wav|ogg|mp4|aac|flac)|video\/(mp4|webm|ogg))(?:;name=(?:[A-Za-z0-9_.!~*'()-]|%[0-9a-f]{2})*)?;base64,/i.test(pay.body) || (!isEvm() && window.iqCodein.cluster !== "mainnet-beta"))) {
+        alert("Choose a supported image, audio or video file on the posting app's network.");
         return;
       }
       const bytes = new TextEncoder().encode(JSON.stringify({ kind: pay.kind, body: pay.body, who })).length;
@@ -616,6 +615,7 @@
         if (isEvm()) $("#ci2_donenote").text("// the storage fee charges once, at the final step. every tx before it is gas only.");
         const shareLink = window.iqCodein.viewUrl(res.sig);
         $("#ci2_share_link").val(shareLink);
+        $("#ci2_tx_id").val(res.sig);
         $("#ci2_open_link").attr("href", shareLink);
         $("#ci2_link_status").text(attachment ? "Returning your inscription to the post…" : "Keep this link to your inscription.");
         await window.iqCodein.notify(res.sig, { kind: pay.kind, body: pay.body, who });

@@ -64,9 +64,9 @@ test('completed link remains available when the posting window has closed',async
 });
 
 
-test('HOOD IN keeps the EVM adapter and does not return an EVM hash as a Solana attachment', async t => {
+for (const attached of [false, true]) test(`HOOD IN preserves its EVM adapter (automatic return: ${attached})`, async t => {
  const url=new URL('https://iqlabs.dev/?menu=hoodin');
- url.searchParams.set('attachmentOrigin','https://hoodchan.xyz');url.searchParams.set('attachmentRequest',id);
+ if (attached) { url.searchParams.set('attachmentOrigin','https://hoodchan.xyz');url.searchParams.set('attachmentRequest',id); }
  const dom=new JSDOM('<div id="main_section"></div>',{url:url.href,runScripts:'outside-only'});
  t.after(()=>dom.window.close());const w=dom.window;w.$=w.jQuery=jquery(w);w.TextEncoder=TextEncoder;
  const sent=[];w.opener={postMessage:msg=>sent.push(msg)};
@@ -81,9 +81,15 @@ test('HOOD IN keeps the EVM adapter and does not return an EVM hash as a Solana 
  w.eval(fs.readFileSync(path.join(assets,'js/sections/pages/code_in_v2.js'),'utf8'));
  w.$.code_in_v2.init(null,'evm');await new Promise(setImmediate);
  assert.equal(w.iqCodein,evm);assert.equal(w.$('#ci2').hasClass('hood'),true);
- assert.equal(w.$('#ci2_return').length,0);assert.equal(sent.length,0);
- w.$('#ci2_text').val('local EVM UI regression').trigger('input');
+ assert.equal(w.$('#ci2_return').length,attached?1:0);
+ if(attached) assert.equal(sent[0].type,'iq:attachment-ready');
+ else assert.equal(sent.length,0);
+ const input=w.document.querySelector('#ci2_file_file');
+ Object.defineProperty(input,'files',{value:[new w.File([new Uint8Array([1,2,3])],'test.wav',{type:'audio/wav'})]});
+ w.$(input).trigger('change');await new Promise(resolve=>w.setTimeout(resolve,20));
  w.$('#ci2_go').trigger('click');await new Promise(setImmediate);
  assert.equal(signed,1);assert.equal(w.$('#ci2_share_link').val(),'https://iqlabs.dev/?menu=hoodin&post='+hash);
- assert.equal(sent.length,0);assert.match(w.$('#ci2_donenote').text(),/storage fee/);
+ assert.equal(sent.length,attached?2:0);
+ if(attached) { assert.equal(sent[1].network,'robinhood');assert.equal(sent[1].signature,hash); }
+ assert.equal(w.$('#ci2_tx_id').val(),hash);assert.match(w.$('#ci2_donenote').text(),/storage fee/);
 });
