@@ -21,6 +21,7 @@ async function viewer(t, row, chain = 'solana') {
     estimateCost: () => ({ chunks: 1, total: 1, sigs: 2, totalLabel: '0.00012 ETH + gas' }),
     readBoard: async () => ({ rows: [row], nextCursor: null }),
     readOne: async () => row,
+    viewUrl: sig => `https://iqlabs.dev/?menu=${chain === "evm" ? "hoodin" : "codein"}&post=${sig}`,
     meta: { boardTitle: 'board.exe · robinhood', maxSigs: 25, connLabel: 'connection: robinhood public rpc', scanLabel: 'EXPLORER' },
   };
   w.iqCodeinChains = { solana: w.iqCodein, evm: w.iqCodein };
@@ -109,4 +110,11 @@ test('legacy demo still fetches when its controls are mounted', async (t) => {
   assert.equal(reads, 1);
   assert.equal(w.document.querySelector('#mp3 source').src, 'blob:synthetic-audio');
   assert.equal(w.document.querySelector('#playbtn').innerText, 'Start');
+});
+
+for (const chain of ['solana','evm']) test(`${chain} media badge links to its chain-specific inscription record`,async t=>{
+ const sig=chain==='evm'?'0x'+'a'.repeat(64):'2'.repeat(88);
+ const w=await viewer(t,{kind:'file',body:'data:audio/wav;base64,AA==',__txSignature:sig},chain);
+ assert.equal(w.$('.onchain-media').length,1);
+ assert.equal(w.$('.onchain-badge').attr('href'),`https://iqlabs.dev/?menu=${chain==='evm'?'hoodin':'codein'}&post=${sig}`);
 });

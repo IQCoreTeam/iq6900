@@ -270,6 +270,12 @@
           card.find(".ago").text(relTime(obj.__blockTime));
           card.find(".own").text(who2);
           renderThumb(card.find(".th"), obj);
+          if (sig && /^data:(image|audio|video)\//.test(String(obj.body || ""))) {
+            card.addClass("onchain-media");
+            card.find(".m").append($("<a>").addClass("onchain-badge")
+              .attr({href: window.iqCodein.viewUrl(sig), title: "This media is inscribed on the blockchain. View it on IQ."})
+              .text("On-chain · View on IQ").on("click", event => event.stopPropagation()));
+          }
           if (sig) card.css("cursor", "pointer").on("click", () => openPost(sig, obj));
           grid.append(card);
         });
