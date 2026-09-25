@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=34";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=35";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -56,7 +56,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=1", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=2", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -139,6 +139,14 @@
       if (isEvm()) {
         try { who = await window.iqCodein.connectWallet(); }
         catch (e) { alert(String((e && e.message) || e)); return; }
+        // Preflight the wallet-side RPC before any signature is requested; a
+        // dead saved RPC for chain 4663 fails every send with -32603.
+        window.iqCodein.checkWalletRpc().then((h) => {
+          if (h.ok) { $("#ci2_rpcwarn").addClass("hide"); return; }
+          $("#ci2_rpcwarn").removeClass("hide").text(
+            "warning: the Robinhood Chain RPC saved in your wallet is " + h.reason +
+            ", so writes will fail before anything is spent. open your wallet network settings for chain 4663 and set the RPC to https://rpc.mainnet.chain.robinhood.com, then reconnect.");
+        });
       } else {
         if (!provider) { alert("No Solana wallet found. Install Phantom."); return; }
         const res = await provider.connect();
