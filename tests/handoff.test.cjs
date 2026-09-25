@@ -64,17 +64,18 @@ test('completed link remains available when the posting window has closed',async
 });
 
 
-for (const attached of [false, true]) test(`HOOD IN preserves its EVM adapter (automatic return: ${attached})`, async t => {
+for (const attached of [false, true]) for (const healthy of [false, true]) test(`HOOD IN preserves its EVM adapter (automatic return: ${attached}, RPC healthy: ${healthy})`, async t => {
  const url=new URL('https://iqlabs.dev/?menu=hoodin');
  if (attached) { url.searchParams.set('attachmentOrigin','https://hoodchan.xyz');url.searchParams.set('attachmentRequest',id); }
  const dom=new JSDOM('<div id="main_section"></div>',{url:url.href,runScripts:'outside-only'});
  t.after(()=>dom.window.close());const w=dom.window;w.$=w.jQuery=jquery(w);w.TextEncoder=TextEncoder;
  const sent=[];w.opener={postMessage:msg=>sent.push(msg)};
  const hash='0x'+'a'.repeat(64);
- let signed=0;
+ let signed=0, finishCheck;
+ const check = new Promise(resolve=>{finishCheck=resolve;});
  const evm={meta:{boardTitle:'HOOD IN',connLabel:'connection: Robinhood RPC',scanLabel:'BLOCKSCOUT',maxSigs:25},
   hasOwnRpc:()=>false,estimateCost:()=>({sigs:2,chunks:0,totalLabel:'0.0001 ETH'}),getSpeed:()=> 'auto',
-  readBoard:async()=>({rows:[]}),checkWalletRpc:async()=>({ok:true}),connectWallet:async()=> '0x'+'b'.repeat(40),
+  readBoard:async()=>({rows:[]}),checkWalletRpc:()=>check,connectWallet:async()=> '0x'+'b'.repeat(40),
   inscribe:async()=>{signed++;return {sig:hash};},notify:async()=>true,viewUrl:sig=>'https://iqlabs.dev/?menu=hoodin&post='+sig};
  w.iqCodeinChains={evm};
  w.$.ajax=({success})=>success(fs.readFileSync(path.join(assets,'html/sections/code_in_v2.html'),'utf8'));
@@ -88,6 +89,9 @@ for (const attached of [false, true]) test(`HOOD IN preserves its EVM adapter (a
  Object.defineProperty(input,'files',{value:[new w.File([new Uint8Array([1,2,3])],'test.wav',{type:'audio/wav'})]});
  w.$(input).trigger('change');await new Promise(resolve=>w.setTimeout(resolve,20));
  w.$('#ci2_go').trigger('click');await new Promise(setImmediate);
+ assert.equal(signed,0,'no signature before wallet RPC health check completes');
+ finishCheck({ok:healthy,reason:'not responding'});await new Promise(setImmediate);
+ if(!healthy) { assert.equal(signed,0);assert.equal(sent.length,attached?1:0);assert.match(w.$('#ci2_rpcwarn').text(),/not responding/);return; }
  assert.equal(signed,1);assert.equal(w.$('#ci2_share_link').val(),'https://iqlabs.dev/?menu=hoodin&post='+hash);
  assert.equal(sent.length,attached?2:0);
  if(attached) { assert.equal(sent[1].network,'robinhood');assert.equal(sent[1].signature,hash); }

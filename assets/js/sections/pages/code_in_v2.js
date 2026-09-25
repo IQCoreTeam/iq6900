@@ -198,12 +198,15 @@
         catch (e) { alert(String((e && e.message) || e)); return; }
         // Preflight the wallet-side RPC before any signature is requested; a
         // dead saved RPC for chain 4663 fails every send with -32603.
-        window.iqCodein.checkWalletRpc().then((h) => {
-          if (h.ok) { $("#ci2_rpcwarn").addClass("hide"); return; }
+        const h = await window.iqCodein.checkWalletRpc();
+        if (!h.ok) {
+          who = null;
           $("#ci2_rpcwarn").removeClass("hide").text(
             "warning: the Robinhood Chain RPC saved in your wallet is " + h.reason +
             ", so writes will fail before anything is spent. open your wallet network settings for chain 4663 and set the RPC to https://rpc.mainnet.chain.robinhood.com, then reconnect.");
-        });
+          return;
+        }
+        $("#ci2_rpcwarn").addClass("hide");
       } else {
         if (!provider) { alert("No Solana wallet found. Install Phantom."); return; }
         const res = await provider.connect();
