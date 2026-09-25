@@ -74,7 +74,7 @@ for (const attached of [false, true]) test(`HOOD IN preserves its EVM adapter (a
  let signed=0;
  const evm={meta:{boardTitle:'HOOD IN',connLabel:'connection: Robinhood RPC',scanLabel:'BLOCKSCOUT',maxSigs:25},
   hasOwnRpc:()=>false,estimateCost:()=>({sigs:2,chunks:0,totalLabel:'0.0001 ETH'}),getSpeed:()=> 'auto',
-  readBoard:async()=>({rows:[]}),connectWallet:async()=> '0x'+'b'.repeat(40),
+  readBoard:async()=>({rows:[]}),checkWalletRpc:async()=>({ok:true}),connectWallet:async()=> '0x'+'b'.repeat(40),
   inscribe:async()=>{signed++;return {sig:hash};},notify:async()=>true,viewUrl:sig=>'https://iqlabs.dev/?menu=hoodin&post='+sig};
  w.iqCodeinChains={evm};
  w.$.ajax=({success})=>success(fs.readFileSync(path.join(assets,'html/sections/code_in_v2.html'),'utf8'));

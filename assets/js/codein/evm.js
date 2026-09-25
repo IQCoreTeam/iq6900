@@ -92,6 +92,26 @@ const surface = {
     return signer.address;
   },
 
+  // Health check for the wallet-side RPC (the one that will broadcast).
+  // eth_blockNumber through window.ethereum uses the RPC the WALLET has saved
+  // for chain 4663, which we cannot read or change programmatically; a dead
+  // chainlist entry (rpc.arrowrpc.com was down 2026-09) fails every send with
+  // -32603, so catch it BEFORE the user signs anything.
+  checkWalletRpc: async () => {
+    const eth = window.ethereum;
+    if (!eth) return { ok: false, reason: "no wallet" };
+    const timed = (p, ms) => Promise.race([p, new Promise((_, rj) => setTimeout(() => rj(new Error("timeout")), ms))]);
+    let walletBlock;
+    try { walletBlock = parseInt(await timed(eth.request({ method: "eth_blockNumber" }), 6000), 16); }
+    catch (err) { return { ok: false, reason: "not responding" }; }
+    if (!Number.isFinite(walletBlock)) return { ok: false, reason: "not responding" };
+    try {
+      const chainBlock = await timed(new JsonRpcProvider(DEFAULT_RPC).getBlockNumber(), 6000);
+      if (chainBlock - walletBlock > 600) return { ok: false, reason: (chainBlock - walletBlock) + " blocks behind" };
+    } catch (err) { /* official rpc hiccup; do not blame the wallet */ }
+    return { ok: true };
+  },
+
   setRpc: (rpc) => {
     activeRpc = rpc || DEFAULT_RPC;
     try { rpc ? localStorage.setItem(RPC_KEY, rpc) : localStorage.removeItem(RPC_KEY); } catch (e) {}
