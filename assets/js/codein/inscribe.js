@@ -7,7 +7,7 @@
 import { contract, writer } from "@iqlabs-official/solana-sdk";
 import { SystemProgram, Transaction } from "@solana/web3.js";
 import { dbRootSeed, feedSeed, programId } from "./feed.js";
-import { estimateCost } from "./cost.js?v=3";
+import { estimateCost, getAccountRent } from "./cost.js?v=4";
 
 const TX_FEE = 5000;
 // A system account may not be left with 0 < balance < rent-exempt minimum, so
@@ -22,9 +22,7 @@ export async function inscribe({ connection, wallet, burner, kind, body, speed, 
   const row = JSON.stringify({ kind, body, who: wallet.publicKey.toBase58() });
   const bytes = new TextEncoder().encode(row).length;
 
-  const burnerInv = contract.getUserInventoryPda(burner.publicKey, programId);
-  const firstTime = !(await connection.getAccountInfo(burnerInv));
-  const { total } = estimateCost(bytes, { firstTime });
+  const { total } = estimateCost(bytes, { accountRent: await getAccountRent(connection, burner.publicKey) });
 
   await topUp(connection, wallet, burner.publicKey, total);
 
@@ -44,8 +42,8 @@ export async function inscribe({ connection, wallet, burner, kind, body, speed, 
       if (onRetry) onRetry(attempt);
       // Top the burner back up for the extra session; usually a no-op thanks
       // to the sweep margin, and init rent drops out once the init landed.
-      const stillFirst = firstTime && !(await connection.getAccountInfo(burnerInv));
-      await topUp(connection, wallet, burner.publicKey, estimateCost(bytes, { firstTime: stillFirst }).total);
+      const accountRent = await getAccountRent(connection, burner.publicKey);
+      await topUp(connection, wallet, burner.publicKey, estimateCost(bytes, { accountRent }).total);
     }
   }
 
@@ -102,13 +100,17 @@ async function topUp(connection, wallet, burnerPubkey, target) {
 // up. Returns false only when the signature never shows up as confirmed.
 async function confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight) {
   try {
-    await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
+    const result = await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
+    if (result.value.err) throw new Error("transfer " + sig + " failed: " + JSON.stringify(result.value.err));
     return true;
   } catch (e) {
     if (!e || e.name !== "TransactionExpiredBlockheightExceededError") throw e;
     for (let i = 0; i < 5; i++) {
       const st = (await connection.getSignatureStatuses([sig])).value[0];
-      if (st && (st.confirmationStatus === "confirmed" || st.confirmationStatus === "finalized")) return true;
+      if (st && (st.confirmationStatus === "confirmed" || st.confirmationStatus === "finalized")) {
+        if (st.err) throw new Error("transfer " + sig + " failed: " + JSON.stringify(st.err));
+        return true;
+      }
       await new Promise((r) => setTimeout(r, 2000));
     }
     return false;
@@ -139,6 +141,8 @@ export async function sweep(connection, burner, to) {
   );
   tx.sign(burner);
   const sig = await sendRaw(connection, tx);
-  await confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight);
+  if (!(await confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight))) {
+    throw new Error("refund transfer " + sig + " was not confirmed; check its status before retrying");
+  }
   return balance - TX_FEE;
 }

@@ -17,7 +17,7 @@ class Controller {
 
     init() {
         const btn = document.getElementById('playbtn');
-        btn.innerText = "Start";
+        if (btn) btn.innerText = "Start";
     }
 
     async stateChange() {
@@ -52,13 +52,9 @@ class Controller {
 const videoCtrl = new Controller();
 
 
-window.addEventListener("DOMContentLoaded", function () {
-    console.log("dom loaded")
-    fetchMusicFromBlockchain();
-}, false);
-
-
 async function fetchMusicFromBlockchain() {
+    // This legacy demo is only available when its page has mounted the player.
+    if (!document.getElementById('mp3') || !document.getElementById('playbtn')) return;
     try {
         const $div = $('.mv_console_div');
 
