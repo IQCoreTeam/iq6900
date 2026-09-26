@@ -1,0 +1,126 @@
+{
+  "network": "devnet",
+  "genesis": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+  "receipts": [
+    {
+      "signature": "YpXZvvBRTQ4f4csegxXMZS7jm5QbggrC86EBg4Gxii7e9fpdXRqywQ1JMD7F5xcxLEkMuLFKcuFmwh84c6BNzWn",
+      "status": {
+        "confirmationStatus": "finalized",
+        "confirmations": null,
+        "err": null,
+        "slot": 503082413,
+        "status": {
+          "Ok": null
+        }
+      }
+    },
+    {
+      "signature": "4QYcrELxAt4GBk2xb4xX7p251M8Ef1w5Qjh56hWnFipYaCarq1VBtv3h9ppnwzzt8rw3RzDVFuHen4LnUd4vfmPy",
+      "status": {
+        "confirmationStatus": "finalized",
+        "confirmations": null,
+        "err": null,
+        "slot": 503082470,
+        "status": {
+          "Ok": null
+        }
+      }
+    },
+    {
+      "signature": "3w6QQVwtoh8QL1jb8o4YAAzdQNhh5gpzJzVNAMSA4R7EtqH4aW2QB94tjSxEBWKMQiNuq9LK42B6i9wRg19gKM2w",
+      "status": {
+        "confirmationStatus": "finalized",
+        "confirmations": null,
+        "err": null,
+        "slot": 503082492,
+        "status": {
+          "Ok": null
+        }
+      }
+    },
+    {
+      "signature": "5HmchgVkXqRZbqNRAVZxpWDPhTwrBNUGnkhkuvtiPCZmkUmJeJr9NWW2mNSVNMNJ13V5so9cScS47SE4YXyyjhLE",
+      "status": {
+        "confirmationStatus": "finalized",
+        "confirmations": null,
+        "err": null,
+        "slot": 503082513,
+        "status": {
+          "Ok": null
+        }
+      }
+    },
+    {
+      "signature": "3yk7tVz1hErJzX93GHTy7qG5eptoDnpZUXVxPJL2UKUQ73Zjdtd983CSsbnMCbzkeb8vD2UdMFs3QDT2YVxirYGt",
+      "status": {
+        "confirmationStatus": "finalized",
+        "confirmations": null,
+        "err": null,
+        "slot": 503082540,
+        "status": {
+          "Ok": null
+        }
+      }
+    },
+    {
+      "signature": "eYZHdYhR1U2o3V7i8ScV9eTGE2aMqRCqkGaX5vSBRXEFccCV7QLPWXj948nkBhujfKeyvu2DS6EvbNhyUFSFwvo",
+      "status": {
+        "confirmationStatus": "finalized",
+        "confirmations": null,
+        "err": null,
+        "slot": 503083542,
+        "status": {
+          "Ok": null
+        }
+      }
+    },
+    {
+      "signature": "5xNhQBrsujtXPxPbuud9NLBSJMNxQpmRdpZaWzq5bQ5jQ4pLQ1U8z8wvTRfXPKxKn2ff11Gcqo2iyeeu6PpDLtWy",
+      "status": {
+        "confirmationStatus": "finalized",
+        "confirmations": null,
+        "err": null,
+        "slot": 503083591,
+        "status": {
+          "Ok": null
+        }
+      }
+    },
+    {
+      "signature": "bz19kV9QvucErTL1jZ1t9Dg3CAbXWXM8JnZLWeN71RDUyL243e9LJMKNKsapr2EGLptVZDoPUQ36RXW9GpLLBdq",
+      "status": {
+        "confirmationStatus": "finalized",
+        "confirmations": null,
+        "err": null,
+        "slot": 503084170,
+        "status": {
+          "Ok": null
+        }
+      }
+    },
+    {
+      "signature": "fS565qg6z2JB3CmosoCBRwtuGSauVy6wwcHwKsSs27GmswVUHuaryER5QnAkriSWWS6qgcD7gUzvE8EDW16GmgP",
+      "status": {
+        "confirmationStatus": "finalized",
+        "confirmations": null,
+        "err": null,
+        "slot": 503084258,
+        "status": {
+          "Ok": null
+        }
+      }
+    },
+    {
+      "signature": "4PQDvnkVAT1SuaNXGF6NRPybTtTpPwxFTtF1nsEtP4V7jZ4FexnX31MsWBKPeBBHJ44NdVEdhZD3cAYgSodQPL5Q",
+      "status": {
+        "confirmationStatus": "finalized",
+        "confirmations": null,
+        "err": null,
+        "slot": 503087009,
+        "status": {
+          "Ok": null
+        }
+      }
+    }
+  ]
+}

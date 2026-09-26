@@ -1,0 +1,54 @@
+{
+  "genesis": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+  "owner": "8kEJbuu74Ck9gccEz9vrZtncDbJZuHunEmDExMG2Fdwd",
+  "burner": "5GPWdSwnUA3oeFCXfTxmf3RqHDC95ejaGivNRU4jUq4G",
+  "ownerBeforeLamports": 143358360,
+  "ownerRemainingLamports": 140333360,
+  "devnetLamportsSpentThisRun": 3025000,
+  "burnerRemainingLamports": 0,
+  "receipts": [
+    {
+      "signature": "6jeLwHsfQVcuDVTnPM5Eg48RPEBCCqoFKXiKNc6YyvWVB6CoHLnmC5VR5p95auhEd23UEnP7v5QsobRqNnRZnDN",
+      "status": "finalized",
+      "slot": 503038442,
+      "version": "legacy",
+      "feeLamports": 5000,
+      "err": null
+    },
+    {
+      "signature": "4wLXMmaAkDqHpzNdQedR3ReBgm8YRLfU6tBNyrXy24JwVxSipmJucMa9k1thmCYcrsVCq9hjtLhhXVHzrcJB1UyL",
+      "status": "finalized",
+      "slot": 503038494,
+      "version": 1,
+      "feeLamports": 5000,
+      "err": null
+    },
+    {
+      "signature": "5TDWmYCtBcCit1vaEFtdPZ2pNbb5jJgnFK1LKungiKjpkAo3DwNhWwegNYf5L1uLuxBXDfi9szkNU9sYwPyTkB4P",
+      "status": "finalized",
+      "slot": 503038523,
+      "version": 1,
+      "feeLamports": 5000,
+      "err": null
+    },
+    {
+      "signature": "2K4gfw5NQniWPe1SoLfbdUJ93qzbwV2ZkNuKQLTkRnUo31Ksc9kzsXFMfCApX7pDJo4envNvUnFKLCWZzY8c1jUk",
+      "status": "finalized",
+      "slot": 503038538,
+      "version": 1,
+      "feeLamports": 5000,
+      "err": null
+    },
+    {
+      "signature": "2GXvi3XitMfgZHPaWy32EfFK2gikDpVNVUwwXKEZJdrq7yYfn28iiw3yZf1AyJ1LLcm2pAgpvVzzW7YQ5Brg5rXa",
+      "status": "finalized",
+      "slot": 503038556,
+      "version": "legacy",
+      "feeLamports": 5000,
+      "err": null
+    }
+  ],
+  "exactMediaReadback": true,
+  "mediaSignature": "2K4gfw5NQniWPe1SoLfbdUJ93qzbwV2ZkNuKQLTkRnUo31Ksc9kzsXFMfCApX7pDJo4envNvUnFKLCWZzY8c1jUk",
+  "mainnetWrites": 0
+}

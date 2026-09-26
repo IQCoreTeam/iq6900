@@ -1,0 +1,167 @@
+[
+  {
+    "repository": "IQCoreTeam/iq6900",
+    "number": 5,
+    "title": "NOT READY: Return inscriptions to posting apps with a copyable link",
+    "url": "https://github.com/IQCoreTeam/iq6900/pull/5",
+    "draft": true,
+    "headRepository": "NubsCarson/iq6900",
+    "branch": "review/inscription-return-to-post",
+    "commit": "2754ca5d88e05006d0247d4de91e438fccf8280e",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/iq-gateway",
+    "number": 33,
+    "title": "Update compatible gateway RPC and YAML dependencies",
+    "url": "https://github.com/IQCoreTeam/iq-gateway/pull/33",
+    "draft": true,
+    "headRepository": "NubsCarson/iq-gateway-contributions",
+    "branch": "review/iq-gateway-dependencies",
+    "commit": "4a309fb574f54849bb5e0755fa6a922709025e46",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/iq-chan",
+    "number": 32,
+    "title": "Update WalletConnect and Next PostCSS dependencies",
+    "url": "https://github.com/IQCoreTeam/iq-chan/pull/32",
+    "draft": true,
+    "headRepository": "NubsCarson/iq-chan",
+    "branch": "review/iq-chan-dependencies",
+    "commit": "2ba007cf20d20269f5f61a70eefdb0d67cb9f2f9",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/iq-chan",
+    "number": 31,
+    "title": "NOT READY: Add inscription attachments with automatic return and URL fallback",
+    "url": "https://github.com/IQCoreTeam/iq-chan/pull/31",
+    "draft": true,
+    "headRepository": "NubsCarson/iq-chan",
+    "branch": "review/iq-chan-inscription-media",
+    "commit": "4f1105ebed7dc9cee64d723cec72f325f7551b10",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/iq6900",
+    "number": 4,
+    "title": "Fix inscription metadata rendering and fresh-wallet funding",
+    "url": "https://github.com/IQCoreTeam/iq6900/pull/4",
+    "draft": false,
+    "headRepository": "NubsCarson/iq6900",
+    "branch": "review/iq6900-viewer-funding",
+    "commit": "c68c95303d1ebcd8a168fa76ef08f04dbd8337af",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/iq-gateway",
+    "number": 32,
+    "title": "Serve inscribed media for BlockChan and HoodChan previews",
+    "url": "https://github.com/IQCoreTeam/iq-gateway/pull/32",
+    "draft": false,
+    "headRepository": "NubsCarson/iq-gateway-contributions",
+    "branch": "review/iq-gateway-inscription-media",
+    "commit": "6d589b86756a802e04499b7ba59b0b4dfe20cf52",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/iq-chan",
+    "number": 30,
+    "title": "Show homepage threads without waiting for slow boards or images",
+    "url": "https://github.com/IQCoreTeam/iq-chan/pull/30",
+    "draft": false,
+    "headRepository": "NubsCarson/iq-chan",
+    "branch": "review/iq-chan-home-progress",
+    "commit": "0f0a42e8217436a8d22d4c24bc9c8c5deb3559c6",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/iqlabs-solana-sdk",
+    "number": 25,
+    "title": "Fix failed confirmations and interrupted upload retries",
+    "url": "https://github.com/IQCoreTeam/iqlabs-solana-sdk/pull/25",
+    "draft": false,
+    "headRepository": "NubsCarson/iqlabs-solana-sdk",
+    "branch": "review/iq-sdk-confirmation-resume",
+    "commit": "037e2e344b288723554a7ab50f286631ec39c512",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/iq-gateway",
+    "number": 31,
+    "title": "Avoid immediate duplicate RPC scans after filling table caches",
+    "url": "https://github.com/IQCoreTeam/iq-gateway/pull/31",
+    "draft": false,
+    "headRepository": "NubsCarson/iq-gateway-contributions",
+    "branch": "codex/cache-local-audit-20260922",
+    "commit": "e62ae13db2dd6a32d6cb3e6a9dff058ffe93ab49",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/iq-git-cli",
+    "number": 4,
+    "title": "Upgrade IQ SDKs for v1 uploads and preserve offline commits",
+    "url": "https://github.com/IQCoreTeam/iq-git-cli/pull/4",
+    "draft": false,
+    "headRepository": "NubsCarson/iq-git-cli",
+    "branch": "chore/sdk-v1",
+    "commit": "1bab5cfe09b91c83e1d15abc1314d73c58728f2d",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/on-chaingit-frontend",
+    "number": 9,
+    "title": "Keep Pages settings synchronized after reads and commits",
+    "url": "https://github.com/IQCoreTeam/on-chaingit-frontend/pull/9",
+    "draft": false,
+    "headRepository": "NubsCarson/on-chaingit-frontend",
+    "branch": "codex/iqgit-pages-state-20260916",
+    "commit": "114e37251d377feeed3fa67884d70a13459aefa6",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/iqlabs-solana-sdk-python",
+    "number": 1,
+    "title": "Install AnchorPy test dependencies with the dev extra",
+    "url": "https://github.com/IQCoreTeam/iqlabs-solana-sdk-python/pull/1",
+    "draft": false,
+    "headRepository": "NubsCarson/iqlabs-solana-sdk-python",
+    "branch": "codex/python-test-dependencies-20260916",
+    "commit": "636337bbce5e8503e7f05c38d8e36c3a6917c366",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/on-chaingit-frontend",
+    "number": 8,
+    "title": "Allow deployment-specific Solana RPC endpoints",
+    "url": "https://github.com/IQCoreTeam/on-chaingit-frontend/pull/8",
+    "draft": false,
+    "headRepository": "NubsCarson/on-chaingit-frontend",
+    "branch": "codex/configurable-solana-rpc-20260916",
+    "commit": "a0627a8026fc52635181077bc3d7dcd25f4504ac",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/on-chaingit-frontend",
+    "number": 7,
+    "title": "Fix provider nesting and duplicate repository cards",
+    "url": "https://github.com/IQCoreTeam/on-chaingit-frontend/pull/7",
+    "draft": false,
+    "headRepository": "NubsCarson/on-chaingit-frontend",
+    "branch": "codex/repository-gallery-rendering-20260916",
+    "commit": "f5f20290524c1ff35e12285f8781f6d2606593ce",
+    "branchExists": true
+  },
+  {
+    "repository": "IQCoreTeam/iq-wide-web",
+    "number": 3,
+    "title": "Render inscribed files at transaction URLs",
+    "url": "https://github.com/IQCoreTeam/iq-wide-web/pull/3",
+    "draft": false,
+    "headRepository": "NubsCarson/iq-wide-web",
+    "branch": "codex/transaction-viewer-20260916",
+    "commit": "523be92349c215281688758aca2747d2b6d29aa9",
+    "branchExists": true
+  }
+]

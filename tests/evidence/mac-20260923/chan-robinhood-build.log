@@ -1,0 +1,31 @@
+$ node scripts/gen-image-lists.js
+Generated /Users/nubs/Git/iq-chan-ready-20260923/src/lib/generated-images.ts: 122 banners, 6 placeholders
+$ next build
+   ▲ Next.js 15.5.25
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 15.9s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/5) ...
+   Generating static pages (1/5) 
+   Generating static pages (2/5) 
+   Generating static pages (3/5) 
+ ✓ Generating static pages (5/5)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                     124 kB         418 kB
+├ ƒ /_not-found                            140 B         104 kB
+├ ƒ /attachment                              0 B            0 B
+├ ƒ /share-image/[...segments]               0 B            0 B
+└ ƒ /share/[...segments]                     0 B            0 B
++ First Load JS shared by all             104 kB
+  ├ chunks/1255-623a1bc706ecd6cc.js      46.1 kB
+  ├ chunks/4bd1b696-100b9d70ed4e49c1.js  54.2 kB
+  └ other shared chunks (total)          3.15 kB
+
+
+ƒ  (Dynamic)  server-rendered on demand
+
