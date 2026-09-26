@@ -93,7 +93,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=2", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=3", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -655,8 +655,8 @@
         if (isEvm()) {
           note = /user rejected|denied|4001/i.test(msg)
             ? "you canceled the signature in your wallet - tap retry when ready. "
-            : /-32603|could not coalesce|Unexpected error/i.test(msg)
-            ? "your wallet could not broadcast this tx through its Robinhood RPC (a network hiccup, or a weak RPC saved for chain 4663 in your wallet). retry usually works; if it keeps failing, set the Robinhood Chain RPC in your wallet to https://rpc.mainnet.chain.robinhood.com. nothing was spent. "
+            : /oversized|too large|exceeds|-32603|could not coalesce|Unexpected error/i.test(msg)
+            ? "your wallet could not broadcast one of these transactions. this is usually a transient network hiccup, so retry, which re-signs only what did not land. if it keeps failing on a large file, the steady path is the SDK / CLI. nothing was spent. "
             : "nothing but tiny gas was spent (the storage fee only charges at the final tx). retry starts a fresh write. ";
         } else {
           try {
