@@ -80,14 +80,25 @@
 #ci2 .vbtn{border:1px solid var(--fg50);border-radius:4px;padding:6px 12px;cursor:pointer;transition:all .3s}
 #ci2 .vbtn:hover{border-color:var(--fg);background:var(--fg10)}
 #ci2 .rec .tag{border:1px solid var(--fg40);border-radius:3px;padding:1px 6px;letter-spacing:.08em}
+/* Mobile header: the narrow bar could not hold every item on one line, so the
+   CONNECT WALLET button jutted out of the viewport. Let the bar wrap (safety
+   net so nothing ever overflows) and drop the non-essential long items (the
+   big-file link and the address readout) below 600px, leaving dots + title +
+   the action button. margin-left:auto on the button keeps it right-aligned on
+   its line whether or not it wraps. */
+@media (max-width:600px){
+  #ci2_hdr{flex-wrap:wrap;gap:6px;padding:10px 12px;letter-spacing:.06em}
+  #ci2_hdr #ci2_bigfile,#ci2_hdr #ci2_who{display:none}
+  #ci2_hdr #ci2_connect,#ci2_hdr #ci2_new{margin-left:auto}
+}
 </style>
 
-  <div class="bar" style="border:1px solid var(--fg);border-radius:8px;margin-bottom:14px;background:var(--panel2)">
+  <div id="ci2_hdr" class="bar" style="border:1px solid var(--fg);border-radius:8px;margin-bottom:14px;background:var(--panel2)">
     <span id="ci2_home_dot" class="dot" style="background:#e0554e;cursor:pointer" title="back to home"></span><span class="dot" style="background:#e0a84e"></span><span class="dot" style="background:#2BD52D"></span>
     <span id="ci2_page_title" style="margin-left:6px;opacity:.8">// CODE IN</span>
     <span id="ci2_bigfile" style="margin-left:14px;opacity:.75;text-decoration:underline;cursor:pointer">how to upload BIG FILE</span>
-    <span id="ci2_who" style="margin-left:auto;opacity:.7">not connected</span>
-    <button id="ci2_connect" class="btn" style="margin-left:12px">CONNECT WALLET</button>
+    <span id="ci2_who" class="hide" style="margin-left:auto;opacity:.7"></span>
+    <button id="ci2_connect" class="btn" style="margin-left:auto">CONNECT WALLET</button>
     <button id="ci2_new" class="btn hide" style="margin-left:8px">+ NEW INSCRIPTION</button>
   </div>
   <div id="ci2_rpcwarn" class="hide" style="border:1px solid #e0a84e;border-radius:8px;margin-bottom:14px;padding:11px 16px;color:#e0a84e;font-size:11px;line-height:1.8"></div>

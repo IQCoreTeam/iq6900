@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=35";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=36";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -152,7 +152,10 @@
         const res = await provider.connect();
         who = (res?.publicKey || provider.publicKey).toString();
       }
-      $("#ci2_who").text(who.slice(0, 4) + "..." + who.slice(-4));
+      // ci2_who starts hidden (no meaningless "not connected"); reveal it with
+      // the short address once a wallet is actually connected. On mobile the
+      // media query keeps it hidden to save the narrow header's width.
+      $("#ci2_who").text(who.slice(0, 4) + "..." + who.slice(-4)).removeClass("hide");
       // +NEW INSCRIPTION takes the connect button's place once connected.
       $("#ci2_connect").addClass("hide");
       $("#ci2_new").removeClass("hide");
