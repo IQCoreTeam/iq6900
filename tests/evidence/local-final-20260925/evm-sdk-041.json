@@ -1,0 +1,142 @@
+{
+  "scope": "Local Anvil fork only; generated wallet and synthetic funds",
+  "nodeInfo": {
+    "currentBlockNumber": "0x4574168",
+    "currentBlockTimestamp": 1790399830,
+    "currentBlockHash": "0x05cc03896d80544e42363682018ac2e55a303f2f4726c6d378be062d57454f0e",
+    "hardFork": "Bpo1",
+    "transactionOrder": "fees",
+    "environment": {
+      "baseFee": "0x1acf481",
+      "chainId": 4663,
+      "gasLimit": "0x4000000000000",
+      "gasPrice": "0x3d47be81"
+    },
+    "forkConfig": {
+      "forkUrl": "https://rpc.mainnet.chain.robinhood.com",
+      "forkBlockNumber": 72827240,
+      "forkRetryBackoff": 1000
+    },
+    "network": "ethereum"
+  },
+  "contract": "0x88af59e58C7E5DcbE7cc12972B90cff3fEEF7223",
+  "codeHash": "0xff68cc1a19b963b4cf949ad24fadca623fce4621d2c54c73b529c8c0499f8a4f",
+  "inventory": "0x8f7abed668f3242d2d616c9acf553ce41fe4d73e458f0b961652e4f91406b22c",
+  "inline": "0xed77b0521f61b93f69d7f400006889074c160eaf6605ba050405a77c4e00f629",
+  "linked": "0xf205e0f38e26deaf44d65c5724775858fdfd209247d45ee38fb1a9218316226f",
+  "mediaBytes": 192044,
+  "exactReadback": true,
+  "rangeStatus": 206,
+  "invalidRangeStatus": 416,
+  "unsafeStatus": 415,
+  "receipts": [
+    {
+      "hash": "0x68c129bbf46103dbf437201343c2f31b7b38adfc172692d9389e05c61eef6d1b",
+      "block": 72827241,
+      "status": 1,
+      "gasUsed": "3373530"
+    },
+    {
+      "hash": "0x1bddb232534240bedaa89c6c92900beafd2daf1980cb287ec88a0d4c3d7466c8",
+      "block": 72827242,
+      "status": 1,
+      "gasUsed": "3375940"
+    },
+    {
+      "hash": "0x895b8bbf4e77f38b32c3bddd88f63640c45fa2adb709172ce55d42831337f659",
+      "block": 72827243,
+      "status": 1,
+      "gasUsed": "3375940"
+    },
+    {
+      "hash": "0x96b944277089b6b70f59f1f592af717d1df4670322e94db982b3924ddf54289f",
+      "block": 72827244,
+      "status": 1,
+      "gasUsed": "492150"
+    },
+    {
+      "hash": "0x8f7abed668f3242d2d616c9acf553ce41fe4d73e458f0b961652e4f91406b22c",
+      "block": 72827245,
+      "status": 1,
+      "gasUsed": "46612"
+    },
+    {
+      "hash": "0x06e7721b0a3d10e865fe51fc601d0075ecbc8ecfa71d2e3d0c869a305f2eb4b6",
+      "block": 72827246,
+      "status": 1,
+      "gasUsed": "111982"
+    },
+    {
+      "hash": "0x8e6129f1f6ca13ebbf2e963317fe5610bc112edf772fa372820af1efa547c8ab",
+      "block": 72827247,
+      "status": 1,
+      "gasUsed": "68327"
+    },
+    {
+      "hash": "0x15f443cccc18ca4dcfa3f554c710746115c06a7b0763138055b5d39bc97b4432",
+      "block": 72827248,
+      "status": 1,
+      "gasUsed": "386081"
+    },
+    {
+      "hash": "0xed77b0521f61b93f69d7f400006889074c160eaf6605ba050405a77c4e00f629",
+      "block": 72827249,
+      "status": 1,
+      "gasUsed": "76238"
+    },
+    {
+      "hash": "0xe2a9255959e9b2fbb3bd03e4929ab139fc275ae2e451dbeb33889bbcb17f31b5",
+      "block": 72827250,
+      "status": 1,
+      "gasUsed": "118280"
+    },
+    {
+      "hash": "0x8e18cd5ffb3cbcd82c60de9b48855625c58c690ef184b9cfdaefe8462619cb69",
+      "block": 72827251,
+      "status": 1,
+      "gasUsed": "3373530"
+    },
+    {
+      "hash": "0xa61f51de3d9a25456e183e115412cbeb7923858dd8158413498296d8cb0a44db",
+      "block": 72827252,
+      "status": 1,
+      "gasUsed": "3375940"
+    },
+    {
+      "hash": "0xeb09eede74326b6559be8fb53c6d197d90597f27d509c2ebffb9865ffa3a5685",
+      "block": 72827253,
+      "status": 1,
+      "gasUsed": "3375940"
+    },
+    {
+      "hash": "0xfb55694c83c645dc7df5d015145960aadd8f2dd49c921fbd99790bc284d9b1ad",
+      "block": 72827254,
+      "status": 1,
+      "gasUsed": "492150"
+    },
+    {
+      "hash": "0xf205e0f38e26deaf44d65c5724775858fdfd209247d45ee38fb1a9218316226f",
+      "block": 72827255,
+      "status": 1,
+      "gasUsed": "67190"
+    },
+    {
+      "hash": "0xc0de8e589dd7d755c90704fbd2502e8d912d844e69918ff7a1733a2407bb9dd9",
+      "block": 72827256,
+      "status": 1,
+      "gasUsed": "47215"
+    },
+    {
+      "hash": "0x7af1fc4059d28d63551a5250303fa0af767be6ff2df7114b062d9d7c6394541f",
+      "block": 72827257,
+      "status": 1,
+      "gasUsed": "56238"
+    },
+    {
+      "hash": "0xc30f36edcd13d47997fae76a5e4cf0063ad017f1dcb751eb8e21cdd69cac6aa3",
+      "block": 72827258,
+      "status": 1,
+      "gasUsed": "40917"
+    }
+  ]
+}
