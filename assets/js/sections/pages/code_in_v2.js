@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=36";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=38";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -118,6 +118,7 @@
       $("#ci2_file_file").on("change", onFileFile);
       $("#ci2_view_close, #ci2_view_dot").on("click", () => $("#ci2_view_modal").addClass("hide"));
       $("#ci2_view_x").on("click", shareToX);
+      $("#ci2_view_copy").on("click", copyLink);
       // solana explains the chunk format first (help modal); blockscout decodes
       // EVM calldata fine, so hood jumps straight to the explorer.
       $("#ci2_view_scan").on("click", () => isEvm() ? openScan() : $("#ci2_help_modal").removeClass("hide"));
@@ -212,7 +213,10 @@
         const res = await provider.connect();
         who = (res?.publicKey || provider.publicKey).toString();
       }
-      $("#ci2_who").text(who.slice(0, 4) + "..." + who.slice(-4));
+      // ci2_who starts hidden (no meaningless "not connected"); reveal it with
+      // the short address once a wallet is actually connected. On mobile the
+      // media query keeps it hidden to save the narrow header's width.
+      $("#ci2_who").text(who.slice(0, 4) + "..." + who.slice(-4)).removeClass("hide");
       // +NEW INSCRIPTION takes the connect button's place once connected.
       $("#ci2_connect").addClass("hide");
       $("#ci2_new").removeClass("hide");
@@ -444,9 +448,19 @@
     // Share the site's direct record link; opening it loads the board + viewer.
     function shareToX() {
       if (!currentSig) return;
-      const text = "my inscription, on-chain forever via @IQLabsOfficial " + (isEvm() ? "hood-in on @RobinhoodChain" : "code-in");
+      const text = "my inscription, on-chain forever via @IQLabsOfficial " + (isEvm() ? "hood-in on @RobinhoodApp" : "code-in");
       const url = window.iqCodein.viewUrl(currentSig);
       window.open("https://x.com/intent/tweet?text=" + encodeURIComponent(text) + "&url=" + encodeURIComponent(url), "_blank");
+    }
+    // Copy the site viewer link (not the explorer link) so a post can be shared
+    // as plain text anywhere, not just to X. Brief "COPIED" confirms it landed.
+    function copyLink() {
+      if (!currentSig) return;
+      const url = window.iqCodein.viewUrl(currentSig);
+      const $b = $("#ci2_view_copy"), prev = $b.text();
+      const ok = () => { $b.text("COPIED"); setTimeout(() => $b.text(prev), 1200); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(ok, () => prompt("copy this link:", url));
+      else prompt("copy this link:", url);
     }
     function openScan() { if (currentSig) window.open(window.iqCodein.solscanUrl(currentSig), "_blank"); }
     function copyScan() {
