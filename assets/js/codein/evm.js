@@ -10,7 +10,7 @@
 // unthrottled (verified), unlike Solana's public mainnet.
 import { toAscii } from "./ascii.js?v=1";
 import { BrowserProvider, JsonRpcProvider, formatEther } from "https://cdn.jsdelivr.net/npm/ethers@6.17.0/+esm";
-import * as sdk from "https://cdn.jsdelivr.net/npm/@iqlabs-official/ethereum-sdk@0.4.0/+esm";
+import * as sdk from "https://cdn.jsdelivr.net/npm/@iqlabs-official/ethereum-sdk@0.4.1/+esm";
 
 const DB_ROOT_ID = "iq6900-codein-feed-v1"; // same labels as the Solana feed (feed.js)
 const TABLE = "global-feed";
@@ -42,9 +42,11 @@ const normRows = (rows) => (Array.isArray(rows) ? rows : []).map((r) => (
 ));
 
 // writeRow tx count: payloads at or under the 700 B inline budget skip the
-// chunk chain entirely; larger ones batch 850-char chunks into ~95 KB sendCode
-// txs (111 chunks/batch, partner-measured budget), then dbCodeIn + tail = 2.
-const BATCH_CHARS = 850 * 111;
+// chunk chain entirely; larger ones batch 850-char chunks under the SDK's
+// 80 KB payload budget (96 chunks/batch, keeping encoded calldata ~87 KB
+// under the Robinhood sequencer's oversized-data ceiling), then dbCodeIn +
+// tail = 2. Must track ethereum-sdk networks.ts maxBatchPayloadBytes.
+const BATCH_CHARS = 850 * 96;
 const sigsFor = (len) => (len <= 700 ? 2 : Math.ceil(len / BATCH_CHARS) + 2);
 
 // Contract fees, cached for the sync estimator; refreshed once in background.
