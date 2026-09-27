@@ -7,7 +7,7 @@
 #ci2{--fg:#e8e4d6;--fg05:rgba(232,228,214,.05);--fg10:rgba(232,228,214,.1);--fg25:rgba(232,228,214,.25);--fg35:rgba(232,228,214,.35);--fg40:rgba(232,228,214,.4);--fg50:rgba(232,228,214,.5);--fg85:rgba(232,228,214,.85);--fg90:rgba(232,228,214,.9);--fg95:rgba(232,228,214,.95);--btnfg:#1b1a17;--btnhov:#fff;--panel:rgba(20,19,16,.88);--panel2:rgba(20,19,16,.9)}
 #ci2.hood{--fg:#2BD52D;--fg05:rgba(43,213,45,.05);--fg10:rgba(43,213,45,.1);--fg25:rgba(43,213,45,.25);--fg35:rgba(43,213,45,.35);--fg40:rgba(43,213,45,.4);--fg50:rgba(43,213,45,.5);--fg85:rgba(43,213,45,.85);--fg90:rgba(43,213,45,.9);--fg95:rgba(43,213,45,.95);--btnfg:#04140a;--btnhov:#7dff7f;--panel:rgba(6,13,7,.88);--panel2:rgba(6,13,7,.9)}
 /* solana-only helpers have no meaning on the hood board */
-#ci2.hood #ci2_bigfile,#ci2.hood #ci2_spd_wrap,#ci2.hood #ci2_firstnote{display:none}
+#ci2.hood #ci2_bigfile,#ci2.hood #ci2_spd_wrap,#ci2.hood #ci2_firstnote,#ci2.hood #ci2_maketoken,#ci2.hood #ci2_view_token{display:none}
 #ci2{font-family:'Kode Mono',monospace;color:var(--fg);padding:14px 16px 40px;width:100%;box-sizing:border-box}
 #ci2 #ci2_scroll{max-height:68vh;overflow-y:auto;overflow-x:hidden;padding-right:4px}
 #ci2 .bar{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--fg35);padding:11px 16px;font-size:12px;letter-spacing:.14em}
@@ -43,6 +43,11 @@
 #ci2 .prog span{position:absolute;inset:0;text-align:center;line-height:26px;font-size:11px;font-weight:700;color:var(--btnfg);text-shadow:0 0 3px var(--fg95),0 0 5px var(--fg85)}
 #ci2 .btn:disabled{opacity:.4;cursor:not-allowed}
 #ci2 .rpcbox input{flex:1;box-sizing:border-box;background:rgba(0,0,0,.35);color:var(--fg);border:1px solid var(--fg50);border-radius:4px;font:500 11px 'Kode Mono',monospace;padding:8px 10px}
+#ci2 .tk_in{width:100%;box-sizing:border-box;background:rgba(0,0,0,.35);color:var(--fg);border:1px solid var(--fg50);border-radius:4px;font:500 12px 'Kode Mono',monospace;padding:9px 10px}
+#ci2 .tk_row{display:flex;gap:10px;margin-bottom:10px}
+#ci2 .tk_row>div{flex:1;min-width:0}
+#ci2 .tk_lbl{display:block;font-size:10px;opacity:.55;margin:0 0 4px;letter-spacing:.1em}
+#ci2 #ci2_tk_prev img{max-width:120px;max-height:120px;border:1px solid var(--fg40);border-radius:5px;display:block}
 #ci2 .rpcbox a{color:var(--fg)}
 #ci2 .muted{opacity:.55;font-size:10px}
 /* top padding clears the fixed site nav so the modal title bar is never cut */
@@ -100,6 +105,7 @@
     <span id="ci2_who" class="hide" style="margin-left:auto;opacity:.7"></span>
     <button id="ci2_connect" class="btn" style="margin-left:auto">CONNECT WALLET</button>
     <button id="ci2_new" class="btn hide" style="margin-left:8px">+ NEW INSCRIPTION</button>
+    <button id="ci2_maketoken" class="btn ghost hide" style="margin-left:8px">MAKE IT AS TOKEN</button>
   </div>
   <div id="ci2_rpcwarn" class="hide" style="border:1px solid #e0a84e;border-radius:8px;margin-bottom:14px;padding:11px 16px;color:#e0a84e;font-size:11px;line-height:1.8"></div>
 
@@ -201,6 +207,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:14px;font:500 10px 'Kode Mono',monospace">
           <span id="ci2_view_meta" style="opacity:.55"></span>
           <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+            <span id="ci2_view_token" class="vbtn hide">MAKE IT A TOKEN</span>
             <span id="ci2_view_x" class="vbtn">SHARE TO X</span>
             <span id="ci2_view_copy" class="vbtn">COPY LINK</span>
             <span id="ci2_view_scan" class="vbtn">SOLSCAN</span>
@@ -309,6 +316,62 @@ await writer.writeRow(conn, signer,
           <a href="https://x.com/IQLabsOfficial/status/1940462149446652330?s=20" target="_blank">music video &#8599;</a><br>
           <a href="https://x.com/IQLabsOfficial/status/1924624980374896867?s=20" target="_blank">doom on solana &#8599;</a>
         </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- make it as token: pump.fun launcher (solana only) -->
+  <div id="ci2_tk_modal" class="modal hide">
+    <div class="panel" style="width:640px;max-width:100%">
+      <div class="bar"><span id="ci2_tk_win" style="opacity:.8">token_launch.exe</span>
+        <span id="ci2_tk_close" class="tab" style="margin-left:auto;opacity:.7">x</span>
+      </div>
+      <div class="body">
+        <!-- form -->
+        <div id="ci2_tk_form">
+          <div class="tk_row">
+            <div><span class="tk_lbl">NAME</span><input id="ci2_tk_name" class="tk_in" maxlength="32" placeholder="my token"></div>
+            <div style="flex:0 0 140px"><span class="tk_lbl">SYMBOL</span><input id="ci2_tk_symbol" class="tk_in" maxlength="10" placeholder="TICKER" style="text-transform:uppercase"></div>
+          </div>
+          <span class="tk_lbl">DESCRIPTION</span>
+          <textarea id="ci2_tk_desc" style="min-height:64px" placeholder="what is this coin. links to your on-chain media are appended automatically."></textarea>
+          <div class="upl_row" style="margin-top:10px">
+            <label class="btn ghost upl">CHOOSE IMAGE<input id="ci2_tk_img" type="file" accept="image/*"></label>
+            <span id="ci2_tk_src" class="muted"></span>
+          </div>
+          <div id="ci2_tk_prev" style="margin-bottom:10px"></div>
+          <div class="tk_row">
+            <div><span class="tk_lbl">X LINK (OPTIONAL)</span><input id="ci2_tk_x" class="tk_in" placeholder="https://x.com/..."></div>
+            <div><span class="tk_lbl">WEBSITE (OPTIONAL)</span><input id="ci2_tk_web" class="tk_in" placeholder="defaults to your launch post"></div>
+          </div>
+          <div class="tk_row">
+            <div style="flex:0 0 180px"><span class="tk_lbl">INITIAL DEV BUY (SOL)</span><input id="ci2_tk_buy" class="tk_in" type="number" min="0" step="0.001" value="0.01"></div>
+          </div>
+          <div class="meter" style="border:1px solid var(--fg40);border-radius:5px;margin-top:6px">
+            <div><span class="muted" style="font-size:12px;opacity:.6">platform fee</span><span>0.069 SOL</span></div>
+            <div><span class="muted" style="font-size:12px;opacity:.6">dev buy</span><span id="ci2_tk_buyshow">0.01 SOL</span></div>
+          </div>
+          <p class="muted" style="margin:8px 2px 0;opacity:.5">the fee rides inside the create transaction itself: if the launch does not land, nothing is paid. pump.fun trading fees apply to the dev buy.</p>
+          <button id="ci2_tk_go" class="btn" style="width:100%;margin-top:12px" disabled>LAUNCH ON PUMP.FUN / 1 SIGNATURE</button>
+        </div>
+        <!-- progress -->
+        <div id="ci2_tk_prog" class="hide">
+          <p class="muted" style="letter-spacing:.2em">// LAUNCHING ON PUMP.FUN - keep this tab open</p>
+          <div class="prog" style="margin-top:14px"><i id="ci2_tk_bar"></i><span id="ci2_tk_pct">starting</span></div>
+          <p id="ci2_tk_log" class="muted" style="margin-top:12px"></p>
+          <button id="ci2_tk_retry" class="btn hide" style="margin-top:10px">RETRY</button>
+        </div>
+        <!-- done -->
+        <div id="ci2_tk_done" class="hide" style="text-align:center;padding:14px 0">
+          <div style="font:400 30px 'Zen Dots',monospace;color:#2BD52D">LAUNCHED.</div>
+          <p id="ci2_tk_mint" class="muted" style="margin-top:12px;word-break:break-all"></p>
+          <p id="ci2_tk_regnote" class="muted" style="margin-top:6px;opacity:.55">// writing the launch to the board...</p>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+            <a id="ci2_tk_pump" class="btn" target="_blank" rel="noopener" style="text-decoration:none">VIEW ON PUMP.FUN</a>
+            <button id="ci2_tk_chart" class="btn ghost">OPEN CHART</button>
+            <button id="ci2_tk_reg_retry" class="btn ghost hide">WRITE TO BOARD AGAIN</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

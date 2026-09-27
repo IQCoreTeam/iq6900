@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=37";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=38";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -26,7 +26,7 @@
     let boardLoading = false; // guard so scroll + button don't double-fetch a page
     let boardGen = 0;      // load generation; a fresh load supersedes in-flight ones
 
-    function init(post, chainName) {
+    function init(post, chainName, opts) {
       chain = chainName === "evm" ? "evm" : "solana";
       who = null; burner = null; bigAck = false; // route switch = fresh wallet state
       // Keep the route in the URL so refreshing stays on this board instead of
@@ -43,7 +43,7 @@
       } catch (e) {}
       $.ajax({ url: templateUrl, dataType: "html", type: "get", global: false, success: (html) => {
         $("#main_section").show().empty().append($(html));
-        ready(() => { wire(); if (post) openPost(post); });
+        ready(() => { wire(); if (post) openPost(post); if (opts && opts.maketoken) tkOpen(); });
       }});
     }
 
@@ -106,6 +106,16 @@
       $("#ci2_close").on("click", closeModal);
       $("#ci2_again").on("click", openCompose);
       $("#ci2_view").on("click", () => { closeModal(); switchTab("feed"); });
+      // make it as token: pump.fun launcher, solana only
+      if (!isEvm()) $("#ci2_maketoken").removeClass("hide");
+      $("#ci2_maketoken").on("click", () => tkOpen());
+      $("#ci2_tk_close").on("click", () => $("#ci2_tk_modal").addClass("hide"));
+      $("#ci2_tk_img").on("change", tkOnImage);
+      $("#ci2_tk_name, #ci2_tk_symbol").on("input", tkValidate);
+      $("#ci2_tk_buy").on("input", () => { $("#ci2_tk_buyshow").text((parseFloat($("#ci2_tk_buy").val()) || 0) + " SOL"); });
+      $("#ci2_tk_go").on("click", doLaunch);
+      $("#ci2_tk_retry").on("click", doLaunch);
+      $("#ci2_tk_reg_retry").on("click", tkRetryRegistry);
       if (isEvm()) applyHoodTheme();
       if (window.iqCodein.hasOwnRpc()) $("#ci2_rpc_link").text("connection: custom RPC");
       refreshCost();
@@ -334,6 +344,11 @@
         return;
       }
       if (obj.kind === "ascii") { $th.addClass("art").text(body.slice(0, 800)); return; } // exact spacing
+      if (obj.kind === "token") { // launched coin card: symbol + name instead of raw registry json
+        let t = {}; try { t = JSON.parse(body) || {}; } catch (e) {}
+        $th.addClass("txt").text("$" + (t.symbol || "?") + "  " + (t.name || "") + "\n[ launched on pump.fun ]");
+        return;
+      }
       $th.addClass("txt").text(body.slice(0, 140)); // text wraps within the fixed-height box
     }
 
@@ -367,6 +382,16 @@
         if (name) $w.append($("<div>").addClass("muted").css("margin-bottom", "8px").text(name));
         $b.html($w.append($("<a>").attr({ href: body, download: name || "codein-file" }).addClass("btn").text("DOWNLOAD FILE")));
       }
+      else if (obj.kind === "token") {
+        // a launch registry row: show the coin, not the raw json
+        let t = {}; try { t = JSON.parse(body) || {}; } catch (e) {}
+        $b.html($("<div>").css("text-align", "center")
+          .append($("<div>").css({ font: "500 16px 'Kode Mono',monospace", color: "#2BD52D" }).text("$" + (t.symbol || "?") + "  " + (t.name || "")))
+          .append($("<p>").addClass("muted").css({ margin: "8px 0 14px", wordBreak: "break-all" }).text(t.mint || ""))
+          .append($("<div>").css({ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" })
+            .append($("<a>").addClass("btn").attr({ href: "https://pump.fun/coin/" + t.mint, target: "_blank", rel: "noopener" }).css("text-decoration", "none").text("VIEW ON PUMP.FUN"))
+            .append($("<button>").addClass("btn ghost").text("OPEN CHART").on("click", () => { $("#ci2_view_modal").addClass("hide"); $.boardexe.init(t.mint); }))));
+      }
       else {
         // green record body, matching the design viewer; ascii keeps pre, text wraps
         const $pre = $("<pre>").addClass("vpre").text(body);
@@ -374,6 +399,13 @@
         else $pre.css({ whiteSpace: "pre-wrap", wordBreak: "break-word" });
         $b.html($pre);
       }
+      // an on-chain image can become a pump.fun token in one click (solana only)
+      const canTokenize = !isEvm() && body.slice(0, 11) === "data:image/";
+      $("#ci2_view_token").toggleClass("hide", !canTokenize).off("click");
+      if (canTokenize) $("#ci2_view_token").on("click", () => {
+        $("#ci2_view_modal").addClass("hide");
+        tkOpen({ image: body, srcSig: sig });
+      });
     }
 
     // Share the site's direct record link; opening it loads the board + viewer.
@@ -551,13 +583,7 @@
             },
           });
         } else {
-          if (!burner) {
-            const signMessage = async (msg) => {
-              const out = await provider.signMessage(msg instanceof Uint8Array ? msg : new TextEncoder().encode(msg), "utf8");
-              return out.signature || out;
-            };
-            burner = await window.iqCodein.deriveBurner(signMessage);
-          }
+          await ensureBurner();
           const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
           const connection = window.iqCodein.connect();
           const manual = window.iqCodein.getSpeed();
@@ -608,6 +634,124 @@
     }
 
     function setBar(pct, label) { $("#ci2_bar").css("width", pct + "%"); $("#ci2_pct").text(label); }
+
+    // The burner is derived once per session from one wallet signature and
+    // shared by inscriptions and token registry writes.
+    async function ensureBurner() {
+      if (burner) return burner;
+      const signMessage = async (msg) => {
+        const out = await provider.signMessage(msg instanceof Uint8Array ? msg : new TextEncoder().encode(msg), "utf8");
+        return out.signature || out;
+      };
+      burner = await window.iqCodein.deriveBurner(signMessage);
+      return burner;
+    }
+
+    // ---- make it as token (pump.fun launcher) ----
+    let tkImage = "";     // token image data URL (upload or an on-chain post)
+    let tkImageName = ""; // original filename for the ipfs upload
+    let tkSrcSig = "";    // when the image comes from an on-chain post
+    let tkLast = null;    // last successful launch, for the registry retry
+
+    function tkOpen(prefill) {
+      $("#ci2_tk_modal").removeClass("hide");
+      $("#ci2_tk_form").removeClass("hide"); $("#ci2_tk_prog").addClass("hide"); $("#ci2_tk_done").addClass("hide");
+      $("#ci2_tk_win").text("token_launch.exe");
+      if (prefill && prefill.image) {
+        tkImage = prefill.image;
+        tkImageName = fileNameOf(prefill.image) || "onchain.png";
+        tkSrcSig = prefill.srcSig || "";
+        $("#ci2_tk_prev").html($("<img>").attr("src", tkImage));
+        $("#ci2_tk_src").text(tkSrcSig ? "image from on-chain post " + tkSrcSig.slice(0, 8) + "..." : "");
+      }
+      tkValidate();
+    }
+
+    function tkOnImage() {
+      const f = this.files[0]; if (!f) return;
+      const r = new FileReader();
+      r.onload = () => {
+        tkImage = r.result; tkImageName = f.name; tkSrcSig = "";
+        $("#ci2_tk_prev").html($("<img>").attr("src", tkImage));
+        $("#ci2_tk_src").text("");
+        tkValidate();
+      };
+      r.readAsDataURL(f);
+    }
+
+    function tkValidate() {
+      const ok = ($("#ci2_tk_name").val() || "").trim() && ($("#ci2_tk_symbol").val() || "").trim() && tkImage;
+      $("#ci2_tk_go").prop("disabled", !ok);
+    }
+
+    function setTkBar(pct, label) { $("#ci2_tk_bar").css("width", pct + "%"); $("#ci2_tk_pct").text(label); }
+
+    async function doLaunch() {
+      if (!who) { await connect(); if (!who) return; }
+      const name = ($("#ci2_tk_name").val() || "").trim();
+      const symbol = ($("#ci2_tk_symbol").val() || "").trim().toUpperCase();
+      if (!name || !symbol || !tkImage) return;
+      const srcLink = tkSrcSig ? window.iqCodein.viewUrl(tkSrcSig) : "";
+      let description = ($("#ci2_tk_desc").val() || "").trim();
+      // the coin page sends people to the on-chain original, via our gateway-backed viewer
+      if (srcLink) description = (description ? description + "\n" : "") + "on-chain original: " + srcLink;
+
+      $("#ci2_tk_form").addClass("hide"); $("#ci2_tk_prog").removeClass("hide");
+      $("#ci2_tk_retry").addClass("hide"); $("#ci2_tk_log").text("");
+      $("#ci2_tk_win").text("launching...");
+      const steps = ["uploading image + metadata to pump.fun", "building the create transaction", "approve the transaction in your wallet", "confirming on solana"];
+      setTkBar(5, steps[0]);
+
+      try {
+        const out = await window.iqTokenLaunch.launch({
+          provider, name, symbol, description,
+          imageDataUrl: tkImage, fileName: tkImageName,
+          twitter: ($("#ci2_tk_x").val() || "").trim(),
+          website: ($("#ci2_tk_web").val() || "").trim() || srcLink,
+          devBuySol: parseFloat($("#ci2_tk_buy").val()) || 0,
+          onStep: (label) => setTkBar(15 + steps.indexOf(label) * 25, label),
+        });
+        tkLast = { mint: out.mint, name, symbol, sig: out.sig };
+        $("#ci2_tk_prog").addClass("hide"); $("#ci2_tk_done").removeClass("hide");
+        $("#ci2_tk_win").text("done.exe");
+        $("#ci2_tk_mint").text("mint: " + out.mint);
+        $("#ci2_tk_pump").attr("href", "https://pump.fun/coin/" + out.mint);
+        $("#ci2_tk_chart").off("click").on("click", () => { $("#ci2_tk_modal").addClass("hide"); $.boardexe.init(out.mint); });
+        tkWriteRegistry();
+      } catch (e) {
+        const msg = String((e && e.message) || e);
+        $("#ci2_tk_pct").text("paused - tap retry");
+        $("#ci2_tk_retry").removeClass("hide");
+        $("#ci2_tk_log").text(/user rejected|denied|4001/i.test(msg)
+          ? "you canceled the signature in your wallet. nothing was spent - tap retry when ready."
+          : "the launch stopped before completing. nothing is charged unless the create transaction lands. (" + msg + ")");
+        console.error("[make-token] launch paused:", e);
+      }
+    }
+
+    // The registry row is what puts the coin on this board and the boardexe
+    // chart. It is a separate tiny code-in write, so a failure here never
+    // affects the already-created token; the done panel offers a retry.
+    async function tkWriteRegistry() {
+      if (!tkLast) return;
+      $("#ci2_tk_regnote").text("// writing the launch to the board...");
+      $("#ci2_tk_reg_retry").addClass("hide");
+      try {
+        await ensureBurner();
+        const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
+        const connection = window.iqCodein.connect();
+        const body = JSON.stringify({ mint: tkLast.mint, name: tkLast.name, symbol: tkLast.symbol });
+        const res = await window.iqCodein.inscribe({ connection, wallet, burner, kind: "token", body, speed: "light" });
+        await window.iqCodein.notify(res.sig, { kind: "token", body, who });
+        $("#ci2_tk_regnote").text("// launch written to the board. it appears in boardexe within minutes.");
+        loadBoard();
+      } catch (e) {
+        $("#ci2_tk_regnote").text("// your token exists, but writing it to the board failed - it will not show in boardexe until this lands.");
+        $("#ci2_tk_reg_retry").removeClass("hide");
+        console.error("[make-token] registry write failed:", e);
+      }
+    }
+    function tkRetryRegistry() { tkWriteRegistry(); }
 
     $.extend(this, { init });
   }
