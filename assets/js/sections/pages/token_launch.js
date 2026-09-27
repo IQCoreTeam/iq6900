@@ -5,7 +5,7 @@
 // token creation lands), sign with the fresh mint keypair, then let the user's
 // wallet sign and send. No server of ours is involved.
 (function () {
-  const FEE_WALLET = "8QWrZjNNFzngKWCLCrFkAy7ydnagrBSVYdJFyEvw9agh"; // platform fee destination
+  const FEE_WALLET = "5eCDJGbuS1k5ELso8h6fnMVEJpjmrCHoX1sS92Txa9Rh"; // platform fee destination
   const FEE_LAMPORTS = 69000000; // 0.069 SOL
   const IPFS_URL = "https://pump.fun/api/ipfs";
   const PORTAL_URL = "https://pumpportal.fun/api/trade-local";
