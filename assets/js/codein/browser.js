@@ -79,7 +79,9 @@ window.iqCodein = {
   // The coin's ON-CHAIN uri. Always the canonical gateway (never a custom
   // localStorage override): the path segment IS the metadata inscription's tx
   // signature, so the link stays chain-recoverable even if this host dies.
-  metaUrl: (sig) => GATEWAYS[0] + "/meta/" + sig,
+  // /token-meta serves the inscribed JSON verbatim (/meta is taken by the
+  // asset-synthesis route and must not change - it is a public contract).
+  metaUrl: (sig) => GATEWAYS[0] + "/token-meta/" + sig,
   // board = the global feed table rows; mine = the user's assets (the gateway
   // resolves the inventory PDA our writes reference). The SDK reader returns the
   // same row shape as the gateway ({...cols, __txSignature}), so both feed the
