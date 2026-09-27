@@ -61,11 +61,10 @@ export async function inscribe({ connection, wallet, burner, kind, body, speed, 
 // signature becomes the path of the coin's on-chain uri, so the JSON is
 // reassemblable from solana alone. The burner signs the write (one wallet
 // signature for the funding transfer only) and the leftover sweeps back.
-const CODEIN_FLAT_FEE = 500000; // the contract's flat 0.0005 SOL per codeIn call
 export async function inscribeMeta({ connection, wallet, burner, json }) {
   const bytes = new TextEncoder().encode(json).length;
   const { total } = estimateCost(bytes, { firstTime: false });
-  await topUp(connection, wallet, burner.publicKey, total + CODEIN_FLAT_FEE);
+  await topUp(connection, wallet, burner.publicKey, total);
   const sig = await writer.codeIn({ connection, signer: burner }, json, "metadata.json", 0, "json");
   await sweep(connection, burner, wallet.publicKey).catch((e) => console.warn("[code-in] meta sweep skipped:", e && e.message));
   return { sig };
