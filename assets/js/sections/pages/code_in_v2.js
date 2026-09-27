@@ -816,6 +816,14 @@
         image: image, external_url: viewLink, website: web, showName: true };
       if (x) metaJson.twitter = x;
 
+      // Warm the gateway image cache now. A cold /img (or /render) reassembles
+      // the inscription from chain over RPC (~25s), far longer than pump.fun's
+      // image-fetch timeout, so without this the coin shows no image: pump gives
+      // up, caches the miss, and never refetches. Firing it here (fire-and-
+      // forget) uses the whole inscribe + create + confirm window so Cloudflare
+      // has a warm HIT ready before pump's indexer fetches post-confirmation.
+      try { fetch(image, { mode: "no-cors" }); } catch (e) {}
+
       try {
         // Step 1: inscribe the metadata JSON (reused on retry so a failed
         // create never pays for a second metadata write).
