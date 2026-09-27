@@ -67,7 +67,9 @@
     }
 
     function wire() {
-      provider = window.phantom?.solana || window.solana || null;
+      // Phantom first (its window.solana shim also claims the generic slot),
+      // then Backpack's own provider, then whatever claimed window.solana.
+      provider = window.phantom?.solana || window.backpack || window.solana || null;
       $("#ci2_connect").on("click", connect);
       $("#ci2_home_dot").on("click", () => { window.location.href = window.location.pathname; });
       // Cross-chain hop (design: header "ROBINHOOD? -> /HOODIN" / "SOLANA? -> /CODEIN").
@@ -172,7 +174,7 @@
             ", so writes will fail before anything is spent. open your wallet network settings for chain 4663 and set the RPC to https://rpc.mainnet.chain.robinhood.com, then reconnect.");
         });
       } else {
-        if (!provider) { alert("No Solana wallet found. Install Phantom."); return; }
+        if (!provider) { alert("No Solana wallet found. Install Phantom or Backpack."); return; }
         const res = await provider.connect();
         who = (res?.publicKey || provider.publicKey).toString();
       }
