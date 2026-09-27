@@ -89,7 +89,7 @@
               if (!t || !t.mint || nextTokens.some((x) => x.mint === t.mint)) return;
               // keep the enriched pair when we already know this mint
               const old = tokens.find((x) => x.mint === t.mint);
-              nextTokens.push(old || { mint: t.mint, name: t.name || "", symbol: t.symbol || "", sig });
+              nextTokens.push(old || { mint: t.mint, name: t.name || "", symbol: t.symbol || "", sig, src: t.src || "" });
             } else if (nextFeed.length < 12) {
               nextFeed.push({ obj, sig });
             }
@@ -261,7 +261,9 @@
         $box.append($('<div id="bx_hold"><p class="muted" style="font-size:12px;margin:0">dexscreener has not indexed this coin yet - a fresh launch takes a few minutes.<br>watch it live on pump.fun meanwhile.</p></div>'));
         $("#bx_dexs").addClass("hide");
       }
-      if (current.sig) $("#bx_post").removeClass("hide").off("click").on("click", () => $.code_in_v2.init(current.sig));
+      // prefer the source inscription (the coin's original) over the launch row
+      const postSig = current.src || current.sig;
+      if (postSig) $("#bx_post").removeClass("hide").off("click").on("click", () => $.code_in_v2.init(postSig));
       else $("#bx_post").addClass("hide");
     }
 

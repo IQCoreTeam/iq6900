@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=39";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=40";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -116,7 +116,7 @@
       $("#ci2_launch_after").on("click", () => {
         if (!lastInscribed) return;
         closeModal();
-        tkOpen({ image: lastInscribed.body, srcSig: lastInscribed.sig });
+        tkOpen({ sig: lastInscribed.sig, body: lastInscribed.body });
       });
       $("#ci2_tk_name, #ci2_tk_symbol").on("input", tkValidate);
       $("#ci2_tk_buy").on("input", () => { $("#ci2_tk_buyshow").text((parseFloat($("#ci2_tk_buy").val()) || 0) + " SOL"); });
@@ -406,12 +406,13 @@
         else $pre.css({ whiteSpace: "pre-wrap", wordBreak: "break-word" });
         $b.html($pre);
       }
-      // an on-chain image can become a pump.fun token in one click (solana only)
-      const canTokenize = !isEvm() && body.slice(0, 11) === "data:image/";
+      // an on-chain image, text or ascii post can become a pump.fun token in
+      // one click (solana only); text/ascii get the gateway card render
+      const canTokenize = !isEvm() && tkUsable(obj.kind, body);
       $("#ci2_view_token").toggleClass("hide", !canTokenize).off("click");
       if (canTokenize) $("#ci2_view_token").on("click", () => {
         $("#ci2_view_modal").addClass("hide");
-        tkOpen({ image: body, srcSig: sig });
+        tkOpen({ sig: sig, body: body });
       });
     }
 
@@ -604,9 +605,9 @@
         $("#ci2_progress").addClass("hide"); $("#ci2_done").removeClass("hide");
         $("#ci2_win").text("done.exe");
         $("#ci2_sig").text((isEvm() ? "tx: " : "sig: ") + res.sig.slice(0, 12) + "..." + res.sig.slice(-8));
-        // a fresh image inscription can go straight into the token launcher
+        // a fresh image/text/ascii inscription can go straight into the launcher
         lastInscribed = { body: pay.body, sig: res.sig };
-        const canLaunch = !isEvm() && pay.body.slice(0, 11) === "data:image/";
+        const canLaunch = !isEvm() && tkUsable(pay.kind, pay.body);
         $("#ci2_launch_after").toggleClass("hide", !canLaunch);
         $("#ci2_view").toggleClass("ghost", canLaunch); // LAUNCH is the primary when present
         if (isEvm()) $("#ci2_donenote").text("// the storage fee charges once, at the final step. every tx before it is gas only.");
@@ -660,35 +661,35 @@
     }
 
     // ---- make it as token (pump.fun launcher) ----
-    // Seller flow: step 1 picks an IMAGE inscription from the user's inventory
+    // Seller flow: step 1 picks an inscription from the user's inventory
     // (empty inventory routes to the compose modal, whose done panel loops
     // back here); step 2 is the launch form. A coin from this board always
-    // starts as an on-chain inscription.
-    let tkImage = "";        // token image data URL (always an on-chain post)
-    let tkImageName = "";    // original filename for the ipfs upload
-    let tkSrcSig = "";       // the inscription behind the image
+    // starts as an on-chain inscription: the source sig is all the launch
+    // needs, since the gateway derives the coin metadata (and the image, via
+    // /render/{sig}) from the registry row. No uploads, no IPFS.
+    let tkSrcSig = "";       // the inscription behind the coin
+    let tkSrcBody = "";      // its body, for the local preview only
     let tkPicked = null;     // picker candidate before CONTINUE
     let tkLast = null;       // last successful launch, for the registry retry
     let lastInscribed = null;// last inscription, for the done-panel loop back
+
+    // text and ascii render as a terminal card via the gateway, so they can
+    // be a coin image just like an actual image post
+    const tkUsable = (kind, body) =>
+      String(body).slice(0, 11) === "data:image/" || kind === "text" || kind === "ascii";
 
     function tkOpen(prefill) {
       $("#ci2_tk_modal").removeClass("hide");
       $("#ci2_tk_prog").addClass("hide"); $("#ci2_tk_done").addClass("hide");
       $("#ci2_tk_win").text("token_launch.exe");
-      if (prefill && prefill.image) {
+      if (prefill && prefill.sig) {
         // arriving from a specific post (viewer button or a fresh inscription):
-        // the image is already chosen, skip the picker
-        tkSelectImage(prefill.image, prefill.srcSig || "");
+        // the source is already chosen, skip the picker
+        tkSrcSig = prefill.sig; tkSrcBody = prefill.body || "";
         tkShowForm();
       } else {
         tkShowPicker();
       }
-    }
-
-    function tkSelectImage(body, sig) {
-      tkImage = body;
-      tkImageName = fileNameOf(body) || "onchain.png";
-      tkSrcSig = sig;
     }
 
     async function tkShowPicker() {
@@ -704,37 +705,39 @@
       try { rows = ((await window.iqCodein.readMine(who, 50)) || {}).rows || []; } catch (e) {}
       $("#ci2_tk_inv_load").addClass("hide");
       const $inv = $("#ci2_tk_inv");
-      let images = 0;
+      let usable = 0;
       rows.forEach((it) => {
         const obj = it.row || it;
         const body = String(obj.body || "");
         const sig = obj.__txSignature || it.__txSignature || "";
+        const kind = obj.kind || "text";
         const isImg = body.slice(0, 11) === "data:image/";
         const $th = $('<div class="th"></div>');
         if (isImg) $th.append($("<img>").attr("src", body));
         else if (body.slice(0, 11) === "data:audio/") $th.addClass("txt").text("|> audio");
-        else if (obj.kind === "ascii") $th.addClass("art").text(body.slice(0, 400));
+        else if (kind === "ascii") $th.addClass("art").text(body.slice(0, 400));
         else $th.addClass("txt").text(body.slice(0, 60));
         const card = $('<div class="rec"></div>').append($th)
-          .append($('<div class="m"></div>').append($('<span class="tag"></span>').text(obj.kind || "text")));
-        if (isImg) {
-          images++;
+          .append($('<div class="m"></div>').append($('<span class="tag"></span>').text(kind)));
+        if (tkUsable(kind, body) && sig) {
+          usable++;
           card.on("click", () => {
             tkPicked = { body, sig };
             $("#ci2_tk_inv .rec").removeClass("picked");
             card.addClass("picked");
-            $("#ci2_tk_continue").prop("disabled", false).text("CONTINUE WITH " + (fileNameOf(body) || "THIS IMAGE"));
+            $("#ci2_tk_continue").prop("disabled", false)
+              .text("CONTINUE WITH " + (isImg ? (fileNameOf(body) || "THIS IMAGE") : "THIS " + kind.toUpperCase() + " CARD"));
           });
         } else card.addClass("dim");
         $inv.append(card);
       });
-      if (!images) $("#ci2_tk_noinv").removeClass("hide");
+      if (!usable) $("#ci2_tk_noinv").removeClass("hide");
       else $("#ci2_tk_onlyimg").removeClass("hide");
     }
 
     function tkContinue() {
       if (!tkPicked) return;
-      tkSelectImage(tkPicked.body, tkPicked.sig);
+      tkSrcSig = tkPicked.sig; tkSrcBody = tkPicked.body;
       tkShowForm();
     }
 
@@ -749,13 +752,18 @@
     function tkShowForm() {
       $("#ci2_tk_pick").addClass("hide");
       $("#ci2_tk_form").removeClass("hide");
-      $("#ci2_tk_prev").html($("<img>").attr("src", tkImage));
-      $("#ci2_tk_src").text(tkSrcSig ? "image from your inscription " + tkSrcSig.slice(0, 8) + "... - the coin page links back to the on-chain original." : "");
+      // image posts preview from their own bytes; text/ascii preview the same
+      // gateway card render that will be the coin image
+      const preview = tkSrcBody.slice(0, 11) === "data:image/"
+        ? tkSrcBody
+        : window.iqTokenLaunch.GATEWAY + "/render/" + tkSrcSig;
+      $("#ci2_tk_prev").html($("<img>").attr("src", preview));
+      $("#ci2_tk_src").text("coin image from your inscription " + tkSrcSig.slice(0, 8) + "... - the coin page links back to the on-chain original.");
       tkValidate();
     }
 
     function tkValidate() {
-      const ok = ($("#ci2_tk_name").val() || "").trim() && ($("#ci2_tk_symbol").val() || "").trim() && tkImage;
+      const ok = ($("#ci2_tk_name").val() || "").trim() && ($("#ci2_tk_symbol").val() || "").trim() && tkSrcSig;
       $("#ci2_tk_go").prop("disabled", !ok);
     }
 
@@ -765,28 +773,37 @@
       if (!who) { await connect(); if (!who) return; }
       const name = ($("#ci2_tk_name").val() || "").trim();
       const symbol = ($("#ci2_tk_symbol").val() || "").trim().toUpperCase();
-      if (!name || !symbol || !tkImage) return;
-      const srcLink = tkSrcSig ? window.iqCodein.viewUrl(tkSrcSig) : "";
-      let description = ($("#ci2_tk_desc").val() || "").trim();
-      // the coin page sends people to the on-chain original, via our gateway-backed viewer
-      if (srcLink) description = (description ? description + "\n" : "") + "on-chain original: " + srcLink;
+      if (!name || !symbol || !tkSrcSig) return;
 
       $("#ci2_tk_form").addClass("hide"); $("#ci2_tk_prog").removeClass("hide");
       $("#ci2_tk_retry").addClass("hide"); $("#ci2_tk_log").text("");
       $("#ci2_tk_win").text("launching...");
-      const steps = ["uploading image + metadata to pump.fun", "building the create transaction", "approve the transaction in your wallet", "confirming on solana"];
+      const steps = ["preparing the coin image", "uploading image + metadata to pump.fun", "building the create transaction", "approve the transaction in your wallet", "confirming on solana"];
       setTkBar(5, steps[0]);
+
+      // The metadata description is the coin's permanence notice: it pins the
+      // source inscription tx on IPFS, so even if this site and the gateway
+      // disappear, anyone can reassemble the original from solana with the SDK.
+      const viewLink = window.iqCodein.viewUrl(tkSrcSig);
+      const userDesc = ($("#ci2_tk_desc").val() || "").trim().slice(0, 300);
+      const description = (userDesc ? userDesc + "\n\n" : "")
+        + "on-chain original: " + viewLink
+        + "\ninscription tx: " + tkSrcSig
+        + "\nif this page ever dies, the original reassembles from solana with the IQ SDK (@iqlabs-official/solana-sdk, feed iq6900-codein-feed-v1 / global-feed).";
+      const isImgSrc = tkSrcBody.slice(0, 11) === "data:image/";
 
       try {
         const out = await window.iqTokenLaunch.launch({
           provider, name, symbol, description,
-          imageDataUrl: tkImage, fileName: tkImageName,
+          imageDataUrl: isImgSrc ? tkSrcBody : null,
+          fileName: isImgSrc ? (fileNameOf(tkSrcBody) || "onchain.png") : null,
+          renderSig: tkSrcSig,
           twitter: ($("#ci2_tk_x").val() || "").trim(),
-          website: ($("#ci2_tk_web").val() || "").trim() || srcLink,
+          website: ($("#ci2_tk_web").val() || "").trim() || viewLink,
           devBuySol: parseFloat($("#ci2_tk_buy").val()) || 0,
-          onStep: (label) => setTkBar(15 + steps.indexOf(label) * 25, label),
+          onStep: (label) => setTkBar(10 + steps.indexOf(label) * 20, label),
         });
-        tkLast = { mint: out.mint, name, symbol, sig: out.sig };
+        tkLast = { mint: out.mint, name, symbol, src: tkSrcSig, launchSig: out.sig };
         $("#ci2_tk_prog").addClass("hide"); $("#ci2_tk_done").removeClass("hide");
         $("#ci2_tk_win").text("done.exe");
         $("#ci2_tk_mint").text("mint: " + out.mint);
@@ -805,8 +822,10 @@
     }
 
     // The registry row is what puts the coin on this board and the boardexe
-    // chart. It is a separate tiny code-in write, so a failure here never
-    // affects the already-created token; the done panel offers a retry.
+    // chart, and its src field is the on-chain mint -> inscription mapping
+    // (the metadata description carries the same recovery pointer on IPFS).
+    // It is a separate tiny code-in write, so a failure here never affects
+    // the already-created token; the done panel offers a retry.
     async function tkWriteRegistry() {
       if (!tkLast) return;
       $("#ci2_tk_regnote").text("// writing the launch to the board...");
@@ -815,7 +834,7 @@
         await ensureBurner();
         const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
         const connection = window.iqCodein.connect();
-        const body = JSON.stringify({ mint: tkLast.mint, name: tkLast.name, symbol: tkLast.symbol });
+        const body = JSON.stringify({ mint: tkLast.mint, name: tkLast.name, symbol: tkLast.symbol, src: tkLast.src });
         const res = await window.iqCodein.inscribe({ connection, wallet, burner, kind: "token", body, speed: "light" });
         await window.iqCodein.notify(res.sig, { kind: "token", body, who });
         $("#ci2_tk_regnote").text("// launch written to the board. it appears in boardexe within minutes.");
