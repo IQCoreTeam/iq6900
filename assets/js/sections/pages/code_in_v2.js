@@ -933,7 +933,7 @@
             let t = null; try { t = JSON.parse(String(obj.body || "")); } catch (e) { return; }
             if (!t || !t.mint || next.some((x) => x.mint === t.mint)) return;
             const old = mkTokens.find((x) => x.mint === t.mint); // keep the enriched pair we already have
-            next.push(old || { mint: t.mint, name: t.name || "", symbol: t.symbol || "", sig: sig, src: t.src || "" });
+            next.push(old || { mint: t.mint, name: t.name || "", symbol: t.symbol || "", sig: sig, src: t.src || "", meta: t.meta || "" });
           });
           cursor = res.nextCursor;
           if (!cursor) break;
@@ -943,6 +943,23 @@
     }
 
     async function enrichMarkets() {
+      // A new coin already has an on-chain image even before DexScreener
+      // supplies one. Read its launch metadata once; retry transient failures.
+      for (const t of mkTokens) {
+        if (!t.meta || t.imageChecked) continue;
+        try {
+          const res = await fetch(window.iqCodein.metaUrl(t.meta), { signal: AbortSignal.timeout(8000) });
+          if (!res.ok) continue;
+          const meta = await res.json();
+          if (typeof meta.image === "string" && /^https?:\/\//i.test(meta.image)) {
+            const url = new URL(meta.image);
+            // Old /img responses containing JSON may remain in CDN caches.
+            if (url.origin === window.iqTokenLaunch.GATEWAY && url.pathname.startsWith("/img/")) url.searchParams.set("v", "2");
+            t.image = url.href;
+          }
+          t.imageChecked = true;
+        } catch (e) { /* keep DexScreener/initials available; retry next tick */ }
+      }
       for (let i = 0; i < mkTokens.length; i += 30) {
         const batch = mkTokens.slice(i, i + 30);
         try {
@@ -979,8 +996,11 @@
         const chg = t.pair && t.pair.chg24 != null ? Number(t.pair.chg24) : null;
         const up = chg == null || chg >= 0;
         const $logo = $('<span class="mklogo"></span>');
-        if (t.pair && t.pair.icon) $logo.append($("<img>").attr("src", t.pair.icon));
-        else $logo.text((t.symbol || "?").slice(0, 2).toUpperCase());
+        const initials = (t.symbol || "?").slice(0, 2).toUpperCase();
+        const icon = t.image || (t.pair && t.pair.icon);
+        if (icon) $logo.append($("<img>").attr({ src: icon, alt: t.symbol || t.name || "token", loading: "lazy" })
+          .one("error", function () { $(this).remove(); $logo.text(initials); }));
+        else $logo.text(initials);
         const row = $('<div class="mkrow"></div>')
           .append($('<div class="mkcoin"></div>').append($logo)
             .append($("<div>").css("min-width", 0)
