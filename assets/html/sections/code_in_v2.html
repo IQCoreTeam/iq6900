@@ -7,7 +7,7 @@
 #ci2{--fg:#e8e4d6;--fg05:rgba(232,228,214,.05);--fg10:rgba(232,228,214,.1);--fg25:rgba(232,228,214,.25);--fg35:rgba(232,228,214,.35);--fg40:rgba(232,228,214,.4);--fg50:rgba(232,228,214,.5);--fg85:rgba(232,228,214,.85);--fg90:rgba(232,228,214,.9);--fg95:rgba(232,228,214,.95);--btnfg:#1b1a17;--btnhov:#fff;--panel:rgba(20,19,16,.88);--panel2:rgba(20,19,16,.9)}
 #ci2.hood{--fg:#2BD52D;--fg05:rgba(43,213,45,.05);--fg10:rgba(43,213,45,.1);--fg25:rgba(43,213,45,.25);--fg35:rgba(43,213,45,.35);--fg40:rgba(43,213,45,.4);--fg50:rgba(43,213,45,.5);--fg85:rgba(43,213,45,.85);--fg90:rgba(43,213,45,.9);--fg95:rgba(43,213,45,.95);--btnfg:#04140a;--btnhov:#7dff7f;--panel:rgba(6,13,7,.88);--panel2:rgba(6,13,7,.9)}
 /* solana-only helpers have no meaning on the hood board */
-#ci2.hood #ci2_bigfile,#ci2.hood #ci2_spd_wrap,#ci2.hood #ci2_firstnote,#ci2.hood #ci2_maketoken,#ci2.hood #ci2_view_token{display:none}
+#ci2.hood #ci2_bigfile,#ci2.hood #ci2_spd_wrap,#ci2.hood #ci2_firstnote,#ci2.hood #ci2_view_token{display:none}
 #ci2{font-family:'Kode Mono',monospace;color:var(--fg);padding:14px 16px 40px;width:100%;box-sizing:border-box}
 #ci2 #ci2_scroll{max-height:68vh;overflow-y:auto;overflow-x:hidden;padding-right:4px}
 #ci2 .bar{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--fg35);padding:11px 16px;font-size:12px;letter-spacing:.14em}
@@ -24,9 +24,10 @@
 #ci2 .btn.ghost:hover{background:var(--fg10);color:var(--fg)}
 #ci2 .btn:disabled:hover{background:var(--fg)}
 #ci2 textarea{width:100%;box-sizing:border-box;min-height:110px;background:rgba(0,0,0,.35);color:var(--fg);border:1px solid var(--fg50);border-radius:5px;font:500 12px/1.7 'Kode Mono',monospace;padding:12px}
-/* card width is bounded (~280px); the column COUNT grows with the screen, so
-   cards keep their ratio instead of stretching wide (no horizontal squish) */
-#ci2 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+/* board grid: 3 columns beside the markets panel (design: Hood In Flow.dc.html),
+   dropping to 2 when the desk narrows/stacks so cards never squish */
+#ci2 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:940px){#ci2 .grid{grid-template-columns:repeat(2,1fr)}}
 #ci2 .rec .m .ago{opacity:.6}
 #ci2 .rec .m .own{opacity:.45;margin-top:4px}
 #ci2 .rec{border:1px solid var(--fg50);border-radius:5px;overflow:hidden;cursor:pointer;min-width:0;transition:border-color .35s,background .35s}
@@ -101,6 +102,35 @@
   #ci2_hdr #ci2_bigfile,#ci2_hdr #ci2_who{display:none}
   #ci2_hdr #ci2_connect,#ci2_hdr #ci2_new{margin-left:auto}
 }
+/* ---- board + markets desk (design: Hood In Flow.dc.html) ---- */
+#ci2 #ci2_desk{display:flex;gap:14px;align-items:stretch}
+#ci2 #ci2_board_panel{flex:1.45;min-width:0;display:flex;flex-direction:column}
+#ci2 #ci2_markets_panel{flex:1;min-width:0;display:flex;flex-direction:column}
+#ci2 #ci2_markets_panel .body{padding:0;display:flex;flex-direction:column;flex:1;background:rgba(0,0,0,.28)}
+#ci2 .mkhead,#ci2 .mkrow{display:grid;grid-template-columns:minmax(0,1.7fr) 1fr .8fr 1fr .9fr;gap:10px;padding:11px 14px;align-items:center}
+#ci2 .mkhead{font-size:9.5px;letter-spacing:.06em;opacity:.55;border-bottom:1px solid var(--fg25)}
+#ci2 .mkhead .cap,#ci2 .mkhead .act{text-align:right}
+#ci2 .mkhead .cap{opacity:1}
+#ci2 .mkrow{font-size:11.5px;border-bottom:1px solid var(--fg10);cursor:pointer;transition:background .25s}
+#ci2 .mkrow:hover{background:var(--fg05)}
+#ci2 .mkcoin{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden}
+#ci2 .mklogo{width:26px;height:26px;border-radius:50%;border:1px solid var(--fg35);display:grid;place-items:center;font:700 9px 'Kode Mono',monospace;color:#2BD52D;background:rgba(0,0,0,.35);flex:none;overflow:hidden}
+#ci2 .mklogo img{width:100%;height:100%;object-fit:cover}
+#ci2 .mksym{font-weight:700;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ci2 .mkname{opacity:.4;font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ci2 .mkchg.up{color:#2BD52D} #ci2 .mkchg.down{color:#e0554e}
+#ci2 .mkcap{text-align:right}
+#ci2 .mkact{text-align:right;font-size:9.5px;opacity:.6}
+#ci2 .mkact .pumpgo:hover{opacity:1;text-decoration:underline}
+#ci2 #ci2_mk_rows{overflow-y:auto;flex:1;max-height:60vh}
+#ci2 #ci2_mk_soon{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 24px;gap:14px}
+/* the two-id rule above outranks .hide, so give hide an equal-specificity win:
+   COMING SOON is hood-only, hidden on the solana board where the list shows */
+#ci2 #ci2_mk_soon.hide{display:none}
+#ci2 #ci2_chart_box{position:relative;height:440px;background:rgba(0,0,0,.28)}
+#ci2 #ci2_chart_box iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+#ci2 #ci2_chart_hold{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}
+@media (max-width:900px){#ci2 #ci2_desk{flex-direction:column}#ci2 #ci2_markets_panel{flex:none}#ci2 #ci2_mk_rows{max-height:44vh}}
 </style>
 
   <div id="ci2_hdr" class="bar" style="border:1px solid var(--fg);border-radius:8px;margin-bottom:14px;background:var(--panel2)">
@@ -109,13 +139,12 @@
     <span id="ci2_bigfile" style="margin-left:14px;opacity:.75;text-decoration:underline;cursor:pointer">how to upload BIG FILE</span>
     <span id="ci2_who" class="hide" style="margin-left:auto;opacity:.7"></span>
     <button id="ci2_connect" class="btn" style="margin-left:auto">CONNECT WALLET</button>
-    <button id="ci2_chart" class="btn ghost" style="margin-left:8px">MARKETS</button>
     <button id="ci2_new" class="btn hide" style="margin-left:8px">+ NEW INSCRIPTION</button>
-    <button id="ci2_maketoken" class="btn ghost hide" style="margin-left:8px">MAKE IT AS TOKEN</button>
   </div>
   <div id="ci2_rpcwarn" class="hide" style="border:1px solid #e0a84e;border-radius:8px;margin-bottom:14px;padding:11px 16px;color:#e0a84e;font-size:11px;line-height:1.8"></div>
 
-  <div class="panel">
+  <div id="ci2_desk">
+  <div id="ci2_board_panel" class="panel">
     <div class="bar"><span id="ci2_board_title" style="opacity:.8">board.exe</span>
       <span class="tabs" style="margin-left:auto">
         <span id="ci2_tab_feed" class="tab on">GLOBAL FEED</span>
@@ -132,6 +161,27 @@
       </div>
       <p class="muted" style="margin-top:14px">// board renders images and audio only, sandboxed. uploaded content never runs as script. a fresh inscription can take a few minutes to show up here.</p>
     </div>
+  </div>
+
+  <!-- markets.exe: coins launched from this board, dexscreener-priced. hood shows
+       COMING SOON here until robinhood launches open. -->
+  <div id="ci2_markets_panel" class="panel">
+    <div class="bar"><span id="ci2_mk_title" style="opacity:.8">markets.exe</span>
+      <button id="ci2_mk_launch" class="btn" style="margin-left:auto;padding:7px 12px">LAUNCH A TOKEN</button>
+    </div>
+    <div class="body">
+      <div id="ci2_mk_live">
+        <div class="mkhead"><span>NAME</span><span>PRICE</span><span>24H</span><span class="cap">MCAP &#9662;</span><span class="act">ACTION</span></div>
+        <div id="ci2_mk_rows"></div>
+        <p id="ci2_mk_empty" class="muted" style="text-align:center;padding:26px 12px">loading...</p>
+        <p class="muted" style="padding:10px 14px;border-top:1px solid var(--fg10)">// coins launched from this board, sorted by market cap. prices from dexscreener, 30s refresh. a fresh launch reads "indexing" until picked up.</p>
+      </div>
+      <div id="ci2_mk_soon" class="hide">
+        <div style="font:400 22px 'Zen Dots',monospace;color:var(--fg);letter-spacing:.06em">MARKETS &middot; COMING SOON</div>
+        <p class="muted" style="max-width:360px;line-height:2;font-size:11px">token launches on Robinhood Chain are on the way. inscribe on hood-in today; when launches open, the coins made from these inscriptions chart right here, dexscreener-style.</p>
+      </div>
+    </div>
+  </div>
   </div>
 
   <!-- inscribe modal -->
@@ -219,6 +269,32 @@
             <span id="ci2_view_copy" class="vbtn">COPY LINK</span>
             <span id="ci2_view_scan" class="vbtn">SOLSCAN</span>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- chart.exe: the live dexscreener chart for a coin picked in markets.exe -->
+  <div id="ci2_chart_modal" class="modal mcenter hide">
+    <div class="panel" style="width:860px;max-width:100%">
+      <div class="bar">
+        <span id="ci2_chart_dot" class="dot" style="background:#e0554e;cursor:pointer"></span><span class="dot" style="background:#e0a84e"></span><span class="dot" style="background:#2BD52D"></span>
+        <span style="margin-left:6px;opacity:.8">chart.exe</span>
+        <span id="ci2_chart_sym" style="margin-left:12px;color:#2BD52D"></span>
+        <span id="ci2_chart_close" style="margin-left:auto;cursor:pointer;opacity:.7">[ x ]</span>
+      </div>
+      <div class="body" style="padding:0">
+        <div style="display:flex;align-items:baseline;gap:14px;padding:14px 16px;border-bottom:1px solid var(--fg25);flex-wrap:wrap">
+          <span id="ci2_chart_price" style="font-size:20px;font-weight:700"></span>
+          <span id="ci2_chart_chg" style="font-size:12px"></span>
+          <span id="ci2_chart_stats" class="muted" style="margin-left:auto"></span>
+        </div>
+        <div id="ci2_chart_box"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--fg25)">
+          <a id="ci2_chart_pump" class="btn" target="_blank" rel="noopener" style="text-decoration:none">VIEW ON PUMP.FUN</a>
+          <a id="ci2_chart_dexs" class="btn ghost hide" target="_blank" rel="noopener" style="text-decoration:none">OPEN ON DEXSCREENER</a>
+          <span id="ci2_chart_copy" class="btn ghost">COPY MINT</span>
+          <span id="ci2_chart_post" class="btn ghost hide">VIEW LAUNCH POST</span>
         </div>
       </div>
     </div>
