@@ -56,6 +56,21 @@ export async function inscribe({ connection, wallet, burner, kind, body, speed, 
   return { sig };
 }
 
+// A PLAIN code-in write - no table, no board row, no inventory reference.
+// Used for a launched coin's Metaplex metadata JSON: the returned tx
+// signature becomes the path of the coin's on-chain uri, so the JSON is
+// reassemblable from solana alone. The burner signs the write (one wallet
+// signature for the funding transfer only) and the leftover sweeps back.
+const CODEIN_FLAT_FEE = 500000; // the contract's flat 0.0005 SOL per codeIn call
+export async function inscribeMeta({ connection, wallet, burner, json }) {
+  const bytes = new TextEncoder().encode(json).length;
+  const { total } = estimateCost(bytes, { firstTime: false });
+  await topUp(connection, wallet, burner.publicKey, total + CODEIN_FLAT_FEE);
+  const sig = await writer.codeIn({ connection, signer: burner }, json, "metadata.json", 0, "json");
+  await sweep(connection, burner, wallet.publicKey).catch((e) => console.warn("[code-in] meta sweep skipped:", e && e.message));
+  return { sig };
+}
+
 // Fund the burner up to `target`, sending only the shortfall so a reused burner
 // with leftover balance costs less. The user signs this one transfer.
 async function topUp(connection, wallet, burnerPubkey, target) {

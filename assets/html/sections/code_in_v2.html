@@ -375,8 +375,8 @@ await writer.writeRow(conn, signer,
             <div><span class="muted" style="font-size:12px;opacity:.6">dev buy</span><span id="ci2_tk_buyshow">0.01 SOL</span></div>
           </div>
           <p class="muted" style="margin:8px 2px 0;opacity:.5">the fee rides inside the create transaction itself: if the launch does not land, nothing is paid. pump.fun trading fees apply to the dev buy.</p>
-          <p class="muted" style="margin:6px 2px 0;opacity:.5">permanence: the coin metadata embeds your inscription tx. even if this site ever disappears, the original reassembles from solana with the IQ SDK.</p>
-          <button id="ci2_tk_go" class="btn" style="width:100%;margin-top:12px" disabled>LAUNCH ON PUMP.FUN / 1 SIGNATURE</button>
+          <p class="muted" style="margin:6px 2px 0;opacity:.5">permanence: the coin metadata is ITSELF inscribed on solana first (~0.001 SOL), and the token's uri path is that inscription's tx. even if this site ever disappears, everything reassembles from chain with the IQ SDK.</p>
+          <button id="ci2_tk_go" class="btn" style="width:100%;margin-top:12px" disabled>INSCRIBE METADATA + LAUNCH ON PUMP.FUN</button>
         </div>
         <!-- progress -->
         <div id="ci2_tk_prog" class="hide">

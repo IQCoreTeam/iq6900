@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=40";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=41";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -670,6 +670,7 @@
     let tkSrcSig = "";       // the inscription behind the coin
     let tkSrcBody = "";      // its body, for the local preview only
     let tkPicked = null;     // picker candidate before CONTINUE
+    let tkMetaSig = "";      // metadata inscription tx, kept across retries
     let tkLast = null;       // last successful launch, for the registry retry
     let lastInscribed = null;// last inscription, for the done-panel loop back
 
@@ -682,6 +683,7 @@
       $("#ci2_tk_modal").removeClass("hide");
       $("#ci2_tk_prog").addClass("hide"); $("#ci2_tk_done").addClass("hide");
       $("#ci2_tk_win").text("token_launch.exe");
+      tkMetaSig = ""; // a fresh flow gets fresh metadata (retry keeps it)
       if (prefill && prefill.sig) {
         // arriving from a specific post (viewer button or a fresh inscription):
         // the source is already chosen, skip the picker
@@ -778,32 +780,47 @@
       $("#ci2_tk_form").addClass("hide"); $("#ci2_tk_prog").removeClass("hide");
       $("#ci2_tk_retry").addClass("hide"); $("#ci2_tk_log").text("");
       $("#ci2_tk_win").text("launching...");
-      const steps = ["preparing the coin image", "uploading image + metadata to pump.fun", "building the create transaction", "approve the transaction in your wallet", "confirming on solana"];
+      const steps = ["inscribing coin metadata on solana", "building the create transaction", "approve the transaction in your wallet", "confirming on solana"];
       setTkBar(5, steps[0]);
 
-      // The metadata description is the coin's permanence notice: it pins the
-      // source inscription tx on IPFS, so even if this site and the gateway
-      // disappear, anyone can reassemble the original from solana with the SDK.
+      // Fully on-chain metadata: the Metaplex JSON itself is code-in
+      // inscribed (plain write, never on the board), and the coin's uri is
+      // gateway /meta/{that tx}. The uri path IS a solana tx signature, so
+      // metadata and original alike outlive every iqlabs host. The
+      // description repeats the pointers for human readers.
       const viewLink = window.iqCodein.viewUrl(tkSrcSig);
       const userDesc = ($("#ci2_tk_desc").val() || "").trim().slice(0, 300);
       const description = (userDesc ? userDesc + "\n\n" : "")
         + "on-chain original: " + viewLink
         + "\ninscription tx: " + tkSrcSig
-        + "\nif this page ever dies, the original reassembles from solana with the IQ SDK (@iqlabs-official/solana-sdk, feed iq6900-codein-feed-v1 / global-feed).";
-      const isImgSrc = tkSrcBody.slice(0, 11) === "data:image/";
+        + "\nthis metadata is itself inscribed on solana (the uri path is its tx). if this page ever dies, everything reassembles from chain with the IQ SDK (@iqlabs-official/solana-sdk).";
+      const x = ($("#ci2_tk_x").val() || "").trim();
+      const web = ($("#ci2_tk_web").val() || "").trim() || viewLink;
+      const metaJson = { name: name, symbol: symbol, description: description,
+        image: window.iqTokenLaunch.GATEWAY + "/render/" + tkSrcSig,
+        external_url: viewLink, website: web, showName: true };
+      if (x) metaJson.twitter = x;
 
       try {
+        // Step 1: inscribe the metadata JSON (reused on retry so a failed
+        // create never pays for a second metadata write).
+        if (!tkMetaSig) {
+          await ensureBurner();
+          const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
+          const res = await window.iqCodein.inscribeMeta({
+            connection: window.iqCodein.connect(), wallet, burner, json: JSON.stringify(metaJson),
+          });
+          tkMetaSig = res.sig;
+        }
+        setTkBar(30, steps[1]);
         const out = await window.iqTokenLaunch.launch({
-          provider, name, symbol, description,
-          imageDataUrl: isImgSrc ? tkSrcBody : null,
-          fileName: isImgSrc ? (fileNameOf(tkSrcBody) || "onchain.png") : null,
-          renderSig: tkSrcSig,
-          twitter: ($("#ci2_tk_x").val() || "").trim(),
-          website: ($("#ci2_tk_web").val() || "").trim() || viewLink,
+          provider, name, symbol,
+          uri: window.iqCodein.metaUrl(tkMetaSig),
           devBuySol: parseFloat($("#ci2_tk_buy").val()) || 0,
-          onStep: (label) => setTkBar(10 + steps.indexOf(label) * 20, label),
+          onStep: (label) => setTkBar(30 + steps.indexOf(label) * 22, label),
         });
-        tkLast = { mint: out.mint, name, symbol, src: tkSrcSig, launchSig: out.sig };
+        tkLast = { mint: out.mint, name, symbol, src: tkSrcSig, meta: tkMetaSig, launchSig: out.sig };
+        tkMetaSig = ""; // consumed; the next launch inscribes fresh metadata
         $("#ci2_tk_prog").addClass("hide"); $("#ci2_tk_done").removeClass("hide");
         $("#ci2_tk_win").text("done.exe");
         $("#ci2_tk_mint").text("mint: " + out.mint);
@@ -834,7 +851,7 @@
         await ensureBurner();
         const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
         const connection = window.iqCodein.connect();
-        const body = JSON.stringify({ mint: tkLast.mint, name: tkLast.name, symbol: tkLast.symbol, src: tkLast.src });
+        const body = JSON.stringify({ mint: tkLast.mint, name: tkLast.name, symbol: tkLast.symbol, src: tkLast.src, meta: tkLast.meta });
         const res = await window.iqCodein.inscribe({ connection, wallet, burner, kind: "token", body, speed: "light" });
         await window.iqCodein.notify(res.sig, { kind: "token", body, who });
         $("#ci2_tk_regnote").text("// launch written to the board. it appears in boardexe within minutes.");
