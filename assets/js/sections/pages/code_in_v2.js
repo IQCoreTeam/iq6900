@@ -800,9 +800,15 @@
         + "\nthis metadata is itself inscribed on solana (the uri path is its tx). if this page ever dies, everything reassembles from chain with the IQ SDK (@iqlabs-official/solana-sdk).";
       const x = ($("#ci2_tk_x").val() || "").trim();
       const web = ($("#ci2_tk_web").val() || "").trim() || viewLink;
+      // The coin image: an image inscription IS its own token image (the raw
+      // bytes the gateway reconstructs at /img/{sig}.png, the same url the
+      // gateway's own /meta route uses for image assets), while text and ascii
+      // become the terminal card at /render/{sig}. The form preview above uses
+      // the same split (local data url for images, card for text).
+      const isImg = tkSrcBody.slice(0, 11) === "data:image/";
+      const image = window.iqTokenLaunch.GATEWAY + (isImg ? "/img/" + tkSrcSig + ".png" : "/render/" + tkSrcSig);
       const metaJson = { name: name, symbol: symbol, description: description,
-        image: window.iqTokenLaunch.GATEWAY + "/render/" + tkSrcSig,
-        external_url: viewLink, website: web, showName: true };
+        image: image, external_url: viewLink, website: web, showName: true };
       if (x) metaJson.twitter = x;
 
       try {
