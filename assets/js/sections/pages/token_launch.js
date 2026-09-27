@@ -41,18 +41,29 @@
     });
     if (!res.ok) throw new Error("pumpportal rejected the create (" + res.status + "): " + (await res.text()).slice(0, 200));
     const tx = w3.VersionedTransaction.deserialize(new Uint8Array(await res.arrayBuffer()));
-    if (tx.message.addressTableLookups && tx.message.addressTableLookups.length)
-      throw new Error("unexpected lookup tables in the create transaction - cannot append the fee safely");
+
+    // The create tx uses an address lookup table (measured live: 1 ALT), so
+    // decompiling requires the resolved table accounts, and the recompile
+    // passes them back so the message stays within size.
+    const conn = window.iqCodein.connect();
+    const lookups = [];
+    for (const l of tx.message.addressTableLookups) {
+      const info = await conn.getAddressLookupTable(l.accountKey);
+      if (!info || !info.value) throw new Error("could not resolve the create tx lookup table " + l.accountKey.toBase58());
+      lookups.push(info.value);
+    }
 
     // Append the platform fee inside the same message: it cannot be paid
     // without the create landing, and the create cannot land without it.
-    const msg = w3.TransactionMessage.decompile(tx.message);
+    // (Verified by mainnet simulation: pump create + this transfer both
+    // execute, ~251k CU total.)
+    const msg = w3.TransactionMessage.decompile(tx.message, { addressLookupTableAccounts: lookups });
     msg.instructions.push(w3.SystemProgram.transfer({
       fromPubkey: owner,
       toPubkey: new w3.PublicKey(FEE_WALLET),
       lamports: FEE_LAMPORTS,
     }));
-    const withFee = new w3.VersionedTransaction(msg.compileToV0Message());
+    const withFee = new w3.VersionedTransaction(msg.compileToV0Message(lookups));
     withFee.sign([mintKp]);
 
     step("approve the transaction in your wallet");
@@ -62,7 +73,6 @@
     step("confirming on solana");
     // Poll instead of confirmTransaction: PumpPortal picked the blockhash,
     // and polling survives RPC websocket hiccups.
-    const conn = window.iqCodein.connect();
     for (let i = 0; i < 40; i++) {
       const st = await conn.getSignatureStatuses([sig]);
       const s = st && st.value && st.value[0];
