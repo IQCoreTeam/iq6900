@@ -227,6 +227,10 @@
         if (gen !== boardGen) return; // superseded mid-flight
         rows.forEach((it) => {
           const obj = it.row || it;
+          // launch registry rows (kind "token") are the on-chain index the
+          // boardexe market list reads; they are not inscriptions, so they never
+          // show as cards on the board itself.
+          if (obj.kind === "token") return;
           const sig = obj.__txSignature || it.__txSignature || it.signature || "";
           const owner = String(obj.who || "");
           const who2 = owner ? owner.slice(0, 4) + "..." + owner.slice(-4) : "";
@@ -411,8 +415,11 @@
         $b.html($pre);
       }
       // an on-chain image, text or ascii post can become a pump.fun token in
-      // one click (solana only); text/ascii get the gateway card render
-      const canTokenize = !isEvm() && tkUsable(obj.kind, body);
+      // one click (solana only); text/ascii get the gateway card render. Only
+      // the owner may tokenize their own post - on someone else's, the button
+      // is hidden, so you can only launch what you inscribed.
+      const mine = !!who && owner === who;
+      const canTokenize = !isEvm() && mine && tkUsable(obj.kind, body);
       $("#ci2_view_token").toggleClass("hide", !canTokenize).off("click");
       if (canTokenize) $("#ci2_view_token").on("click", () => {
         $("#ci2_view_modal").addClass("hide");
