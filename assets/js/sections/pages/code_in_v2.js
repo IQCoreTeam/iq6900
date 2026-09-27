@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=46";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=47";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -148,8 +148,8 @@
       $("#ci2_total_label").text("on-chain fee (est)");
       $("#ci2_rpc_link").text(M.connLabel);
       $("#ci2_view_scan").text(M.scanLabel);
-      $("#ci2_overcap").html("over the " + M.maxSigs + " signature budget. <u>use the SDK / CLI</u>, or continue and sign each tx.");
-      $("#ci2_cap_choice > p").text("this inscription needs more than " + M.maxSigs + " wallet signatures. the SDK / CLI is the steady path; you can also continue and approve each tx.");
+      $("#ci2_overcap").html("over the " + M.maxSigs + " signature budget. <span style='color:#8fffb0'>easiest fix: shrink the image (convert to WebP)</span> - <u>click here for how</u>, or use the SDK / continue and sign each tx.");
+      $("#ci2_cap_choice > p").text("this inscription needs more than " + M.maxSigs + " wallet signatures. shrinking the file is the easy way out; the SDK / CLI is the steady path, and you can also continue and approve each tx.");
       $("#ci2_cap_pick_rpc").addClass("hide"); // rpc does not lift the cap on evm (the wallet broadcasts)
       $("#ci2_cap_continue").removeClass("hide").on("click", () => {
         bigAck = true;
@@ -534,7 +534,7 @@
       // modal (doInscribe routes it there); disable only when there's nothing to write.
       $("#ci2_go").prop("disabled", !pay.body)
         .text(overCap
-          ? (isEvm() ? "OVER " + window.iqCodein.meta.maxSigs + " SIGNATURES - SDK OR CONTINUE" : "OVER 256KB - ADD RPC OR USE SDK")
+          ? (isEvm() ? "OVER " + window.iqCodein.meta.maxSigs + " SIGNATURES - SHRINK IT, SDK OR CONTINUE" : "OVER 256KB - SHRINK THE IMAGE, RPC OR SDK")
           : (isEvm() ? "INSCRIBE / " + est.sigs + " SIGNATURES" : "FUND + INSCRIBE / 1 SIGNATURE"));
     }
 
