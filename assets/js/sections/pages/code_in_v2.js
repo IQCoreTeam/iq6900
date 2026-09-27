@@ -835,6 +835,11 @@
           });
           tkMetaSig = res.sig;
         }
+        // Warm the metadata endpoint too: pump.fun fetches this uri to read the
+        // coin's name/symbol/image, and a cold /token-meta reassembles from
+        // chain (~25s) past pump's fetch timeout. Firing it now (the create +
+        // confirm window follows) gives Cloudflare a hot HIT before pump reads.
+        try { fetch(window.iqCodein.metaUrl(tkMetaSig), { mode: "no-cors" }); } catch (e) {}
         setTkBar(30, steps[1]);
         const out = await window.iqTokenLaunch.launch({
           provider, name, symbol,
@@ -952,22 +957,29 @@
 
     async function enrichMarkets() {
       // A new coin already has an on-chain image even before DexScreener
-      // supplies one. Read its launch metadata once; retry transient failures.
-      for (const t of mkTokens) {
-        if (!t.meta || t.imageChecked) continue;
-        try {
-          const res = await fetch(window.iqCodein.metaUrl(t.meta), { signal: AbortSignal.timeout(8000) });
-          if (!res.ok) continue;
-          const meta = await res.json();
-          if (typeof meta.image === "string" && /^https?:\/\//i.test(meta.image)) {
+      // supplies one. Resolve each launch metadata in the background, never
+      // blocking the render: /token-meta and /img both reassemble from chain,
+      // which is ~25s cold (then cached), far past any patient inline await. So
+      // fire the fetches in parallel, warm the image url the moment we learn it
+      // (so the <img> and pump.fun both find a hot cache), and re-render when it
+      // lands. imageChecked guards against a stampede; a failure clears it so
+      // the next tick retries.
+      mkTokens.forEach((t) => {
+        if (!t.meta || t.imageChecked) return;
+        t.imageChecked = true;
+        fetch(window.iqCodein.metaUrl(t.meta), { signal: AbortSignal.timeout(30000) })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((meta) => {
+            if (!meta || typeof meta.image !== "string" || !/^https?:\/\//i.test(meta.image)) return;
             const url = new URL(meta.image);
-            // Old /img responses containing JSON may remain in CDN caches.
+            // Old /img responses containing JSON may linger in CDN caches.
             if (url.origin === window.iqTokenLaunch.GATEWAY && url.pathname.startsWith("/img/")) url.searchParams.set("v", "2");
             t.image = url.href;
-          }
-          t.imageChecked = true;
-        } catch (e) { /* keep DexScreener/initials available; retry next tick */ }
-      }
+            try { fetch(t.image, { mode: "no-cors" }); } catch (e) {} // warm before the <img> requests it
+            renderMarkets();
+          })
+          .catch(() => { t.imageChecked = false; }); // transient (cold) miss: retry next tick
+      });
       for (let i = 0; i < mkTokens.length; i += 30) {
         const batch = mkTokens.slice(i, i + 30);
         try {
