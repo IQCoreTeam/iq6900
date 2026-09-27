@@ -6,7 +6,7 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import { setRpcUrl, reader, contract } from "@iqlabs-official/solana-sdk";
 import { deriveBurner } from "./burner.js";
-import { estimateCost } from "./cost.js?v=3";
+import { estimateCost } from "./cost.js?v=4";
 import { inscribe, inscribeMeta, sweep } from "./inscribe.js?v=6";
 import { feedTablePda, programId } from "./feed.js";
 import { toAscii } from "./ascii.js?v=1";

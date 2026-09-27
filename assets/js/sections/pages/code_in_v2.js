@@ -654,6 +654,8 @@
         // else is shown as what it is so a code bug can't hide behind "network".
         const congested = /block height|expired|429|rate.?limit|congest|timed? ?out|simulation/i.test(msg);
         const head = /user rejected|denied|4001/i.test(msg) ? ""
+          : /insufficient funds for rent/i.test(msg)
+          ? "the write's fee cushion ran dry (congested retries each park a little rent). retry re-funds it and continues. "
           : congested ? "the network was congested and this write did not finish. "
           : "this write stopped on an unexpected error. ";
         $("#ci2_log").text(head + note + (head ? "(" + msg + ")" : ""));
