@@ -5,13 +5,14 @@ function getQueryParams() {
         txid: urlParams.get('txid'),
         menu: urlParams.get('menu'),
         post: urlParams.get('post'),
-        token: urlParams.get('token')
+        token: urlParams.get('token'),
+        chain: urlParams.get('chain')
     };
 }
 
 
 $(document).ready(function() {
-    const { txid,menu,post,token } = getQueryParams();
+    const { txid,menu,post,token,chain } = getQueryParams();
     if (txid) {
         $.onchainPage.init();
         $('.bump').css('display', 'none');
@@ -27,7 +28,7 @@ $(document).ready(function() {
         }else if(menu == "hoodin"){
             $.code_in_v2.init(post, "evm"); // same page, robinhood adapter + hood theme
         }else if(menu == "boardexe"){
-            $.boardexe.init(token); // charts for tokens launched from the board
+            $.boardexe.init(token, chain); // charts for board tokens; chain=evm = hood roadmap
         }
     }else{
         $.mainPage.init();

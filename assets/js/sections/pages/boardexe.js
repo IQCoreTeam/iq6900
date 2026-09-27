@@ -7,20 +7,24 @@
   $.extend(true, window, { boardexe: Boardexe });
 
   function Boardexe() {
-    const templateUrl = "./html/sections/boardexe.html?ver=2";
+    const templateUrl = "./html/sections/boardexe.html?ver=3";
     const FEED_PAGES = 8;        // 8 x 50 rows is plenty while the feed is young
     const PRICE_MS = 30000;      // dexscreener refresh
     const FEED_TICKS = 5;        // re-read the feed every 5th price tick
+    let chain = "solana";        // "solana" | "evm" - set by init from the route
+    const isEvm = () => chain === "evm";
     let feedRows = [];           // non-token inscription rows for the left side
     let tokens = [];             // [{ mint, name, symbol, sig, pair }]
     let current = null;          // token shown in the chart view
     let timer = null;
     let tick = 0;
 
-    function init(token) {
+    function init(token, chainName) {
+      chain = chainName === "evm" ? "evm" : "solana";
       try {
         const url = new URL(window.location.href);
         url.searchParams.set("menu", "boardexe");
+        isEvm() ? url.searchParams.set("chain", "evm") : url.searchParams.delete("chain");
         token ? url.searchParams.set("token", token) : url.searchParams.delete("token");
         url.searchParams.delete("post");
         history.pushState({ menu: "boardexe" }, "", url);
@@ -33,19 +37,39 @@
     }
 
     // The solana adapter (js/codein/browser.js) loads with the page and fires
-    // iqcodein:ready; its readBoard is the same gateway call the board uses.
+    // iqcodein:ready; the EVM one is imported on demand, mirroring the code-in
+    // page, so solana users never download it. Either exposes the same readBoard.
     function ready(cb) {
-      if ((window.iqCodeinChains || {}).solana) { cb(); return; }
+      const chains = () => window.iqCodeinChains || {};
+      if (isEvm()) {
+        if (chains().evm) { cb(); return; }
+        import(new URL("js/codein/evm.js?v=3", document.baseURI).href)
+          .then(() => cb())
+          .catch((e) => { console.error("[boardexe] hood adapter load failed:", e); $("#bx_feed_empty").text("could not load the robinhood module. refresh to retry."); });
+        return;
+      }
+      if (chains().solana) { cb(); return; }
       window.addEventListener("iqcodein:ready", cb, { once: true });
     }
-    const adapter = () => window.iqCodeinChains.solana;
+    const adapter = () => isEvm() ? window.iqCodeinChains.evm : window.iqCodeinChains.solana;
 
     function wire() {
+      if (timer) { clearInterval(timer); timer = null; } // a prior visit's timer must not tick into this DOM
       $("#bx_home_dot").on("click", () => { window.location.href = window.location.pathname; });
-      $("#bx_make").on("click", () => $.code_in_v2.init(null, null, { maketoken: 1 }));
       $("#bx_copy").on("click", copyMint);
       $("#bx_back").on("click", showList);
-      if (timer) clearInterval(timer);
+      if (isEvm()) {
+        // Roadmap screen: markets and launch are not live on robinhood chain yet,
+        // but the inscription feed on the left is real hood-in data.
+        $("#bx").addClass("hood");
+        $("#bx_title").text("// BOARDEXE - ROBINHOOD");
+        $("#bx_feed_cap").text("board.exe // ROBINHOOD");
+        $("#bx_make").prop("disabled", true).addClass("soon").text("LAUNCH A TOKEN - SOON")
+          .attr("title", "launching tokens on robinhood chain is coming soon");
+        $("#bx_soon_hood").on("click", () => $.code_in_v2.init(null, "evm"));
+        return; // no price timer, no chart wiring behind the coming-soon panel
+      }
+      $("#bx_make").on("click", () => $.code_in_v2.init(null, null, { maketoken: 1 }));
       timer = setInterval(onTick, PRICE_MS);
     }
 
@@ -64,12 +88,20 @@
       tokens = []; feedRows = []; tick = 0;
       await readFeed();
       renderFeed();
+      if (isEvm()) { renderComingSoon(); return; } // no markets on robinhood yet
       await enrich();
       renderList();
       if (sel) {
         const pick = tokens.find((t) => t.mint === sel);
         if (pick) select(pick.mint);
       }
+    }
+
+    // Hood variant: swap the market table / chart for the coming-soon panel; the
+    // left feed still shows real hood-in inscriptions.
+    function renderComingSoon() {
+      $("#bx_view_list, #bx_view_chart").addClass("hide");
+      $("#bx_view_soon").removeClass("hide");
     }
 
     async function readFeed() {
@@ -117,7 +149,7 @@
           .append($('<div class="m"></div>')
             .append($('<span class="tag"></span>').text(obj.kind || "text"))
             .append($('<span class="ago"></span>').text(relTime(obj.__blockTime))));
-        if (sig) card.on("click", () => $.code_in_v2.init(sig));
+        if (sig) card.on("click", () => $.code_in_v2.init(sig, isEvm() ? "evm" : null));
         $f.append(card);
       });
       $("#bx_feed_empty").toggleClass("hide", feedRows.length > 0);

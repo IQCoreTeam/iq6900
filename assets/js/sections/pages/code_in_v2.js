@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=41";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=42";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -106,7 +106,11 @@
       $("#ci2_close").on("click", closeModal);
       $("#ci2_again").on("click", openCompose);
       $("#ci2_view").on("click", () => { closeModal(); switchTab("feed"); });
-      // make it as token: pump.fun launcher, solana only
+      // markets / chart: this board's coins on the boardexe split view. On hood
+      // the same button opens the roadmap variant (markets coming soon).
+      $("#ci2_chart").on("click", () => $.boardexe.init(null, isEvm() ? "evm" : null));
+      // make it as token: pump.fun launcher, solana only. Hood shows the launch
+      // as coming soon inside boardexe, so the code-in header stays launcher-free.
       if (!isEvm()) $("#ci2_maketoken").removeClass("hide");
       $("#ci2_maketoken").on("click", () => tkOpen());
       $("#ci2_tk_close").on("click", () => $("#ci2_tk_modal").addClass("hide"));

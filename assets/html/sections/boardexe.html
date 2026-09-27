@@ -13,6 +13,8 @@
 #bx .btn:hover{background:#fff}
 #bx .btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--fg50)}
 #bx .btn.ghost:hover{background:var(--fg10)}
+#bx .btn.soon,#bx .btn:disabled{background:transparent;color:var(--dim);border:1px solid var(--mkline);cursor:not-allowed}
+#bx .btn.soon:hover,#bx .btn:disabled:hover{background:transparent}
 #bx .muted{opacity:.55;font-size:10px}
 #bx .hide{display:none}
 #bx .wrap{display:flex;align-items:stretch}
@@ -67,13 +69,13 @@
   <div class="panel">
     <div class="bar">
       <span id="bx_home_dot" class="dot" style="background:#e0554e;cursor:pointer" title="back to home"></span><span class="dot" style="background:#e0a84e"></span><span class="dot" style="background:#2BD52D"></span>
-      <span style="margin-left:6px;opacity:.8">// BOARDEXE - CHART</span>
+      <span id="bx_title" style="margin-left:6px;opacity:.8">// BOARDEXE - CHART</span>
       <span class="muted" style="margin-left:14px">inscriptions on the left, the market they became on the right</span>
       <button id="bx_make" class="btn" style="margin-left:auto">LAUNCH A TOKEN</button>
     </div>
     <div class="wrap">
       <div class="side">
-        <div class="cap">board.exe // GLOBAL FEED</div>
+        <div id="bx_feed_cap" class="cap">board.exe // GLOBAL FEED</div>
         <div id="bx_feed" class="feed"></div>
         <p id="bx_feed_empty" class="muted" style="text-align:center;padding:20px 0">loading...</p>
         <p class="muted" style="margin-top:10px">click a post to open it on the board.</p>
@@ -109,6 +111,14 @@
             <span id="bx_post" class="btn ghost hide">VIEW LAUNCH POST</span>
             <span id="bx_back" class="btn ghost" style="margin-left:auto">BACK TO LIST</span>
           </div>
+        </div>
+        <!-- hood variant: token launches on robinhood chain are not live yet, so
+             the markets side is a roadmap panel while the inscription feed on the
+             left stays real. -->
+        <div id="bx_view_soon" class="hide" style="flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 24px">
+          <div style="font:400 24px 'Zen Dots',monospace;color:var(--up);letter-spacing:.08em">MARKETS &middot; COMING SOON</div>
+          <p class="muted" style="margin-top:16px;max-width:460px;line-height:2;font-size:11px">token launches on Robinhood Chain are on the way. inscribe on hood-in today; when launches open, the coins made from these inscriptions chart right here, dexscreener-style, exactly like the code-in board.</p>
+          <a id="bx_soon_hood" class="btn" style="margin-top:22px;text-decoration:none;cursor:pointer">GO TO HOOD IN</a>
         </div>
       </div>
     </div>
