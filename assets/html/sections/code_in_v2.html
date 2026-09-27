@@ -48,6 +48,11 @@
 #ci2 .tk_row>div{flex:1;min-width:0}
 #ci2 .tk_lbl{display:block;font-size:10px;opacity:.55;margin:0 0 4px;letter-spacing:.1em}
 #ci2 #ci2_tk_prev img{max-width:120px;max-height:120px;border:1px solid var(--fg40);border-radius:5px;display:block}
+#ci2 #ci2_tk_inv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:300px;overflow-y:auto}
+#ci2 #ci2_tk_inv .rec{cursor:pointer}
+#ci2 #ci2_tk_inv .rec.dim{opacity:.32;cursor:default}
+#ci2 #ci2_tk_inv .rec.picked{border:2px solid #2BD52D;box-shadow:0 0 12px rgba(43,213,45,.25)}
+#ci2 .tk_step{font-size:10px;letter-spacing:.14em;color:#2BD52D;margin:0 0 10px}
 #ci2 .rpcbox a{color:var(--fg)}
 #ci2 .muted{opacity:.55;font-size:10px}
 /* top padding clears the fixed site nav so the modal title bar is never cut */
@@ -184,8 +189,9 @@
           <p id="ci2_sig" class="muted" style="margin-top:12px"></p>
           <p id="ci2_donenote" class="muted" style="margin-top:6px;opacity:.55">// the one-time account rent is paid once - your next inscriptions cost far less.</p>
           <p class="muted" style="margin-top:4px;opacity:.55">// your inscription is on chain now; the board can take a few minutes to catch up.</p>
-          <div style="display:flex;gap:10px;justify-content:center;margin-top:16px">
-            <button id="ci2_view" class="btn">VIEW ON BOARD</button>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+            <button id="ci2_launch_after" class="btn hide">LAUNCH IT AS TOKEN</button>
+            <button id="ci2_view" class="btn ghost">VIEW ON BOARD</button>
             <button id="ci2_again" class="btn ghost">INSCRIBE AGAIN</button>
           </div>
         </div>
@@ -327,19 +333,36 @@ await writer.writeRow(conn, signer,
         <span id="ci2_tk_close" class="tab" style="margin-left:auto;opacity:.7">x</span>
       </div>
       <div class="body">
-        <!-- form -->
-        <div id="ci2_tk_form">
+        <!-- step 1: pick an inscription from your inventory -->
+        <div id="ci2_tk_pick">
+          <p class="tk_step">// STEP 1 OF 2 - PICK YOUR INSCRIPTION</p>
+          <p class="muted" style="margin:0 0 12px;font-size:11px">a coin from this board starts as YOUR inscription. pick an image from your inventory; it becomes the coin image, and the coin page links back to the on-chain original.</p>
+          <div id="ci2_tk_inv"></div>
+          <p id="ci2_tk_inv_load" class="muted" style="text-align:center;padding:16px 0">loading your inventory...</p>
+          <div id="ci2_tk_noinv" class="hide" style="text-align:center;padding:10px 0 4px">
+            <div style="font:400 20px 'Zen Dots',monospace;color:#2BD52D">NO INSCRIPTIONS YET</div>
+            <p class="muted" style="margin:10px 0 0;font-size:11px;line-height:1.7">your inventory is empty. put your image on solana first, then launch it as a token.</p>
+          </div>
+          <p id="ci2_tk_onlyimg" class="muted hide" style="margin:10px 2px 0;opacity:.5">image inscriptions are selectable; other kinds are dimmed (a coin needs an image).</p>
+          <button id="ci2_tk_continue" class="btn" style="width:100%;margin-top:12px" disabled>PICK AN IMAGE TO CONTINUE</button>
+          <button id="ci2_tk_makenew" class="btn ghost" style="width:100%;margin-top:8px">+ MAKE A NEW INSCRIPTION</button>
+        </div>
+        <!-- step 2: the launch form -->
+        <div id="ci2_tk_form" class="hide">
+          <p class="tk_step">// STEP 2 OF 2 - NAME IT AND LAUNCH</p>
           <div class="tk_row">
             <div><span class="tk_lbl">NAME</span><input id="ci2_tk_name" class="tk_in" maxlength="32" placeholder="my token"></div>
             <div style="flex:0 0 140px"><span class="tk_lbl">SYMBOL</span><input id="ci2_tk_symbol" class="tk_in" maxlength="10" placeholder="TICKER" style="text-transform:uppercase"></div>
           </div>
           <span class="tk_lbl">DESCRIPTION</span>
-          <textarea id="ci2_tk_desc" style="min-height:64px" placeholder="what is this coin. links to your on-chain media are appended automatically."></textarea>
-          <div class="upl_row" style="margin-top:10px">
-            <label class="btn ghost upl">CHOOSE IMAGE<input id="ci2_tk_img" type="file" accept="image/*"></label>
-            <span id="ci2_tk_src" class="muted"></span>
+          <textarea id="ci2_tk_desc" style="min-height:64px" placeholder="what is this coin. the link to your on-chain original is appended automatically."></textarea>
+          <div class="upl_row" style="margin-top:10px;align-items:flex-start">
+            <div id="ci2_tk_prev"></div>
+            <div style="flex:1;min-width:0">
+              <span id="ci2_tk_src" class="muted" style="display:block"></span>
+              <span id="ci2_tk_repick" class="muted" style="text-decoration:underline;cursor:pointer">pick a different inscription</span>
+            </div>
           </div>
-          <div id="ci2_tk_prev" style="margin-bottom:10px"></div>
           <div class="tk_row">
             <div><span class="tk_lbl">X LINK (OPTIONAL)</span><input id="ci2_tk_x" class="tk_in" placeholder="https://x.com/..."></div>
             <div><span class="tk_lbl">WEBSITE (OPTIONAL)</span><input id="ci2_tk_web" class="tk_in" placeholder="defaults to your launch post"></div>

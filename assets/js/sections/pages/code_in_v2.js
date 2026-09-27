@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=38";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=39";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -110,7 +110,14 @@
       if (!isEvm()) $("#ci2_maketoken").removeClass("hide");
       $("#ci2_maketoken").on("click", () => tkOpen());
       $("#ci2_tk_close").on("click", () => $("#ci2_tk_modal").addClass("hide"));
-      $("#ci2_tk_img").on("change", tkOnImage);
+      $("#ci2_tk_continue").on("click", tkContinue);
+      $("#ci2_tk_makenew").on("click", tkMakeNew);
+      $("#ci2_tk_repick").on("click", () => tkShowPicker());
+      $("#ci2_launch_after").on("click", () => {
+        if (!lastInscribed) return;
+        closeModal();
+        tkOpen({ image: lastInscribed.body, srcSig: lastInscribed.sig });
+      });
       $("#ci2_tk_name, #ci2_tk_symbol").on("input", tkValidate);
       $("#ci2_tk_buy").on("input", () => { $("#ci2_tk_buyshow").text((parseFloat($("#ci2_tk_buy").val()) || 0) + " SOL"); });
       $("#ci2_tk_go").on("click", doLaunch);
@@ -597,6 +604,11 @@
         $("#ci2_progress").addClass("hide"); $("#ci2_done").removeClass("hide");
         $("#ci2_win").text("done.exe");
         $("#ci2_sig").text((isEvm() ? "tx: " : "sig: ") + res.sig.slice(0, 12) + "..." + res.sig.slice(-8));
+        // a fresh image inscription can go straight into the token launcher
+        lastInscribed = { body: pay.body, sig: res.sig };
+        const canLaunch = !isEvm() && pay.body.slice(0, 11) === "data:image/";
+        $("#ci2_launch_after").toggleClass("hide", !canLaunch);
+        $("#ci2_view").toggleClass("ghost", canLaunch); // LAUNCH is the primary when present
         if (isEvm()) $("#ci2_donenote").text("// the storage fee charges once, at the final step. every tx before it is gas only.");
         await window.iqCodein.notify(res.sig, { kind: pay.kind, body: pay.body, who });
         loadBoard();
@@ -648,35 +660,98 @@
     }
 
     // ---- make it as token (pump.fun launcher) ----
-    let tkImage = "";     // token image data URL (upload or an on-chain post)
-    let tkImageName = ""; // original filename for the ipfs upload
-    let tkSrcSig = "";    // when the image comes from an on-chain post
-    let tkLast = null;    // last successful launch, for the registry retry
+    // Seller flow: step 1 picks an IMAGE inscription from the user's inventory
+    // (empty inventory routes to the compose modal, whose done panel loops
+    // back here); step 2 is the launch form. A coin from this board always
+    // starts as an on-chain inscription.
+    let tkImage = "";        // token image data URL (always an on-chain post)
+    let tkImageName = "";    // original filename for the ipfs upload
+    let tkSrcSig = "";       // the inscription behind the image
+    let tkPicked = null;     // picker candidate before CONTINUE
+    let tkLast = null;       // last successful launch, for the registry retry
+    let lastInscribed = null;// last inscription, for the done-panel loop back
 
     function tkOpen(prefill) {
       $("#ci2_tk_modal").removeClass("hide");
-      $("#ci2_tk_form").removeClass("hide"); $("#ci2_tk_prog").addClass("hide"); $("#ci2_tk_done").addClass("hide");
+      $("#ci2_tk_prog").addClass("hide"); $("#ci2_tk_done").addClass("hide");
       $("#ci2_tk_win").text("token_launch.exe");
       if (prefill && prefill.image) {
-        tkImage = prefill.image;
-        tkImageName = fileNameOf(prefill.image) || "onchain.png";
-        tkSrcSig = prefill.srcSig || "";
-        $("#ci2_tk_prev").html($("<img>").attr("src", tkImage));
-        $("#ci2_tk_src").text(tkSrcSig ? "image from on-chain post " + tkSrcSig.slice(0, 8) + "..." : "");
+        // arriving from a specific post (viewer button or a fresh inscription):
+        // the image is already chosen, skip the picker
+        tkSelectImage(prefill.image, prefill.srcSig || "");
+        tkShowForm();
+      } else {
+        tkShowPicker();
       }
-      tkValidate();
     }
 
-    function tkOnImage() {
-      const f = this.files[0]; if (!f) return;
-      const r = new FileReader();
-      r.onload = () => {
-        tkImage = r.result; tkImageName = f.name; tkSrcSig = "";
-        $("#ci2_tk_prev").html($("<img>").attr("src", tkImage));
-        $("#ci2_tk_src").text("");
-        tkValidate();
-      };
-      r.readAsDataURL(f);
+    function tkSelectImage(body, sig) {
+      tkImage = body;
+      tkImageName = fileNameOf(body) || "onchain.png";
+      tkSrcSig = sig;
+    }
+
+    async function tkShowPicker() {
+      $("#ci2_tk_form").addClass("hide");
+      $("#ci2_tk_pick").removeClass("hide");
+      $("#ci2_tk_inv").empty();
+      $("#ci2_tk_noinv, #ci2_tk_onlyimg").addClass("hide");
+      $("#ci2_tk_inv_load").removeClass("hide").text("loading your inventory...");
+      tkPicked = null;
+      $("#ci2_tk_continue").prop("disabled", true).text("PICK AN IMAGE TO CONTINUE");
+      if (!who) { await connect(); if (!who) { $("#ci2_tk_inv_load").text("connect your wallet to see your inventory."); return; } }
+      let rows = [];
+      try { rows = ((await window.iqCodein.readMine(who, 50)) || {}).rows || []; } catch (e) {}
+      $("#ci2_tk_inv_load").addClass("hide");
+      const $inv = $("#ci2_tk_inv");
+      let images = 0;
+      rows.forEach((it) => {
+        const obj = it.row || it;
+        const body = String(obj.body || "");
+        const sig = obj.__txSignature || it.__txSignature || "";
+        const isImg = body.slice(0, 11) === "data:image/";
+        const $th = $('<div class="th"></div>');
+        if (isImg) $th.append($("<img>").attr("src", body));
+        else if (body.slice(0, 11) === "data:audio/") $th.addClass("txt").text("|> audio");
+        else if (obj.kind === "ascii") $th.addClass("art").text(body.slice(0, 400));
+        else $th.addClass("txt").text(body.slice(0, 60));
+        const card = $('<div class="rec"></div>').append($th)
+          .append($('<div class="m"></div>').append($('<span class="tag"></span>').text(obj.kind || "text")));
+        if (isImg) {
+          images++;
+          card.on("click", () => {
+            tkPicked = { body, sig };
+            $("#ci2_tk_inv .rec").removeClass("picked");
+            card.addClass("picked");
+            $("#ci2_tk_continue").prop("disabled", false).text("CONTINUE WITH " + (fileNameOf(body) || "THIS IMAGE"));
+          });
+        } else card.addClass("dim");
+        $inv.append(card);
+      });
+      if (!images) $("#ci2_tk_noinv").removeClass("hide");
+      else $("#ci2_tk_onlyimg").removeClass("hide");
+    }
+
+    function tkContinue() {
+      if (!tkPicked) return;
+      tkSelectImage(tkPicked.body, tkPicked.sig);
+      tkShowForm();
+    }
+
+    // Empty inventory (or the wish for a fresh image) routes into the normal
+    // compose modal on the IMAGE tab; its done panel loops back into launch.
+    function tkMakeNew() {
+      $("#ci2_tk_modal").addClass("hide");
+      openCompose();
+      selectKind("image");
+    }
+
+    function tkShowForm() {
+      $("#ci2_tk_pick").addClass("hide");
+      $("#ci2_tk_form").removeClass("hide");
+      $("#ci2_tk_prev").html($("<img>").attr("src", tkImage));
+      $("#ci2_tk_src").text(tkSrcSig ? "image from your inscription " + tkSrcSig.slice(0, 8) + "... - the coin page links back to the on-chain original." : "");
+      tkValidate();
     }
 
     function tkValidate() {
