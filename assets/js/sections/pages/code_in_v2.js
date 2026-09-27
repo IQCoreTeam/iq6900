@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=44";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=45";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -70,6 +70,10 @@
       provider = window.phantom?.solana || window.solana || null;
       $("#ci2_connect").on("click", connect);
       $("#ci2_home_dot").on("click", () => { window.location.href = window.location.pathname; });
+      // Cross-chain hop (design: header "ROBINHOOD? -> /HOODIN" / "SOLANA? -> /CODEIN").
+      // init() re-renders the template, updates ?menu= and resets timers/wallet state.
+      $("#ci2_xchain").text(isEvm() ? "SOLANA? → /CODEIN" : "ROBINHOOD? → /HOODIN")
+        .on("click", () => init(null, isEvm() ? null : "evm"));
       $("#ci2_new").on("click", openCompose);
       $("#ci2_tab_feed").on("click", () => switchTab("feed"));
       $("#ci2_tab_mine").on("click", () => switchTab("mine"));

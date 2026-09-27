@@ -8,6 +8,12 @@
 #ci2.hood{--fg:#2BD52D;--fg05:rgba(43,213,45,.05);--fg10:rgba(43,213,45,.1);--fg25:rgba(43,213,45,.25);--fg35:rgba(43,213,45,.35);--fg40:rgba(43,213,45,.4);--fg50:rgba(43,213,45,.5);--fg85:rgba(43,213,45,.85);--fg90:rgba(43,213,45,.9);--fg95:rgba(43,213,45,.95);--btnfg:#04140a;--btnhov:#7dff7f;--panel:rgba(6,13,7,.88);--panel2:rgba(6,13,7,.9)}
 /* solana-only helpers have no meaning on the hood board */
 #ci2.hood #ci2_bigfile,#ci2.hood #ci2_spd_wrap,#ci2.hood #ci2_firstnote,#ci2.hood #ci2_view_token{display:none}
+/* Cross-chain hop (design: Code In / Hood In Flow headers). Styled in the
+   OTHER chain's color so it reads as a door, not a state. */
+#ci2_xchain{margin-left:14px;font-size:9px;font-weight:600;font-family:inherit;letter-spacing:.14em;color:#2BD52D;background:none;border:1px solid rgba(43,213,45,.45);border-radius:4px;padding:5px 10px;opacity:.85;transition:all .3s;cursor:pointer}
+#ci2_xchain:hover{opacity:1;background:rgba(43,213,45,.1)}
+#ci2.hood #ci2_xchain{color:#e8e4d6;border-color:rgba(232,228,214,.45)}
+#ci2.hood #ci2_xchain:hover{background:rgba(232,228,214,.1)}
 #ci2{font-family:'Kode Mono',monospace;color:var(--fg);padding:14px 16px 40px;width:100%;box-sizing:border-box}
 #ci2 #ci2_scroll{max-height:68vh;overflow-y:auto;overflow-x:hidden;padding-right:4px}
 #ci2 .bar{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--fg35);padding:11px 16px;font-size:12px;letter-spacing:.14em}
@@ -99,7 +105,7 @@
    its line whether or not it wraps. */
 @media (max-width:600px){
   #ci2_hdr{flex-wrap:wrap;gap:6px;padding:10px 12px;letter-spacing:.06em}
-  #ci2_hdr #ci2_bigfile,#ci2_hdr #ci2_who{display:none}
+  #ci2_hdr #ci2_bigfile,#ci2_hdr #ci2_who,#ci2_hdr #ci2_xchain{display:none}
   #ci2_hdr #ci2_connect,#ci2_hdr #ci2_new{margin-left:auto}
 }
 /* ---- board + markets desk (design: Hood In Flow.dc.html) ---- */
@@ -136,6 +142,7 @@
   <div id="ci2_hdr" class="bar" style="border:1px solid var(--fg);border-radius:8px;margin-bottom:14px;background:var(--panel2)">
     <span id="ci2_home_dot" class="dot" style="background:#e0554e;cursor:pointer" title="back to home"></span><span class="dot" style="background:#e0a84e"></span><span class="dot" style="background:#2BD52D"></span>
     <span id="ci2_page_title" style="margin-left:6px;opacity:.8">// CODE IN</span>
+    <button id="ci2_xchain">ROBINHOOD? &rarr; /HOODIN</button>
     <span id="ci2_bigfile" style="margin-left:14px;opacity:.75;text-decoration:underline;cursor:pointer">how to upload BIG FILE</span>
     <span id="ci2_who" class="hide" style="margin-left:auto;opacity:.7"></span>
     <button id="ci2_connect" class="btn" style="margin-left:auto">CONNECT WALLET</button>
