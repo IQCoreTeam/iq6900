@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=51";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=52";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -74,18 +74,10 @@
       // Phantom first (its window.solana shim also claims the generic slot),
       // then Backpack's own provider, then whatever claimed window.solana.
       provider = window.phantom?.solana || window.backpack || window.solana || null;
-      $("#ci2_connect").on("click", connect);
-      if (isEvm()) {
-        const refreshWallets = () => {
-          const picker = $("#ci2_evm_wallet"), selected = picker.val();
-          picker.empty().removeClass("hide").append($("<option>").val("").text("Choose wallet"));
-          for (const wallet of window.iqCodein.getWallets()) picker.append($("<option>").val(wallet.id).text(wallet.name));
-          if (selected) picker.val(selected);
-        };
-        refreshWallets();
-        $(window).off("iq:evm-wallets.codein").on("iq:evm-wallets.codein", refreshWallets);
-        $("#ci2_evm_wallet").on("change", () => { walletGeneration++; removeWalletListeners(); showWallet(null); });
-      } else $(window).off("iq:evm-wallets.codein");
+      $("#ci2_connect, #ci2_change_wallet").on("click", () => connect());
+      $("#ci2_wallet_close").on("click", () => document.getElementById("ci2_wallet_dialog").close(""));
+      $(window).off("iq:evm-wallets.codein");
+      if (isEvm()) $(window).on("iq:evm-wallets.codein", renderWalletOptions);
       $("#ci2_home_dot").on("click", () => { window.location.href = window.location.pathname; });
       // Cross-chain hop (design: header "ROBINHOOD? -> /HOODIN" / "SOLANA? -> /CODEIN").
       // init() re-renders the template, updates ?menu= and resets timers/wallet state.
@@ -177,11 +169,32 @@
       });
     }
 
+    function renderWalletOptions() {
+      const options = window.iqCodein.getWallets();
+      const box = $("#ci2_wallet_options").empty();
+      $("#ci2_wallet_empty").toggleClass("hide", options.length > 0);
+      for (const wallet of options) box.append($("<button>").attr("type", "button").addClass("btn ghost")
+        .text(wallet.name + (wallet.selected && who ? " · Connected" : ""))
+        .on("click", () => document.getElementById("ci2_wallet_dialog").close(wallet.id)));
+    }
+
     async function connect() {
+      let walletId;
+      if (isEvm()) {
+        const dialog = document.getElementById("ci2_wallet_dialog");
+        if (dialog.open) return;
+        renderWalletOptions();
+        dialog.returnValue = "";
+        walletId = await new Promise(resolve => {
+          dialog.addEventListener("close", () => resolve(dialog.returnValue), { once: true });
+          dialog.showModal();
+        });
+        if (!walletId) return;
+      }
       walletGeneration++; // Ignore a late silent reconnect after an explicit choice.
       burner = null;
       if (isEvm()) {
-        try { who = await window.iqCodein.connectWallet({ walletId: $("#ci2_evm_wallet").val() || undefined }); }
+        try { who = await window.iqCodein.connectWallet({ walletId }); }
         catch (e) { alert(String((e && e.message) || e)); return; }
         // Preflight the wallet-side RPC before any signature is requested; a
         // dead saved RPC for chain 4663 fails every send with -32603.
@@ -205,8 +218,9 @@
       who = address;
       if (isEvm() && address) {
         const selected = window.iqCodein.getWallets().find(wallet => wallet.selected);
-        if (selected) $("#ci2_evm_wallet").val(selected.id);
+        $("#ci2_change_wallet").text(selected ? selected.name + " · CHANGE WALLET" : "CHANGE WALLET");
       }
+      $("#ci2_change_wallet").toggleClass("hide", !isEvm() || !who);
       $("#ci2_who").text(who ? who.slice(0, 4) + "..." + who.slice(-4) : "").toggleClass("hide", !who);
       $("#ci2_connect").toggleClass("hide", !!who);
       $("#ci2_new").toggleClass("hide", !who);
