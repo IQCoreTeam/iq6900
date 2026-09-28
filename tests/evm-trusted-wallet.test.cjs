@@ -70,3 +70,14 @@ test('funded selected account reaches SDK, stale displayed account does not',asy
  assert.equal((await surface.inscribe({kind:'text',body:'test',who:'0xabc'})).sig,'0xtx');
  assert.equal(writes.length,1);
 });
+
+test('disconnect clears signer and suppresses silent reconnect until explicit selection',async()=>{
+ const {surface,calls}=await setupWallets();
+ await surface.connectWallet({walletId:'io.metamask'});
+ surface.disconnectWallet();calls.length=0;
+ assert.equal(surface.getWalletProvider(),null);
+ assert.equal(await surface.connectWallet({onlyIfTrusted:true}),null);
+ assert.equal(calls.length,0);
+ await assert.rejects(surface.inscribe({kind:'text',body:'test',who:'0xabc'}),/connect the wallet first/);
+ assert.equal(await surface.connectWallet({walletId:'io.metamask'}),'0xabc');
+});

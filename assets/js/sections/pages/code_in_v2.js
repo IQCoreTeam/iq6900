@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=52";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=53";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -60,7 +60,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=5", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=6", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -76,6 +76,14 @@
       provider = window.phantom?.solana || window.backpack || window.solana || null;
       $("#ci2_connect, #ci2_change_wallet").on("click", () => connect());
       $("#ci2_wallet_close").on("click", () => document.getElementById("ci2_wallet_dialog").close(""));
+      $("#ci2_wallet_disconnect").on("click", () => {
+        walletGeneration++;
+        removeWalletListeners();
+        window.iqCodein.disconnectWallet();
+        showWallet(null);
+        $("#ci2_rpcwarn").addClass("hide");
+        document.getElementById("ci2_wallet_dialog").close("");
+      });
       $(window).off("iq:evm-wallets.codein");
       if (isEvm()) $(window).on("iq:evm-wallets.codein", renderWalletOptions);
       $("#ci2_home_dot").on("click", () => { window.location.href = window.location.pathname; });
@@ -170,6 +178,7 @@
     }
 
     function renderWalletOptions() {
+      $("#ci2_wallet_disconnect").toggleClass("hide", !who);
       const options = window.iqCodein.getWallets();
       const box = $("#ci2_wallet_options").empty();
       $("#ci2_wallet_empty").toggleClass("hide", options.length > 0);

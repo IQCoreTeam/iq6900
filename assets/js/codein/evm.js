@@ -28,6 +28,7 @@ sdk.setNetwork("robinhood", activeRpc);
 let provider = null; // BrowserProvider over the injected wallet
 let signer = null;
 let injected = null;
+let disconnected = false;
 const wallets = new Map();
 const WALLET_KEY = "iq6900_evm_wallet";
 window.addEventListener("eip6963:announceProvider", ({ detail }) => {
@@ -92,9 +93,14 @@ const surface = {
   // make sure the wallet is on Robinhood Chain (add it if unknown), grab a signer.
   getWallets: () => availableWallets().map(({ id, name, provider }) => ({ id, name, selected: provider === injected })),
   getWalletProvider: () => injected,
+  disconnectWallet: () => {
+    signer = null; provider = null; injected = null; disconnected = true;
+    try { localStorage.setItem(WALLET_KEY, "disconnected"); } catch (_) {}
+  },
   connectWallet: async ({ onlyIfTrusted = false, walletId } = {}) => {
     const options = availableWallets();
     let saved; try { saved = localStorage.getItem(WALLET_KEY); } catch (_) {}
+    if (onlyIfTrusted && (disconnected || saved === "disconnected")) return null;
     const choice = options.find(w => w.id === (walletId || saved)) || (!walletId && !saved && options.length === 1 ? options[0] : null);
     if (!choice) { if (onlyIfTrusted) return null; throw new Error("Choose an EVM wallet first."); }
     const eth = choice.provider;
@@ -120,6 +126,7 @@ const surface = {
     if ((await eth.request({ method: "eth_chainId" })).toLowerCase() !== CHAIN_ID) throw new Error("Switch the selected wallet to Robinhood Chain before connecting.");
     provider = new BrowserProvider(eth);
     signer = await provider.getSigner();
+    disconnected = false;
     try { localStorage.setItem(WALLET_KEY, choice.id); } catch (_) {}
     return signer.address;
   },
