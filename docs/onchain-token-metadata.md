@@ -1,72 +1,87 @@
-# Why IQ inscriptions are not like pump.fun coins
+# Why IQ inscriptions matter
 
-Check where your coin's image actually lives. For 99% of tokens the answer is an IPFS pin or somebody's server. When the pin drops, the image breaks. When the server dies, the coin is just a name.
+The future our 6000x cheaper inscriptions open up.
 
-Coins launched from the IQ board are different: the image, the metadata, and the mint all live on Solana itself. This page explains why that is technically true, not marketing.
+Different from data that lives on somebody's server. Different from tiny 4KB inscriptions. Our coins are different, and this page explains exactly why, at the protocol level.
 
-## What you can inscribe
+## What can you do with code-in
 
 Inscribe the Bible. Write a contract. Upload the Epstein files. Upload an alien.
 
 Onto the blockchain. The place with no delete button.
 
-Then turn it into a coin whose image can never die.
+Then turn it into a coin, with its image living on Solana, where nothing dies.
 
-## Chapter 1: what an IQ inscription is
+## Chapter 1: the protocol
 
-Data is split into 3.6KB chunks and written directly into Solana transaction calldata. Not into account storage, into the transactions themselves. A transaction can never be edited or deleted, so the bytes are final the moment they land.
+IQ is a protocol that writes data into transactions themselves, forming a linked list, or anchoring them to PDAs and mappings, so that large data can live entirely inside Solana transactions.
 
-PDAs act as the address book: on-chain mappings that record which transactions make up one file (session and table PDAs derived from seeds, linked to the chunk transactions).
+Data is split into 3.6KB chunks and written straight into transaction calldata. Not account storage, the transactions themselves. Each chunk transaction points at the previous one, and the final write records the tail signature, so a reader walks the chain backwards until Genesis and reassembles the file. For big files a session PDA batches the chunks instead.
 
-Reading is the reverse walk: follow the PDA mapping, fetch the transactions, reassemble the chunks. There is no original sitting on a server. The chain is the original.
+On top of that sits a database layer: PDA seeds work like a hash table path, the way you would file churu under catfood/fish. db_root and table PDAs derived from seeds organize rows logically, which is what lets apps like an on-chain 4chan, chat, or a github hand their data to the blockchain.
+
+```mermaid
+flowchart LR
+    FILE["your file"] -->|"split into 3.6KB chunks"| C1["tx chunk N<br/>(tail)"]
+    C1 -->|"prev sig in calldata"| C2["tx chunk ..."]
+    C2 -->|"prev sig"| C3["tx chunk 1"]
+    C3 --> G["Genesis"]
+    FINAL["finalize tx<br/>metadata + tail signature"] --> C1
+    DB["db_root PDA -> table PDA<br/>(seeds = category path,<br/>like catfood/fish)"] -.->|"indexes rows"| FINAL
+```
+
+Reading is the reverse walk: follow the pointer, fetch the transactions, reassemble. There is no original on any server. The chain is the original.
+
+Simple diagram above; for the deep dive see the whitepapers in this post: https://x.com/IQLabsOfficial/status/2014131287871627554
 
 ## Chapter 2: how a coin gets attached
 
-Every SPL token stores exactly three things on-chain: name, symbol, and a uri string (up to 200 bytes). Normal coins put an IPFS link in the uri.
+This is where we split from every pump.fun coin.
 
-We put something else in the path: a Solana transaction signature.
+Every SPL token stores exactly three things on-chain: name, symbol, uri. A normal coin puts an IPFS link in the uri. We put a Solana transaction signature in the uri path.
 
 ```
 uri = https://gateway.iqlabs.dev/token-meta/<TX1>
                                             ^^^^^
-                              this path segment IS a solana tx signature
+                                  this IS a solana tx signature
 ```
 
-TX1 is a code-in inscription that contains the coin's entire Metaplex metadata JSON. And that JSON points at TX2..N, the inscription of the original image (or text) itself, chunked into calldata.
+That transaction holds the coin's entire metadata JSON, inscribed. And that JSON points at the inscription transaction of the original image itself.
 
-So the full chain of custody is:
-
-mint (on-chain) -> uri string (on-chain) -> TX1 metadata JSON (on-chain calldata) -> TX2..N original bytes (on-chain calldata)
-
-Every hop is Solana native. What looks like a link is really a transaction id wearing a URL as a coat.
+mint -> metadata tx -> original tx. What looks like a link is really a chain of Solana tx ids.
 
 ```mermaid
 flowchart TD
     MINT["SPL mint, on-chain forever<br/>name / symbol / uri"]
-    URI["uri = gateway.iqlabs.dev/token-meta/TX1<br/>the path IS a solana tx signature"]
-    TX1["TX1: full metadata JSON<br/>inscribed in tx calldata"]
-    TX2["TX2..N: the original image<br/>chunked into tx calldata"]
-    PDA["feed table PDA<br/>row: mint / src / meta"]
+    URI["uri path = TX1<br/>a solana tx signature"]
+    TX1["TX1: full metadata JSON<br/>inscribed in calldata"]
+    TX2["TX2..N: the original image<br/>chunked into calldata"]
+    ROW["feed table row<br/>mint / src / meta"]
     GW["gateway.iqlabs.dev<br/>a lens, not storage"]
 
     MINT --> URI
     URI -->|"extract the signature"| TX1
     TX1 -->|"attributes: inscription tx"| TX2
-    PDA -.->|"second on-chain index"| TX1
-    PDA -.-> TX2
+    ROW -.->|"second on-chain index"| TX1
+    ROW -.-> TX2
     GW -.->|"if this dies, nothing is lost"| TX1
 ```
 
-## Chapter 3: why it survives us
+## Chapter 3: what if we all disappear
 
 "What if that gateway domain dies?"
 
 It does not matter. The domain is a lens, not storage.
 
-The uri string is baked into the mint forever. Pull the 88-character signature out of it, call getTransaction once, and the metadata JSON comes back. Call it again for the source signature inside, and the original image reassembles chunk by chunk. Anyone with an RPC endpoint can do this, at any time, with no permission from us.
+The uri string is baked into the mint forever. Pull the 88-character signature out of it, call getTransaction once, and the metadata comes back. Once more for the source signature inside it, and the original image reassembles chunk by chunk. Anyone with an RPC can do this, at any time.
 
-There is also a second, independent on-chain index: the board's feed table stores a registry row per launched coin with the mint, the source inscription tx, and the metadata inscription tx. Even a wiped uri could not orphan the data.
+No central servers. No AWS. The coin and its original live on the same chain, together. This is code-in.
 
-No central server. No IPFS pin. No AWS. The coin and its original live on the same chain, and they die together or not at all. Recovery needs exactly one thing: a Solana RPC.
+## What we are building on this
 
-The reference reader is open source: `@iqlabs-official/solana-sdk` (readCodeIn and friends). But nothing about the format needs our SDK. The bytes are right there in the transactions.
+With this technology we are building an on-chain 4chan, NFT rails, everything turned into an asset and discussed in a decentralized place, plus an AI skill and reputation network.
+
+Come in and code-in with us.
+
+- Contract: https://github.com/IQCoreTeam/IQLabsContract
+- SDK: https://github.com/IQCoreTeam/iqlabs-solana-sdk
