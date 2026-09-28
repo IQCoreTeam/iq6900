@@ -823,6 +823,19 @@
       const metaJson = { name: name, symbol: symbol, description: description,
         image: image, external_url: viewLink, website: web, showName: true };
       if (x) metaJson.twitter = x;
+      // The same pointers again as standard Metaplex attributes: explorers and
+      // wallets render these as clean key/value chips (prose in description
+      // loses its line breaks on most surfaces), and indexers get the recovery
+      // coordinates machine-readable instead of parsed out of text.
+      metaJson.attributes = [
+        { trait_type: "inscription tx", value: tkSrcSig },
+        { trait_type: "inscription kind", value: isImg ? "image" : "text" },
+        { trait_type: "storage", value: "fully on-chain (solana code-in)" },
+        { trait_type: "program", value: "9KLLchQVJpGkw4jPuUmnvqESdR7mtNCYr3qS4iQLabs" },
+        { trait_type: "feed", value: "iq6900-codein-feed-v1 / global-feed" },
+      ];
+      metaJson.properties = { category: "image",
+        files: [{ uri: image, type: "image/png" }] };
 
       // Warm the gateway image cache now. A cold /img (or /render) reassembles
       // the inscription from chain over RPC (~25s), far longer than pump.fun's
