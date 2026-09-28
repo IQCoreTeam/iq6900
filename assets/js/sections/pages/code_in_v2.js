@@ -939,7 +939,7 @@
     // the already-created token; the done panel offers a retry.
     let registryWriting = false;
     async function tkWriteRegistry() {
-      if (!tkLast || registryWriting) return;
+      if (!tkLast || tkLast.registrySig || registryWriting) return;
       registryWriting = true;
       $("#ci2_tk_regnote").text("Registering your existing token on IQ. Review any separate SOL funding request in your wallet; this does not create another token.");
       $("#ci2_tk_reg_retry").addClass("hide");
@@ -949,9 +949,17 @@
         const connection = window.iqCodein.connect();
         const body = JSON.stringify({ mint: tkLast.mint, name: tkLast.name, symbol: tkLast.symbol, src: tkLast.src, meta: tkLast.meta });
         const res = await window.iqCodein.inscribe({ connection, wallet, burner, kind: "token", body, speed: "light" });
-        await window.iqCodein.notify(res.sig, { kind: "token", body, who });
-        $("#ci2_tk_regnote").text("// launch indexed. it appears in markets.exe within minutes.");
-        loadMarkets();
+        tkLast.registrySig = res.sig;
+        if (!mkTokens.some(token => token.mint === tkLast.mint))
+          mkTokens.push({ ...JSON.parse(body), sig: res.sig });
+        renderLinkedCoins();
+        renderMarkets();
+        // Confirmed writes need no board rescan. Notification is best effort;
+        // a gateway outage must never offer another paid registration.
+        const notified = await window.iqCodein.notify(res.sig, { kind: "token", body, who }).catch(() => false);
+        $("#ci2_tk_regnote").text(notified
+          ? "// registered on chain; gateway notified."
+          : "// registered on chain. Gateway notification is delayed; do not register again.");
       } catch (e) {
         $("#ci2_tk_regnote").text("// your token exists, but indexing it failed - it will not show in markets.exe until this lands.");
         $("#ci2_tk_reg_retry").removeClass("hide");
@@ -1020,6 +1028,9 @@
           cursor = res.nextCursor;
           if (!cursor) break;
         }
+        // Keep our confirmed registration visible while the gateway catches up.
+        const registered = tkLast && tkLast.registrySig && mkTokens.find(token => token.mint === tkLast.mint);
+        if (registered && !next.some(token => token.mint === registered.mint)) next.push(registered);
         mkTokens = next;
         marketReadState = cursor ? "partial" : "loaded";
       } catch (e) { marketReadState = "unavailable"; }

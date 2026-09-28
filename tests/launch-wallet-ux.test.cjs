@@ -48,3 +48,28 @@ test('linked coins reuse the chart action without wallet or transaction links',a
  box.find('button').trigger('click');assert.equal(v.w.$('#ci2_chart_modal').hasClass('hide'),false);
  assert.deepEqual(v.counts(),{metadata:0,launches:0,registrations:0});
 });
+
+for (const outcome of ['ok', 'unavailable', 'throws']) test(`confirmed registration survives notify ${outcome} without another write or board scan`, async t => {
+ const v = await mount(t), $ = v.w.$;
+ let reads = 0, notifications = 0;
+ v.w.iqCodein.readBoard = async () => { reads++; return {rows: []}; };
+ v.w.iqCodein.notify = async () => {
+  notifications++;
+  if (outcome === 'throws') throw Error('gateway unavailable');
+  return outcome === 'ok';
+ };
+ $('#ci2_mk_launch').trigger('click'); await tick();
+ $('#ci2_tk_inv .rec').first().trigger('click'); $('#ci2_tk_continue').trigger('click');
+ $('#ci2_tk_name').val('Test'); $('#ci2_tk_symbol').val('TEST'); $('#ci2_tk_go').trigger('click');
+ await tick(); await tick();
+ $('#ci2_tk_reg_retry').trigger('click'); await tick(); await tick();
+ assert.equal(v.counts().registrations, 1);
+ assert.equal(notifications, 1);
+ assert.equal(reads, 0);
+ assert.match($('#ci2_tk_regnote').text(), /registered on chain/);
+ assert.match($('#ci2_tk_coins').text(), /1 linked coin/);
+ assert.equal($('#ci2_tk_reg_retry').hasClass('hide'), true);
+ $('#ci2_tk_reg_retry').trigger('click'); await tick();
+ assert.equal(v.counts().registrations, 1);
+ assert.equal(notifications, 1);
+});
