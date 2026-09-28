@@ -73,3 +73,15 @@ for (const outcome of ['ok', 'unavailable', 'throws']) test(`confirmed registrat
  assert.equal(v.counts().registrations, 1);
  assert.equal(notifications, 1);
 });
+
+test('confirmed post remains visible with a stale gateway and rejected notification',async t=>{
+ const v=await mount(t),$=v.w.$;
+ v.w.iqCodein.notify=async()=>{throw Error('gateway offline');};
+ $('#ci2_new').trigger('click');$('#ci2_text').val('confirmed post');$('#ci2_go').trigger('click');
+ await tick();await tick();
+ assert.equal(v.counts().registrations,1);
+ assert.match($('#ci2_donenote').text(),/Confirmed on chain/);
+ $('#ci2_view').trigger('click');await tick();
+ assert.match($('#ci2_grid').text(),/confirmed post/);
+ assert.equal(v.counts().registrations,1);
+});
