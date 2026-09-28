@@ -15,7 +15,7 @@ async function loadTransfers(writer) {
     '@iqlabs-official/solana-sdk': { contract: { getUserInventoryPda: () => 'inventory' }, writer },
     '@solana/web3.js': { SystemProgram: { transfer: (args) => args }, Transaction },
     './feed.js': { dbRootSeed: 'synthetic-root', feedSeed: 'synthetic-feed', programId: 'synthetic-program' },
-    './cost.js?v=4': { estimateCost: () => ({ total: 1000000 }), getAccountRent: async () => 0 },
+    './cost.js?v=6': { estimateCost: () => ({ total: 1000000 }), getAccountRent: async () => 0 },
   };
   const module = new vm.SourceTextModule(fs.readFileSync(path.resolve(__dirname, '../assets/js/codein/inscribe.js'), 'utf8'), { context });
   await module.link((name) => {

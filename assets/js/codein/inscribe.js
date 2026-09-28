@@ -7,7 +7,7 @@
 import { contract, writer } from "@iqlabs-official/solana-sdk";
 import { SystemProgram, Transaction } from "@solana/web3.js";
 import { dbRootSeed, feedSeed, programId } from "./feed.js";
-import { estimateCost, getAccountRent } from "./cost.js?v=4";
+import { estimateCost, getAccountRent } from "./cost.js?v=6";
 
 const TX_FEE = 5000;
 // A system account may not be left with 0 < balance < rent-exempt minimum, so
@@ -51,6 +51,20 @@ export async function inscribe({ connection, wallet, burner, kind, body, speed, 
   // not surface as a failure. Leftover stays in the burner and shrinks the
   // next topUp anyway.
   await sweep(connection, burner, wallet.publicKey).catch((e) => console.warn("[code-in] sweep skipped:", e && e.message));
+  return { sig };
+}
+
+// A PLAIN code-in write - no table, no board row, no inventory reference.
+// Used for a launched coin's Metaplex metadata JSON: the returned tx
+// signature becomes the path of the coin's on-chain uri, so the JSON is
+// reassemblable from solana alone. The burner signs the write (one wallet
+// signature for the funding transfer only) and the leftover sweeps back.
+export async function inscribeMeta({ connection, wallet, burner, json }) {
+  const bytes = new TextEncoder().encode(json).length;
+  const { total } = estimateCost(bytes, { accountRent: await getAccountRent(connection, burner.publicKey) });
+  await topUp(connection, wallet, burner.publicKey, total);
+  const sig = await writer.codeIn({ connection, signer: burner }, json, "metadata.json", 0, "json");
+  await sweep(connection, burner, wallet.publicKey).catch((e) => console.warn("[code-in] meta sweep skipped:", e && e.message));
   return { sig };
 }
 

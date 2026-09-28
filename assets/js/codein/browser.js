@@ -6,8 +6,8 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import { setRpcUrl, reader, contract } from "@iqlabs-official/solana-sdk";
 import { deriveBurner } from "./burner.js";
-import { estimateCost } from "./cost.js?v=4";
-import { inscribe, sweep } from "./inscribe.js?v=6";
+import { estimateCost } from "./cost.js?v=6";
+import { inscribe, inscribeMeta, sweep } from "./inscribe.js?v=8";
 import { feedTablePda, programId } from "./feed.js";
 import { toAscii } from "./ascii.js?v=1";
 
@@ -75,6 +75,13 @@ window.iqCodein = {
   getSpeed,
   setSpeed,
   feedTable,
+  inscribeMeta,
+  // The coin's ON-CHAIN uri. Always the canonical gateway (never a custom
+  // localStorage override): the path segment IS the metadata inscription's tx
+  // signature, so the link stays chain-recoverable even if this host dies.
+  // /token-meta serves the inscribed JSON verbatim (/meta is taken by the
+  // asset-synthesis route and must not change - it is a public contract).
+  metaUrl: (sig) => GATEWAYS[0] + "/token-meta/" + sig,
   // board = the global feed table rows; mine = the user's assets (the gateway
   // resolves the inventory PDA our writes reference). The SDK reader returns the
   // same row shape as the gateway ({...cols, __txSignature}), so both feed the

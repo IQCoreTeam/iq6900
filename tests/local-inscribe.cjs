@@ -51,7 +51,7 @@ async function main() {
     };
     const module = new vm.SourceTextModule(fs.readFileSync(path.join(sources, 'inscribe.js'), 'utf8'), { context });
     await module.link((name) => {
-      if (name === './cost.js?v=4') return new vm.SourceTextModule(fs.readFileSync(path.join(sources, 'cost.js'), 'utf8'), { context });
+      if (name === './cost.js?v=6') return new vm.SourceTextModule(fs.readFileSync(path.join(sources, 'cost.js'), 'utf8'), { context });
       const values = imported[name];
       assert.ok(values, `unexpected import ${name}`);
       return new vm.SyntheticModule(Object.keys(values), function () {

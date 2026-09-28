@@ -43,3 +43,12 @@ test('a failed rent quote prevents returning an invented budget', async () => {
     getMinimumBalanceForRentExemption: async () => { throw new Error('RPC unavailable'); },
   }, 'synthetic'), /RPC unavailable/);
 });
+
+test('upstream method fees and retry reserve coexist with quoted account rent', async () => {
+ const {estimateCost}=await costs();
+ for(const [bytes,fee] of [[100,1000000],[3400,3000000],[7200,3000000],[36000,5000000]]) {
+  const c=estimateCost(bytes,{accountRent:0});
+  assert.equal(c.codeInFee,fee);
+  assert.equal(c.total-c.network-c.codeInFee-c.rent,10900000);
+ }
+});
