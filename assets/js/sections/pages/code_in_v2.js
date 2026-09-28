@@ -457,6 +457,7 @@
       // one click (solana only); text/ascii get the gateway card render. Only
       // the owner may tokenize their own post - on someone else's, the button
       // is hidden, so you can only launch what you inscribed.
+      renderLinkedCoins();
       const mine = !!who && owner === who;
       const canTokenize = !isEvm() && mine && tkUsable(obj.kind, body);
       $("#ci2_view_token").toggleClass("hide", !canTokenize).off("click");
@@ -814,6 +815,7 @@
         : window.iqTokenLaunch.GATEWAY + "/render/" + tkSrcSig;
       $("#ci2_tk_prev").html($("<img>").attr("src", preview));
       $("#ci2_tk_src").text("coin image from your inscription " + tkSrcSig.slice(0, 8) + "... - the coin page links back to the on-chain original.");
+      renderLinkedCoins();
       tkValidate();
     }
 
@@ -999,6 +1001,7 @@
       renderMarkets();
     }
 
+    let marketReadState = "loading";
     async function readMarketTokens() {
       const next = [];
       let cursor = null;
@@ -1018,7 +1021,27 @@
           if (!cursor) break;
         }
         mkTokens = next;
-      } catch (e) { /* keep whatever we had */ }
+        marketReadState = cursor ? "partial" : "loaded";
+      } catch (e) { marketReadState = "unavailable"; }
+      renderLinkedCoins();
+    }
+
+    function renderLinkedCoins() {
+      for (const [target, source] of [["#ci2_view_coins", currentSig], ["#ci2_tk_coins", tkSrcSig]]) {
+        const box = $(target).empty().toggleClass("hide", isEvm() || !source);
+        if (isEvm() || !source) continue;
+        const linked = mkTokens.filter(token => token.src === source);
+        if (linked.length) {
+          box.append($("<p>").text(linked.length + (linked.length === 1 ? " linked coin" : " linked coins")));
+          for (const token of linked) box.append($("<button>").addClass("btn ghost")
+            .text("$" + token.symbol + " · " + token.name)
+            .on("click", () => { $("#ci2_view_modal, #ci2_tk_modal").addClass("hide"); openChart(token.mint, token); }));
+          if (target === "#ci2_tk_coins") box.append($("<p>").addClass("muted").text("This inscription already has a linked coin. Continuing creates another token."));
+        } else box.append($("<p>").addClass("muted").text(
+          marketReadState === "loading" ? "Checking linked coins…" :
+          marketReadState === "unavailable" ? "Linked coins could not be checked." :
+          marketReadState === "partial" ? "No linked coins found in the loaded records." : "No linked coins found on the IQ board."));
+      }
     }
 
     async function enrichMarkets() {

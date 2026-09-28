@@ -271,6 +271,7 @@
       </div>
       <div class="body">
         <div id="ci2_view_body"></div>
+        <div id="ci2_view_coins" class="hide" aria-live="polite"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:14px;font:500 10px 'Kode Mono',monospace">
           <span id="ci2_view_meta" style="opacity:.55"></span>
           <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
@@ -453,6 +454,7 @@ await writer.writeRow(conn, signer,
           <div class="upl_row" style="margin-top:10px;align-items:flex-start">
             <div id="ci2_tk_prev"></div>
             <div style="flex:1;min-width:0">
+              <div id="ci2_tk_coins" class="hide" aria-live="polite"></div>
               <span id="ci2_tk_src" class="muted" style="display:block"></span>
               <span id="ci2_tk_repick" class="muted" style="text-decoration:underline;cursor:pointer">pick a different inscription</span>
             </div>
