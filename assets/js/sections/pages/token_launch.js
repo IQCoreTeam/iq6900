@@ -58,6 +58,36 @@
     // (Verified by mainnet simulation: pump create + this transfer both
     // execute, ~251k CU total.)
     const msg = w3.TransactionMessage.decompile(tx.message, { addressLookupTableAccounts: lookups });
+
+    // Holder rewards (default): pump.fun's create_v2 takes trailing optional
+    // args that PumpPortal omits (omitted = regular creator-fee coin), so
+    // appending is_cashback=false + creator_fee_bps=0 + is_holder_reward=true
+    // flips the coin to Holder Rewards (fees stream to holders, permanent).
+    // The dev-buy then needs the holder creator vault: on these coins the
+    // program stores bonding_curve.creator = PDA("holder-rewards", mint), so
+    // the buy's creator_vault PDA derives from that instead of the wallet.
+    // (Both verified by mainnet simulation against the live program.)
+    if (opts.rewards !== "creator") {
+      const B = window.buffer.Buffer;
+      const PUMP_ID = new w3.PublicKey("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P");
+      const CREATE_V2_DISC = [0xd6, 0x90, 0x4c, 0xec, 0x5f, 0x8b, 0x31, 0xb4];
+      const holderCreator = w3.PublicKey.findProgramAddressSync(
+        [B.from("holder-rewards"), mintKp.publicKey.toBuffer()], PUMP_ID)[0];
+      const holderVault = w3.PublicKey.findProgramAddressSync(
+        [B.from("creator-vault"), holderCreator.toBuffer()], PUMP_ID)[0];
+      const walletVault = w3.PublicKey.findProgramAddressSync(
+        [B.from("creator-vault"), owner.toBuffer()], PUMP_ID)[0];
+      let patched = false;
+      for (const ix of msg.instructions) {
+        const d = ix.data;
+        if (ix.programId.equals(PUMP_ID) && d.length >= 8 && CREATE_V2_DISC.every((b, i) => d[i] === b)) {
+          ix.data = B.concat([B.from(d), B.from([0]), B.alloc(8, 0), B.from([1])]);
+          patched = true;
+        }
+        for (const k of ix.keys) if (k.pubkey.equals(walletVault)) k.pubkey = holderVault;
+      }
+      if (!patched) throw new Error("could not enable holder rewards: the create instruction did not match create_v2. launch aborted before any signature - retry, or pick creator rewards.");
+    }
     msg.instructions.push(w3.SystemProgram.transfer({
       fromPubkey: owner,
       toPubkey: new w3.PublicKey(FEE_WALLET),

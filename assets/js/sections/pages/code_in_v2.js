@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=47";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=48";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -688,6 +688,7 @@
     let tkSrcBody = "";      // its body, for the local preview only
     let tkPicked = null;     // picker candidate before CONTINUE
     let tkMetaSig = "";      // metadata inscription tx, kept across retries
+    let tkMetaRw = "";       // rewards mode baked into that metadata (mismatch = re-inscribe)
     let tkLast = null;       // last successful launch, for the registry retry
     let lastInscribed = null;// last inscription, for the done-panel loop back
 
@@ -806,6 +807,7 @@
       // metadata and original alike outlive every iqlabs host. The
       // description repeats the pointers for human readers.
       const viewLink = window.iqCodein.viewUrl(tkSrcSig);
+      const rewards = $("input[name=ci2rw]:checked").val() === "creator" ? "creator" : "holders";
       const userDesc = ($("#ci2_tk_desc").val() || "").trim().slice(0, 300);
       const description = (userDesc ? userDesc + "\n\n" : "")
         + "on-chain original: " + viewLink
@@ -830,6 +832,7 @@
       metaJson.attributes = [
         { trait_type: "inscription tx", value: tkSrcSig },
         { trait_type: "inscription kind", value: isImg ? "image" : "text" },
+        { trait_type: "rewards", value: rewards === "creator" ? "creator" : "token holders" },
         { trait_type: "storage", value: "fully on-chain (solana code-in)" },
         { trait_type: "program", value: "9KLLchQVJpGkw4jPuUmnvqESdR7mtNCYr3qS4iQLabs" },
         { trait_type: "feed", value: "iq6900-codein-feed-v1 / global-feed" },
@@ -847,7 +850,9 @@
 
       try {
         // Step 1: inscribe the metadata JSON (reused on retry so a failed
-        // create never pays for a second metadata write).
+        // create never pays for a second metadata write; switching the rewards
+        // mode invalidates it so the attribute matches the coin).
+        if (tkMetaSig && tkMetaRw !== rewards) tkMetaSig = "";
         if (!tkMetaSig) {
           await ensureBurner();
           const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
@@ -855,6 +860,7 @@
             connection: window.iqCodein.connect(), wallet, burner, json: JSON.stringify(metaJson),
           });
           tkMetaSig = res.sig;
+          tkMetaRw = rewards;
         }
         // Warm the metadata endpoint too: pump.fun fetches this uri to read the
         // coin's name/symbol/image, and a cold /token-meta reassembles from
@@ -866,6 +872,7 @@
           provider, name, symbol,
           uri: window.iqCodein.metaUrl(tkMetaSig),
           devBuySol: parseFloat($("#ci2_tk_buy").val()) || 0,
+          rewards: rewards,
           onStep: (label) => setTkBar(30 + steps.indexOf(label) * 22, label),
         });
         tkLast = { mint: out.mint, name, symbol, src: tkSrcSig, meta: tkMetaSig, launchSig: out.sig };
