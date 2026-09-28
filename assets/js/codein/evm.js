@@ -74,9 +74,13 @@ const surface = {
 
   // The wallet is the signer AND the broadcaster; connect = request accounts,
   // make sure the wallet is on Robinhood Chain (add it if unknown), grab a signer.
-  connectWallet: async () => {
+  connectWallet: async ({ onlyIfTrusted = false } = {}) => {
     const eth = window.ethereum;
     if (!eth) throw new Error("no EVM wallet found. install MetaMask.");
+    if (onlyIfTrusted) {
+      const accounts = await eth.request({ method: "eth_accounts" });
+      if (!accounts.length || (await eth.request({ method: "eth_chainId" })).toLowerCase() !== CHAIN_ID) return null;
+    } else {
     await eth.request({ method: "eth_requestAccounts" });
     try {
       await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID }] });
@@ -88,6 +92,7 @@ const surface = {
           blockExplorerUrls: ["https://robinhoodchain.blockscout.com"],
         }] });
       } else throw err;
+    }
     }
     provider = new BrowserProvider(eth);
     signer = await provider.getSigner();

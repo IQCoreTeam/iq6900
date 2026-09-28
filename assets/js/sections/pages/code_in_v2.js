@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=48";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=49";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -24,9 +24,13 @@
     let currentSig = "";   // post shown in the view modal, for the share link
     let boardCursor = null; // gateway nextCursor for pagination
     let boardLoading = false; // guard so scroll + button don't double-fetch a page
+    let walletGeneration = 0;
+    let removeWalletListeners = () => {};
     let boardGen = 0;      // load generation; a fresh load supersedes in-flight ones
 
     function init(post, chainName, opts) {
+      walletGeneration++;
+      removeWalletListeners();
       chain = chainName === "evm" ? "evm" : "solana";
       who = null; burner = null; bigAck = false; // route switch = fresh wallet state
       // Keep the route in the URL so refreshing stays on this board instead of
@@ -56,7 +60,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=3", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=4", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -135,6 +139,7 @@
       refreshCost();
       loadBoard();
       startMarkets();
+      restoreWallet();
     }
 
     // Same template, hood skin: swap the theme tokens (CSS class) and the
@@ -162,6 +167,8 @@
     }
 
     async function connect() {
+      walletGeneration++; // Ignore a late silent reconnect after an explicit choice.
+      burner = null;
       if (isEvm()) {
         try { who = await window.iqCodein.connectWallet(); }
         catch (e) { alert(String((e && e.message) || e)); return; }
@@ -178,14 +185,42 @@
         const res = await provider.connect();
         who = (res?.publicKey || provider.publicKey).toString();
       }
-      // ci2_who starts hidden (no meaningless "not connected"); reveal it with
-      // the short address once a wallet is actually connected. On mobile the
-      // media query keeps it hidden to save the narrow header's width.
-      $("#ci2_who").text(who.slice(0, 4) + "..." + who.slice(-4)).removeClass("hide");
-      // +NEW INSCRIPTION takes the connect button's place once connected.
-      $("#ci2_connect").addClass("hide");
-      $("#ci2_new").removeClass("hide");
-      loadBoard();
+      showWallet(who);
+    }
+
+    function showWallet(address) {
+      if (who !== address) burner = null;
+      who = address;
+      $("#ci2_who").text(who ? who.slice(0, 4) + "..." + who.slice(-4) : "").toggleClass("hide", !who);
+      $("#ci2_connect").toggleClass("hide", !!who);
+      $("#ci2_new").toggleClass("hide", !who);
+      if (tab === "mine") loadBoard();
+    }
+
+    async function restoreWallet() {
+      const generation = walletGeneration;
+      const activeProvider = isEvm() ? window.ethereum : provider;
+      if (!activeProvider) return;
+      const changed = () => {
+        walletGeneration++;
+        burner = null;
+        showWallet(null);
+      };
+      const accountEvent = isEvm() ? "accountsChanged" : "accountChanged";
+      activeProvider.on?.(accountEvent, changed);
+      activeProvider.on?.("disconnect", changed);
+      if (isEvm()) activeProvider.on?.("chainChanged", changed);
+      removeWalletListeners = () => {
+        activeProvider.removeListener?.(accountEvent, changed);
+        activeProvider.removeListener?.("disconnect", changed);
+        activeProvider.removeListener?.("chainChanged", changed);
+      };
+      try {
+        const address = isEvm()
+          ? await window.iqCodein.connectWallet({ onlyIfTrusted: true })
+          : (await activeProvider.connect({ onlyIfTrusted: true }))?.publicKey?.toString();
+        if (generation === walletGeneration && address) showWallet(address);
+      } catch (_) { /* Locked or unapproved wallet: keep the connect button. */ }
     }
 
     function switchTab(t) {
@@ -882,14 +917,15 @@
         $("#ci2_tk_mint").text("mint: " + out.mint);
         $("#ci2_tk_pump").attr("href", "https://pump.fun/coin/" + out.mint);
         $("#ci2_tk_chart").off("click").on("click", () => { $("#ci2_tk_modal").addClass("hide"); openChart(out.mint, { symbol: symbol, name: name, src: tkSrcSig }); });
-        tkWriteRegistry();
+        $("#ci2_tk_regnote").text("Token created. Register it on the IQ board to appear in markets. This separate inscription may request a SOL funding transfer; it does not charge the platform fee again.");
+        $("#ci2_tk_reg_retry").text("REGISTER ON IQ BOARD").removeClass("hide");
       } catch (e) {
         const msg = String((e && e.message) || e);
         $("#ci2_tk_pct").text("paused - tap retry");
         $("#ci2_tk_retry").removeClass("hide");
         $("#ci2_tk_log").text(/user rejected|denied|4001/i.test(msg)
-          ? "you canceled the signature in your wallet. nothing was spent - tap retry when ready."
-          : "the launch stopped before completing. nothing is charged unless the create transaction lands. (" + msg + ")");
+          ? "You cancelled the wallet request. Completed metadata inscriptions and network fees may already have been paid."
+          : "The launch did not complete. The platform fee is included only if token creation lands; metadata and network fees may already have been paid. (" + msg + ")");
         console.error("[make-token] launch paused:", e);
       }
     }
@@ -899,9 +935,11 @@
     // carries the same recovery pointer on chain).
     // It is a separate tiny code-in write, so a failure here never affects
     // the already-created token; the done panel offers a retry.
+    let registryWriting = false;
     async function tkWriteRegistry() {
-      if (!tkLast) return;
-      $("#ci2_tk_regnote").text("// writing the launch to the board...");
+      if (!tkLast || registryWriting) return;
+      registryWriting = true;
+      $("#ci2_tk_regnote").text("Registering your existing token on IQ. Review any separate SOL funding request in your wallet; this does not create another token.");
       $("#ci2_tk_reg_retry").addClass("hide");
       try {
         await ensureBurner();
@@ -916,7 +954,7 @@
         $("#ci2_tk_regnote").text("// your token exists, but indexing it failed - it will not show in markets.exe until this lands.");
         $("#ci2_tk_reg_retry").removeClass("hide");
         console.error("[make-token] registry write failed:", e);
-      }
+      } finally { registryWriting = false; }
     }
     function tkRetryRegistry() { tkWriteRegistry(); }
 

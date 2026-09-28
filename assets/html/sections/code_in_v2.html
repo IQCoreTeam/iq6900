@@ -473,7 +473,7 @@ await writer.writeRow(conn, signer,
             <div><span class="muted" style="font-size:12px;opacity:.6">platform fee</span><span>0.069 SOL</span></div>
             <div><span class="muted" style="font-size:12px;opacity:.6">dev buy</span><span id="ci2_tk_buyshow">0.01 SOL</span></div>
           </div>
-          <p class="muted" style="margin:8px 2px 0;opacity:.5">the fee rides inside the create transaction itself: if the launch does not land, nothing is paid. pump.fun trading fees apply to the dev buy.</p>
+          <p class="muted" style="margin:8px 2px 0;opacity:.5">Three steps: inscribe metadata (SOL funding may be requested), create the token (0.069 SOL platform fee + any initial buy and network costs), then optionally register on the IQ board (a separate paid inscription). The platform fee is paid only if creation lands; earlier metadata/network fees are not refunded if creation fails.</p>
           <p class="muted" style="margin:6px 2px 0;opacity:.5">permanence: the coin metadata is ITSELF inscribed on solana first (~0.001 SOL), and the token's uri path is that inscription's tx. even if this site ever disappears, everything reassembles from chain with the IQ SDK.</p>
           <button id="ci2_tk_go" class="btn" style="width:100%;margin-top:12px" disabled>INSCRIBE METADATA + LAUNCH ON PUMP.FUN</button>
         </div>
@@ -488,11 +488,11 @@ await writer.writeRow(conn, signer,
         <div id="ci2_tk_done" class="hide" style="text-align:center;padding:14px 0">
           <div style="font:400 30px 'Zen Dots',monospace;color:#2BD52D">LAUNCHED.</div>
           <p id="ci2_tk_mint" class="muted" style="margin-top:12px;word-break:break-all"></p>
-          <p id="ci2_tk_regnote" class="muted" style="margin-top:6px;opacity:.55">// writing the launch to the board...</p>
+          <p id="ci2_tk_regnote" class="muted" style="margin-top:6px;opacity:.55">Token created. IQ board registration is a separate step.</p>
           <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap">
             <a id="ci2_tk_pump" class="btn" target="_blank" rel="noopener" style="text-decoration:none">VIEW ON PUMP.FUN</a>
             <button id="ci2_tk_chart" class="btn ghost">OPEN CHART</button>
-            <button id="ci2_tk_reg_retry" class="btn ghost hide">WRITE TO BOARD AGAIN</button>
+            <button id="ci2_tk_reg_retry" class="btn ghost hide">REGISTER ON IQ BOARD</button>
           </div>
         </div>
       </div>
