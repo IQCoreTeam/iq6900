@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=53";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=54";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -26,6 +26,7 @@
     let boardLoading = false; // guard so scroll + button don't double-fetch a page
     let walletGeneration = 0;
     let removeWalletListeners = () => {};
+    const confirmedPosts = new Map(); // Recent writes in this tab, keyed by chain + signature.
     let boardGen = 0;      // load generation; a fresh load supersedes in-flight ones
 
     function init(post, chainName, opts) {
@@ -307,6 +308,11 @@
           cursor = res.nextCursor;
         }
         if (gen !== boardGen) return; // superseded mid-flight
+        if (!before) {
+          const local = [...confirmedPosts.values()].filter(post => post.chain === chain && (tab !== "mine" || post.row.who === who)).map(post => post.row);
+          const signatures = new Set(local.map(row => row.__txSignature));
+          rows = [...local.reverse(), ...rows.filter(it => !signatures.has((it.row || it).__txSignature || it.__txSignature || it.signature))];
+        }
         rows.forEach((it) => {
           const obj = it.row || it;
           // launch registry rows (kind "token") are the on-chain index the
@@ -705,7 +711,11 @@
         $("#ci2_launch_after").toggleClass("hide", !canLaunch);
         $("#ci2_view").toggleClass("ghost", canLaunch); // LAUNCH is the primary when present
         if (isEvm()) $("#ci2_donenote").text("// the storage fee charges once, at the final step. every tx before it is gas only.");
-        await window.iqCodein.notify(res.sig, { kind: pay.kind, body: pay.body, who });
+        const confirmed = { kind: pay.kind, body: pay.body, who, __txSignature: res.sig, __blockTime: Math.floor(Date.now() / 1000) };
+        confirmedPosts.set(chain + ":" + res.sig, { chain, row: confirmed });
+        if (confirmedPosts.size > 20) confirmedPosts.delete(confirmedPosts.keys().next().value);
+        const notified = await window.iqCodein.notify(res.sig, { kind: pay.kind, body: pay.body, who }).catch(() => false);
+        if (!notified) $("#ci2_donenote").text("Confirmed on chain. Gateway notification is delayed; do not upload again.");
         loadBoard();
       } catch (e) {
         // Never show "failed". solana: refund the burner to the wallet and say
