@@ -1051,9 +1051,16 @@
           .append($('<span class="mkchg"></span>').addClass(chg == null ? "" : up ? "up" : "down")
             .text(chg == null ? "indexing" : (up ? "+" : "") + chg.toFixed(1) + "%").css(chg == null ? { opacity: 0.5 } : {}))
           .append($('<span class="mkcap"></span>').text(t.pair && t.pair.mcap ? fmtUsd(t.pair.mcap) : "-"))
-          .append($('<span class="mkact"><b>Chart</b> | <span class="pumpgo" style="cursor:pointer">Pump</span></span>'));
+          .append($('<span class="mkact"><b>Chart</b> | <span class="pumpgo" style="cursor:pointer">Pump</span> | <span class="cago" style="cursor:pointer" title="copy contract address">CA</span></span>'));
         row.on("click", () => openChart(t.mint));
         row.find(".pumpgo").on("click", (e) => { e.stopPropagation(); window.open("https://pump.fun/coin/" + t.mint, "_blank"); });
+        row.find(".cago").on("click", function (e) {
+          e.stopPropagation();
+          const $b = $(this);
+          const done = () => { $b.text("COPIED"); setTimeout(() => $b.text("CA"), 1200); };
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t.mint).then(done, () => prompt("copy the contract address:", t.mint));
+          else prompt("copy the contract address:", t.mint);
+        });
         $r.append(row);
       });
       $("#ci2_mk_empty").toggleClass("hide", mkTokens.length > 0);
