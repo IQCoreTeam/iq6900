@@ -77,6 +77,25 @@ The uri string is baked into the mint forever. Pull the 88-character signature o
 
 No central servers. No AWS. The coin and its original live on the same chain, together. This is code-in.
 
+## See it yourself (live example: $BUNS)
+
+Do not take our word for it. Follow the pointer chain on any explorer:
+
+1. The mint, on-chain: `36ef5aQyrEFRDMyRk3fBdcvDPHNjARi5bDG9ryPoWRWX`
+   Its Metaplex metadata `uri` field reads:
+   `https://gateway.iqlabs.dev/token-meta/J6c9DhfCzmx9kgXGMbhbsrSERBWVL3Sby8GdRUM2YPL96MAJ945ZPe9jU8ArhDM4BcdqbQdeddbtTJgAtXUYjad`
+   That path is not a file on a server. It is a transaction signature.
+
+2. The metadata transaction, on-chain:
+   `J6c9DhfCzmx9kgXGMbhbsrSERBWVL3Sby8GdRUM2YPL96MAJ945ZPe9jU8ArhDM4BcdqbQdeddbtTJgAtXUYjad`
+   Its instruction data holds the full metadata JSON as inscribed bytes.
+
+3. The original image transaction, on-chain:
+   `5aHib4hfBz9iyqHsDvF48yxVMmh7nX1XXMcVCrwKPZezexBFpv2hB9KWwsFSUDvuKMVs9UUGusuAAHPwQ1BowM1p`
+   and its chunk transactions carry the raw image bytes in calldata.
+
+Screenshot to attach: open the metadata or a chunk transaction on Solana Explorer or Solscan, expand the instruction, and capture the raw instruction data / hex bytes panel. That panel of bytes sitting inside a normal Solana transaction is the whole point: the coin's data is right there in the transaction, not behind a link.
+
 ## What we are building on this
 
 With this technology we are building an on-chain 4chan, NFT rails, everything turned into an asset and discussed in a decentralized place, plus an AI skill and reputation network.
