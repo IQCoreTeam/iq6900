@@ -27,6 +27,22 @@ sdk.setNetwork("robinhood", activeRpc);
 
 let provider = null; // BrowserProvider over the injected wallet
 let signer = null;
+let injected = null;
+const wallets = new Map();
+const WALLET_KEY = "iq6900_evm_wallet";
+window.addEventListener("eip6963:announceProvider", ({ detail }) => {
+  if (!detail?.info?.rdns || !detail.info.name || typeof detail.provider?.request !== "function") return;
+  if ([...wallets.values()].some(w => w.provider === detail.provider)) return;
+  wallets.set(detail.info.rdns, { id: detail.info.rdns, name: detail.info.name, provider: detail.provider });
+  window.dispatchEvent(new Event("iq:evm-wallets"));
+});
+window.dispatchEvent(new Event("eip6963:requestProvider"));
+function availableWallets() {
+  if (wallets.size) return [...wallets.values()];
+  return (window.ethereum?.providers || (window.ethereum ? [window.ethereum] : []))
+    .map((eth, i) => ({ id: "injected-" + i, name: eth.isPhantom ? "Phantom" : eth.isMetaMask ? "MetaMask" : "Browser wallet", provider: eth }));
+}
+
 
 async function gwFetch(path, init) {
   for (const gw of GATEWAYS) {
@@ -74,8 +90,15 @@ const surface = {
 
   // The wallet is the signer AND the broadcaster; connect = request accounts,
   // make sure the wallet is on Robinhood Chain (add it if unknown), grab a signer.
-  connectWallet: async ({ onlyIfTrusted = false } = {}) => {
-    const eth = window.ethereum;
+  getWallets: () => availableWallets().map(({ id, name, provider }) => ({ id, name, selected: provider === injected })),
+  getWalletProvider: () => injected,
+  connectWallet: async ({ onlyIfTrusted = false, walletId } = {}) => {
+    const options = availableWallets();
+    let saved; try { saved = localStorage.getItem(WALLET_KEY); } catch (_) {}
+    const choice = options.find(w => w.id === (walletId || saved)) || (!walletId && !saved && options.length === 1 ? options[0] : null);
+    if (!choice) { if (onlyIfTrusted) return null; throw new Error("Choose an EVM wallet first."); }
+    const eth = choice.provider;
+    signer = null; provider = null; injected = eth;
     if (!eth) throw new Error("no EVM wallet found. install MetaMask.");
     if (onlyIfTrusted) {
       const accounts = await eth.request({ method: "eth_accounts" });
@@ -94,8 +117,10 @@ const surface = {
       } else throw err;
     }
     }
+    if ((await eth.request({ method: "eth_chainId" })).toLowerCase() !== CHAIN_ID) throw new Error("Switch the selected wallet to Robinhood Chain before connecting.");
     provider = new BrowserProvider(eth);
     signer = await provider.getSigner();
+    try { localStorage.setItem(WALLET_KEY, choice.id); } catch (_) {}
     return signer.address;
   },
 
@@ -105,7 +130,7 @@ const surface = {
   // chainlist entry (rpc.arrowrpc.com was down 2026-09) fails every send with
   // -32603, so catch it BEFORE the user signs anything.
   checkWalletRpc: async () => {
-    const eth = window.ethereum;
+    const eth = injected;
     if (!eth) return { ok: false, reason: "no wallet" };
     const timed = (p, ms) => Promise.race([p, new Promise((_, rj) => setTimeout(() => rj(new Error("timeout")), ms))]);
     let walletBlock;
@@ -145,7 +170,21 @@ const surface = {
   // signature label derives from pct (batches sign in order).
   inscribe: async ({ kind, body, who, onProgress }) => {
     if (!signer) throw new Error("connect the wallet first");
+    const accounts = await injected.request({ method: "eth_accounts" });
+    const chain = await injected.request({ method: "eth_chainId" });
+    if (chain.toLowerCase() !== CHAIN_ID || accounts[0]?.toLowerCase() !== signer.address.toLowerCase() || who?.toLowerCase() !== signer.address.toLowerCase())
+      throw new Error("Wallet account or network changed. Reconnect your selected wallet before inscribing.");
     const row = JSON.stringify({ kind, body, who });
+    // One balance read per attempted write; no polling. This is a lower-bound
+    // check only: the wallet still estimates actual gas for each transaction.
+    const balance = await provider.getBalance(signer.address);
+    const fee = new TextEncoder().encode(row).length <= 700
+      ? await sdk.utils.getBasicFee(provider) : await sdk.utils.getLinkedListFee(provider);
+    if (balance <= fee) {
+      const error = new Error("Insufficient ETH on Robinhood Chain. Selected wallet " + signer.address + " has " + formatEther(balance) + " ETH; this inscription needs " + formatEther(fee) + " ETH plus gas. Fund this address on Robinhood Chain or select another wallet.");
+      error.code = "INSUFFICIENT_FUNDS";
+      throw error;
+    }
     const hash = await sdk.writer.writeRow(signer, DB_ROOT_ID, TABLE, row, (pct) => onProgress && onProgress(pct));
     return { sig: hash };
   },

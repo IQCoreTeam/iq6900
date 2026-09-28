@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=49";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=51";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -60,7 +60,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=4", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=5", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -75,6 +75,17 @@
       // then Backpack's own provider, then whatever claimed window.solana.
       provider = window.phantom?.solana || window.backpack || window.solana || null;
       $("#ci2_connect").on("click", connect);
+      if (isEvm()) {
+        const refreshWallets = () => {
+          const picker = $("#ci2_evm_wallet"), selected = picker.val();
+          picker.empty().removeClass("hide").append($("<option>").val("").text("Choose wallet"));
+          for (const wallet of window.iqCodein.getWallets()) picker.append($("<option>").val(wallet.id).text(wallet.name));
+          if (selected) picker.val(selected);
+        };
+        refreshWallets();
+        $(window).off("iq:evm-wallets.codein").on("iq:evm-wallets.codein", refreshWallets);
+        $("#ci2_evm_wallet").on("change", () => { walletGeneration++; removeWalletListeners(); showWallet(null); });
+      } else $(window).off("iq:evm-wallets.codein");
       $("#ci2_home_dot").on("click", () => { window.location.href = window.location.pathname; });
       // Cross-chain hop (design: header "ROBINHOOD? -> /HOODIN" / "SOLANA? -> /CODEIN").
       // init() re-renders the template, updates ?menu= and resets timers/wallet state.
@@ -170,7 +181,7 @@
       walletGeneration++; // Ignore a late silent reconnect after an explicit choice.
       burner = null;
       if (isEvm()) {
-        try { who = await window.iqCodein.connectWallet(); }
+        try { who = await window.iqCodein.connectWallet({ walletId: $("#ci2_evm_wallet").val() || undefined }); }
         catch (e) { alert(String((e && e.message) || e)); return; }
         // Preflight the wallet-side RPC before any signature is requested; a
         // dead saved RPC for chain 4663 fails every send with -32603.
@@ -186,20 +197,25 @@
         who = (res?.publicKey || provider.publicKey).toString();
       }
       showWallet(who);
+      bindWalletListeners();
     }
 
     function showWallet(address) {
       if (who !== address) burner = null;
       who = address;
+      if (isEvm() && address) {
+        const selected = window.iqCodein.getWallets().find(wallet => wallet.selected);
+        if (selected) $("#ci2_evm_wallet").val(selected.id);
+      }
       $("#ci2_who").text(who ? who.slice(0, 4) + "..." + who.slice(-4) : "").toggleClass("hide", !who);
       $("#ci2_connect").toggleClass("hide", !!who);
       $("#ci2_new").toggleClass("hide", !who);
       if (tab === "mine") loadBoard();
     }
 
-    async function restoreWallet() {
-      const generation = walletGeneration;
-      const activeProvider = isEvm() ? window.ethereum : provider;
+    function bindWalletListeners() {
+      removeWalletListeners();
+      const activeProvider = isEvm() ? window.iqCodein.getWalletProvider() : provider;
       if (!activeProvider) return;
       const changed = () => {
         walletGeneration++;
@@ -215,11 +231,15 @@
         activeProvider.removeListener?.("disconnect", changed);
         activeProvider.removeListener?.("chainChanged", changed);
       };
+    }
+    async function restoreWallet() {
+      const generation = walletGeneration;
+      if (!isEvm()) bindWalletListeners();
       try {
         const address = isEvm()
           ? await window.iqCodein.connectWallet({ onlyIfTrusted: true })
-          : (await activeProvider.connect({ onlyIfTrusted: true }))?.publicKey?.toString();
-        if (generation === walletGeneration && address) showWallet(address);
+          : (await provider?.connect({ onlyIfTrusted: true }))?.publicKey?.toString();
+        if (generation === walletGeneration && address) { showWallet(address); if (isEvm()) bindWalletListeners(); }
       } catch (_) { /* Locked or unapproved wallet: keep the connect button. */ }
     }
 
@@ -673,12 +693,18 @@
         $("#ci2_retry").removeClass("hide");
         const msg = String((e && e.message) || e);
         let note = "";
+        if (isEvm() && (e?.code === "INSUFFICIENT_FUNDS" || /insufficient funds/i.test(msg))) {
+          $("#ci2_pct").text("not enough ETH on Robinhood Chain");
+          $("#ci2_log").text("The selected wallet needs ETH on Robinhood Chain for storage and gas. Fund that address on this network or choose another wallet, then retry. Earlier transactions, if any, may have paid fees.");
+          console.error("[code-in] insufficient funds:", e);
+          return;
+        }
         if (isEvm()) {
           note = /user rejected|denied|4001/i.test(msg)
             ? "you canceled the signature in your wallet - tap retry when ready. "
             : /oversized|too large|exceeds|-32603|could not coalesce|Unexpected error/i.test(msg)
-            ? "your wallet could not broadcast one of these transactions. this is usually a transient network hiccup, so retry, which re-signs only what did not land. if it keeps failing on a large file, the steady path is the SDK / CLI. nothing was spent. "
-            : "nothing but tiny gas was spent (the storage fee only charges at the final tx). retry starts a fresh write. ";
+            ? "your wallet could not complete this write. Check your wallet activity before retrying; earlier transactions may have landed and paid fees. "
+            : "The write did not complete. Earlier transactions may have paid gas or storage fees. Check wallet activity before retrying. ";
         } else {
           try {
             const back = burner ? await window.iqCodein.sweep(window.iqCodein.connect(), burner, provider.publicKey) : 0;
