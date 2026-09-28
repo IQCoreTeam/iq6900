@@ -77,21 +77,21 @@ The uri string is baked into the mint forever. Pull the 88-character signature o
 
 No central servers. No AWS. The coin and its original live on the same chain, together. This is code-in.
 
-## See it yourself (live example: $BUNS)
+## See it yourself
 
 Do not take our word for it. Follow the pointer chain on any explorer:
 
-1. The mint, on-chain: `36ef5aQyrEFRDMyRk3fBdcvDPHNjARi5bDG9ryPoWRWX`
+1. The mint, on-chain: `E4cm5MW4GhChR36T6EWhwDVnQqDTqAqCwRYQ4GZ2hbzZ`
    Its Metaplex metadata `uri` field reads:
-   `https://gateway.iqlabs.dev/token-meta/J6c9DhfCzmx9kgXGMbhbsrSERBWVL3Sby8GdRUM2YPL96MAJ945ZPe9jU8ArhDM4BcdqbQdeddbtTJgAtXUYjad`
+   `https://gateway.iqlabs.dev/token-meta/3Kaf1kg5B8EV5hhxsMQJc7CqWBEMoHix8DPwMJS5GjduJFxgCc5MKXAbN8YZe12z97EgVPVYw7SBRu97fWFCTSWt`
    That path is not a file on a server. It is a transaction signature.
 
 2. The metadata transaction, on-chain:
-   `J6c9DhfCzmx9kgXGMbhbsrSERBWVL3Sby8GdRUM2YPL96MAJ945ZPe9jU8ArhDM4BcdqbQdeddbtTJgAtXUYjad`
+   `3Kaf1kg5B8EV5hhxsMQJc7CqWBEMoHix8DPwMJS5GjduJFxgCc5MKXAbN8YZe12z97EgVPVYw7SBRu97fWFCTSWt`
    Its instruction data holds the full metadata JSON as inscribed bytes.
 
 3. The original image transaction, on-chain:
-   `5aHib4hfBz9iyqHsDvF48yxVMmh7nX1XXMcVCrwKPZezexBFpv2hB9KWwsFSUDvuKMVs9UUGusuAAHPwQ1BowM1p`
+   `5Si8irr4pKdEPoNDfMshB13G3jZyXpTuKKizHVbvwJqbcCjvyAKAAP8Uhrc5KCUaLvvw5CQupyjPZVuKQ4kav4Eu`
    and its chunk transactions carry the raw image bytes in calldata.
 
 Screenshot to attach: open the metadata or a chunk transaction on Solana Explorer or Solscan, expand the instruction, and capture the raw instruction data / hex bytes panel. That panel of bytes sitting inside a normal Solana transaction is the whole point: the coin's data is right there in the transaction, not behind a link.
