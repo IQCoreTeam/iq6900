@@ -450,7 +450,7 @@ await writer.writeRow(conn, signer,
           <p id="ci2_tk_inv_load" class="muted" style="text-align:center;padding:16px 0">loading your inventory...</p>
           <div id="ci2_tk_noinv" class="hide" style="text-align:center;padding:10px 0 4px">
             <div style="font:400 20px 'Zen Dots',monospace;color:var(--hi)">NO INSCRIPTIONS YET</div>
-            <p class="muted" style="margin:10px 0 0;font-size:11px;line-height:1.7">your inventory is empty. put your image or text on solana first, then launch it as a token.</p>
+            <p id="ci2_tk_noinv_txt" class="muted" style="margin:10px 0 0;font-size:11px;line-height:1.7">your inventory is empty. put your image or text on solana first, then launch it as a token.</p>
           </div>
           <p id="ci2_tk_onlyimg" class="muted hide" style="margin:10px 2px 0;opacity:.5">image, text and ascii inscriptions are selectable; audio and files are dimmed for now.</p>
           <button id="ci2_tk_continue" class="btn" style="width:100%;margin-top:12px" disabled>PICK AN INSCRIPTION TO CONTINUE</button>
@@ -485,6 +485,8 @@ await writer.writeRow(conn, signer,
             <label style="display:block;cursor:pointer;opacity:.75"><input type="radio" name="ci2rw" value="creator" style="accent-color:var(--hi);margin-right:8px">CREATOR - trade fees go to you instead (classic mode).</label>
           </div>
           <div style="margin-top:10px" id="ci2_tk_rw_hood" class="hide">
+            <span class="tk_lbl">CREATOR FEE</span>
+            <div class="upl_row" style="margin:6px 0 12px"><input id="ci2_tk_crfee" class="num" type="number" min="0" max="10" step="0.5" value="0" style="width:70px"><span class="muted" style="font-size:11px;opacity:.8">% of every trade goes to your wallet (0 to 10, set once at launch).</span></div>
             <span class="tk_lbl">BUYBACK</span>
             <label style="display:block;margin:6px 0 4px;cursor:pointer"><input type="checkbox" id="ci2_tk_buyback" style="accent-color:var(--hi);margin-right:8px">a slice of every trade's fee buys this coin back into a 5-year locked vault (pons buyback). optional, permanent once launched.</label>
           </div>

@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=52";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=53";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -723,17 +723,20 @@
       const hood = isEvm();
       $("#ci2_tk_buyrow, #ci2_tk_buymeter, #ci2_tk_rw_sol").toggleClass("hide", hood);
       $("#ci2_tk_rw_hood").toggleClass("hide", !hood);
+      $("#ci2_tk_noinv_txt").text(hood
+        ? "your inventory is empty. inscribe an image or text on hood-in first (a fresh post can take a few minutes to index), then launch it as a token."
+        : "your inventory is empty. put your image or text on solana first, then launch it as a token.");
       $("#ci2_tk_feelbl").text(hood ? "pons launch fee" : "platform fee");
       $("#ci2_tk_feeshow").text(hood ? "0.0005 ETH" : "0.069 SOL");
       $("#ci2_tk_feenote").text(hood
-        ? "the launch fee goes to pons inside the create transaction itself: if the launch does not land, nothing is paid. the board write after it costs the usual storage fee."
+        ? "the launch fee goes to pons inside the create transaction itself: if the launch does not land, nothing is paid. recording it on the board later is a separate optional step."
         : "the fee rides inside the create transaction itself: if the launch does not land, nothing is paid. pump.fun trading fees apply to the dev buy.");
       $("#ci2_tk_permnote").text(hood
         ? "permanence: name, symbol, description and the logo url are stored on-chain in the pons launch itself, and the logo url path is your inscription's tx hash. even if this site ever disappears, everything reassembles from chain with the IQ SDK."
         : "permanence: the coin metadata is ITSELF inscribed on solana first (~0.001 SOL), and the token's uri path is that inscription's tx. even if this site ever disappears, everything reassembles from chain with the IQ SDK.");
       $("#ci2_tk_go").text(hood ? "LAUNCH ON PONS" : "INSCRIBE METADATA + LAUNCH ON PUMP.FUN");
       $("#ci2_tk_proghead").text("// LAUNCHING ON " + (hood ? "PONS" : "PUMP.FUN") + " - keep this tab open");
-      $("#ci2_tk_pump").text(hood ? "VIEW ON EXPLORER" : "VIEW ON PUMP.FUN");
+      $("#ci2_tk_pump").text(hood ? "VIEW ON PONS" : "VIEW ON PUMP.FUN");
       $("#ci2_tk_chart").toggleClass("hide", hood); // the chart modal opens with hood markets
     }
 
@@ -883,6 +886,7 @@
             logo: image, description,
             socials: { twitter: x, website: web },
             buybackEnabled: $("#ci2_tk_buyback").prop("checked"),
+            creatorTaxBps: Math.round((parseFloat($("#ci2_tk_crfee").val()) || 0) * 100),
             onStep: (label) => { const i = steps.indexOf(label); if (i >= 0) setTkBar(10 + i * 30, label); },
           });
           out = { mint: res.token, sig: res.txHash };
@@ -939,10 +943,20 @@
         $("#ci2_tk_win").text("done.exe");
         $("#ci2_tk_mint").text((hood ? "token: " : "mint: ") + out.mint);
         $("#ci2_tk_pump").attr("href", hood
-          ? "https://robinhoodchain.blockscout.com/token/" + out.mint
+          ? "https://www.ponsfamily.com/launchpad/" + out.mint
           : "https://pump.fun/coin/" + out.mint);
         $("#ci2_tk_chart").off("click").on("click", () => { $("#ci2_tk_modal").addClass("hide"); openChart(out.mint, { symbol: symbol, name: name, src: tkSrcSig }); });
-        tkWriteRegistry();
+        if (hood) {
+          // Hood markets are coming soon, so the board index (a 2-signature
+          // writeRow) has no live payoff yet; do not surprise the user with two
+          // more wallet prompts right after LAUNCHED. Offer it as an explicit
+          // opt-in instead. The coin's recovery pointer already lives on-chain
+          // in the Pons launch description, so nothing is lost by deferring it.
+          $("#ci2_tk_regnote").text("// your coin is live on pons. recording it on this board (for markets.exe when hood markets open) is optional and takes 2 signatures.");
+          $("#ci2_tk_reg_retry").removeClass("hide").text("RECORD ON BOARD");
+        } else {
+          tkWriteRegistry();
+        }
       } catch (e) {
         const msg = String((e && e.message) || e);
         $("#ci2_tk_pct").text("paused - tap retry");
