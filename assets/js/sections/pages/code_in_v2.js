@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=49";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=50";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -540,7 +540,14 @@
           : (isEvm() ? "INSCRIBE / " + est.sigs + " SIGNATURES" : "FUND + INSCRIBE / 1 SIGNATURE"));
     }
 
-    function openBigFile() { markSpeed(); $("#ci2_big_modal").removeClass("hide"); }
+    function openBigFile() {
+      if (!isEvm()) markSpeed(); // the speed setting (and its adapter api) is solana-only
+      // the guide's shared steps (shrink, showcase) stay; the intro, sdk link
+      // and transport advice swap per chain
+      $("#ci2_big_modal .bigsol").toggleClass("hide", isEvm());
+      $("#ci2_big_modal .bighood").toggleClass("hide", !isEvm());
+      $("#ci2_big_modal").removeClass("hide");
+    }
     function markSpeed() {
       const s = window.iqCodein.getSpeed();
       $("#ci2_spd_row .spd").each(function () { $(this).toggleClass("on", $(this).attr("data-speed") === s); });

@@ -7,7 +7,7 @@
 #ci2{--fg:#e8e4d6;--fg05:rgba(232,228,214,.05);--fg10:rgba(232,228,214,.1);--fg25:rgba(232,228,214,.25);--fg35:rgba(232,228,214,.35);--fg40:rgba(232,228,214,.4);--fg50:rgba(232,228,214,.5);--fg85:rgba(232,228,214,.85);--fg90:rgba(232,228,214,.9);--fg95:rgba(232,228,214,.95);--btnfg:#1b1a17;--btnhov:#fff;--panel:rgba(20,19,16,.88);--panel2:rgba(20,19,16,.9)}
 #ci2.hood{--fg:#2BD52D;--fg05:rgba(43,213,45,.05);--fg10:rgba(43,213,45,.1);--fg25:rgba(43,213,45,.25);--fg35:rgba(43,213,45,.35);--fg40:rgba(43,213,45,.4);--fg50:rgba(43,213,45,.5);--fg85:rgba(43,213,45,.85);--fg90:rgba(43,213,45,.9);--fg95:rgba(43,213,45,.95);--btnfg:#04140a;--btnhov:#7dff7f;--panel:rgba(6,13,7,.88);--panel2:rgba(6,13,7,.9)}
 /* solana-only helpers have no meaning on the hood board */
-#ci2.hood #ci2_bigfile,#ci2.hood #ci2_spd_wrap,#ci2.hood #ci2_firstnote,#ci2.hood #ci2_view_token{display:none}
+#ci2.hood #ci2_spd_wrap,#ci2.hood #ci2_firstnote{display:none}
 /* Cross-chain hop (design: Code In / Hood In Flow headers). Styled in the
    OTHER chain's color so it reads as a door, not a state. */
 #ci2_xchain{margin-left:14px;font-size:9px;font-weight:600;font-family:inherit;letter-spacing:.14em;color:#2BD52D;background:none;border:1px solid rgba(43,213,45,.45);border-radius:4px;padding:5px 10px;opacity:.85;transition:all .3s;cursor:pointer}
@@ -391,15 +391,18 @@ await writer.writeRow(conn, signer,
         <span id="ci2_big_close" class="tab" style="margin-left:auto;opacity:.7">x</span>
       </div>
       <div class="body" style="max-height:74vh;overflow:auto">
-        <p class="muted" style="margin:0 0 12px">the shared RPC is fine up to ~256KB (a 256KB write takes about a minute). for a really BIG file (MBs): <span style="color:var(--fg)">honestly, use the SDK / CLI.</span> the browser flow works, but off-browser is the steady path.</p>
+        <p class="muted bigsol" style="margin:0 0 12px">the shared RPC is fine up to ~256KB (a 256KB write takes about a minute). for a really BIG file (MBs): <span style="color:var(--fg)">honestly, use the SDK / CLI.</span> the browser flow works, but off-browser is the steady path.</p>
+        <p class="muted bighood hide" style="margin:0 0 12px">on hood-in your wallet signs each batch itself, so the budget is signatures, not bytes: ~25 popups fits roughly a 1.3MB image (1.8MB of text). bigger is allowed - CONTINUE just means more popups - but for a really BIG file (MBs): <span style="color:var(--fg)">honestly, use the SDK / CLI.</span></p>
 
         <p class="muted" style="margin:0 0 4px;color:#2BD52D">0. IS IT JUST A BIG IMAGE? SHRINK IT INSTEAD</p>
         <p class="muted" style="margin:0 0 14px">most "too big" images do not need any of the below. convert to WebP at <a href="https://squoosh.app" target="_blank" rel="noopener">squoosh.app &#8599;</a> (free, in-browser, private), drop the quality a bit and resize, and it usually fits under the cap.</p>
 
         <p class="muted" style="margin:0 0 4px;color:#2BD52D">1. THE REAL ANSWER: THE SDK</p>
-        <p class="muted" style="margin:0 0 8px">writeRow into our feed table and it shows up on this board: db_root <span style="color:var(--fg)">iq6900-codein-feed-v1</span>, table <span style="color:var(--fg)">global-feed</span>, columns kind / body / who.</p>
-        <p class="muted" style="margin:0 0 14px">sdk docs: <a href="https://iqlabs.mintlify.app/docs-typescript" target="_blank">iqlabs.mintlify.app/docs-typescript &#8599;</a></p>
+        <p class="muted" style="margin:0 0 8px">writeRow into our feed table and it shows up on this board: db_root <span style="color:var(--fg)">iq6900-codein-feed-v1</span>, table <span style="color:var(--fg)">global-feed</span>, columns kind / body / who<span class="bighood hide">, network <span style="color:var(--fg)">robinhood</span></span>.</p>
+        <p class="muted bigsol" style="margin:0 0 14px">sdk docs: <a href="https://iqlabs.mintlify.app/docs-typescript" target="_blank">iqlabs.mintlify.app/docs-typescript &#8599;</a></p>
+        <p class="muted bighood hide" style="margin:0 0 14px">sdk docs: <a href="https://iqlabs.mintlify.app/docs-robinhood" target="_blank">iqlabs.mintlify.app/docs-robinhood &#8599;</a></p>
 
+        <div class="bigsol">
         <p class="muted" style="margin:0 0 4px;color:#2BD52D">2. STAYING IN THE BROWSER? GET A FAST RPC + SET SPEED</p>
         <p class="muted" style="margin:0 0 8px">buy or claim a good endpoint (Helius etc.); paid tiers = higher rate limits = far more reliable. the RPC menu below also holds the upload speed setting (auto / light / medium / heavy / extreme).</p>
         <div style="display:flex;gap:10px;margin:0 0 14px">
@@ -409,6 +412,15 @@ await writer.writeRow(conn, signer,
 
         <p class="muted" style="margin:0 0 4px;color:#2BD52D">3. IF IT STALLS, NOTHING IS LOST</p>
         <p class="muted" style="margin:0 0 14px">solana congestion or a weak RPC can stall an upload, but nothing is lost: an interrupted upload resumes from where it stopped - already-landed chunks are skipped, so RETRY only sends what is missing. your funds stay in your session account and are refunded if a write gives up.</p>
+        </div>
+
+        <div class="bighood hide">
+        <p class="muted" style="margin:0 0 4px;color:#2BD52D">2. WRITES GO THROUGH YOUR WALLET'S RPC</p>
+        <p class="muted" style="margin:0 0 14px">your wallet broadcasts every write through the RPC it has saved for robinhood chain (4663); the site's RPC setting only serves reads. if every write fails instantly (-32603), that saved RPC is dead: edit the network in your wallet and point it at the official <span style="color:var(--fg)">rpc.mainnet.chain.robinhood.com</span>.</p>
+
+        <p class="muted" style="margin:0 0 4px;color:#2BD52D">3. IF IT STALLS, ALMOST NOTHING IS SPENT</p>
+        <p class="muted" style="margin:0 0 14px">the storage fee charges once, at the final tx - an interrupted upload cost gas pennies at most (gas on robinhood chain is fractions of a cent). there is no session account to strand funds in: your wallet holds everything the whole time, and RETRY starts a fresh write.</p>
+        </div>
 
         <p class="muted" style="margin:0 0 4px;color:#2BD52D">BIG ONES WE INSCRIBED</p>
         <p class="muted" style="margin:0">
