@@ -1,0 +1,39 @@
+{
+  "scope": "Full BlockChan and full IQ6900 apps; actual devnet upload with dedicated test signer, connection-only Wallet Standard adapter in posting app. No Phantom extension approvals and no thread publication.",
+  "signature": "2K4gfw5NQniWPe1SoLfbdUJ93qzbwV2ZkNuKQLTkRnUo31Ksc9kzsXFMfCApX7pDJo4envNvUnFKLCWZzY8c1jUk",
+  "share": "http://localhost:3221/?menu=codein&post=2K4gfw5NQniWPe1SoLfbdUJ93qzbwV2ZkNuKQLTkRnUo31Ksc9kzsXFMfCApX7pDJo4envNvUnFKLCWZzY8c1jUk",
+  "mediaBytes": 4044,
+  "filename": "my track; #1 (live).wav",
+  "exactMediaReadback": true,
+  "draftPreserved": true,
+  "manualLinkFallback": true,
+  "errors": [],
+  "blockedOrigins": [
+    "https://unpkg.com",
+    "https://bundle.run",
+    "https://r2.iqlabs.dev",
+    "https://cdn.jsdelivr.net"
+  ],
+  "evidence": {
+    "genesis": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+    "signatures": [
+      "6jeLwHsfQVcuDVTnPM5Eg48RPEBCCqoFKXiKNc6YyvWVB6CoHLnmC5VR5p95auhEd23UEnP7v5QsobRqNnRZnDN",
+      "4wLXMmaAkDqHpzNdQedR3ReBgm8YRLfU6tBNyrXy24JwVxSipmJucMa9k1thmCYcrsVCq9hjtLhhXVHzrcJB1UyL",
+      "5TDWmYCtBcCit1vaEFtdPZ2pNbb5jJgnFK1LKungiKjpkAo3DwNhWwegNYf5L1uLuxBXDfi9szkNU9sYwPyTkB4P",
+      "2K4gfw5NQniWPe1SoLfbdUJ93qzbwV2ZkNuKQLTkRnUo31Ksc9kzsXFMfCApX7pDJo4envNvUnFKLCWZzY8c1jUk",
+      "2GXvi3XitMfgZHPaWy32EfFK2gikDpVNVUwwXKEZJdrq7yYfn28iiw3yZf1AyJ1LLcm2pAgpvVzzW7YQ5Brg5rXa"
+    ],
+    "methods": {
+      "getSignaturesForAddress": 9,
+      "getMultipleAccounts": 2,
+      "getAccountInfo": 14,
+      "getBalance": 4,
+      "getLatestBlockhash": 5,
+      "getGenesisHash": 1,
+      "sendTransaction": 5,
+      "getBlockHeight": 6,
+      "getSignatureStatuses": 5,
+      "getTransaction": 5
+    }
+  }
+}

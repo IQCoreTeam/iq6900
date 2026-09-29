@@ -10,7 +10,6 @@
         const $aboutPageTemplateUrl = "./html/sections/about_page.html?ver=20250210";
         function init() {
             loadAboutPageTemplate();
-            fetchMusicFromBlockchain();
         }
 
 
@@ -33,6 +32,7 @@
             $("#main_section").show();
             $("#main_section").empty();
             $("#main_section").append($aboutPageElement);
+            fetchMusicFromBlockchain();
 
 
 

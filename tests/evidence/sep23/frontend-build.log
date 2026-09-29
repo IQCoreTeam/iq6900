@@ -1,0 +1,36 @@
+
+> iqchan@0.1.0 prebuild
+> node scripts/gen-image-lists.js
+
+Generated <frontend-checkout>/src/lib/generated-images.ts: 122 banners, 6 placeholders
+
+> iqchan@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.25
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 17.8s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/5) ...
+   Generating static pages (1/5)
+   Generating static pages (2/5)
+   Generating static pages (3/5)
+ ✓ Generating static pages (5/5)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                     124 kB         420 kB
+├ ƒ /_not-found                            139 B         104 kB
+├ ƒ /attachment                              0 B            0 B
+├ ƒ /share-image/[...segments]               0 B            0 B
+└ ƒ /share/[...segments]                     0 B            0 B
++ First Load JS shared by all             104 kB
+  ├ chunks/2205-31d062bf0325cd23.js      46.9 kB
+  ├ chunks/7841e1af-32be59791fbabb39.js  54.2 kB
+  └ other shared chunks (total)          3.17 kB
+
+
+ƒ  (Dynamic)  server-rendered on demand

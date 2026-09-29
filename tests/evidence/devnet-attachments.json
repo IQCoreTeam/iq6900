@@ -1,0 +1,55 @@
+{
+  "genesis": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+  "owner": "8kEJbuu74Ck9gccEz9vrZtncDbJZuHunEmDExMG2Fdwd",
+  "burner": "5GPWdSwnUA3oeFCXfTxmf3RqHDC95ejaGivNRU4jUq4G",
+  "fundedLamports": 200000000,
+  "ownerRemainingLamports": 143358360,
+  "totalDevnetLamportsSpentIncludingInterruptedRun": 56641640,
+  "burnerRemainingLamports": 0,
+  "receipts": [
+    {
+      "signature": "3asnT2P3dgbPJKGwQk6mXAc75NsECw5fjGkw488sedhFJGs64WViH6jQMmUzC7aahU6ums44xyEcgcD4RQEZAky7",
+      "status": "finalized",
+      "slot": 502762926,
+      "version": "legacy",
+      "feeLamports": 5000,
+      "err": null
+    },
+    {
+      "signature": "4jr6dT8DcUNTks3d6dkpEDKLH2BokdYxEziQiAtTu13nF9yPc7bLeAEoXH3rveEFdhKdoUsLS1YnFUT1AoviJ9jH",
+      "status": "finalized",
+      "slot": 502762961,
+      "version": 1,
+      "feeLamports": 5000,
+      "err": null
+    },
+    {
+      "signature": "2YpFz4DThjxxtyWMRFfmGHWgJ9jUsnp3XDwVCW7ThbfJDZGgiLVcPrCti6Qjwz7a6YMK7gzYqNgrch98spJMCsxp",
+      "status": "finalized",
+      "slot": 502762976,
+      "version": 1,
+      "feeLamports": 5000,
+      "err": null
+    },
+    {
+      "signature": "3Yk265VoZgsam4FHPy4NL9XHtQ5MEkj7uDGTJ12ggHTxuEvM6YRMZLXgZXVX1EVuNLSe2AQ6MidemTn9LjdQ1Tws",
+      "status": "finalized",
+      "slot": 502763004,
+      "version": 1,
+      "feeLamports": 5000,
+      "err": null
+    },
+    {
+      "signature": "2HPk2h2QLHXq1djRyXSMe6AsBfN7GU7mfpYxGkdo3L6SZQXcS9a5Z471rg2rMiMpmLBphxZYfnn48xmTXK8oFGTQ",
+      "status": "finalized",
+      "slot": 502763022,
+      "version": "legacy",
+      "feeLamports": 5000,
+      "err": null
+    }
+  ],
+  "exactMediaReadback": true,
+  "mediaSignature": "3Yk265VoZgsam4FHPy4NL9XHtQ5MEkj7uDGTJ12ggHTxuEvM6YRMZLXgZXVX1EVuNLSe2AQ6MidemTn9LjdQ1Tws",
+  "mainnetWrites": 0,
+  "scope": "Public devnet only; generated test signer, not a Phantom signing test. Actual uploader with local SDK confirmation/resume patches; devnet build-time endpoint and network guard."
+}

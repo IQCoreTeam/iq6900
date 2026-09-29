@@ -1,0 +1,77 @@
+{
+  "scope": "Mac-local regression and browser component integration; no blockchain transactions",
+  "gatewayTests": 160,
+  "uploaderTests": 30,
+  "frontendTests": 83,
+  "networkBuilds": [
+    "solana server",
+    "solana static",
+    "robinhood server",
+    "robinhood static"
+  ],
+  "nativePngCleanInstalls": [
+    "npm ci --ignore-scripts on Darwin ARM64",
+    "bun install --frozen-lockfile --ignore-scripts on Darwin ARM64"
+  ],
+  "browser": {
+    "uploads": 2,
+    "posts": [
+      {
+        "com": "Keep this local draft while the attachment uploads.",
+        "name": "Anonymous",
+        "img": "http://127.0.0.1:4392/?menu=codein&post=2ne1RRfxTgyQXfniJqamZMgcCKWpPPtckp4CVj28NnD6UPkaTXNDLfHUpbVEwrZ2CsahZ4e1wD54xSgchi4N4dj7"
+      },
+      {
+        "com": "Mobile HoodChan draft must survive popup cancellation.",
+        "name": "Anonymous",
+        "img": "http://127.0.0.1:4392/?menu=codein&post=FVpnbbRTx6BSxtdfD3dqwF85pQCDWRCq5vwZnp83qsvneKcYbVzVoTDdwpnbUtBAqavyZ523a2DAgr71DJWTovg"
+      }
+    ],
+    "chainReads": 2,
+    "blockchainRequests": 0,
+    "scope": "Simulated chain reader and wallet; real components, uploader UI and gateway media handler"
+  },
+  "playback": {
+    "durationSeconds": 0.25,
+    "ended": true,
+    "mediaError": null
+  },
+  "sources": [
+    {
+      "repo": "iq-gateway",
+      "fork": "NubsCarson/iq-gateway-contributions",
+      "base": "d6fa6a4c916b9de12499a90123ea5f45494e2aa9",
+      "start": "4a309fb574f54849bb5e0755fa6a922709025e46",
+      "branch": "codex/iq-gateway-ready-20260923",
+      "path": "/Users/nubs/Git/iq-gateway-ready-20260923",
+      "sourceCommit": "7fcf0e322c98ae84312442c7bba279a9be67e527",
+      "url": "https://github.com/NubsCarson/iq-gateway/tree/codex/iq-gateway-ready-20260923"
+    },
+    {
+      "repo": "iq-chan",
+      "fork": "NubsCarson/iq-chan",
+      "base": "592527b7fde134725245d946e2f9899ca7218d22",
+      "start": "4f1105ebed7dc9cee64d723cec72f325f7551b10",
+      "branch": "codex/iq-chan-ready-20260923",
+      "path": "/Users/nubs/Git/iq-chan-ready-20260923",
+      "sourceCommit": "6aa135c50c9e19ddae11c736bb9a2bfdf7a2c7d1",
+      "url": "https://github.com/NubsCarson/iq-chan/tree/codex/iq-chan-ready-20260923"
+    },
+    {
+      "repo": "iq6900",
+      "fork": "NubsCarson/iq6900",
+      "base": "1e3c78c2c17c7d5bc1fd3af2a32e8dbf59e6cbce",
+      "start": "2754ca5d88e05006d0247d4de91e438fccf8280e",
+      "branch": "codex/iq6900-ready-20260923",
+      "path": "/Users/nubs/Git/iq6900-ready-20260923",
+      "sourceCommit": "b54031cf09c27940dd9880a7eafafd86af832e77",
+      "url": "https://github.com/NubsCarson/iq6900/tree/codex/iq6900-ready-20260923"
+    }
+  ],
+  "sdk": {
+    "sourceCommit": "037e2e344b288723554a7ab50f286631ec39c512",
+    "confirmationResumeTests": 12,
+    "completenessCases": 11,
+    "build": "passed"
+  }
+}

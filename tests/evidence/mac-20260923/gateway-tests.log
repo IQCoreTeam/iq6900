@@ -1,0 +1,275 @@
+bun test v1.3.14 (d1632b29)
+
+tests/chain-wrappers.test.ts:
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+(pass) buildWrappers — IQ_CHAIN mode selection > unset serves solana + at least one evm network [0.95ms]
+(pass) buildWrappers — IQ_CHAIN mode selection > IQ_CHAIN=multi is an alias for unset (not an empty map) [0.47ms]
+(pass) buildWrappers — IQ_CHAIN mode selection > IQ_CHAIN=solana locks to solana only [0.05ms]
+(pass) buildWrappers — IQ_CHAIN mode selection > IQ_CHAIN=evm locks out solana [0.09ms]
+
+tests/evm-linked-row.test.ts:
+(pass) dbCodeIn reconstructs linked rows using the SDK [27.91ms]
+(pass) dbInstructionCodeIn reconstructs linked rows using the SDK [41.34ms]
+(pass) walletConnectionCodeIn reconstructs linked rows using the SDK [38.44ms]
+
+tests/collection-route.test.ts:
+(pass) /collection/{mint} > serves the collection metadata JSON with a render-layer image url [1.42ms]
+(pass) /collection/{mint} > .png redirects to the render layer instead of serving JSON as an image [0.15ms]
+(pass) /collection/{mint} > unknown mint stays a JSON 404, with or without .png [0.08ms]
+(pass) /collection/{mint} > ETag revalidation still returns 304 on the JSON path [0.10ms]
+
+tests/row-index.test.ts:
+(pass) evm_row_index — durable row enumeration > records and orders newest-first: pending (no block) on top, then block desc [0.64ms]
+(pass) evm_row_index — durable row enumeration > before cursor paginates past the cursor row [0.11ms]
+(pass) evm_row_index — durable row enumeration > unknown before cursor serves from the head [0.07ms]
+(pass) evm_row_index — durable row enumeration > upsert fills gaps but never blanks known facts [0.34ms]
+(pass) evm_row_index — durable row enumeration > tables are isolated by (network, dbroot, table) [0.36ms]
+(pass) evm_row_index — durable row enumeration > index state round-trips and reports in stats [0.28ms]
+
+tests/cache-explorer.test.ts:
+(pass) cache explorer API > lists disk cache entries and returns JSON previews/blobs [13.67ms]
+(pass) cache explorer API > does not follow cache blob symlinks outside CACHE_DIR [3.31ms]
+(pass) cache explorer API > paginates disk cache entries with opaque cursors [5.02ms]
+(pass) cache explorer API > lists memory cache summaries and optional value previews [1.09ms]
+(pass) cache explorer API > rejects invalid explorer filters [0.38ms]
+
+tests/table-threads.test.ts:
+[threads] 11111111 rows=4 threads=2
+(pass) /table/:pda/threads > groups a flat comment table into threads with parentAuthor refs [2.43ms]
+[threads] 11111111 rows=0 threads=0
+[threads] failed for 11111111111111111111111111111111: rpc down
+(pass) /table/:pda/threads > unknown table is an empty section, invalid PDA is 400, RPC failure is 500 [1.01ms]
+[threads] 11111111 rows=1 threads=1
+(pass) /table/:pda/threads > second hit serves from memory with a stable ETag and honors If-None-Match [0.51ms]
+[threads] 11111111 rows=1 threads=1
+[threads] 11111111 rows=2 threads=2
+(pass) /table/:pda/threads > stale-while-revalidate: mem hit serves old data, background refresh updates it [2.80ms]
+
+tests/media-route.test.ts:
+(pass) solana serves named image/png uploads without reflecting the filename [3.50ms]
+(pass) solana serves named audio/wav uploads without reflecting the filename [0.84ms]
+(pass) solana serves named video/mp4 uploads without reflecting the filename [0.72ms]
+(pass) solana reconstructs passive media, caches it and supports byte ranges [0.66ms]
+(pass) evm serves named image/png uploads without reflecting the filename [0.55ms]
+(pass) evm serves named audio/wav uploads without reflecting the filename [0.53ms]
+(pass) evm serves named video/mp4 uploads without reflecting the filename [0.72ms]
+(pass) evm reconstructs passive media, caches it and supports byte ranges [0.38ms]
+(pass) cache does not cross EVM networks [0.66ms]
+(pass) rejects non-media or malformed input: javascript:alert(1) [0.46ms]
+(pass) rejects non-media or malformed input: https://private.invalid/file [0.27ms]
+(pass) rejects non-media or malformed input: data:text/html;base64,AA== [0.30ms]
+(pass) rejects non-media or malformed input: data:image/svg+xml;base64,AA== [0.27ms]
+(pass) rejects non-media or malformed input: data:image/png;base64,A=== [0.30ms]
+(pass) rejects non-media or malformed input: data:text/html;name=safe.png;b [0.32ms]
+(pass) rejects non-media or malformed input: data:image/svg+xml;name=safe.p [0.12ms]
+(pass) rejects non-media or malformed input: data:image/png;name=a;name=b;b [0.18ms]
+(pass) rejects non-media or malformed input: data:image/png;name=a
+b;base6 [0.24ms]
+(pass) invalid IDs never reach chain reads [0.26ms]
+(pass) missing and oversized records have explicit statuses [1.15ms]
+(pass) rejects unsupported types and malformed filename parameters: data:image/svg+xml;name=image.svg;base64,AA== [0.32ms]
+(pass) rejects unsupported types and malformed filename parameters: data:text/html;name=page.html;base64,AA== [0.20ms]
+(pass) rejects unsupported types and malformed filename parameters: data:audio/wav;name=x;other=y;base64,AA== [0.17ms]
+(pass) rejects unsupported types and malformed filename parameters: data:audio/wav;name=bad%ZZ.wav;base64,AA== [0.17ms]
+(pass) rejects unsupported types and malformed filename parameters: data:audio/wav;name=a,b.wav;base64,AA== [0.19ms]
+
+tests/openapi.test.ts:
+(pass) openapi spec > documents the once-missing public endpoints [0.09ms]
+(pass) openapi spec > every operation tag is declared in the top-level tags list [0.23ms]
+(pass) openapi spec > server URLs are unique [0.07ms]
+(pass) openapi spec > /search spec does not claim FTS5 operator pass-through [0.13ms]
+
+tests/table-cache.test.ts:
+[rows] 11111111 sigs=1 rows=1
+[table] fresh read failed for 11111111111111111111111111111111: upstream RPC unavailable
+[rows] 11111111 sigs=1 rows=1
+(pass) /table/:pda/rows cache refresh > fresh read exposes an RPC failure while preserving ordinary cached reads [26.22ms]
+[rows] 11111111 sigs=5 rows=5
+[notify] 111111111111… tx:sig-f… injected
+(pass) /table/:pda/rows cache refresh > notify keeps cached head page capped at the requested limit [6.14ms]
+[rows] 11111111 sigs=1 rows=1
+[rows] 11111111 sigs=1 rows=1
+[rows:bg] 11111111 +1 rows
+(pass) /table/:pda/rows cache refresh > fresh rows fetch does not reuse a pending background-refresh promise [3.09ms]
+[rows] 11111111 sigs=1 rows=1
+(pass) /table/:pda/rows cache refresh > background refresh stamps timestamp when the indexed newest sig is already cached [3.25ms]
+[rows] So111111 sigs=4 rows=3
+[rows] So111111 sigs=2 rows=2
+(pass) /table/:pda/rows cache refresh > failed tx mid-history derives nextCursor from the signature scan [1.97ms]
+[rows] So111111 sigs=5 rows=3
+[notify] So1111111111… tx:note-new… injected
+(pass) /table/:pda/rows cache refresh > notify on a short head page keeps the scan-derived cursor [1.80ms]
+[rows] So111111 sigs=10 rows=9
+[notify] So1111111111… tx:m-new… injected
+(pass) /table/:pda/rows cache refresh > notify refill with a metadata-only bottom row falls back to its tx signature [2.18ms]
+[rows] 11111111 sigs=1 rows=1
+[rows:bg] 11111111 +4 rows
+(pass) /table/:pda/rows cache refresh > background catch-up stops after the bounded page limit when overlap is missing [7.01ms]
+[threads] 11111111 rows=1 threads=1
+[notify] 111111111111… tx:sig-note-b… injected
+(pass) /table/:pda/threads notify injection > notify injects a new top-level note into the cached threads response [6.35ms]
+[threads] 11111111 rows=1 threads=1
+[notify] 111111111111… tx:sig-reply-b… injected
+(pass) /table/:pda/threads notify injection > notify groups an injected reply under its parentId thread [22.44ms]
+[threads] 11111111 rows=1 threads=1
+[notify] 111111111111… tx:sig-inv-miss… invalidated (row not available)
+[threads] 11111111 rows=2 threads=2
+(pass) /table/:pda/threads notify injection > row-less notify invalidates the cached threads response [0.81ms]
+[threads] 11111111 rows=1 threads=1
+[notify] 111111111111… tx:sig-race-b… injected
+[threads] 11111111 rows=2 threads=2
+(pass) /table/:pda/threads notify injection > in-flight background refresh keeps a concurrently notify-injected row [8.98ms]
+[notify] So1111111111… tx:new-durable… injected
+(pass) notify durability across head-cache expiry > successful chain verification [64.99ms]
+[notify] So1111111111… tx:new-durable… injected
+(pass) notify durability across head-cache expiry > RPC forbidden [42.83ms]
+[notify] So1111111111… tx:new-durable… injected
+(pass) notify durability across head-cache expiry > RPC quota failure [25.00ms]
+
+tests/evm-table-cursor.test.ts:
+[rows] sepolia/testroot/posts rows=4
+[rows] sepolia/testroot/posts rows=2
+(pass) /table/:dbRootId/:tableName/rows cursor > failed tx at the page bottom derives nextCursor from the walk position [3.37ms]
+[rows] sepolia/testroot/posts-index rows=4
+[rows] sepolia/testroot/posts-index rows=4 (index)
+[rows] sepolia/testroot/posts-index rows=3 (index)
+[rows] sepolia/testroot/posts-index rows=3 (index)
+[rows] sepolia/testroot/posts-index rows=3 (index)
+[rows] sepolia/testroot/posts-index rows=0 (index)
+(pass) /table/:dbRootId/:tableName/rows cursor > index path derives nextCursor from the index page, not the hydrated rows [2.01ms]
+[rows] sepolia/testroot/posts rows=4
+(pass) /table/:dbRootId/:tableName/rows cursor > notify refill with an undecodable bottom row falls back to its plain txHash [1.59ms]
+
+tests/resolver.test.ts:
+(pass) resolveChain — auto-detect by id shape > base58 pubkey → solana [0.13ms]
+(pass) resolveChain — auto-detect by id shape > base58 signature → solana [0.06ms]
+(pass) resolveChain — auto-detect by id shape > 0x txHash → evm default (sepolia) [0.06ms]
+(pass) resolveChain — auto-detect by id shape > 0x address → evm default [0.01ms]
+(pass) resolveChain — auto-detect by id shape > arbitrary dbRootId (non-base58) → evm default [0.04ms]
+(pass) resolveChain — ?network override > ?network=monad → evm monad regardless of id shape [0.04ms]
+(pass) resolveChain — ?network override > ?network=monadTestnet → evm monadTestnet [0.01ms]
+(pass) resolveChain — ?network override > ?network=robinhood → evm robinhood
+(pass) resolveChain — ?network override > ?network=sepolia → evm sepolia [0.02ms]
+(pass) resolveChain — ?network override > ?network=solana forces solana even for a 0x id
+(pass) resolveChain — ?network override > unknown ?network → 400 (never a silent wrong-chain) [0.03ms]
+(pass) resolveChain — ?network override > ?network override wins over a base58 id
+(pass) resolveChain — id-less routes > no id, no param → a default chain (no throw) [0.03ms]
+(pass) resolveChain — id-less routes > no id but ?network=monad → evm monad
+(pass) extractId — path → candidate id > /data/{tx} [0.05ms]
+(pass) extractId — path → candidate id > /meta/{tx}.json strips extension [0.01ms]
+(pass) extractId — path → candidate id > /img/{tx}.png strips extension
+(pass) extractId — path → candidate id > /table/{dbRootId}/{table}/rows → dbRootId [0.03ms]
+(pass) extractId — path → candidate id > /user/{addr}/assets → addr
+(pass) extractId — path → candidate id > /health → undefined (id-less)
+(pass) extractId — path → candidate id > /dbroots → undefined (id-less)
+(pass) extractId — path → candidate id > / → undefined
+(pass) extractId — reserved keyword sub-routes are id-less > /table/dbroot → undefined (defaults to solana, ?network overrides)
+(pass) extractId — reserved keyword sub-routes are id-less > /table/cache/stats → undefined
+(pass) extractId — reserved keyword sub-routes are id-less > resolveChain(/table/dbroot id, no param) still lands on solana default
+(pass) extractId — reserved keyword sub-routes are id-less > /table/dbroot?network=monad reaches the EVM handler
+
+tests/iqgit-blob-decoding.test.ts:
+(pass) IQ Git blob decoding > decodes short JSON and binary blobs without the legacy size threshold [0.25ms]
+(pass) IQ Git blob decoding > leaves unmarked short text unchanged [0.09ms]
+(pass) IQ Git blob decoding > rejects malformed marked data instead of silently losing bytes [0.03ms]
+(pass) IQ Git blob decoding > preserves legacy data URLs and long base64 assets [0.04ms]
+
+tests/branding.test.ts:
+[render] resvg loaded — serving PNG
+(pass) inscription branding > HTML logos are self-contained and text remains escaped [1.43ms]
+(pass) inscription branding > resvg paints both bundled logos into the actual PNG [1330.51ms]
+[render] resvg loaded — serving PNG
+(pass) inscription layout > keeps ASCII indentation and lines intact while prose can wrap [3.72ms]
+
+tests/site-parser.test.ts:
+(pass) parseManifest > gateway format with index.path [0.83ms]
+(pass) parseManifest > gateway format without index defaults to index.html [0.03ms]
+(pass) parseManifest > iqoogle format (txId at top level) [0.02ms]
+(pass) parseManifest > entries without id/txId are dropped [0.02ms]
+(pass) parseManifest > empty raw -> no files (caller should reject) [0.01ms]
+
+tests/site-hosts.test.ts:
+(pass) normalizeHost > lowercases [0.07ms]
+(pass) normalizeHost > strips :port [0.05ms]
+(pass) normalizeHost > trims whitespace [0.01ms]
+(pass) normalizeHost > returns null for missing/blank [0.01ms]
+(pass) isReservedGatewayPath > matches each reserved prefix exactly [0.06ms]
+(pass) isReservedGatewayPath > matches reserved prefix as path root [0.02ms]
+(pass) isReservedGatewayPath > rejects non-reserved paths [0.06ms]
+(pass) isSafePath > accepts root and empty [0.05ms]
+(pass) isSafePath > accepts normal paths [0.10ms]
+(pass) isSafePath > rejects .. [0.02ms]
+(pass) isSafePath > rejects backslashes [0.01ms]
+(pass) isSafePath > rejects scheme-relative URLs
+(pass) isSafePath > rejects absolute URLs [0.01ms]
+
+tests/sns-resolver.test.ts:
+(pass) TX_SIG_RE > matches 88-char base58 sig [0.04ms]
+(pass) TX_SIG_RE > rejects too short [0.02ms]
+(pass) TX_SIG_RE > rejects too long [0.01ms]
+(pass) TX_SIG_RE > rejects non-base58 characters [0.02ms]
+(pass) SITE_PATH_RE > captures sig from /site/<sig>/ [0.07ms]
+(pass) SITE_PATH_RE > captures sig + file path [0.03ms]
+(pass) SITE_PATH_RE > captures sig + nested path [0.03ms]
+(pass) SITE_PATH_RE > strips query/fragment from path [0.01ms]
+(pass) SITE_PATH_RE > matches regardless of host (multi-gateway)
+(pass) SITE_PATH_RE > no match if /site/ is missing or sig is malformed [0.01ms]
+(pass) V2 contentLength slicing (the SDK-bug-workaround) > slices the last N bytes correctly [0.07ms]
+(pass) V2 contentLength slicing (the SDK-bug-workaround) > regex still matches the sliced URL
+
+tests/evm-utils.test.ts:
+(pass) utils > isTxHash accepts a well-formed 0x-prefixed 64-hex string [0.03ms]
+(pass) utils > isTxHash rejects malformed input [0.02ms]
+(pass) utils > isEvmAddress validates checksum + length [0.46ms]
+
+tests/cache-fixture.test.ts:
+(pass) cache modules loaded before the fixture still bind its CACHE_DIR [2.71ms]
+
+tests/evm-networks.test.ts:
+(pass) networks > registry has sepolia + monad + monadTestnet + robinhood with correct chain IDs [0.03ms]
+(pass) networks > each network has a contract address and currency [0.09ms]
+(pass) networks > isNetworkMode rejects unknown strings [0.02ms]
+
+tests/feed-anchor-cache.test.ts:
+[rows] 4tqEoAu4 sigs=1 rows=1
+[rows:bg] 4tqEoAu4 +1 rows
+(pass) feed anchor (no Table account) cache refresh > background refresh still catches up when table meta is null [23.31ms]
+[rows] 7vWWtXiD sigs=1 rows=1
+[notify] 7vWWtXiDKR81… tx:sig-b… injected
+(pass) feed anchor (no Table account) cache refresh > notify writes the verified prepended head page through to disk [15.10ms]
+[rows] 5vwzggfC sigs=1 rows=1
+[notify] 5vwzggfCYjvd… tx:sig-b… injected
+(pass) feed anchor (no Table account) cache refresh > notify with no memory entry prepends into the promoted disk page [27.94ms]
+[rows] 5CdFP3ZA sigs=1 rows=1
+[notify] 5CdFP3ZAJnwg… tx:sig-fake… injected
+(pass) feed anchor (no Table account) cache refresh > unverifiable notify row stays memory-only and never poisons disk [116.47ms]
+[rows] CfANJbGn sigs=0 rows=0
+{"route":"rows","coldScans":1,"scansAfter20CacheHits":1}
+(pass) rows: a freshly filled cache does not rescan during a concurrent burst [8.80ms]
+[thread] 2thbbLtJ op=false replies=0
+{"route":"thread","coldScans":2,"scansAfter20CacheHits":2}
+[thread] 2thbbLtJ op=false replies=0
+(pass) thread: a freshly filled cache does not rescan during a concurrent burst [6.43ms]
+[threads] 8T57JRxi rows=0 threads=0
+{"route":"threads","coldScans":1,"scansAfter20CacheHits":1}
+[threads] 8T57JRxi rows=0 threads=0
+(pass) threads: a freshly filled cache does not rescan during a concurrent burst [5.93ms]
+
+tests/cache-network.test.ts:
+(pass) disk cache — per-network isolation > same (type,key) on two EVM networks does NOT collide [1.56ms]
+(pass) disk cache — per-network isolation > default network (omitted) is unprefixed and distinct from a named net [1.90ms]
+(pass) disk cache — per-network isolation > a network miss returns null even when another net has the key [0.80ms]
+(pass) catalog — per-network search filter > search filters by network; unfiltered returns both [1.29ms]
+(pass) /search route — passes ?network through to the catalog > ?network scopes results; omitted spans all networks [2.42ms]
+
+tests/evm-notify.test.ts:
+(pass) EVM notify read-after-write > a cached thread and ETag see the reply immediately after notify [12.26ms]
+(pass) EVM notify read-after-write > new OP is visible in the board feed when notify acknowledges it [6.83ms]
+(pass) notify invalidates every reply limit but preserves other networks [17.35ms]
+(pass) an older read completing after notify cannot repopulate the stale cache [14.17ms]
+(pass) an invalidated request cannot clear its replacement from the inflight map [0.35ms]
+
+ 160 pass
+ 0 fail
+ 949 expect() calls
+Ran 160 tests across 22 files. [2.59s]
