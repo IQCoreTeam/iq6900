@@ -27,36 +27,24 @@ sdk.setNetwork("robinhood", activeRpc);
 
 let provider = null; // BrowserProvider over the injected wallet
 let signer = null;
-let inscribeCheckpoint = null; // { row, at: UploadCheckpoint } - survives across RETRY for the same row
+let inscribeCheckpoint = null; // Upstream retry checkpoint for the exact row.
+let injected = null;
+let disconnected = false;
+const wallets = new Map();
+const WALLET_KEY = "iq6900_evm_wallet";
+window.addEventListener("eip6963:announceProvider", ({ detail }) => {
+  if (!detail?.info?.rdns || !detail.info.name || typeof detail.provider?.request !== "function") return;
+  if ([...wallets.values()].some(w => w.provider === detail.provider)) return;
+  wallets.set(detail.info.rdns, { id: detail.info.rdns, name: detail.info.name, provider: detail.provider });
+  window.dispatchEvent(new Event("iq:evm-wallets"));
+});
+window.dispatchEvent(new Event("eip6963:requestProvider"));
+function availableWallets() {
+  if (wallets.size) return [...wallets.values()];
+  return (window.ethereum?.providers || (window.ethereum ? [window.ethereum] : []))
+    .map((eth, i) => ({ id: "injected-" + i, name: eth.isPhantom ? "Phantom" : eth.isMetaMask ? "MetaMask" : "Browser wallet", provider: eth }));
+}
 
-// EIP-6963 multi-wallet discovery. Brave injects its own window.ethereum and
-// claims the generic slot, hiding Phantom/MetaMask so a raw window.ethereum read
-// connects to the wrong wallet (or fails on Robinhood). Collect every wallet
-// that announces itself, then pick the best match at connect time.
-const eip6963 = {};
-if (typeof window !== "undefined") {
-  window.addEventListener("eip6963:announceProvider", (e) => {
-    const d = e && e.detail;
-    if (d && d.info && d.info.rdns && d.provider) eip6963[d.info.rdns] = d;
-  });
-  window.dispatchEvent(new Event("eip6963:requestProvider"));
-}
-function getEth() {
-  const by = (rdns) => eip6963[rdns] && eip6963[rdns].provider;
-  const announced = Object.values(eip6963);
-  // Phantom first (hood users use it for Robinhood), then MetaMask, then any
-  // announced wallet that is not Brave's built-in, then anything announced,
-  // then the raw slot as a last resort.
-  return by("app.phantom") || by("io.metamask")
-    || (announced.find((d) => d.info.rdns !== "com.brave.wallet") || {}).provider
-    || (announced[0] || {}).provider
-    || (typeof window !== "undefined" ? window.ethereum : null) || null;
-}
-async function discoverEth() {
-  if (typeof window !== "undefined") window.dispatchEvent(new Event("eip6963:requestProvider"));
-  if (!Object.keys(eip6963).length) await new Promise((r) => setTimeout(r, 250));
-  return getEth();
-}
 
 async function gwFetch(path, init) {
   for (const gw of GATEWAYS) {
@@ -104,9 +92,25 @@ const surface = {
 
   // The wallet is the signer AND the broadcaster; connect = request accounts,
   // make sure the wallet is on Robinhood Chain (add it if unknown), grab a signer.
-  connectWallet: async () => {
-    const eth = await discoverEth();
-    if (!eth) throw new Error("no EVM wallet found. install Phantom or MetaMask.");
+  getWallets: () => availableWallets().map(({ id, name, provider }) => ({ id, name, selected: provider === injected })),
+  getWalletProvider: () => injected,
+  disconnectWallet: () => {
+    signer = null; provider = null; injected = null; disconnected = true;
+    try { localStorage.setItem(WALLET_KEY, "disconnected"); } catch (_) {}
+  },
+  connectWallet: async ({ onlyIfTrusted = false, walletId } = {}) => {
+    const options = availableWallets();
+    let saved; try { saved = localStorage.getItem(WALLET_KEY); } catch (_) {}
+    if (onlyIfTrusted && (disconnected || saved === "disconnected")) return null;
+    const choice = options.find(w => w.id === (walletId || saved)) || (!walletId && !saved && options.length === 1 ? options[0] : null);
+    if (!choice) { if (onlyIfTrusted) return null; throw new Error("Choose an EVM wallet first."); }
+    const eth = choice.provider;
+    signer = null; provider = null; injected = eth;
+    if (!eth) throw new Error("no EVM wallet found. install MetaMask.");
+    if (onlyIfTrusted) {
+      const accounts = await eth.request({ method: "eth_accounts" });
+      if (!accounts.length || (await eth.request({ method: "eth_chainId" })).toLowerCase() !== CHAIN_ID) return null;
+    } else {
     await eth.request({ method: "eth_requestAccounts" });
     try {
       await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID }] });
@@ -119,8 +123,12 @@ const surface = {
         }] });
       } else throw err;
     }
+    }
+    if ((await eth.request({ method: "eth_chainId" })).toLowerCase() !== CHAIN_ID) throw new Error("Switch the selected wallet to Robinhood Chain before connecting.");
     provider = new BrowserProvider(eth);
     signer = await provider.getSigner();
+    disconnected = false;
+    try { localStorage.setItem(WALLET_KEY, choice.id); } catch (_) {}
     return signer.address;
   },
 
@@ -130,7 +138,7 @@ const surface = {
   // chainlist entry (rpc.arrowrpc.com was down 2026-09) fails every send with
   // -32603, so catch it BEFORE the user signs anything.
   checkWalletRpc: async () => {
-    const eth = getEth();
+    const eth = injected;
     if (!eth) return { ok: false, reason: "no wallet" };
     const timed = (p, ms) => Promise.race([p, new Promise((_, rj) => setTimeout(() => rj(new Error("timeout")), ms))]);
     let walletBlock;
@@ -178,8 +186,22 @@ const surface = {
   // the whole chain from Genesis.
   inscribe: async ({ kind, body, who, onProgress }) => {
     if (!signer) throw new Error("connect the wallet first");
+    const accounts = await injected.request({ method: "eth_accounts" });
+    const chain = await injected.request({ method: "eth_chainId" });
+    if (chain.toLowerCase() !== CHAIN_ID || accounts[0]?.toLowerCase() !== signer.address.toLowerCase() || who?.toLowerCase() !== signer.address.toLowerCase())
+      throw new Error("Wallet account or network changed. Reconnect your selected wallet before inscribing.");
     const row = JSON.stringify({ kind, body, who });
     const resume = inscribeCheckpoint && inscribeCheckpoint.row === row ? inscribeCheckpoint.at : undefined;
+    // One balance read per attempted write; no polling. This is a lower-bound
+    // check only: the wallet still estimates actual gas for each transaction.
+    const balance = await provider.getBalance(signer.address);
+    const fee = new TextEncoder().encode(row).length <= 700
+      ? await sdk.utils.getBasicFee(provider) : await sdk.utils.getLinkedListFee(provider);
+    if (!resume?.finalizedTx && balance <= fee) {
+      const error = new Error("Insufficient ETH on Robinhood Chain. Selected wallet " + signer.address + " has " + formatEther(balance) + " ETH; this inscription needs " + formatEther(fee) + " ETH plus gas. Fund this address on Robinhood Chain or select another wallet.");
+      error.code = "INSUFFICIENT_FUNDS";
+      throw error;
+    }
     try {
       const hash = await sdk.writer.writeRow(signer, DB_ROOT_ID, TABLE, row, (pct) => onProgress && onProgress(pct), resume);
       inscribeCheckpoint = null;

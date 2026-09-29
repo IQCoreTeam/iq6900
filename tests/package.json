@@ -1,0 +1,6 @@
+{
+  "name": "iq6900-local-tests",
+  "private": true,
+  "scripts": { "test": "node --experimental-vm-modules --test *.test.cjs" },
+  "devDependencies": { "jquery": "3.7.1", "jsdom": "26.1.0" }
+}
