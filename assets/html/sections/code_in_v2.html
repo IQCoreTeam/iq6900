@@ -64,6 +64,14 @@
    label inherits the page default and renders huge */
 #ci2 .tk_opt{display:block;font-size:11px;line-height:1.55;margin:5px 0;cursor:pointer;opacity:.9}
 #ci2 .tk_opt input{accent-color:var(--hi);margin-right:8px}
+/* two-column pick cards (hood rewards + buyback): each side is a selectable
+   card that lights up when its radio is chosen (.on class or :has fallback) */
+#ci2 .tk_split{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}
+#ci2 .tk_pick{display:block;padding:9px 11px;border:1px solid var(--fg40);border-radius:5px;cursor:pointer;transition:border-color .12s,background .12s}
+#ci2 .tk_pick input{position:absolute;width:0;height:0;opacity:0}
+#ci2 .tk_pick.on,#ci2 .tk_pick:has(input:checked){border-color:var(--hi);background:rgba(255,255,255,.05)}
+#ci2 .tk_pick_h{display:block;font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--hi)}
+#ci2 .tk_pick_d{display:block;font-size:11px;line-height:1.5;margin-top:3px;opacity:.72}
 /* a hidden meter row: .meter div sets display:flex at higher specificity than
    .hide, so name the div explicitly to actually hide it (e.g. dev buy on hood) */
 #ci2 .meter div.hide{display:none}
@@ -493,15 +501,20 @@ await writer.writeRow(conn, signer,
           </div>
           <div style="margin-top:10px" id="ci2_tk_rw_hood" class="hide">
             <span class="tk_lbl">REWARDS - every default is set; edit only if you want to</span>
-            <label class="tk_opt"><input type="radio" name="ci2rw_hood" value="holders" checked>HOLDERS - you take no cut; the buyback below backs the coin for holders.</label>
-            <label class="tk_opt"><input type="radio" name="ci2rw_hood" value="creator">CREATOR - you earn a percent of every trade.</label>
-            <div id="ci2_tk_cr_fields" class="hide" style="margin:4px 0 2px 22px">
+            <div class="tk_split">
+              <label class="tk_pick on"><input type="radio" name="ci2rw_hood" value="holders" checked><span class="tk_pick_h">HOLDERS</span><span class="tk_pick_d">you take no cut; the buyback below backs the coin for holders.</span></label>
+              <label class="tk_pick"><input type="radio" name="ci2rw_hood" value="creator"><span class="tk_pick_h">CREATOR</span><span class="tk_pick_d">you earn a percent of every trade.</span></label>
+            </div>
+            <div id="ci2_tk_cr_fields" class="hide" style="margin:4px 0 2px">
               <div class="upl_row" style="margin:0 0 8px"><span class="tk_lbl" style="margin:0 8px 0 0">FEE</span><input id="ci2_tk_crfee" class="num" type="number" min="0" max="10" step="0.5" value="1" style="width:64px"><span class="muted" style="font-size:11px">% of every trade (0 to 10)</span></div>
               <span class="tk_lbl">FEE WALLET</span>
               <input id="ci2_tk_crwallet" class="tk_in" placeholder="defaults to your connected wallet">
             </div>
-            <span class="tk_lbl" style="display:block;margin-top:12px">BUYBACK</span>
-            <label class="tk_opt"><input type="checkbox" id="ci2_tk_buyback" checked>buy this coin back into a 5-year locked vault (pons buyback). optional, permanent once launched.</label>
+            <span class="tk_lbl" style="display:block;margin-top:12px">BUYBACK - a 5-year locked vault buys the coin back (pons). permanent once launched.</span>
+            <div class="tk_split">
+              <label class="tk_pick on"><input type="radio" name="ci2bb_hood" value="on" checked><span class="tk_pick_h">ON</span><span class="tk_pick_d">a slice of every trade buys the coin back into the 5-year vault.</span></label>
+              <label class="tk_pick"><input type="radio" name="ci2bb_hood" value="off"><span class="tk_pick_h">OFF</span><span class="tk_pick_d">no buyback; trades just flow normally.</span></label>
+            </div>
           </div>
           <div class="meter" style="border:1px solid var(--fg40);border-radius:5px;margin-top:6px">
             <div><span class="muted" style="font-size:12px;opacity:.6" id="ci2_tk_feelbl">platform fee</span><span id="ci2_tk_feeshow">0.069 SOL</span></div>

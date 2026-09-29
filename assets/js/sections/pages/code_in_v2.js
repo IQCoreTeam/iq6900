@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=54";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=55";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -129,8 +129,9 @@
       $("#ci2_tk_buy").on("input", () => { $("#ci2_tk_buyshow").text((parseFloat($("#ci2_tk_buy").val()) || 0) + " SOL"); });
       $("#ci2_tk_go").on("click", doLaunch);
       $("#ci2_tk_retry").on("click", doLaunch);
-      $("input[name=ci2rw_hood]").on("change", () => {
+      $("#ci2_tk_rw_hood").on("change", "input[type=radio]", () => {
         $("#ci2_tk_cr_fields").toggleClass("hide", $("input[name=ci2rw_hood]:checked").val() !== "creator");
+        paintPicks();
       });
       $("#ci2_tk_reg_retry").on("click", tkWriteRegistry);
       if (isEvm()) applyHoodTheme();
@@ -726,14 +727,24 @@
     // One place for every launcher string that differs between the two
     // launchpads (pump.fun on solana, pons on robinhood); runs on open so the
     // same modal serves both boards.
+    // Light up whichever pick card (hood rewards + buyback) holds a checked
+    // radio. CSS :has() covers modern browsers; this .on class is the fallback.
+    function paintPicks() {
+      $("#ci2_tk_rw_hood .tk_pick").each(function () {
+        $(this).toggleClass("on", !!$(this).find("input").prop("checked"));
+      });
+    }
+
     function tkChainCopy() {
       const hood = isEvm();
       $("#ci2_tk_buyrow, #ci2_tk_buymeter, #ci2_tk_rw_sol").toggleClass("hide", hood);
       $("#ci2_tk_rw_hood").toggleClass("hide", !hood);
-      // fresh open: reset the hood advanced panel to its defaults (holders, no
-      // creator fields shown). buyback stays checked (its HTML default).
+      // fresh open: reset the hood advanced panel to its defaults (holders take
+      // no cut, no creator fields, buyback on), then repaint the pick cards.
       $("input[name=ci2rw_hood][value=holders]").prop("checked", true);
+      $("input[name=ci2bb_hood][value=on]").prop("checked", true);
       $("#ci2_tk_cr_fields").addClass("hide");
+      paintPicks();
       $("#ci2_tk_noinv_txt").text(hood
         ? "your inventory is empty. inscribe an image or text on hood-in first (a fresh post can take a few minutes to index), then launch it as a token."
         : "your inventory is empty. put your image or text on solana first, then launch it as a token.");
@@ -902,7 +913,7 @@
             signer: window.iqCodein.signer, name, symbol,
             logo: image, description,
             socials: { twitter: x, website: web },
-            buybackEnabled: $("#ci2_tk_buyback").prop("checked"),
+            buybackEnabled: $("input[name=ci2bb_hood]:checked").val() === "on",
             creatorTaxBps: creator ? Math.round((parseFloat($("#ci2_tk_crfee").val()) || 0) * 100) : 0,
             creatorFeeRecipient: creator && /^0x[0-9a-fA-F]{40}$/.test(crWallet) ? crWallet : undefined,
             onStep: (label) => { const i = steps.indexOf(label); if (i >= 0) setTkBar(10 + i * 30, label); },
