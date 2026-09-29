@@ -29,6 +29,35 @@ let provider = null; // BrowserProvider over the injected wallet
 let signer = null;
 let inscribeCheckpoint = null; // { row, at: UploadCheckpoint } - survives across RETRY for the same row
 
+// EIP-6963 multi-wallet discovery. Brave injects its own window.ethereum and
+// claims the generic slot, hiding Phantom/MetaMask so a raw window.ethereum read
+// connects to the wrong wallet (or fails on Robinhood). Collect every wallet
+// that announces itself, then pick the best match at connect time.
+const eip6963 = {};
+if (typeof window !== "undefined") {
+  window.addEventListener("eip6963:announceProvider", (e) => {
+    const d = e && e.detail;
+    if (d && d.info && d.info.rdns && d.provider) eip6963[d.info.rdns] = d;
+  });
+  window.dispatchEvent(new Event("eip6963:requestProvider"));
+}
+function getEth() {
+  const by = (rdns) => eip6963[rdns] && eip6963[rdns].provider;
+  const announced = Object.values(eip6963);
+  // Phantom first (hood users use it for Robinhood), then MetaMask, then any
+  // announced wallet that is not Brave's built-in, then anything announced,
+  // then the raw slot as a last resort.
+  return by("app.phantom") || by("io.metamask")
+    || (announced.find((d) => d.info.rdns !== "com.brave.wallet") || {}).provider
+    || (announced[0] || {}).provider
+    || (typeof window !== "undefined" ? window.ethereum : null) || null;
+}
+async function discoverEth() {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("eip6963:requestProvider"));
+  if (!Object.keys(eip6963).length) await new Promise((r) => setTimeout(r, 250));
+  return getEth();
+}
+
 async function gwFetch(path, init) {
   for (const gw of GATEWAYS) {
     try { const res = await fetch(gw + path, init); if (res.ok || res.status === 404) return res; } catch (e) {}
@@ -76,8 +105,8 @@ const surface = {
   // The wallet is the signer AND the broadcaster; connect = request accounts,
   // make sure the wallet is on Robinhood Chain (add it if unknown), grab a signer.
   connectWallet: async () => {
-    const eth = window.ethereum;
-    if (!eth) throw new Error("no EVM wallet found. install MetaMask.");
+    const eth = await discoverEth();
+    if (!eth) throw new Error("no EVM wallet found. install Phantom or MetaMask.");
     await eth.request({ method: "eth_requestAccounts" });
     try {
       await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID }] });
@@ -101,7 +130,7 @@ const surface = {
   // chainlist entry (rpc.arrowrpc.com was down 2026-09) fails every send with
   // -32603, so catch it BEFORE the user signs anything.
   checkWalletRpc: async () => {
-    const eth = window.ethereum;
+    const eth = getEth();
     if (!eth) return { ok: false, reason: "no wallet" };
     const timed = (p, ms) => Promise.race([p, new Promise((_, rj) => setTimeout(() => rj(new Error("timeout")), ms))]);
     let walletBlock;
