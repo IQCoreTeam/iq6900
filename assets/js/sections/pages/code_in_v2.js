@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=50";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=51";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -405,7 +405,7 @@
         // a launch registry row: show the coin, not the raw json
         let t = {}; try { t = JSON.parse(body) || {}; } catch (e) {}
         $b.html($("<div>").css("text-align", "center")
-          .append($("<div>").css({ font: "500 16px 'Kode Mono',monospace", color: "#2BD52D" }).text("$" + (t.symbol || "?") + "  " + (t.name || "")))
+          .append($("<div>").css({ font: "500 16px 'Kode Mono',monospace", color: "var(--hi)" }).text("$" + (t.symbol || "?") + "  " + (t.name || "")))
           .append($("<p>").addClass("muted").css({ margin: "8px 0 14px", wordBreak: "break-all" }).text(t.mint || ""))
           .append($("<div>").css({ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" })
             .append($("<a>").addClass("btn").attr({ href: "https://pump.fun/coin/" + t.mint, target: "_blank", rel: "noopener" }).css("text-decoration", "none").text("VIEW ON PUMP.FUN"))
