@@ -18,7 +18,7 @@ for(const [accounts,chain,expected] of [[[],'0x1237',null],[['0xabc'],'0x1',null
 }
 
 async function setupWallets(balance = 0n) {
- const calls=[], writes=[];
+ const calls=[], writes=[]; let writeError=null;
  const window=new EventTarget();
  const phantom={request:async ({method})=>{calls.push(['phantom',method]);throw Error('Wrong wallet');}};
  const metamask={request:async({method})=>{
@@ -37,14 +37,14 @@ async function setupWallets(balance = 0n) {
   const values=name.includes('ascii.js')?{toAscii:()=>''}:name.includes('ethers@')?{
    BrowserProvider:class {constructor(p){assert.equal(p,metamask);} async getSigner(){return {address:'0xabc'};} async getBalance(){return balance;}},
    JsonRpcProvider:class {async getBlockNumber(){return 256;}},formatEther:n=>String(Number(n)/1e18)
-  }:{setNetwork(){},utils:{getBasicFee:async()=>120000000000000n,getLinkedListFee:async()=>360000000000000n},writer:{writeRow:async(...args)=>{writes.push(args);return '0xtx';}}};
+  }:{setNetwork(){},utils:{getBasicFee:async()=>120000000000000n,getLinkedListFee:async()=>360000000000000n},writer:{writeRow:async(...args)=>{writes.push(args);if(writeError)throw writeError;return '0xtx';}}};
   return new vm.SyntheticModule(Object.keys(values),function(){for(const [k,v] of Object.entries(values))this.setExport(k,v);},{context});
  });
  await mod.evaluate();
  for(const [id,p] of [['app.phantom',phantom],['io.metamask',metamask]]){
   const event=new Event('eip6963:announceProvider');event.detail={info:{rdns:id,name:id==='io.metamask'?'MetaMask':'Phantom'},provider:p};window.dispatchEvent(event);
  }
- return {surface:window.iqCodeinChains.evm,calls,writes,metamask};
+ return {surface:window.iqCodeinChains.evm,calls,writes,metamask,setWriteError:e=>{writeError=e;}};
 }
 test('selecting MetaMask ignores Phantom global for connection and health check',async()=>{
  const {surface,calls,metamask}=await setupWallets();
@@ -80,4 +80,15 @@ test('disconnect clears signer and suppresses silent reconnect until explicit se
  assert.equal(calls.length,0);
  await assert.rejects(surface.inscribe({kind:'text',body:'test',who:'0xabc'}),/connect the wallet first/);
  assert.equal(await surface.connectWallet({walletId:'io.metamask'}),'0xabc');
+});
+
+
+test('upstream retry checkpoint survives and is scoped to the exact inscription',async()=>{
+ const v=await setupWallets(1000000000000000000n);await v.surface.connectWallet({walletId:'io.metamask'});
+ const checkpoint={beforeTx:'0xprior',sentChunks:2};v.setWriteError(Object.assign(Error('interrupted'),{checkpoint}));
+ await assert.rejects(v.surface.inscribe({kind:'text',body:'same',who:'0xabc'}),/interrupted/);
+ v.setWriteError(null);await v.surface.inscribe({kind:'text',body:'same',who:'0xabc'});
+ assert.equal(v.writes[1][5],checkpoint);
+ await v.surface.inscribe({kind:'text',body:'different',who:'0xabc'});
+ assert.equal(v.writes[2][5],undefined);
 });

@@ -10,7 +10,7 @@
 // unthrottled (verified), unlike Solana's public mainnet.
 import { toAscii } from "./ascii.js?v=1";
 import { BrowserProvider, JsonRpcProvider, formatEther } from "https://cdn.jsdelivr.net/npm/ethers@6.17.0/+esm";
-import * as sdk from "https://cdn.jsdelivr.net/npm/@iqlabs-official/ethereum-sdk@0.4.1/+esm";
+import * as sdk from "https://cdn.jsdelivr.net/npm/@iqlabs-official/ethereum-sdk@0.4.2/+esm";
 
 const DB_ROOT_ID = "iq6900-codein-feed-v1"; // same labels as the Solana feed (feed.js)
 const TABLE = "global-feed";
@@ -27,6 +27,7 @@ sdk.setNetwork("robinhood", activeRpc);
 
 let provider = null; // BrowserProvider over the injected wallet
 let signer = null;
+let inscribeCheckpoint = null; // Upstream retry checkpoint for the exact row.
 let injected = null;
 let disconnected = false;
 const wallets = new Map();
@@ -175,6 +176,14 @@ const surface = {
   // Model A write: the user's wallet signs each tx as writeRow walks the
   // linked list. onProgress maps straight onto the existing gauge; the i/N
   // signature label derives from pct (batches sign in order).
+  //
+  // Wallet RPCs can misreport a landed tx (Phantom's node-proxy, measured
+  // 2026-09: it re-submits internally and returns the duplicate's nonce
+  // error while the tx mined). sdk 0.4.2 absorbs that by verifying against
+  // the chain, and on a REAL stall throws UploadInterrupted with a
+  // {beforeTx, sentChunks, finalizedTx} checkpoint. Keeping it keyed to the
+  // exact row lets RETRY resume from the failed batch instead of re-signing
+  // the whole chain from Genesis.
   inscribe: async ({ kind, body, who, onProgress }) => {
     if (!signer) throw new Error("connect the wallet first");
     const accounts = await injected.request({ method: "eth_accounts" });
@@ -182,18 +191,25 @@ const surface = {
     if (chain.toLowerCase() !== CHAIN_ID || accounts[0]?.toLowerCase() !== signer.address.toLowerCase() || who?.toLowerCase() !== signer.address.toLowerCase())
       throw new Error("Wallet account or network changed. Reconnect your selected wallet before inscribing.");
     const row = JSON.stringify({ kind, body, who });
+    const resume = inscribeCheckpoint && inscribeCheckpoint.row === row ? inscribeCheckpoint.at : undefined;
     // One balance read per attempted write; no polling. This is a lower-bound
     // check only: the wallet still estimates actual gas for each transaction.
     const balance = await provider.getBalance(signer.address);
     const fee = new TextEncoder().encode(row).length <= 700
       ? await sdk.utils.getBasicFee(provider) : await sdk.utils.getLinkedListFee(provider);
-    if (balance <= fee) {
+    if (!resume?.finalizedTx && balance <= fee) {
       const error = new Error("Insufficient ETH on Robinhood Chain. Selected wallet " + signer.address + " has " + formatEther(balance) + " ETH; this inscription needs " + formatEther(fee) + " ETH plus gas. Fund this address on Robinhood Chain or select another wallet.");
       error.code = "INSUFFICIENT_FUNDS";
       throw error;
     }
-    const hash = await sdk.writer.writeRow(signer, DB_ROOT_ID, TABLE, row, (pct) => onProgress && onProgress(pct));
-    return { sig: hash };
+    try {
+      const hash = await sdk.writer.writeRow(signer, DB_ROOT_ID, TABLE, row, (pct) => onProgress && onProgress(pct), resume);
+      inscribeCheckpoint = null;
+      return { sig: hash };
+    } catch (e) {
+      if (e && e.checkpoint) inscribeCheckpoint = { row, at: e.checkpoint };
+      throw e;
+    }
   },
 
   feedTable: DB_ROOT_ID + "/" + TABLE,

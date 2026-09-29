@@ -61,7 +61,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=6", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=7", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -188,6 +188,17 @@
         .on("click", () => document.getElementById("ci2_wallet_dialog").close(wallet.id)));
     }
 
+    // Resolve a Solana wallet at click time. Prefer Phantom/Backpack's own
+    // handles (Brave never creates window.phantom, so window.phantom.solana is
+    // always the real Phantom) over whoever claimed the generic window.solana,
+    // and wait briefly for a late injection (Brave delays it).
+    async function resolveSolanaProvider() {
+      const pick = () => window.phantom?.solana || window.backpack || window.solana || null;
+      let p = pick();
+      for (let i = 0; !p && i < 20; i++) { await new Promise((r) => setTimeout(r, 100)); p = pick(); }
+      return p;
+    }
+
     async function connect() {
       let walletId;
       if (isEvm()) {
@@ -218,7 +229,8 @@
         }
         $("#ci2_rpcwarn").addClass("hide");
       } else {
-        if (!provider) { alert("No Solana wallet found. Install Phantom or Backpack."); return; }
+        provider = await resolveSolanaProvider();
+        if (!provider) { alert("No Solana wallet found. Install Phantom or Backpack.\n\nBrave users: open brave://settings/wallet and set Default cryptocurrency wallet to \"Extensions (no fallback)\" so your extension wallet is detected."); return; }
         const res = await provider.connect();
         who = (res?.publicKey || provider.publicKey).toString();
       }
@@ -261,7 +273,7 @@
     }
     async function restoreWallet() {
       const generation = walletGeneration;
-      if (!isEvm()) bindWalletListeners();
+      if (!isEvm()) { provider = await resolveSolanaProvider(); if (generation !== walletGeneration) return; bindWalletListeners(); }
       try {
         const address = isEvm()
           ? await window.iqCodein.connectWallet({ onlyIfTrusted: true })
