@@ -86,6 +86,45 @@ window.iqCodein = {
   // inscription's raw bytes, /render draws text and ascii as a terminal card.
   imgUrl: (sig) => GATEWAYS[0] + "/img/" + sig + ".png",
   renderUrl: (sig) => GATEWAYS[0] + "/render/" + sig,
+
+  // The market panel and chart are one render path; each chain plugs its own
+  // price source and chart embed in here (DexScreener indexes solana, incl.
+  // pump.fun bonding curves). enrich returns one deduped {mint,pair...} row per
+  // mint (deepest-liquidity pair wins); a mint with no pool is simply absent.
+  market: {
+    attribution: "via dexscreener",
+    tradeLabel: "VIEW ON PUMP.FUN",
+    tradeShort: "Pump",
+    tradeName: "pump.fun",
+    siteLabel: "OPEN ON DEXSCREENER",
+    tradeUrl: (mint) => "https://pump.fun/coin/" + mint,
+    embedUrl: (pair) => "https://dexscreener.com/solana/" + pair.pairAddress + "?embed=1&theme=dark&trades=0&info=0",
+    siteUrl: (pair) => pair.url || ("https://dexscreener.com/solana/" + pair.pairAddress),
+    enrich: async (mints) => {
+      const out = [];
+      for (let i = 0; i < mints.length; i += 30) {
+        const batch = mints.slice(i, i + 30);
+        try {
+          const res = await fetch("https://api.dexscreener.com/tokens/v1/solana/" + batch.join(","));
+          if (!res.ok) continue;
+          const pairs = await res.json();
+          (Array.isArray(pairs) ? pairs : []).forEach((p) => {
+            const mint = p.baseToken && p.baseToken.address;
+            if (!mint) return;
+            const liq = (p.liquidity && p.liquidity.usd) || 0;
+            const prev = out.find((x) => x.mint === mint);
+            if (prev && liq < prev.liq) return; // deepest-liquidity pair wins
+            const pc = p.priceChange || {};
+            const row = { mint: mint, liq: liq, pairAddress: p.pairAddress, url: p.url,
+              priceUsd: p.priceUsd, chg24: pc.h24 != null ? Number(pc.h24) : null,
+              mcap: p.marketCap, vol24: p.volume && p.volume.h24, icon: p.info && p.info.imageUrl };
+            if (prev) Object.assign(prev, row); else out.push(row);
+          });
+        } catch (e) { /* leave this batch out */ }
+      }
+      return out;
+    },
+  },
   // board = the global feed table rows; mine = the user's assets (the gateway
   // resolves the inventory PDA our writes reference). The SDK reader returns the
   // same row shape as the gateway ({...cols, __txSignature}), so both feed the

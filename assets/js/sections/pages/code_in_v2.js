@@ -56,7 +56,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=6", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=7", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -423,7 +423,7 @@
           .append($("<div>").css({ font: "500 16px 'Kode Mono',monospace", color: "var(--hi)" }).text("$" + (t.symbol || "?") + "  " + (t.name || "")))
           .append($("<p>").addClass("muted").css({ margin: "8px 0 14px", wordBreak: "break-all" }).text(t.mint || ""))
           .append($("<div>").css({ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" })
-            .append($("<a>").addClass("btn").attr({ href: "https://pump.fun/coin/" + t.mint, target: "_blank", rel: "noopener" }).css("text-decoration", "none").text("VIEW ON PUMP.FUN"))
+            .append($("<a>").addClass("btn").attr({ href: window.iqCodein.market.tradeUrl(t.mint), target: "_blank", rel: "noopener" }).css("text-decoration", "none").text(window.iqCodein.market.tradeLabel))
             .append($("<button>").addClass("btn ghost").text("OPEN CHART").on("click", () => { $("#ci2_view_modal").addClass("hide"); openChart(t.mint, t); }))));
       }
       else {
@@ -1035,11 +1035,9 @@
     function startMarkets() {
       if (mkTimer) { clearInterval(mkTimer); mkTimer = null; } // a prior page's timer must not tick into this DOM
       $("#ci2_mk_launch").on("click", () => tkOpen());
-      if (isEvm()) { // launching is live on hood; only the price feed (charts) is not
-        $("#ci2_mk_live").addClass("hide");
-        $("#ci2_mk_soon").removeClass("hide");
-        return;
-      }
+      // Both chains run the live market now: solana via DexScreener, hood via
+      // GeckoTerminal (window.iqCodein.market). A pons coin still on its bonding
+      // curve has no DEX pool yet, so it shows as "new" until it graduates.
       loadMarkets();
       mkTimer = setInterval(onMarketTick, MK_MS);
     }
@@ -1107,23 +1105,15 @@
           })
           .catch(() => { t.imageChecked = false; }); // transient (cold) miss: retry next tick
       });
-      for (let i = 0; i < mkTokens.length; i += 30) {
-        const batch = mkTokens.slice(i, i + 30);
-        try {
-          const res = await fetch("https://api.dexscreener.com/tokens/v1/solana/" + batch.map((t) => t.mint).join(","));
-          if (!res.ok) continue;
-          const pairs = await res.json();
-          (Array.isArray(pairs) ? pairs : []).forEach((p) => {
-            const t = batch.find((x) => x.mint === (p.baseToken && p.baseToken.address));
-            if (!t) return;
-            const liq = (p.liquidity && p.liquidity.usd) || 0;
-            if (t.pair && liq < t.pair.liq) return; // best pair (deepest liquidity) wins
-            const pc = p.priceChange || {};
-            t.pair = { liq: liq, pairAddress: p.pairAddress, url: p.url, priceUsd: p.priceUsd,
-              chg24: pc.h24, mcap: p.marketCap, vol24: p.volume && p.volume.h24, icon: p.info && p.info.imageUrl };
-          });
-        } catch (e) { /* leave this batch as it was */ }
-      }
+      // Price/chart data comes from the active chain's source (the adapter owns
+      // batching + dedup): DexScreener on solana, GeckoTerminal on hood.
+      try {
+        const rows = await window.iqCodein.market.enrich(mkTokens.map((t) => t.mint));
+        rows.forEach((r) => {
+          const t = mkTokens.find((x) => x.mint === r.mint);
+          if (t) t.pair = r; // r is already the deepest-liquidity pair for this mint
+        });
+      } catch (e) { /* leave pairs as they were */ }
       mkTokens.sort((a, b) => ((b.pair && b.pair.mcap) || -1) - ((a.pair && a.pair.mcap) || -1)); // mcap desc, unindexed last
     }
 
@@ -1157,9 +1147,10 @@
           .append($('<span class="mkchg"></span>').addClass(chg == null ? "" : up ? "up" : "down")
             .text(chg == null ? "indexing" : (up ? "+" : "") + chg.toFixed(1) + "%").css(chg == null ? { opacity: 0.5 } : {}))
           .append($('<span class="mkcap"></span>').text(t.pair && t.pair.mcap ? fmtUsd(t.pair.mcap) : "-"))
-          .append($('<span class="mkact"><b>Chart</b> | <span class="pumpgo" style="cursor:pointer">Pump</span> | <span class="cago" style="cursor:pointer" title="copy contract address">CA</span></span>'));
+          .append($('<span class="mkact"><b>Chart</b> | <span class="tradego" style="cursor:pointer"></span> | <span class="cago" style="cursor:pointer" title="copy contract address">CA</span></span>'));
+        row.find(".tradego").text(window.iqCodein.market.tradeShort);
         row.on("click", () => openChart(t.mint));
-        row.find(".pumpgo").on("click", (e) => { e.stopPropagation(); window.open("https://pump.fun/coin/" + t.mint, "_blank"); });
+        row.find(".tradego").on("click", (e) => { e.stopPropagation(); window.open(window.iqCodein.market.tradeUrl(t.mint), "_blank"); });
         row.find(".cago").on("click", function (e) {
           e.stopPropagation();
           const $b = $(this);
@@ -1185,17 +1176,18 @@
       $("#ci2_chart_price").text(t.pair ? fmtUsd(t.pair.priceUsd) : "");
       $("#ci2_chart_chg").css("color", chg == null ? "var(--fg50)" : chg >= 0 ? "#2BD52D" : "#e0554e")
         .text(chg == null ? "indexing" : (chg >= 0 ? "+" : "") + chg.toFixed(1) + "% (24h)");
+      const mkt = window.iqCodein.market;
       $("#ci2_chart_stats").text(t.pair
-        ? ["mcap " + (fmtUsd(t.pair.mcap) || "-"), "vol " + (fmtUsd(t.pair.vol24) || "-"), "via dexscreener"].join("  ")
+        ? ["mcap " + (fmtUsd(t.pair.mcap) || "-"), "vol " + (fmtUsd(t.pair.vol24) || "-"), mkt.attribution].join("  ")
         : "not indexed yet");
-      $("#ci2_chart_pump").attr("href", "https://pump.fun/coin/" + mint);
+      $("#ci2_chart_pump").attr("href", mkt.tradeUrl(mint)).text(mkt.tradeLabel);
       $("#ci2_chart_copy").text("COPY MINT");
       const $box = $("#ci2_chart_box").empty();
       if (t.pair && t.pair.pairAddress) {
-        $box.append($("<iframe>").attr({ src: "https://dexscreener.com/solana/" + t.pair.pairAddress + "?embed=1&theme=dark&trades=0&info=0", allow: "clipboard-write" }));
-        $("#ci2_chart_dexs").removeClass("hide").attr("href", t.pair.url || ("https://dexscreener.com/solana/" + t.pair.pairAddress));
+        $box.append($("<iframe>").attr({ src: mkt.embedUrl(t.pair), allow: "clipboard-write" }));
+        $("#ci2_chart_dexs").removeClass("hide").attr("href", mkt.siteUrl(t.pair)).text(mkt.siteLabel);
       } else {
-        $box.append($('<div id="ci2_chart_hold"><p class="muted" style="font-size:12px;margin:0">dexscreener has not indexed this coin yet - a fresh launch takes a few minutes.<br>watch it live on pump.fun meanwhile.</p></div>'));
+        $box.append($('<div id="ci2_chart_hold"><p class="muted" style="font-size:12px;margin:0">no chart yet - ' + mkt.tradeName + ' has not indexed this coin.<br>a fresh launch charts here once it graduates to a DEX pool.</p></div>'));
         $("#ci2_chart_dexs").addClass("hide");
       }
       const postSig = t.src || t.sig; // prefer the coin's original inscription over the registry row

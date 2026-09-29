@@ -236,6 +236,53 @@ const surface = {
   imgUrl: (hash) => GATEWAYS[0] + "/img/" + hash + ".png?" + NET,
   renderUrl: (hash) => GATEWAYS[0] + "/render/" + hash + "?" + NET,
 
+  // Same market interface as the solana adapter, sourced from GeckoTerminal
+  // (DexScreener does not index Robinhood chain; GeckoTerminal has a native
+  // `robinhood` network). It indexes graduated DEX pools (uniswap/giga/etc), so
+  // a pons coin still on its bonding curve has no pool yet and is simply absent
+  // (the panel shows it as "new" with a link to pons until it graduates).
+  market: {
+    attribution: "via geckoterminal",
+    tradeLabel: "VIEW ON PONS",
+    tradeShort: "Pons",
+    tradeName: "pons",
+    siteLabel: "OPEN ON GECKOTERMINAL",
+    tradeUrl: (mint) => "https://www.ponsfamily.com/launchpad/" + mint,
+    embedUrl: (pair) => "https://www.geckoterminal.com/robinhood/pools/" + pair.pairAddress + "?embed=1&info=0&swaps=0&light_chart=0",
+    siteUrl: (pair) => pair.url || ("https://www.geckoterminal.com/robinhood/pools/" + pair.pairAddress),
+    enrich: async (mints) => {
+      const out = [];
+      for (let i = 0; i < mints.length; i += 30) {
+        const batch = mints.slice(i, i + 30); // GeckoTerminal tokens/multi caps at 30
+        try {
+          const res = await fetch("https://api.geckoterminal.com/api/v2/networks/robinhood/tokens/multi/"
+            + batch.join(",") + "?include=top_pools", { headers: { Accept: "application/json" } });
+          if (!res.ok) continue;
+          const j = await res.json();
+          const pools = {};
+          (j.included || []).forEach((p) => { pools[p.id] = p.attributes || {}; });
+          (j.data || []).forEach((tok) => {
+            const a = tok.attributes || {};
+            const gm = (a.address || "").toLowerCase();
+            const mint = batch.find((m) => m.toLowerCase() === gm); // map back to the caller's casing
+            if (!mint) return;
+            const rel = ((tok.relationships || {}).top_pools || {}).data || [];
+            const pool = rel.length ? pools[rel[0].id] : null;
+            if (!pool || !pool.address) return; // no DEX pool yet (still on the pons curve)
+            const pc = pool.price_change_percentage || {};
+            const vol = pool.volume_usd || {};
+            out.push({ mint: mint, liq: Number(pool.reserve_in_usd) || 0, pairAddress: pool.address,
+              url: "https://www.geckoterminal.com/robinhood/pools/" + pool.address,
+              priceUsd: a.price_usd, chg24: pc.h24 != null ? Number(pc.h24) : null,
+              mcap: Number(a.market_cap_usd || a.fdv_usd) || null,
+              vol24: Number(vol.h24) || null, icon: a.image_url || null });
+          });
+        } catch (e) { /* leave this batch out */ }
+      }
+      return out;
+    },
+  },
+
   // The pons launcher signs with the same wallet session this adapter holds.
   get signer() { return signer; },
 
