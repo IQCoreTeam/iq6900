@@ -874,7 +874,12 @@
       // a metadata inscription (the coin's uri path IS its tx); pons needs no
       // extra write, because name, symbol, description and logo are stored
       // on-chain in the launch itself and the logo url path IS the src tx.
-      const viewLink = window.iqCodein.viewUrl(tkSrcSig);
+      // On-chain links are immutable and public, so they must point at the live
+      // site, not wherever the launcher runs: a localhost test would otherwise
+      // bake a dead localhost URL into the coin's description/website forever.
+      // The in-app copy-link button stays origin-relative; only this launch
+      // metadata is pinned to the production domain.
+      const viewLink = "https://iqlabs.dev/?menu=" + window.iqCodein.meta.menu + "&post=" + tkSrcSig;
       const userDesc = ($("#ci2_tk_desc").val() || "").trim().slice(0, 300);
       const x = ($("#ci2_tk_x").val() || "").trim();
       const web = ($("#ci2_tk_web").val() || "").trim() || viewLink;
