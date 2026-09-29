@@ -10,7 +10,7 @@
 // unthrottled (verified), unlike Solana's public mainnet.
 import { toAscii } from "./ascii.js?v=1";
 import { BrowserProvider, JsonRpcProvider, formatEther } from "https://cdn.jsdelivr.net/npm/ethers@6.17.0/+esm";
-import * as sdk from "https://cdn.jsdelivr.net/npm/@iqlabs-official/ethereum-sdk@0.4.1/+esm";
+import * as sdk from "https://cdn.jsdelivr.net/npm/@iqlabs-official/ethereum-sdk@0.4.2/+esm";
 
 const DB_ROOT_ID = "iq6900-codein-feed-v1"; // same labels as the Solana feed (feed.js)
 const TABLE = "global-feed";
@@ -27,6 +27,7 @@ sdk.setNetwork("robinhood", activeRpc);
 
 let provider = null; // BrowserProvider over the injected wallet
 let signer = null;
+let inscribeCheckpoint = null; // { row, at: UploadCheckpoint } - survives across RETRY for the same row
 
 async function gwFetch(path, init) {
   for (const gw of GATEWAYS) {
@@ -138,11 +139,26 @@ const surface = {
   // Model A write: the user's wallet signs each tx as writeRow walks the
   // linked list. onProgress maps straight onto the existing gauge; the i/N
   // signature label derives from pct (batches sign in order).
+  //
+  // Wallet RPCs can misreport a landed tx (Phantom's node-proxy, measured
+  // 2026-09: it re-submits internally and returns the duplicate's nonce
+  // error while the tx mined). sdk 0.4.2 absorbs that by verifying against
+  // the chain, and on a REAL stall throws UploadInterrupted with a
+  // {beforeTx, sentChunks, finalizedTx} checkpoint. Keeping it keyed to the
+  // exact row lets RETRY resume from the failed batch instead of re-signing
+  // the whole chain from Genesis.
   inscribe: async ({ kind, body, who, onProgress }) => {
     if (!signer) throw new Error("connect the wallet first");
     const row = JSON.stringify({ kind, body, who });
-    const hash = await sdk.writer.writeRow(signer, DB_ROOT_ID, TABLE, row, (pct) => onProgress && onProgress(pct));
-    return { sig: hash };
+    const resume = inscribeCheckpoint && inscribeCheckpoint.row === row ? inscribeCheckpoint.at : undefined;
+    try {
+      const hash = await sdk.writer.writeRow(signer, DB_ROOT_ID, TABLE, row, (pct) => onProgress && onProgress(pct), resume);
+      inscribeCheckpoint = null;
+      return { sig: hash };
+    } catch (e) {
+      if (e && e.checkpoint) inscribeCheckpoint = { row, at: e.checkpoint };
+      throw e;
+    }
   },
 
   feedTable: DB_ROOT_ID + "/" + TABLE,

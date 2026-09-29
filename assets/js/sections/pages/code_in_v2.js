@@ -56,7 +56,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=3", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=4", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -642,7 +642,7 @@
             ? "you canceled the signature in your wallet - tap retry when ready. "
             : /oversized|too large|exceeds|-32603|could not coalesce|Unexpected error/i.test(msg)
             ? "your wallet could not broadcast one of these transactions. this is usually a transient network hiccup, so retry, which re-signs only what did not land. if it keeps failing on a large file, the steady path is the SDK / CLI. nothing was spent. "
-            : "nothing but tiny gas was spent (the storage fee only charges at the final tx). retry starts a fresh write. ";
+            : "nothing but tiny gas was spent (the storage fee only charges at the final tx). retry resumes from where it stopped - chunks already on chain are never re-signed. ";
         } else {
           try {
             const back = burner ? await window.iqCodein.sweep(window.iqCodein.connect(), burner, provider.publicKey) : 0;
