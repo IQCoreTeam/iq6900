@@ -241,12 +241,16 @@ const surface = {
 
   toAscii,
 
-  // Best-effort cache hint after a landed write, mirroring the solana flow.
+  // Warm the durable index after a landed write. This is not just a cache hint
+  // on robinhood: without it the first feed read cold-walks the chain (~15s,
+  // uncached), so a fresh post can be invisible for minutes. The warm itself
+  // cold-walks too, so the timeout must outlast that walk; 4s aborted it before
+  // the gateway finished indexing, leaving the row unwarmed.
   notify: async (hash, row) => {
     const body = JSON.stringify({ txSignature: hash, txHash: hash, row });
     for (const gw of GATEWAYS) {
       const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 4000);
+      const t = setTimeout(() => ctrl.abort(), 30000);
       try {
         const res = await fetch(`${gw}/table/${DB_ROOT_ID}/${TABLE}/notify?${NET}`, {
           method: "POST", headers: { "Content-Type": "application/json" }, body, signal: ctrl.signal,

@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=53";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=54";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -56,7 +56,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=5", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=6", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -129,6 +129,9 @@
       $("#ci2_tk_buy").on("input", () => { $("#ci2_tk_buyshow").text((parseFloat($("#ci2_tk_buy").val()) || 0) + " SOL"); });
       $("#ci2_tk_go").on("click", doLaunch);
       $("#ci2_tk_retry").on("click", doLaunch);
+      $("input[name=ci2rw_hood]").on("change", () => {
+        $("#ci2_tk_cr_fields").toggleClass("hide", $("input[name=ci2rw_hood]:checked").val() !== "creator");
+      });
       $("#ci2_tk_reg_retry").on("click", tkWriteRegistry);
       if (isEvm()) applyHoodTheme();
       if (window.iqCodein.hasOwnRpc()) $("#ci2_rpc_link").text("connection: custom RPC");
@@ -645,7 +648,11 @@
         $("#ci2_launch_after").toggleClass("hide", !canLaunch);
         $("#ci2_view").toggleClass("ghost", canLaunch); // LAUNCH is the primary when present
         if (isEvm()) $("#ci2_donenote").text("// the storage fee charges once, at the final step. every tx before it is gas only.");
-        await window.iqCodein.notify(res.sig, { kind: pay.kind, body: pay.body, who });
+        // Fire-and-forget: warming the durable index can take ~15s on robinhood
+        // (uncached cold-walk), and the done screen is already up, so do not
+        // block the board refresh on it. The launcher's inventory read benefits
+        // from the warm even though the board reloads immediately.
+        Promise.resolve(window.iqCodein.notify(res.sig, { kind: pay.kind, body: pay.body, who })).catch(() => {});
         loadBoard();
       } catch (e) {
         // Never show "failed". solana: refund the burner to the wallet and say
@@ -723,6 +730,10 @@
       const hood = isEvm();
       $("#ci2_tk_buyrow, #ci2_tk_buymeter, #ci2_tk_rw_sol").toggleClass("hide", hood);
       $("#ci2_tk_rw_hood").toggleClass("hide", !hood);
+      // fresh open: reset the hood advanced panel to its defaults (holders, no
+      // creator fields shown). buyback stays checked (its HTML default).
+      $("input[name=ci2rw_hood][value=holders]").prop("checked", true);
+      $("#ci2_tk_cr_fields").addClass("hide");
       $("#ci2_tk_noinv_txt").text(hood
         ? "your inventory is empty. inscribe an image or text on hood-in first (a fresh post can take a few minutes to index), then launch it as a token."
         : "your inventory is empty. put your image or text on solana first, then launch it as a token.");
@@ -881,12 +892,19 @@
         let out; // { mint, sig } on both chains; on hood, mint holds the erc20 address
         if (hood) {
           if (!window.iqPonsLaunch) await import(new URL("js/codein/pons_launch.js?v=1", document.baseURI).href);
+          // Advanced options, all defaulted: HOLDERS takes no creator cut;
+          // CREATOR sets a 0-10% tax to a chosen wallet (blank = the launching
+          // wallet). The buyback toggle is independent. Pons stores these on
+          // chain at launch.
+          const creator = $("input[name=ci2rw_hood]:checked").val() === "creator";
+          const crWallet = ($("#ci2_tk_crwallet").val() || "").trim();
           const res = await window.iqPonsLaunch.launch({
             signer: window.iqCodein.signer, name, symbol,
             logo: image, description,
             socials: { twitter: x, website: web },
             buybackEnabled: $("#ci2_tk_buyback").prop("checked"),
-            creatorTaxBps: Math.round((parseFloat($("#ci2_tk_crfee").val()) || 0) * 100),
+            creatorTaxBps: creator ? Math.round((parseFloat($("#ci2_tk_crfee").val()) || 0) * 100) : 0,
+            creatorFeeRecipient: creator && /^0x[0-9a-fA-F]{40}$/.test(crWallet) ? crWallet : undefined,
             onStep: (label) => { const i = steps.indexOf(label); if (i >= 0) setTkBar(10 + i * 30, label); },
           });
           out = { mint: res.token, sig: res.txHash };
