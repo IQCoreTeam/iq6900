@@ -186,6 +186,14 @@ const surface = {
   },
   solscanUrl: (hash) => EXPLORER_TX + hash, // same surface name; Blockscout target
 
+  // Gateway views of a post, network-tagged so the resolver reads Robinhood
+  // txs. The path carries the tx hash itself, so the pointer outlives us.
+  imgUrl: (hash) => GATEWAYS[0] + "/img/" + hash + ".png?" + NET,
+  renderUrl: (hash) => GATEWAYS[0] + "/render/" + hash + "?" + NET,
+
+  // The pons launcher signs with the same wallet session this adapter holds.
+  get signer() { return signer; },
+
   toAscii,
 
   // Best-effort cache hint after a landed write, mirroring the solana flow.

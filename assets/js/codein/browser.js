@@ -82,6 +82,10 @@ window.iqCodein = {
   // /token-meta serves the inscribed JSON verbatim (/meta is taken by the
   // asset-synthesis route and must not change - it is a public contract).
   metaUrl: (sig) => GATEWAYS[0] + "/token-meta/" + sig,
+  // Same canonical-gateway rule for the coin image: /img reconstructs an image
+  // inscription's raw bytes, /render draws text and ascii as a terminal card.
+  imgUrl: (sig) => GATEWAYS[0] + "/img/" + sig + ".png",
+  renderUrl: (sig) => GATEWAYS[0] + "/render/" + sig,
   // board = the global feed table rows; mine = the user's assets (the gateway
   // resolves the inventory PDA our writes reference). The SDK reader returns the
   // same row shape as the gateway ({...cols, __txSignature}), so both feed the

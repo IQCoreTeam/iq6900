@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=48";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=49";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -56,7 +56,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=3", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=4", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -129,7 +129,7 @@
       $("#ci2_tk_buy").on("input", () => { $("#ci2_tk_buyshow").text((parseFloat($("#ci2_tk_buy").val()) || 0) + " SOL"); });
       $("#ci2_tk_go").on("click", doLaunch);
       $("#ci2_tk_retry").on("click", doLaunch);
-      $("#ci2_tk_reg_retry").on("click", tkRetryRegistry);
+      $("#ci2_tk_reg_retry").on("click", tkWriteRegistry);
       if (isEvm()) applyHoodTheme();
       if (window.iqCodein.hasOwnRpc()) $("#ci2_rpc_link").text("connection: custom RPC");
       refreshCost();
@@ -423,7 +423,7 @@
       // the owner may tokenize their own post - on someone else's, the button
       // is hidden, so you can only launch what you inscribed.
       const mine = !!who && owner === who;
-      const canTokenize = !isEvm() && mine && tkUsable(obj.kind, body);
+      const canTokenize = mine && tkUsable(obj.kind, body);
       $("#ci2_view_token").toggleClass("hide", !canTokenize).off("click");
       if (canTokenize) $("#ci2_view_token").on("click", () => {
         $("#ci2_view_modal").addClass("hide");
@@ -622,7 +622,7 @@
         $("#ci2_sig").text((isEvm() ? "tx: " : "sig: ") + res.sig.slice(0, 12) + "..." + res.sig.slice(-8));
         // a fresh image/text/ascii inscription can go straight into the launcher
         lastInscribed = { body: pay.body, sig: res.sig };
-        const canLaunch = !isEvm() && tkUsable(pay.kind, pay.body);
+        const canLaunch = tkUsable(pay.kind, pay.body);
         $("#ci2_launch_after").toggleClass("hide", !canLaunch);
         $("#ci2_view").toggleClass("ghost", canLaunch); // LAUNCH is the primary when present
         if (isEvm()) $("#ci2_donenote").text("// the storage fee charges once, at the final step. every tx before it is gas only.");
@@ -697,10 +697,32 @@
     const tkUsable = (kind, body) =>
       String(body).slice(0, 11) === "data:image/" || kind === "text" || kind === "ascii";
 
+    // One place for every launcher string that differs between the two
+    // launchpads (pump.fun on solana, pons on robinhood); runs on open so the
+    // same modal serves both boards.
+    function tkChainCopy() {
+      const hood = isEvm();
+      $("#ci2_tk_buyrow, #ci2_tk_buymeter, #ci2_tk_rw_sol").toggleClass("hide", hood);
+      $("#ci2_tk_rw_hood").toggleClass("hide", !hood);
+      $("#ci2_tk_feelbl").text(hood ? "pons launch fee" : "platform fee");
+      $("#ci2_tk_feeshow").text(hood ? "0.0005 ETH" : "0.069 SOL");
+      $("#ci2_tk_feenote").text(hood
+        ? "the launch fee goes to pons inside the create transaction itself: if the launch does not land, nothing is paid. the board write after it costs the usual storage fee."
+        : "the fee rides inside the create transaction itself: if the launch does not land, nothing is paid. pump.fun trading fees apply to the dev buy.");
+      $("#ci2_tk_permnote").text(hood
+        ? "permanence: name, symbol, description and the logo url are stored on-chain in the pons launch itself, and the logo url path is your inscription's tx hash. even if this site ever disappears, everything reassembles from chain with the IQ SDK."
+        : "permanence: the coin metadata is ITSELF inscribed on solana first (~0.001 SOL), and the token's uri path is that inscription's tx. even if this site ever disappears, everything reassembles from chain with the IQ SDK.");
+      $("#ci2_tk_go").text(hood ? "LAUNCH ON PONS" : "INSCRIBE METADATA + LAUNCH ON PUMP.FUN");
+      $("#ci2_tk_proghead").text("// LAUNCHING ON " + (hood ? "PONS" : "PUMP.FUN") + " - keep this tab open");
+      $("#ci2_tk_pump").text(hood ? "VIEW ON EXPLORER" : "VIEW ON PUMP.FUN");
+      $("#ci2_tk_chart").toggleClass("hide", hood); // the chart modal opens with hood markets
+    }
+
     function tkOpen(prefill) {
       $("#ci2_tk_modal").removeClass("hide");
       $("#ci2_tk_prog").addClass("hide"); $("#ci2_tk_done").addClass("hide");
       $("#ci2_tk_win").text("token_launch.exe");
+      tkChainCopy();
       tkMetaSig = ""; // a fresh flow gets fresh metadata (retry keeps it)
       if (prefill && prefill.sig) {
         // arriving from a specific post (viewer button or a fresh inscription):
@@ -776,7 +798,7 @@
       // gateway card render that will be the coin image
       const preview = tkSrcBody.slice(0, 11) === "data:image/"
         ? tkSrcBody
-        : window.iqTokenLaunch.GATEWAY + "/render/" + tkSrcSig;
+        : window.iqCodein.renderUrl(tkSrcSig);
       $("#ci2_tk_prev").html($("<img>").attr("src", preview));
       $("#ci2_tk_src").text("coin image from your inscription " + tkSrcSig.slice(0, 8) + "... - the coin page links back to the on-chain original.");
       tkValidate();
@@ -798,89 +820,108 @@
       $("#ci2_tk_form").addClass("hide"); $("#ci2_tk_prog").removeClass("hide");
       $("#ci2_tk_retry").addClass("hide"); $("#ci2_tk_log").text("");
       $("#ci2_tk_win").text("launching...");
-      const steps = ["inscribing coin metadata on solana", "building the create transaction", "approve the transaction in your wallet", "confirming on solana"];
+      const hood = isEvm();
+      const steps = hood
+        ? ["reading launch terms from chain", "approve the transaction in your wallet", "confirming on robinhood chain"]
+        : ["inscribing coin metadata on solana", "building the create transaction", "approve the transaction in your wallet", "confirming on solana"];
       setTkBar(5, steps[0]);
 
-      // Fully on-chain metadata: the Metaplex JSON itself is code-in
-      // inscribed (plain write, never on the board), and the coin's uri is
-      // gateway /meta/{that tx}. The uri path IS a solana tx signature, so
-      // metadata and original alike outlive every iqlabs host. The
-      // description repeats the pointers for human readers.
+      // Recovery pointers ride in the description on both chains. Solana adds
+      // a metadata inscription (the coin's uri path IS its tx); pons needs no
+      // extra write, because name, symbol, description and logo are stored
+      // on-chain in the launch itself and the logo url path IS the src tx.
       const viewLink = window.iqCodein.viewUrl(tkSrcSig);
-      const rewards = $("input[name=ci2rw]:checked").val() === "creator" ? "creator" : "holders";
       const userDesc = ($("#ci2_tk_desc").val() || "").trim().slice(0, 300);
-      const description = (userDesc ? userDesc + "\n\n" : "")
-        + "on-chain original: " + viewLink
-        + "\ninscription tx: " + tkSrcSig
-        + "\nthis metadata is itself inscribed on solana (the uri path is its tx). if this page ever dies, everything reassembles from chain with the IQ SDK (@iqlabs-official/solana-sdk).";
       const x = ($("#ci2_tk_x").val() || "").trim();
       const web = ($("#ci2_tk_web").val() || "").trim() || viewLink;
       // The coin image: an image inscription IS its own token image (the raw
-      // bytes the gateway reconstructs at /img/{sig}.png, the same url the
-      // gateway's own /meta route uses for image assets), while text and ascii
-      // become the terminal card at /render/{sig}. The form preview above uses
-      // the same split (local data url for images, card for text).
+      // bytes the gateway reconstructs at /img/{sig}.png), while text and
+      // ascii become the terminal card at /render/{sig}. The form preview
+      // above uses the same split (local data url for images, card for text).
       const isImg = tkSrcBody.slice(0, 11) === "data:image/";
-      const image = window.iqTokenLaunch.GATEWAY + (isImg ? "/img/" + tkSrcSig + ".png" : "/render/" + tkSrcSig);
-      const metaJson = { name: name, symbol: symbol, description: description,
-        image: image, external_url: viewLink, website: web, showName: true };
-      if (x) metaJson.twitter = x;
-      // The same pointers again as standard Metaplex attributes: explorers and
-      // wallets render these as clean key/value chips (prose in description
-      // loses its line breaks on most surfaces), and indexers get the recovery
-      // coordinates machine-readable instead of parsed out of text.
-      metaJson.attributes = [
-        { trait_type: "inscription tx", value: tkSrcSig },
-        { trait_type: "inscription kind", value: isImg ? "image" : "text" },
-        { trait_type: "rewards", value: rewards === "creator" ? "creator" : "token holders" },
-        { trait_type: "storage", value: "fully on-chain (solana code-in)" },
-        { trait_type: "program", value: "9KLLchQVJpGkw4jPuUmnvqESdR7mtNCYr3qS4iQLabs" },
-        { trait_type: "feed", value: "iq6900-codein-feed-v1 / global-feed" },
-      ];
-      metaJson.properties = { category: "image",
-        files: [{ uri: image, type: "image/png" }] };
+      const image = isImg ? window.iqCodein.imgUrl(tkSrcSig) : window.iqCodein.renderUrl(tkSrcSig);
+      const description = (userDesc ? userDesc + "\n\n" : "")
+        + "on-chain original: " + viewLink
+        + "\ninscription tx: " + tkSrcSig
+        + (hood
+          ? "\nthe logo url path is that tx on robinhood chain. if this page ever dies, everything reassembles from chain with the IQ SDK (@iqlabs-official/ethereum-sdk)."
+          : "\nthis metadata is itself inscribed on solana (the uri path is its tx). if this page ever dies, everything reassembles from chain with the IQ SDK (@iqlabs-official/solana-sdk).");
 
       // Warm the gateway image cache now. A cold /img (or /render) reassembles
-      // the inscription from chain over RPC (~25s), far longer than pump.fun's
-      // image-fetch timeout, so without this the coin shows no image: pump gives
-      // up, caches the miss, and never refetches. Firing it here (fire-and-
-      // forget) uses the whole inscribe + create + confirm window so Cloudflare
-      // has a warm HIT ready before pump's indexer fetches post-confirmation.
+      // the inscription from chain over RPC (~25s), far longer than an
+      // indexer's image-fetch timeout, so without this the coin shows no
+      // image: pump.fun (and the pons site alike) gives up, caches the miss,
+      // and never refetches. Firing it here (fire-and-forget) uses the whole
+      // launch window so Cloudflare has a warm HIT before the first fetch.
       try { fetch(image, { mode: "no-cors" }); } catch (e) {}
 
       try {
-        // Step 1: inscribe the metadata JSON (reused on retry so a failed
-        // create never pays for a second metadata write; switching the rewards
-        // mode invalidates it so the attribute matches the coin).
-        if (tkMetaSig && tkMetaRw !== rewards) tkMetaSig = "";
-        if (!tkMetaSig) {
-          await ensureBurner();
-          const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
-          const res = await window.iqCodein.inscribeMeta({
-            connection: window.iqCodein.connect(), wallet, burner, json: JSON.stringify(metaJson),
+        let out; // { mint, sig } on both chains; on hood, mint holds the erc20 address
+        if (hood) {
+          if (!window.iqPonsLaunch) await import(new URL("js/codein/pons_launch.js?v=1", document.baseURI).href);
+          const res = await window.iqPonsLaunch.launch({
+            signer: window.iqCodein.signer, name, symbol,
+            logo: image, description,
+            socials: { twitter: x, website: web },
+            buybackEnabled: $("#ci2_tk_buyback").prop("checked"),
+            onStep: (label) => { const i = steps.indexOf(label); if (i >= 0) setTkBar(10 + i * 30, label); },
           });
-          tkMetaSig = res.sig;
-          tkMetaRw = rewards;
+          out = { mint: res.token, sig: res.txHash };
+          tkLast = { mint: out.mint, name, symbol, src: tkSrcSig, launchSig: out.sig };
+        } else {
+          const rewards = $("input[name=ci2rw]:checked").val() === "creator" ? "creator" : "holders";
+          const metaJson = { name: name, symbol: symbol, description: description,
+            image: image, external_url: viewLink, website: web, showName: true };
+          if (x) metaJson.twitter = x;
+          // The same pointers again as standard Metaplex attributes: explorers
+          // and wallets render these as clean key/value chips (prose in the
+          // description loses its line breaks on most surfaces), and indexers
+          // get the recovery coordinates machine-readable.
+          metaJson.attributes = [
+            { trait_type: "inscription tx", value: tkSrcSig },
+            { trait_type: "inscription kind", value: isImg ? "image" : "text" },
+            { trait_type: "rewards", value: rewards === "creator" ? "creator" : "token holders" },
+            { trait_type: "storage", value: "fully on-chain (solana code-in)" },
+            { trait_type: "program", value: "9KLLchQVJpGkw4jPuUmnvqESdR7mtNCYr3qS4iQLabs" },
+            { trait_type: "feed", value: "iq6900-codein-feed-v1 / global-feed" },
+          ];
+          metaJson.properties = { category: "image",
+            files: [{ uri: image, type: "image/png" }] };
+          // Step 1: inscribe the metadata JSON (reused on retry so a failed
+          // create never pays for a second metadata write; switching the
+          // rewards mode invalidates it so the attribute matches the coin).
+          if (tkMetaSig && tkMetaRw !== rewards) tkMetaSig = "";
+          if (!tkMetaSig) {
+            await ensureBurner();
+            const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
+            const res = await window.iqCodein.inscribeMeta({
+              connection: window.iqCodein.connect(), wallet, burner, json: JSON.stringify(metaJson),
+            });
+            tkMetaSig = res.sig;
+            tkMetaRw = rewards;
+          }
+          // Warm the metadata endpoint too: pump.fun fetches this uri to read
+          // the coin's name/symbol/image, and a cold /token-meta reassembles
+          // from chain (~25s) past pump's fetch timeout. Firing it now (the
+          // create + confirm window follows) gives Cloudflare a hot HIT.
+          try { fetch(window.iqCodein.metaUrl(tkMetaSig), { mode: "no-cors" }); } catch (e) {}
+          setTkBar(30, steps[1]);
+          out = await window.iqTokenLaunch.launch({
+            provider, name, symbol,
+            uri: window.iqCodein.metaUrl(tkMetaSig),
+            devBuySol: parseFloat($("#ci2_tk_buy").val()) || 0,
+            rewards: rewards,
+            onStep: (label) => setTkBar(30 + steps.indexOf(label) * 22, label),
+          });
+          tkLast = { mint: out.mint, name, symbol, src: tkSrcSig, meta: tkMetaSig, launchSig: out.sig };
+          tkMetaSig = ""; // consumed; the next launch inscribes fresh metadata
         }
-        // Warm the metadata endpoint too: pump.fun fetches this uri to read the
-        // coin's name/symbol/image, and a cold /token-meta reassembles from
-        // chain (~25s) past pump's fetch timeout. Firing it now (the create +
-        // confirm window follows) gives Cloudflare a hot HIT before pump reads.
-        try { fetch(window.iqCodein.metaUrl(tkMetaSig), { mode: "no-cors" }); } catch (e) {}
-        setTkBar(30, steps[1]);
-        const out = await window.iqTokenLaunch.launch({
-          provider, name, symbol,
-          uri: window.iqCodein.metaUrl(tkMetaSig),
-          devBuySol: parseFloat($("#ci2_tk_buy").val()) || 0,
-          rewards: rewards,
-          onStep: (label) => setTkBar(30 + steps.indexOf(label) * 22, label),
-        });
-        tkLast = { mint: out.mint, name, symbol, src: tkSrcSig, meta: tkMetaSig, launchSig: out.sig };
-        tkMetaSig = ""; // consumed; the next launch inscribes fresh metadata
         $("#ci2_tk_prog").addClass("hide"); $("#ci2_tk_done").removeClass("hide");
         $("#ci2_tk_win").text("done.exe");
-        $("#ci2_tk_mint").text("mint: " + out.mint);
-        $("#ci2_tk_pump").attr("href", "https://pump.fun/coin/" + out.mint);
+        $("#ci2_tk_mint").text((hood ? "token: " : "mint: ") + out.mint);
+        $("#ci2_tk_pump").attr("href", hood
+          ? "https://robinhoodchain.blockscout.com/token/" + out.mint
+          : "https://pump.fun/coin/" + out.mint);
         $("#ci2_tk_chart").off("click").on("click", () => { $("#ci2_tk_modal").addClass("hide"); openChart(out.mint, { symbol: symbol, name: name, src: tkSrcSig }); });
         tkWriteRegistry();
       } catch (e) {
@@ -904,21 +945,28 @@
       $("#ci2_tk_regnote").text("// writing the launch to the board...");
       $("#ci2_tk_reg_retry").addClass("hide");
       try {
-        await ensureBurner();
-        const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
-        const connection = window.iqCodein.connect();
         const body = JSON.stringify({ mint: tkLast.mint, name: tkLast.name, symbol: tkLast.symbol, src: tkLast.src, meta: tkLast.meta });
-        const res = await window.iqCodein.inscribe({ connection, wallet, burner, kind: "token", body, speed: "light" });
+        let res;
+        if (isEvm()) {
+          res = await window.iqCodein.inscribe({ kind: "token", body, who });
+        } else {
+          await ensureBurner();
+          const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
+          res = await window.iqCodein.inscribe({ connection: window.iqCodein.connect(), wallet, burner, kind: "token", body, speed: "light" });
+        }
         await window.iqCodein.notify(res.sig, { kind: "token", body, who });
-        $("#ci2_tk_regnote").text("// launch indexed. it appears in markets.exe within minutes.");
-        loadMarkets();
+        if (isEvm()) {
+          $("#ci2_tk_regnote").text("// launch recorded on the board index. it lists in markets.exe when hood markets open.");
+        } else {
+          $("#ci2_tk_regnote").text("// launch indexed. it appears in markets.exe within minutes.");
+          loadMarkets();
+        }
       } catch (e) {
         $("#ci2_tk_regnote").text("// your token exists, but indexing it failed - it will not show in markets.exe until this lands.");
         $("#ci2_tk_reg_retry").removeClass("hide");
         console.error("[make-token] registry write failed:", e);
       }
     }
-    function tkRetryRegistry() { tkWriteRegistry(); }
 
     // ---- markets.exe (the desk's right panel) ----
     // kind=token registry rows priced live from the DexScreener API, sorted by
@@ -935,13 +983,12 @@
 
     function startMarkets() {
       if (mkTimer) { clearInterval(mkTimer); mkTimer = null; } // a prior page's timer must not tick into this DOM
-      if (isEvm()) { // markets are not live on robinhood chain yet
+      $("#ci2_mk_launch").on("click", () => tkOpen());
+      if (isEvm()) { // launching is live on hood; only the price feed (charts) is not
         $("#ci2_mk_live").addClass("hide");
         $("#ci2_mk_soon").removeClass("hide");
-        $("#ci2_mk_launch").prop("disabled", true).attr("title", "launching tokens on robinhood chain is coming soon").text("LAUNCH A TOKEN - SOON");
         return;
       }
-      $("#ci2_mk_launch").on("click", () => tkOpen());
       loadMarkets();
       mkTimer = setInterval(onMarketTick, MK_MS);
     }
@@ -992,6 +1039,7 @@
       // (so the <img> and pump.fun both find a hot cache), and re-render when it
       // lands. imageChecked guards against a stampede; a failure clears it so
       // the next tick retries.
+      const gwOrigin = new URL(window.iqCodein.imgUrl("x")).origin; // the adapter owns the gateway url
       mkTokens.forEach((t) => {
         if (!t.meta || t.imageChecked) return;
         t.imageChecked = true;
@@ -1001,7 +1049,7 @@
             if (!meta || typeof meta.image !== "string" || !/^https?:\/\//i.test(meta.image)) return;
             const url = new URL(meta.image);
             // Old /img responses containing JSON may linger in CDN caches.
-            if (url.origin === window.iqTokenLaunch.GATEWAY && url.pathname.startsWith("/img/")) url.searchParams.set("v", "2");
+            if (url.origin === gwOrigin && url.pathname.startsWith("/img/")) url.searchParams.set("v", "2");
             t.image = url.href;
             try { fetch(t.image, { mode: "no-cors" }); } catch (e) {} // warm before the <img> requests it
             renderMarkets();

@@ -461,25 +461,29 @@ await writer.writeRow(conn, signer,
             <div><span class="tk_lbl">X LINK (OPTIONAL)</span><input id="ci2_tk_x" class="tk_in" placeholder="https://x.com/..."></div>
             <div><span class="tk_lbl">WEBSITE (OPTIONAL)</span><input id="ci2_tk_web" class="tk_in" placeholder="defaults to your launch post"></div>
           </div>
-          <div class="tk_row">
+          <div class="tk_row" id="ci2_tk_buyrow">
             <div style="flex:0 0 180px"><span class="tk_lbl">INITIAL DEV BUY (SOL)</span><input id="ci2_tk_buy" class="tk_in" type="number" min="0" step="0.001" value="0.01"></div>
           </div>
-          <div style="margin-top:10px">
+          <div style="margin-top:10px" id="ci2_tk_rw_sol">
             <span class="tk_lbl">TRADING FEE REWARDS</span>
             <label style="display:block;margin:6px 0 4px;cursor:pointer"><input type="radio" name="ci2rw" value="holders" checked style="accent-color:#2BD52D;margin-right:8px">TOKEN HOLDERS - every trade's fee streams to the coin's holders (pump.fun holder rewards). permanent.</label>
             <label style="display:block;cursor:pointer;opacity:.75"><input type="radio" name="ci2rw" value="creator" style="accent-color:#2BD52D;margin-right:8px">CREATOR - trade fees go to you instead (classic mode).</label>
           </div>
-          <div class="meter" style="border:1px solid var(--fg40);border-radius:5px;margin-top:6px">
-            <div><span class="muted" style="font-size:12px;opacity:.6">platform fee</span><span>0.069 SOL</span></div>
-            <div><span class="muted" style="font-size:12px;opacity:.6">dev buy</span><span id="ci2_tk_buyshow">0.01 SOL</span></div>
+          <div style="margin-top:10px" id="ci2_tk_rw_hood" class="hide">
+            <span class="tk_lbl">BUYBACK</span>
+            <label style="display:block;margin:6px 0 4px;cursor:pointer"><input type="checkbox" id="ci2_tk_buyback" style="accent-color:#2BD52D;margin-right:8px">a slice of every trade's fee buys this coin back into a 5-year locked vault (pons buyback). optional, permanent once launched.</label>
           </div>
-          <p class="muted" style="margin:8px 2px 0;opacity:.5">the fee rides inside the create transaction itself: if the launch does not land, nothing is paid. pump.fun trading fees apply to the dev buy.</p>
-          <p class="muted" style="margin:6px 2px 0;opacity:.5">permanence: the coin metadata is ITSELF inscribed on solana first (~0.001 SOL), and the token's uri path is that inscription's tx. even if this site ever disappears, everything reassembles from chain with the IQ SDK.</p>
+          <div class="meter" style="border:1px solid var(--fg40);border-radius:5px;margin-top:6px">
+            <div><span class="muted" style="font-size:12px;opacity:.6" id="ci2_tk_feelbl">platform fee</span><span id="ci2_tk_feeshow">0.069 SOL</span></div>
+            <div id="ci2_tk_buymeter"><span class="muted" style="font-size:12px;opacity:.6">dev buy</span><span id="ci2_tk_buyshow">0.01 SOL</span></div>
+          </div>
+          <p id="ci2_tk_feenote" class="muted" style="margin:8px 2px 0;opacity:.5">the fee rides inside the create transaction itself: if the launch does not land, nothing is paid. pump.fun trading fees apply to the dev buy.</p>
+          <p id="ci2_tk_permnote" class="muted" style="margin:6px 2px 0;opacity:.5">permanence: the coin metadata is ITSELF inscribed on solana first (~0.001 SOL), and the token's uri path is that inscription's tx. even if this site ever disappears, everything reassembles from chain with the IQ SDK.</p>
           <button id="ci2_tk_go" class="btn" style="width:100%;margin-top:12px" disabled>INSCRIBE METADATA + LAUNCH ON PUMP.FUN</button>
         </div>
         <!-- progress -->
         <div id="ci2_tk_prog" class="hide">
-          <p class="muted" style="letter-spacing:.2em">// LAUNCHING ON PUMP.FUN - keep this tab open</p>
+          <p id="ci2_tk_proghead" class="muted" style="letter-spacing:.2em">// LAUNCHING ON PUMP.FUN - keep this tab open</p>
           <div class="prog" style="margin-top:14px"><i id="ci2_tk_bar"></i><span id="ci2_tk_pct">starting</span></div>
           <p id="ci2_tk_log" class="muted" style="margin-top:12px"></p>
           <button id="ci2_tk_retry" class="btn hide" style="margin-top:10px">RETRY</button>
