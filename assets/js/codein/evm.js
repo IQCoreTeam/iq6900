@@ -3,14 +3,18 @@
 // drives both boards; registered under window.iqCodeinChains.evm and loaded on
 // demand by the page when the route is ?menu=hoodin.
 //
-// Model A signing (issue #3): the USER WALLET signs every tx sequentially, no
-// burner. writeRow = N linked-list batch txs + 2 (dbCodeIn + tail update); the
-// wallet broadcasts through its own RPC, so this module's RPC only serves
-// reads (fees, gateway fallbacks). The official public RPC is CORS-open and
-// unthrottled (verified), unlike Solana's public mainnet.
+// Model B hybrid signing: a deterministic browser BURNER signs the big-calldata
+// chunk txs + the shared board row (dbCodeIn) through the public RPC, so those
+// never reach the wallet UI (no "unsimulatable / risky" warning, no per-batch
+// popups, and they sidestep the wallet's flaky proxy RPC). The USER WALLET signs
+// only the small native-inventory finalize (userInventoryCodeIn + tail bump),
+// which simulates cleanly. Both reference the same uploaded chunks, and `who`
+// (inside the row) keeps board attribution to the user. So the user signs ~3
+// clean txs regardless of file size, not one per batch. Needs sdk >= 0.4.3
+// (writeRowWithInventory). The official public RPC is CORS-open + unthrottled.
 import { toAscii } from "./ascii.js?v=1";
-import { BrowserProvider, JsonRpcProvider, formatEther } from "https://cdn.jsdelivr.net/npm/ethers@6.17.0/+esm";
-import * as sdk from "https://cdn.jsdelivr.net/npm/@iqlabs-official/ethereum-sdk@0.4.2/+esm";
+import { BrowserProvider, JsonRpcProvider, Wallet, formatEther, parseEther, keccak256, toUtf8Bytes } from "https://cdn.jsdelivr.net/npm/ethers@6.17.0/+esm";
+import * as sdk from "https://cdn.jsdelivr.net/npm/@iqlabs-official/ethereum-sdk@0.4.3/+esm";
 
 const DB_ROOT_ID = "iq6900-codein-feed-v1"; // same labels as the Solana feed (feed.js)
 const TABLE = "global-feed";
@@ -27,7 +31,9 @@ sdk.setNetwork("robinhood", activeRpc);
 
 let provider = null; // BrowserProvider over the injected wallet
 let signer = null;
-let inscribeCheckpoint = null; // { row, at: UploadCheckpoint } - survives across RETRY for the same row
+let burnerWallet = null; // deterministic Model B burner, derived once per session from a wallet signature
+let inscribeCheckpoint = null; // { row, at: HybridCheckpoint } - survives across RETRY for the same row
+const BURNER_MSG = "IQ6900 hood-in inscription burner v1"; // fixed message = deterministic burner derivation
 
 // EIP-6963 multi-wallet discovery. Brave injects its own window.ethereum and
 // claims the generic slot, hiding Phantom/MetaMask so a raw window.ethereum read
@@ -90,6 +96,45 @@ const fees = { basic: 0.00012, linked: 0.00036, loaded: false };
   } catch (e) { /* keep fallbacks */ }
 })();
 
+// Derive the Model B burner once per session: sign a fixed message with the
+// wallet (deterministic for an EOA, so re-deriving hits the same key across
+// sessions and its funded balance/leftover is reused), hash the signature into
+// a 32-byte private key, and wire it to the PUBLIC rpc so its txs never touch
+// the wallet. Message signing shows a clean "sign message" prompt, no warning.
+async function getBurner() {
+  if (burnerWallet) return burnerWallet;
+  if (!signer) throw new Error("connect the wallet first");
+  const sig = await signer.signMessage(BURNER_MSG);
+  burnerWallet = new Wallet(keccak256(toUtf8Bytes(sig)), new JsonRpcProvider(activeRpc));
+  return burnerWallet;
+}
+
+// Top the burner up to cover the board fee (it pays that) + gas for the chunk
+// txs + dbCodeIn + tail. Gas on Robinhood is sub-cent, so a generous per-tx
+// buffer stays tiny and any excess is swept back. The USER pays the inventory
+// fee on their own userInventoryCodeIn tx, so it is not funded here. A funded
+// deterministic burner is reused, so later inscriptions usually skip this.
+async function fundBurner(burner, rowLen, retry) {
+  const boardFeeEth = rowLen <= 700 ? fees.basic : fees.linked;
+  const perTxEth = retry ? 0.001 : 0.0005; // generous gas buffer per tx; swept back
+  const need = parseEther((boardFeeEth + perTxEth * sigsFor(rowLen)).toFixed(9));
+  const have = await burner.provider.getBalance(burner.address);
+  if (have >= need) return;
+  const tx = await signer.sendTransaction({ to: burner.address, value: need - have });
+  await tx.wait();
+}
+
+// Return the burner's leftover to the wallet after a write (best-effort; a
+// deterministic burner means any stranded dust is recoverable on the next run).
+async function sweepBurner(burner, to) {
+  try {
+    const bal = await burner.provider.getBalance(burner.address);
+    const gp = (await burner.provider.getFeeData()).gasPrice || 100000000n;
+    const cost = gp * 21000n * 2n;
+    if (bal > cost) { const tx = await burner.sendTransaction({ to, value: bal - cost }); await tx.wait(); }
+  } catch (e) { /* best-effort */ }
+}
+
 const surface = {
   meta: {
     chain: "evm",
@@ -121,6 +166,7 @@ const surface = {
     }
     provider = new BrowserProvider(eth);
     signer = await provider.getSigner();
+    burnerWallet = null; // a (re)connect may be a different wallet; re-derive the burner lazily
     return signer.address;
   },
 
@@ -152,38 +198,44 @@ const surface = {
   hasOwnRpc: () => activeRpc !== DEFAULT_RPC,
 
   // Sync, like the solana estimator; fees refresh in the background above.
-  // sigs is what the popup budget is measured in; total shows the on-chain fee
-  // (gas on an Orbit chain is fractions of a cent, folded into "+ gas").
+  // With the Model B burner the WALLET only signs ~3 clean txs (fund + the two
+  // native-inventory finalize txs) no matter how many chunks, so sigs is fixed
+  // and the old per-batch popup budget/cap never trips. total shows the on-chain
+  // fee: board + inventory are charged separately, so it is 2x the base fee
+  // (gas on an Orbit chain is sub-cent, folded into "+ gas").
   estimateCost: (bytes) => {
-    const sigs = sigsFor(bytes);
-    const fee = bytes <= 700 ? fees.basic : fees.linked;
+    const batches = Math.max(0, sigsFor(bytes) - 2); // burner-signed chunk batches
+    const fee = (bytes <= 700 ? fees.basic : fees.linked) * 2; // dbCodeIn (board) + userInventoryCodeIn
     return {
-      sigs,
-      chunks: Math.max(0, sigs - 2),
+      sigs: 3,
+      chunks: batches,
       totalLabel: fee.toFixed(5) + " ETH + gas",
-      sigsLabel: sigs + (sigs === 2 ? " signatures" : " signatures, sequential"),
+      sigsLabel: "3 wallet signatures (burner uploads " + batches + " batch" + (batches === 1 ? "" : "es") + ")",
     };
   },
 
-  // Model A write: the user's wallet signs each tx as writeRow walks the
-  // linked list. onProgress maps straight onto the existing gauge; the i/N
-  // signature label derives from pct (batches sign in order).
-  //
-  // Wallet RPCs can misreport a landed tx (Phantom's node-proxy, measured
-  // 2026-09: it re-submits internally and returns the duplicate's nonce
-  // error while the tx mined). sdk 0.4.2 absorbs that by verifying against
-  // the chain, and on a REAL stall throws UploadInterrupted with a
-  // {beforeTx, sentChunks, finalizedTx} checkpoint. Keeping it keyed to the
-  // exact row lets RETRY resume from the failed batch instead of re-signing
-  // the whole chain from Genesis.
+  // Model B hybrid write (sdk 0.4.3 writeRowWithInventory): derive the burner
+  // (one clean message-sign), fund it (one plain transfer the wallet simulates
+  // fine), then the burner uploads the chunks + writes the board row while the
+  // user signs only the small native-inventory finalize. onProgress maps onto
+  // the gauge (burner chunk upload). On a stall the SDK throws HybridInterrupted
+  // with a phase checkpoint; keeping it keyed to the exact row lets RETRY resume
+  // (skipping already-landed chunks/fees) instead of redoing everything. Returns
+  // the board row's tx (boardTx) as sig, which is what the feed/UI keys on.
   inscribe: async ({ kind, body, who, onProgress }) => {
     if (!signer) throw new Error("connect the wallet first");
     const row = JSON.stringify({ kind, body, who });
+    const burner = await getBurner();
     const resume = inscribeCheckpoint && inscribeCheckpoint.row === row ? inscribeCheckpoint.at : undefined;
+    await fundBurner(burner, row.length, !!resume);
     try {
-      const hash = await sdk.writer.writeRow(signer, DB_ROOT_ID, TABLE, row, (pct) => onProgress && onProgress(pct), resume);
+      const out = await sdk.writer.writeRowWithInventory(
+        burner, signer, DB_ROOT_ID, TABLE, row,
+        { filename: kind, filetype: "text/plain", onProgress: (pct) => onProgress && onProgress(pct), resume },
+      );
       inscribeCheckpoint = null;
-      return { sig: hash };
+      sweepBurner(burner, signer.address); // fire-and-forget return of leftover
+      return { sig: out.boardTx };
     } catch (e) {
       if (e && e.checkpoint) inscribeCheckpoint = { row, at: e.checkpoint };
       throw e;
