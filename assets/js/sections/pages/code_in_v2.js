@@ -56,7 +56,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=4", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=5", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -67,9 +67,9 @@
     }
 
     function wire() {
-      // Phantom first (its window.solana shim also claims the generic slot),
-      // then Backpack's own provider, then whatever claimed window.solana.
-      provider = window.phantom?.solana || window.backpack || window.solana || null;
+      // provider is resolved lazily in connect() (resolveSolanaProvider): Brave
+      // grabs the generic window.solana slot early and can delay Phantom's inject,
+      // so resolving once here would miss a late Phantom / mispick Brave's wallet.
       $("#ci2_connect").on("click", connect);
       $("#ci2_home_dot").on("click", () => { window.location.href = window.location.pathname; });
       // Cross-chain hop (design: header "ROBINHOOD? -> /HOODIN" / "SOLANA? -> /CODEIN").
@@ -161,6 +161,17 @@
       });
     }
 
+    // Resolve a Solana wallet at click time. Prefer Phantom/Backpack's own
+    // handles (Brave never creates window.phantom, so window.phantom.solana is
+    // always the real Phantom) over whoever claimed the generic window.solana,
+    // and wait briefly for a late injection (Brave delays it).
+    async function resolveSolanaProvider() {
+      const pick = () => window.phantom?.solana || window.backpack || window.solana || null;
+      let p = pick();
+      for (let i = 0; !p && i < 20; i++) { await new Promise((r) => setTimeout(r, 100)); p = pick(); }
+      return p;
+    }
+
     async function connect() {
       if (isEvm()) {
         try { who = await window.iqCodein.connectWallet(); }
@@ -174,7 +185,8 @@
             ", so writes will fail before anything is spent. open your wallet network settings for chain 4663 and set the RPC to https://rpc.mainnet.chain.robinhood.com, then reconnect.");
         });
       } else {
-        if (!provider) { alert("No Solana wallet found. Install Phantom or Backpack."); return; }
+        provider = await resolveSolanaProvider();
+        if (!provider) { alert("No Solana wallet found. Install Phantom or Backpack.\n\nBrave users: open brave://settings/wallet and set Default cryptocurrency wallet to \"Extensions (no fallback)\" so your extension wallet is detected."); return; }
         const res = await provider.connect();
         who = (res?.publicKey || provider.publicKey).toString();
       }
