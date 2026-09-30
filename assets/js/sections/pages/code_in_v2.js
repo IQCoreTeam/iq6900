@@ -133,7 +133,7 @@
         $("#ci2_tk_cr_fields").toggleClass("hide", $("input[name=ci2rw_hood]:checked").val() !== "creator");
         paintPicks();
       });
-      $("#ci2_tk_reg_retry").on("click", tkWriteRegistry);
+      $("#ci2_tk_reg_retry").on("click", tkRetryRegistry);
       if (isEvm()) applyHoodTheme();
       if (window.iqCodein.hasOwnRpc()) $("#ci2_rpc_link").text("connection: custom RPC");
       refreshCost();
@@ -973,6 +973,14 @@
           tkLast = { mint: out.mint, name, symbol, src: tkSrcSig, meta: tkMetaSig, launchSig: out.sig };
           tkMetaSig = ""; // consumed; the next launch inscribes fresh metadata
         }
+        // The board-index write is part of the launch, not a post-step: its
+        // signatures happen now, on the progress bar, so LAUNCHED only shows
+        // once every signature (create + listing) has landed. The coin exists
+        // regardless, so a listing failure still falls through to the done panel
+        // (with a retry) rather than looking like the launch failed.
+        setTkBar(96, "listing on the board - approve in your wallet");
+        const listed = await tkRegistryWrite();
+        setTkBar(100, "launched");
         $("#ci2_tk_prog").addClass("hide"); $("#ci2_tk_done").removeClass("hide");
         $("#ci2_tk_win").text("done.exe");
         $("#ci2_tk_mint").text((hood ? "token: " : "mint: ") + out.mint);
@@ -980,10 +988,7 @@
           ? "https://www.ponsfamily.com/launchpad/" + out.mint
           : "https://pump.fun/coin/" + out.mint);
         $("#ci2_tk_chart").off("click").on("click", () => { $("#ci2_tk_modal").addClass("hide"); openChart(out.mint, { symbol: symbol, name: name, src: tkSrcSig }); });
-        // Hood markets are live now (GeckoTerminal), so the board index is what
-        // makes the coin appear in markets.exe - record it automatically, same
-        // as solana, instead of hiding it behind a manual button.
-        tkWriteRegistry();
+        tkShowRegistryResult(listed);
       } catch (e) {
         const msg = String((e && e.message) || e);
         $("#ci2_tk_pct").text("paused - tap retry");
@@ -995,15 +1000,14 @@
       }
     }
 
-    // The registry row is what puts the coin in markets.exe, and its src field
+    // Writes the registry row - what puts the coin in markets.exe; its src field
     // is the on-chain mint -> inscription mapping (the metadata description
-    // carries the same recovery pointer on chain).
-    // It is a separate tiny code-in write, so a failure here never affects
-    // the already-created token; the done panel offers a retry.
-    async function tkWriteRegistry() {
-      if (!tkLast) return;
-      $("#ci2_tk_regnote").text("// writing the launch to the board...");
-      $("#ci2_tk_reg_retry").addClass("hide");
+    // carries the same recovery pointer on chain) - and warms the gateway feed
+    // index via notify so it lists in seconds instead of on the next cold read.
+    // Pure: returns true if it landed, false otherwise. The coin already exists
+    // either way, so callers never treat false as a launch failure.
+    async function tkRegistryWrite() {
+      if (!tkLast) return true;
       try {
         const body = JSON.stringify({ mint: tkLast.mint, name: tkLast.name, symbol: tkLast.symbol, src: tkLast.src, meta: tkLast.meta });
         let res;
@@ -1016,16 +1020,29 @@
           const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
           res = await window.iqCodein.inscribe({ connection: window.iqCodein.connect(), wallet, burner, kind: "token", body, speed: "light" });
         }
-        // notify warms the gateway's feed index so the coin shows in markets.exe
-        // in seconds instead of waiting for the next cold re-read.
         await window.iqCodein.notify(res.sig, { kind: "token", body, who });
-        $("#ci2_tk_regnote").text("// launched and listed. it appears in markets.exe within a minute.");
         loadMarkets();
+        return true;
       } catch (e) {
-        $("#ci2_tk_regnote").text("// your token exists, but indexing it failed - it will not show in markets.exe until this lands.");
-        $("#ci2_tk_reg_retry").removeClass("hide");
         console.error("[make-token] registry write failed:", e);
+        return false;
       }
+    }
+
+    // Renders the registry outcome on the done panel - single source for both
+    // the inline launch path and the manual retry button.
+    function tkShowRegistryResult(ok) {
+      $("#ci2_tk_regnote").text(ok
+        ? "// launched and listed. it appears in markets.exe within a minute."
+        : "// your token exists, but indexing it failed - it will not show in markets.exe until this lands.");
+      $("#ci2_tk_reg_retry")[ok ? "addClass" : "removeClass"]("hide");
+    }
+
+    // Manual retry from the done panel (the reg_retry button).
+    async function tkRetryRegistry() {
+      $("#ci2_tk_regnote").text("// writing the launch to the board...");
+      $("#ci2_tk_reg_retry").addClass("hide");
+      tkShowRegistryResult(await tkRegistryWrite());
     }
 
     // ---- markets.exe (the desk's right panel) ----
