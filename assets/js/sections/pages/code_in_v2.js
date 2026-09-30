@@ -896,22 +896,24 @@
       // The recovery pointers are already on chain in the launch itself, not
       // just in this prose: socials.website below is the viewer link, and the
       // logo url path IS the src inscription tx. Solana's pump.fun page renders
-      // a long description fine, so it keeps the full pointer prose. Pons,
-      // however, DROPS any description longer than 256 chars (measured live:
-      // coins with 256-char descriptions render, 257+ show "no description
-      // yet"), and our recovery boilerplate alone runs past that. So hood keeps
-      // the description within Pons' budget - the user's text plus a short tag -
-      // and leans on the website/logo fields for recovery instead of repeating
-      // the pointers in prose.
+      // a long description fine, so it keeps the full pointer prose.
       const fullRecovery = (userDesc ? userDesc + "\n\n" : "")
         + "on-chain original: " + viewLink
         + "\ninscription tx: " + tkSrcSig
         + "\nthis metadata is itself inscribed on solana (the uri path is its tx). if this page ever dies, everything reassembles from chain with the IQ SDK (@iqlabs-official/solana-sdk).";
+      // Pons renders a coin's description ONLY when it is <=256 chars AND
+      // contains NO url (measured live: every short description with an
+      // http(s) link renders blank, every url-free one renders). So hood
+      // strips urls from the text and never appends the viewer link here - the
+      // link-back still lives on chain in socials.website + the logo tx path,
+      // it just cannot ride in the description prose.
       const PONS_DESC_MAX = 256;
+      const stripUrls = (s) => s.replace(/https?:\/\/\S+/gi, "").replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
       const ponsTag = "\n\nfully on-chain, reassembles via the IQ SDK";
-      const hoodDesc = userDesc
-        ? (userDesc.length + ponsTag.length <= PONS_DESC_MAX ? userDesc + ponsTag : userDesc.slice(0, PONS_DESC_MAX))
-        : ("fully on-chain via the IQ SDK. original: " + viewLink).slice(0, PONS_DESC_MAX);
+      const cleanUser = stripUrls(userDesc);
+      const hoodDesc = (cleanUser
+        ? (cleanUser.length + ponsTag.length <= PONS_DESC_MAX ? cleanUser + ponsTag : cleanUser.slice(0, PONS_DESC_MAX))
+        : "fully on-chain, reassembles via the IQ SDK").slice(0, PONS_DESC_MAX);
       const description = hood ? hoodDesc : fullRecovery;
 
       // Warm the gateway image cache now. A cold /img (or /render) reassembles
