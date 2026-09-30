@@ -56,7 +56,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=8", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=9", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;

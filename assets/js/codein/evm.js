@@ -114,13 +114,25 @@ async function getBurner() {
 // buffer stays tiny and any excess is swept back. The USER pays the inventory
 // fee on their own userInventoryCodeIn tx, so it is not funded here. A funded
 // deterministic burner is reused, so later inscriptions usually skip this.
-async function fundBurner(burner, rowLen, retry) {
+async function fundBurner(burner, rowLen) {
   const boardFeeEth = rowLen <= 700 ? fees.basic : fees.linked;
-  const perTxEth = retry ? 0.001 : 0.0005; // generous gas buffer per tx; swept back
-  const need = parseEther((boardFeeEth + perTxEth * sigsFor(rowLen)).toFixed(9));
+  // Generous flat gas buffer per tx: robinhood gas is sub-cent so this is tiny
+  // in ETH, and any excess is swept back - over-funding is cheap, running the
+  // burner dry mid-upload is not. NOT scaled up on retry (a resume needs LESS,
+  // and the burner keeps whatever the first attempt funded), so have>=need
+  // tops up only the real shortfall.
+  const need = parseEther((boardFeeEth + 0.0005 * sigsFor(rowLen)).toFixed(9));
   const have = await burner.provider.getBalance(burner.address);
   if (have >= need) return;
-  const tx = await signer.sendTransaction({ to: burner.address, value: need - have });
+  const topUp = need - have;
+  // Pre-flight the wallet balance so a drained wallet gets a clear message
+  // instead of a cryptic RPC "insufficient funds" mid-retry.
+  const walletBal = await signer.provider.getBalance(await signer.getAddress());
+  if (walletBal <= topUp) {
+    throw new Error("not enough ETH in your wallet to start the write (need ~"
+      + Number(formatEther(topUp)).toFixed(5) + " ETH, most of it comes back). add ETH and retry.");
+  }
+  const tx = await signer.sendTransaction({ to: burner.address, value: topUp });
   await tx.wait();
 }
 
@@ -227,7 +239,7 @@ const surface = {
     const row = JSON.stringify({ kind, body, who });
     const burner = await getBurner();
     const resume = inscribeCheckpoint && inscribeCheckpoint.row === row ? inscribeCheckpoint.at : undefined;
-    await fundBurner(burner, row.length, !!resume);
+    await fundBurner(burner, row.length);
     try {
       const out = await sdk.writer.writeRowWithInventory(
         burner, signer, DB_ROOT_ID, TABLE, row,
