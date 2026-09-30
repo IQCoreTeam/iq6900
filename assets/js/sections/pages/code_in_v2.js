@@ -907,7 +907,7 @@
       try {
         let out; // { mint, sig } on both chains; on hood, mint holds the erc20 address
         if (hood) {
-          if (!window.iqPonsLaunch) await import(new URL("js/codein/pons_launch.js?v=1", document.baseURI).href);
+          if (!window.iqPonsLaunch) await import(new URL("js/codein/pons_launch.js?v=2", document.baseURI).href);
           // Advanced options, all defaulted: HOLDERS takes no creator cut;
           // CREATOR sets a 0-10% tax to a chosen wallet (blank = the launching
           // wallet). The buyback toggle is independent. Pons stores these on

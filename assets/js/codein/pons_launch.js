@@ -18,7 +18,14 @@ const ABI = [
   "function launchFee() view returns (uint256)",
   "function launchConfigCount() view returns (uint256)",
   "function getLaunchConfig(uint256) view returns ((uint256 supply,uint256 curveFeeBps,uint256 phantomQuote,uint256 graduationThreshold,uint24 poolFee,int24 tickSpacing,bool enabled))",
-  "function launchToken((string name,string symbol,string logo,string description,(string twitter,string telegram,string discord,string website,string farcaster) socials,address creatorFeeRecipient,uint16 creatorTaxBps,bool buybackEnabled,bytes32 expectedEconomics,bytes32 salt) params, uint256 launchConfigId, address pairToken) payable returns (address token, address curve)",
+  // 4-arg overload (selector 0xa72101af), the one Pons' own UI and every live
+  // coin use. The 3-arg launchToken(params,id,pairToken) (0xf35abbcf) also lands
+  // on chain, but ponsfamily's indexer keys its calldata decoder off the selector
+  // and only reads `description` from this 4-arg form (and launchAndBuy), so a
+  // 3-arg launch shows "No description yet" on the coin page even though the text
+  // is on chain. The trailing address[] is an extra-recipients list; empty is a
+  // valid default (verified against live coin $ITLG which launched with []).
+  "function launchToken((string name,string symbol,string logo,string description,(string twitter,string telegram,string discord,string website,string farcaster) socials,address creatorFeeRecipient,uint16 creatorTaxBps,bool buybackEnabled,bytes32 expectedEconomics,bytes32 salt) params, uint256 launchConfigId, address pairToken, address[] extraRecipients) payable returns (address token, address curve)",
   "event TokenLaunched(address indexed token, address indexed curve, address indexed deployer, address pairToken, uint256 launchConfigId, uint256 graduationThreshold)",
 ];
 
@@ -76,7 +83,9 @@ async function launch(opts) {
 
   step("approve the transaction in your wallet");
   // Native ETH quote (pairToken = zero); msg.value must equal launchFee exactly.
-  const tx = await factory.launchToken(params, launchConfigId, ZeroAddress, { value: launchFee });
+  // Empty extraRecipients [] -> selector 0xa72101af so the coin page renders the
+  // description (see ABI note above).
+  const tx = await factory.launchToken(params, launchConfigId, ZeroAddress, [], { value: launchFee });
 
   step("confirming on robinhood chain");
   const receipt = await tx.wait();
