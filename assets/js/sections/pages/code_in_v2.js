@@ -797,6 +797,10 @@
         const body = String(obj.body || "");
         const sig = obj.__txSignature || it.__txSignature || "";
         const kind = obj.kind || "text";
+        // token rows are launched-coin registry entries, not a source you can
+        // coin - hide them from the picker on both chains (the board already
+        // filters them out of the feed/inventory views).
+        if (kind === "token") return;
         const isImg = body.slice(0, 11) === "data:image/";
         const $th = $('<div class="th"></div>');
         if (isImg) $th.append($("<img>").attr("src", body));
