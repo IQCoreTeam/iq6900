@@ -254,6 +254,19 @@ const surface = {
     }
   },
 
+  // Board-only write via the user's wallet, for a tiny system row (the token
+  // registry that puts a coin in markets.exe). It only needs to appear in the
+  // shared feed, not the user's native inventory, and it is small enough
+  // (inline, no sendCode chunks) that its calldata never trips the wallet's
+  // "risky" warning - so no burner and no inventory finalize, just the plain
+  // writeRow (dbCodeIn + tail). who inside the row carries the launcher.
+  inscribeBoard: async ({ kind, body, who, onProgress }) => {
+    if (!signer) throw new Error("connect the wallet first");
+    const row = JSON.stringify({ kind, body, who });
+    const hash = await sdk.writer.writeRow(signer, DB_ROOT_ID, TABLE, row, (pct) => onProgress && onProgress(pct));
+    return { sig: hash };
+  },
+
   feedTable: DB_ROOT_ID + "/" + TABLE,
 
   readBoard: async (limit = 24, before) => {

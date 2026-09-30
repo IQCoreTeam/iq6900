@@ -56,7 +56,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=9", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=10", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -980,17 +980,10 @@
           ? "https://www.ponsfamily.com/launchpad/" + out.mint
           : "https://pump.fun/coin/" + out.mint);
         $("#ci2_tk_chart").off("click").on("click", () => { $("#ci2_tk_modal").addClass("hide"); openChart(out.mint, { symbol: symbol, name: name, src: tkSrcSig }); });
-        if (hood) {
-          // Hood markets are coming soon, so the board index (a 2-signature
-          // writeRow) has no live payoff yet; do not surprise the user with two
-          // more wallet prompts right after LAUNCHED. Offer it as an explicit
-          // opt-in instead. The coin's recovery pointer already lives on-chain
-          // in the Pons launch description, so nothing is lost by deferring it.
-          $("#ci2_tk_regnote").text("// your coin is live on pons. recording it on this board (for markets.exe when hood markets open) is optional and takes 2 signatures.");
-          $("#ci2_tk_reg_retry").removeClass("hide").text("RECORD ON BOARD");
-        } else {
-          tkWriteRegistry();
-        }
+        // Hood markets are live now (GeckoTerminal), so the board index is what
+        // makes the coin appear in markets.exe - record it automatically, same
+        // as solana, instead of hiding it behind a manual button.
+        tkWriteRegistry();
       } catch (e) {
         const msg = String((e && e.message) || e);
         $("#ci2_tk_pct").text("paused - tap retry");
@@ -1015,19 +1008,19 @@
         const body = JSON.stringify({ mint: tkLast.mint, name: tkLast.name, symbol: tkLast.symbol, src: tkLast.src, meta: tkLast.meta });
         let res;
         if (isEvm()) {
-          res = await window.iqCodein.inscribe({ kind: "token", body, who });
+          // A tiny inline row - board-only via the wallet (no burner, no
+          // inventory finalize), so it lists fast without extra machinery.
+          res = await window.iqCodein.inscribeBoard({ kind: "token", body, who });
         } else {
           await ensureBurner();
           const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
           res = await window.iqCodein.inscribe({ connection: window.iqCodein.connect(), wallet, burner, kind: "token", body, speed: "light" });
         }
+        // notify warms the gateway's feed index so the coin shows in markets.exe
+        // in seconds instead of waiting for the next cold re-read.
         await window.iqCodein.notify(res.sig, { kind: "token", body, who });
-        if (isEvm()) {
-          $("#ci2_tk_regnote").text("// launch recorded on the board index. it lists in markets.exe when hood markets open.");
-        } else {
-          $("#ci2_tk_regnote").text("// launch indexed. it appears in markets.exe within minutes.");
-          loadMarkets();
-        }
+        $("#ci2_tk_regnote").text("// launched and listed. it appears in markets.exe within a minute.");
+        loadMarkets();
       } catch (e) {
         $("#ci2_tk_regnote").text("// your token exists, but indexing it failed - it will not show in markets.exe until this lands.");
         $("#ci2_tk_reg_retry").removeClass("hide");
