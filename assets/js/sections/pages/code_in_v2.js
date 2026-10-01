@@ -1174,6 +1174,10 @@
       return "$" + n.toPrecision(3);
     }
 
+    // No 24h change to show: a coin valued from its bonding curve (a pair row
+    // with no pool address) has no price history; one with no row is unread.
+    function noChg(t) { return t.pair && !t.pair.pairAddress ? "on curve" : "indexing"; }
+
     function renderMarkets() {
       const $r = $("#ci2_mk_rows").empty();
       mkTokens.forEach((t) => {
@@ -1192,7 +1196,7 @@
               .append($('<div class="mkname"></div>').text(t.name))))
           .append($("<span>").text(t.pair ? fmtUsd(t.pair.priceUsd) : "new").css(t.pair ? {} : { opacity: 0.5 }))
           .append($('<span class="mkchg"></span>').addClass(chg == null ? "" : up ? "up" : "down")
-            .text(chg == null ? "indexing" : (up ? "+" : "") + chg.toFixed(1) + "%").css(chg == null ? { opacity: 0.5 } : {}))
+            .text(chg == null ? noChg(t) : (up ? "+" : "") + chg.toFixed(1) + "%").css(chg == null ? { opacity: 0.5 } : {}))
           .append($('<span class="mkcap"></span>').text(t.pair && t.pair.mcap ? fmtUsd(t.pair.mcap) : "-"))
           .append($('<span class="mkact"><b>Chart</b> | <span class="tradego" style="cursor:pointer"></span> | <span class="cago" style="cursor:pointer" title="copy contract address">CA</span></span>'));
         row.find(".tradego").text(window.iqCodein.market.tradeShort);
@@ -1222,10 +1226,11 @@
       const chg = t.pair && t.pair.chg24 != null ? Number(t.pair.chg24) : null;
       $("#ci2_chart_price").text(t.pair ? fmtUsd(t.pair.priceUsd) : "");
       $("#ci2_chart_chg").css("color", chg == null ? "var(--fg50)" : chg >= 0 ? "#2BD52D" : "#e0554e")
-        .text(chg == null ? "indexing" : (chg >= 0 ? "+" : "") + chg.toFixed(1) + "% (24h)");
+        .text(chg == null ? noChg(t) : (chg >= 0 ? "+" : "") + chg.toFixed(1) + "% (24h)");
       const mkt = window.iqCodein.market;
       $("#ci2_chart_stats").text(t.pair
-        ? ["mcap " + (fmtUsd(t.pair.mcap) || "-"), "vol " + (fmtUsd(t.pair.vol24) || "-"), mkt.attribution].join("  ")
+        ? ["mcap " + (fmtUsd(t.pair.mcap) || "-"), "vol " + (fmtUsd(t.pair.vol24) || "-"),
+          t.pair.pairAddress ? mkt.attribution : "from the " + mkt.tradeName + " bonding curve"].join("  ")
         : "not indexed yet");
       $("#ci2_chart_pump").attr("href", mkt.tradeUrl(mint)).text(mkt.tradeLabel);
       $("#ci2_chart_copy").text("COPY MINT");
@@ -1234,7 +1239,7 @@
         $box.append($("<iframe>").attr({ src: mkt.embedUrl(t.pair), allow: "clipboard-write" }));
         $("#ci2_chart_dexs").removeClass("hide").attr("href", mkt.siteUrl(t.pair)).text(mkt.siteLabel);
       } else {
-        $box.append($('<div id="ci2_chart_hold"><p class="muted" style="font-size:12px;margin:0">no chart yet - ' + mkt.tradeName + ' has not indexed this coin.<br>a fresh launch charts here once it graduates to a DEX pool.</p></div>'));
+        $box.append($('<div id="ci2_chart_hold"><p class="muted" style="font-size:12px;margin:0">no chart yet - this coin is still on its ' + mkt.tradeName + ' bonding curve.<br>it charts here once it graduates to a DEX pool.</p></div>'));
         $("#ci2_chart_dexs").addClass("hide");
       }
       const postSig = t.src || t.sig; // prefer the coin's original inscription over the registry row
