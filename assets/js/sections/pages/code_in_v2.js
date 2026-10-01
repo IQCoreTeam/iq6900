@@ -56,7 +56,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=10", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=11", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -1081,9 +1081,9 @@
     function startMarkets() {
       if (mkTimer) { clearInterval(mkTimer); mkTimer = null; } // a prior page's timer must not tick into this DOM
       $("#ci2_mk_launch").on("click", () => tkOpen());
-      // Both chains run the live market now: solana via DexScreener, hood via
-      // GeckoTerminal (window.iqCodein.market). A pons coin still on its bonding
-      // curve has no DEX pool yet, so it shows as "new" until it graduates.
+      // Both chains run the live market through DexScreener
+      // (window.iqCodein.market). A pons coin still on its bonding curve has no
+      // DEX pool yet, so it shows as "new" until it graduates.
       loadMarkets();
       mkTimer = setInterval(onMarketTick, MK_MS);
     }
@@ -1151,8 +1151,8 @@
           })
           .catch(() => { t.imageChecked = false; }); // transient (cold) miss: retry next tick
       });
-      // Price/chart data comes from the active chain's source (the adapter owns
-      // batching + dedup): DexScreener on solana, GeckoTerminal on hood.
+      // Price/chart data comes from the active chain's market source (it owns
+      // batching + dedup).
       try {
         const rows = await window.iqCodein.market.enrich(mkTokens.map((t) => t.mint));
         rows.forEach((r) => {
