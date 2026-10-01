@@ -17,6 +17,7 @@ async function viewer(t, row) {
   w.$ = w.jQuery = jquery(w);
   w.TextEncoder = TextEncoder;
   w.iqCodein = {
+    imgUrl:s=>'https://gateway.iqlabs.dev/img/'+s,renderUrl:s=>'https://gateway.iqlabs.dev/render/'+s,market:{enrich:async()=>[]},
     hasOwnRpc: () => false,
     estimateCost: () => ({ chunks: 1, total: 1 }),
     readBoard: async () => ({ rows: [row], nextCursor: null }),
