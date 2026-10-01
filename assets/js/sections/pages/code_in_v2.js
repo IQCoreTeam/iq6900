@@ -882,8 +882,9 @@
       // site, not wherever the launcher runs: a localhost test would otherwise
       // bake a dead localhost URL into the coin's description/website forever.
       // The in-app copy-link button stays origin-relative; only this launch
-      // metadata is pinned to the production domain.
-      const viewLink = "https://iqlabs.dev/?menu=" + window.iqCodein.meta.menu + "&post=" + tkSrcSig;
+      // metadata is pinned to the production domain. The adapter's viewUrl
+      // owns the route params on both chains, so reuse its query string.
+      const viewLink = "https://iqlabs.dev/" + new URL(window.iqCodein.viewUrl(tkSrcSig)).search;
       const userDesc = ($("#ci2_tk_desc").val() || "").trim().slice(0, 300);
       const x = ($("#ci2_tk_x").val() || "").trim();
       const web = ($("#ci2_tk_web").val() || "").trim() || viewLink;
