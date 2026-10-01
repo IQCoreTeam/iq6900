@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=56";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=57";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -56,7 +56,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=11", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=12", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -1174,15 +1174,17 @@
       return "$" + n.toPrecision(3);
     }
 
-    // No 24h change to show: a coin valued from its bonding curve (a pair row
-    // with no pool address) has no price history; one with no row is unread.
-    function noChg(t) { return t.pair && !t.pair.pairAddress ? "on curve" : "indexing"; }
+    // A market row (t.pair) describes itself, chart embed and source included
+    // (see js/codein/market.js). No 24h change to show: no row yet means the
+    // coin is still unread; a row without one is a pool nobody traded yet.
+    function noChg(t) { return t.pair ? "-" : "indexing"; }
 
     function renderMarkets() {
       const $r = $("#ci2_mk_rows").empty();
       mkTokens.forEach((t) => {
         const chg = t.pair && t.pair.chg24 != null ? Number(t.pair.chg24) : null;
         const up = chg == null || chg >= 0;
+        const price = t.pair && fmtUsd(t.pair.priceUsd); // a pool nobody traded yet has no price
         const $logo = $('<span class="mklogo"></span>');
         const initials = (t.symbol || "?").slice(0, 2).toUpperCase();
         const icon = t.image || (t.pair && t.pair.icon);
@@ -1194,7 +1196,7 @@
             .append($("<div>").css("min-width", 0)
               .append($('<div class="mksym"></div>').text("$" + (t.symbol || "?")))
               .append($('<div class="mkname"></div>').text(t.name))))
-          .append($("<span>").text(t.pair ? fmtUsd(t.pair.priceUsd) : "new").css(t.pair ? {} : { opacity: 0.5 }))
+          .append($("<span>").text(price || "new").css(price ? {} : { opacity: 0.5 }))
           .append($('<span class="mkchg"></span>').addClass(chg == null ? "" : up ? "up" : "down")
             .text(chg == null ? noChg(t) : (up ? "+" : "") + chg.toFixed(1) + "%").css(chg == null ? { opacity: 0.5 } : {}))
           .append($('<span class="mkcap"></span>').text(t.pair && t.pair.mcap ? fmtUsd(t.pair.mcap) : "-"))
@@ -1229,17 +1231,16 @@
         .text(chg == null ? noChg(t) : (chg >= 0 ? "+" : "") + chg.toFixed(1) + "% (24h)");
       const mkt = window.iqCodein.market;
       $("#ci2_chart_stats").text(t.pair
-        ? ["mcap " + (fmtUsd(t.pair.mcap) || "-"), "vol " + (fmtUsd(t.pair.vol24) || "-"),
-          t.pair.pairAddress ? mkt.attribution : "from the " + mkt.tradeName + " bonding curve"].join("  ")
+        ? ["mcap " + (fmtUsd(t.pair.mcap) || "-"), "vol " + (fmtUsd(t.pair.vol24) || "-"), t.pair.via].join("  ")
         : "not indexed yet");
       $("#ci2_chart_pump").attr("href", mkt.tradeUrl(mint)).text(mkt.tradeLabel);
       $("#ci2_chart_copy").text("COPY MINT");
       const $box = $("#ci2_chart_box").empty();
-      if (t.pair && t.pair.pairAddress) {
-        $box.append($("<iframe>").attr({ src: mkt.embedUrl(t.pair), allow: "clipboard-write" }));
-        $("#ci2_chart_dexs").removeClass("hide").attr("href", mkt.siteUrl(t.pair)).text(mkt.siteLabel);
+      if (t.pair && t.pair.embed) {
+        $box.append($("<iframe>").attr({ src: t.pair.embed, allow: "clipboard-write" }));
+        $("#ci2_chart_dexs").removeClass("hide").attr("href", t.pair.url).text(t.pair.siteLabel);
       } else {
-        $box.append($('<div id="ci2_chart_hold"><p class="muted" style="font-size:12px;margin:0">no chart yet - this coin is still on its ' + mkt.tradeName + ' bonding curve.<br>it charts here once it graduates to a DEX pool.</p></div>'));
+        $box.append($('<div id="ci2_chart_hold"><p class="muted" style="font-size:12px;margin:0">no chart yet - this coin has not been indexed.<br>a fresh launch charts here once the first trade is picked up.</p></div>'));
         $("#ci2_chart_dexs").addClass("hide");
       }
       const postSig = t.src || t.sig; // prefer the coin's original inscription over the registry row
