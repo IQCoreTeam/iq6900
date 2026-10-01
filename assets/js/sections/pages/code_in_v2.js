@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=57";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=59";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -148,6 +148,8 @@
       $("#ci2").addClass("hood");
       $("#ci2_board_title").text(M.boardTitle);
       $("#ci2_page_title").text("// HOOD IN");
+      $("#ci2_mk_powered").attr({ href: "https://www.ponsfamily.com", title: "token launches powered by Pons" });
+      $("#ci2_mk_powered img").attr({ src: "img/pons.webp", alt: "Pons" });
       $("#ci2_prog_title").text("// WRITING TO ROBINHOOD CHAIN - keep this tab open");
       $("#ci2_win").text("hood_in.exe");
       $("#ci2_chunks_label").text("txs (each = 1 wallet signature)");
