@@ -13,7 +13,6 @@
   const FEE_WALLET = "5eCDJGbuS1k5ELso8h6fnMVEJpjmrCHoX1sS92Txa9Rh"; // platform fee destination
   const FEE_LAMPORTS = 69000000; // 0.069 SOL
   const PORTAL_URL = "https://pumpportal.fun/api/trade-local";
-  const GATEWAY = "https://gateway.iqlabs.dev";
 
   // Returns { mint, sig }. onStep(label) reports coarse progress.
   async function launch(opts) {
@@ -115,5 +114,5 @@
     throw new Error("confirmation timed out - check the signature on solscan: " + sig);
   }
 
-  window.iqTokenLaunch = { launch, FEE_SOL: FEE_LAMPORTS / 1e9, FEE_WALLET, GATEWAY };
+  window.iqTokenLaunch = { launch, FEE_SOL: FEE_LAMPORTS / 1e9, FEE_WALLET };
 })();

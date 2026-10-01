@@ -3,14 +3,19 @@
 // drives both boards; registered under window.iqCodeinChains.evm and loaded on
 // demand by the page when the route is ?menu=hoodin.
 //
-// Model A signing (issue #3): the USER WALLET signs every tx sequentially, no
-// burner. writeRow = N linked-list batch txs + 2 (dbCodeIn + tail update); the
-// wallet broadcasts through its own RPC, so this module's RPC only serves
-// reads (fees, gateway fallbacks). The official public RPC is CORS-open and
-// unthrottled (verified), unlike Solana's public mainnet.
+// Model B hybrid signing: a deterministic browser BURNER signs the big-calldata
+// chunk txs + the shared board row (dbCodeIn) through the public RPC, so those
+// never reach the wallet UI (no "unsimulatable / risky" warning, no per-batch
+// popups, and they sidestep the wallet's flaky proxy RPC). The USER WALLET signs
+// only the small native-inventory finalize (userInventoryCodeIn + tail bump),
+// which simulates cleanly. Both reference the same uploaded chunks, and `who`
+// (inside the row) keeps board attribution to the user. So the user signs ~3
+// clean txs regardless of file size, not one per batch. Needs sdk >= 0.4.3
+// (writeRowWithInventory). The official public RPC is CORS-open + unthrottled.
 import { toAscii } from "./ascii.js?v=1";
-import { BrowserProvider, JsonRpcProvider, formatEther } from "https://cdn.jsdelivr.net/npm/ethers@6.17.0/+esm";
-import * as sdk from "https://cdn.jsdelivr.net/npm/@iqlabs-official/ethereum-sdk@0.4.1/+esm";
+import { dexscreenerMarket } from "./dexscreener.js?v=1";
+import { BrowserProvider, JsonRpcProvider, Wallet, formatEther, parseEther, keccak256, toUtf8Bytes } from "https://cdn.jsdelivr.net/npm/ethers@6.17.0/+esm";
+import * as sdk from "https://cdn.jsdelivr.net/npm/@iqlabs-official/ethereum-sdk@0.4.3/+esm";
 
 const DB_ROOT_ID = "iq6900-codein-feed-v1"; // same labels as the Solana feed (feed.js)
 const TABLE = "global-feed";
@@ -27,6 +32,38 @@ sdk.setNetwork("robinhood", activeRpc);
 
 let provider = null; // BrowserProvider over the injected wallet
 let signer = null;
+let burnerWallet = null; // deterministic Model B burner, derived once per session from a wallet signature
+let inscribeCheckpoint = null; // { row, at: HybridCheckpoint } - survives across RETRY for the same row
+const BURNER_MSG = "IQ6900 hood-in inscription burner v1"; // fixed message = deterministic burner derivation
+
+// EIP-6963 multi-wallet discovery. Brave injects its own window.ethereum and
+// claims the generic slot, hiding Phantom/MetaMask so a raw window.ethereum read
+// connects to the wrong wallet (or fails on Robinhood). Collect every wallet
+// that announces itself, then pick the best match at connect time.
+const eip6963 = {};
+if (typeof window !== "undefined") {
+  window.addEventListener("eip6963:announceProvider", (e) => {
+    const d = e && e.detail;
+    if (d && d.info && d.info.rdns && d.provider) eip6963[d.info.rdns] = d;
+  });
+  window.dispatchEvent(new Event("eip6963:requestProvider"));
+}
+function getEth() {
+  const by = (rdns) => eip6963[rdns] && eip6963[rdns].provider;
+  const announced = Object.values(eip6963);
+  // Phantom first (hood users use it for Robinhood), then MetaMask, then any
+  // announced wallet that is not Brave's built-in, then anything announced,
+  // then the raw slot as a last resort.
+  return by("app.phantom") || by("io.metamask")
+    || (announced.find((d) => d.info.rdns !== "com.brave.wallet") || {}).provider
+    || (announced[0] || {}).provider
+    || (typeof window !== "undefined" ? window.ethereum : null) || null;
+}
+async function discoverEth() {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("eip6963:requestProvider"));
+  if (!Object.keys(eip6963).length) await new Promise((r) => setTimeout(r, 250));
+  return getEth();
+}
 
 async function gwFetch(path, init) {
   for (const gw of GATEWAYS) {
@@ -60,6 +97,57 @@ const fees = { basic: 0.00012, linked: 0.00036, loaded: false };
   } catch (e) { /* keep fallbacks */ }
 })();
 
+// Derive the Model B burner once per session: sign a fixed message with the
+// wallet (deterministic for an EOA, so re-deriving hits the same key across
+// sessions and its funded balance/leftover is reused), hash the signature into
+// a 32-byte private key, and wire it to the PUBLIC rpc so its txs never touch
+// the wallet. Message signing shows a clean "sign message" prompt, no warning.
+async function getBurner() {
+  if (burnerWallet) return burnerWallet;
+  if (!signer) throw new Error("connect the wallet first");
+  const sig = await signer.signMessage(BURNER_MSG);
+  burnerWallet = new Wallet(keccak256(toUtf8Bytes(sig)), new JsonRpcProvider(activeRpc));
+  return burnerWallet;
+}
+
+// Top the burner up to cover the board fee (it pays that) + gas for the chunk
+// txs + dbCodeIn + tail. Gas on Robinhood is sub-cent, so a generous per-tx
+// buffer stays tiny and any excess is swept back. The USER pays the inventory
+// fee on their own userInventoryCodeIn tx, so it is not funded here. A funded
+// deterministic burner is reused, so later inscriptions usually skip this.
+async function fundBurner(burner, rowLen) {
+  const boardFeeEth = rowLen <= 700 ? fees.basic : fees.linked;
+  // Generous flat gas buffer per tx: robinhood gas is sub-cent so this is tiny
+  // in ETH, and any excess is swept back - over-funding is cheap, running the
+  // burner dry mid-upload is not. NOT scaled up on retry (a resume needs LESS,
+  // and the burner keeps whatever the first attempt funded), so have>=need
+  // tops up only the real shortfall.
+  const need = parseEther((boardFeeEth + 0.0005 * sigsFor(rowLen)).toFixed(9));
+  const have = await burner.provider.getBalance(burner.address);
+  if (have >= need) return;
+  const topUp = need - have;
+  // Pre-flight the wallet balance so a drained wallet gets a clear message
+  // instead of a cryptic RPC "insufficient funds" mid-retry.
+  const walletBal = await signer.provider.getBalance(await signer.getAddress());
+  if (walletBal <= topUp) {
+    throw new Error("not enough ETH in your wallet to start the write (need ~"
+      + Number(formatEther(topUp)).toFixed(5) + " ETH, most of it comes back). add ETH and retry.");
+  }
+  const tx = await signer.sendTransaction({ to: burner.address, value: topUp });
+  await tx.wait();
+}
+
+// Return the burner's leftover to the wallet after a write (best-effort; a
+// deterministic burner means any stranded dust is recoverable on the next run).
+async function sweepBurner(burner, to) {
+  try {
+    const bal = await burner.provider.getBalance(burner.address);
+    const gp = (await burner.provider.getFeeData()).gasPrice || 100000000n;
+    const cost = gp * 21000n * 2n;
+    if (bal > cost) { const tx = await burner.sendTransaction({ to, value: bal - cost }); await tx.wait(); }
+  } catch (e) { /* best-effort */ }
+}
+
 const surface = {
   meta: {
     chain: "evm",
@@ -75,8 +163,8 @@ const surface = {
   // The wallet is the signer AND the broadcaster; connect = request accounts,
   // make sure the wallet is on Robinhood Chain (add it if unknown), grab a signer.
   connectWallet: async () => {
-    const eth = window.ethereum;
-    if (!eth) throw new Error("no EVM wallet found. install MetaMask.");
+    const eth = await discoverEth();
+    if (!eth) throw new Error("no EVM wallet found. install Phantom or MetaMask.");
     await eth.request({ method: "eth_requestAccounts" });
     try {
       await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID }] });
@@ -91,6 +179,7 @@ const surface = {
     }
     provider = new BrowserProvider(eth);
     signer = await provider.getSigner();
+    burnerWallet = null; // a (re)connect may be a different wallet; re-derive the burner lazily
     return signer.address;
   },
 
@@ -100,7 +189,7 @@ const surface = {
   // chainlist entry (rpc.arrowrpc.com was down 2026-09) fails every send with
   // -32603, so catch it BEFORE the user signs anything.
   checkWalletRpc: async () => {
-    const eth = window.ethereum;
+    const eth = getEth();
     if (!eth) return { ok: false, reason: "no wallet" };
     const timed = (p, ms) => Promise.race([p, new Promise((_, rj) => setTimeout(() => rj(new Error("timeout")), ms))]);
     let walletBlock;
@@ -122,23 +211,57 @@ const surface = {
   hasOwnRpc: () => activeRpc !== DEFAULT_RPC,
 
   // Sync, like the solana estimator; fees refresh in the background above.
-  // sigs is what the popup budget is measured in; total shows the on-chain fee
-  // (gas on an Orbit chain is fractions of a cent, folded into "+ gas").
+  // With the Model B burner the WALLET only signs ~3 clean txs (fund + the two
+  // native-inventory finalize txs) no matter how many chunks, so sigs is fixed
+  // and the old per-batch popup budget/cap never trips. total shows the on-chain
+  // fee: board + inventory are charged separately, so it is 2x the base fee
+  // (gas on an Orbit chain is sub-cent, folded into "+ gas").
   estimateCost: (bytes) => {
-    const sigs = sigsFor(bytes);
-    const fee = bytes <= 700 ? fees.basic : fees.linked;
+    const batches = Math.max(0, sigsFor(bytes) - 2); // burner-signed chunk batches
+    const fee = (bytes <= 700 ? fees.basic : fees.linked) * 2; // dbCodeIn (board) + userInventoryCodeIn
     return {
-      sigs,
-      chunks: Math.max(0, sigs - 2),
+      sigs: 3,
+      chunks: batches,
       totalLabel: fee.toFixed(5) + " ETH + gas",
-      sigsLabel: sigs + (sigs === 2 ? " signatures" : " signatures, sequential"),
+      sigsLabel: "3 wallet signatures (burner uploads " + batches + " batch" + (batches === 1 ? "" : "es") + ")",
     };
   },
 
-  // Model A write: the user's wallet signs each tx as writeRow walks the
-  // linked list. onProgress maps straight onto the existing gauge; the i/N
-  // signature label derives from pct (batches sign in order).
+  // Model B hybrid write (sdk 0.4.3 writeRowWithInventory): derive the burner
+  // (one clean message-sign), fund it (one plain transfer the wallet simulates
+  // fine), then the burner uploads the chunks + writes the board row while the
+  // user signs only the small native-inventory finalize. onProgress maps onto
+  // the gauge (burner chunk upload). On a stall the SDK throws HybridInterrupted
+  // with a phase checkpoint; keeping it keyed to the exact row lets RETRY resume
+  // (skipping already-landed chunks/fees) instead of redoing everything. Returns
+  // the board row's tx (boardTx) as sig, which is what the feed/UI keys on.
   inscribe: async ({ kind, body, who, onProgress }) => {
+    if (!signer) throw new Error("connect the wallet first");
+    const row = JSON.stringify({ kind, body, who });
+    const burner = await getBurner();
+    const resume = inscribeCheckpoint && inscribeCheckpoint.row === row ? inscribeCheckpoint.at : undefined;
+    await fundBurner(burner, row.length);
+    try {
+      const out = await sdk.writer.writeRowWithInventory(
+        burner, signer, DB_ROOT_ID, TABLE, row,
+        { filename: kind, filetype: "text/plain", onProgress: (pct) => onProgress && onProgress(pct), resume },
+      );
+      inscribeCheckpoint = null;
+      sweepBurner(burner, signer.address); // fire-and-forget return of leftover
+      return { sig: out.boardTx };
+    } catch (e) {
+      if (e && e.checkpoint) inscribeCheckpoint = { row, at: e.checkpoint };
+      throw e;
+    }
+  },
+
+  // Board-only write via the user's wallet, for a tiny system row (the token
+  // registry that puts a coin in markets.exe). It only needs to appear in the
+  // shared feed, not the user's native inventory, and it is small enough
+  // (inline, no sendCode chunks) that its calldata never trips the wallet's
+  // "risky" warning - so no burner and no inventory finalize, just the plain
+  // writeRow (dbCodeIn + tail). who inside the row carries the launcher.
+  inscribeBoard: async ({ kind, body, who, onProgress }) => {
     if (!signer) throw new Error("connect the wallet first");
     const row = JSON.stringify({ kind, body, who });
     const hash = await sdk.writer.writeRow(signer, DB_ROOT_ID, TABLE, row, (pct) => onProgress && onProgress(pct));
@@ -186,14 +309,38 @@ const surface = {
   },
   solscanUrl: (hash) => EXPLORER_TX + hash, // same surface name; Blockscout target
 
+  // Gateway views of a post, network-tagged so the resolver reads Robinhood
+  // txs. The path carries the tx hash itself, so the pointer outlives us.
+  imgUrl: (hash) => GATEWAYS[0] + "/img/" + hash + ".png?" + NET,
+  renderUrl: (hash) => GATEWAYS[0] + "/render/" + hash + "?" + NET,
+
+  // Same DexScreener source as the solana adapter (chainId "robinhood"). It
+  // indexes graduated uniswap pools, so a pons coin still on its bonding curve
+  // has no pair yet and is simply absent: the panel lists it as "new" with a
+  // link to pons until it graduates.
+  market: {
+    ...dexscreenerMarket("robinhood"),
+    tradeLabel: "VIEW ON PONS",
+    tradeShort: "Pons",
+    tradeName: "pons",
+    tradeUrl: (mint) => "https://www.ponsfamily.com/launchpad/" + mint,
+  },
+
+  // The pons launcher signs with the same wallet session this adapter holds.
+  get signer() { return signer; },
+
   toAscii,
 
-  // Best-effort cache hint after a landed write, mirroring the solana flow.
+  // Warm the durable index after a landed write. This is not just a cache hint
+  // on robinhood: without it the first feed read cold-walks the chain (~15s,
+  // uncached), so a fresh post can be invisible for minutes. The warm itself
+  // cold-walks too, so the timeout must outlast that walk; 4s aborted it before
+  // the gateway finished indexing, leaving the row unwarmed.
   notify: async (hash, row) => {
     const body = JSON.stringify({ txSignature: hash, txHash: hash, row });
     for (const gw of GATEWAYS) {
       const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 4000);
+      const t = setTimeout(() => ctrl.abort(), 30000);
       try {
         const res = await fetch(`${gw}/table/${DB_ROOT_ID}/${TABLE}/notify?${NET}`, {
           method: "POST", headers: { "Content-Type": "application/json" }, body, signal: ctrl.signal,
