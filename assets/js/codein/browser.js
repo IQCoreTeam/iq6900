@@ -10,8 +10,7 @@ import { estimateCost } from "./cost.js?v=6";
 import { inscribe, inscribeMeta, sweep } from "./inscribe.js?v=8";
 import { feedTablePda, programId } from "./feed.js";
 import { toAscii } from "./ascii.js?v=1";
-import { dexscreenerMarket } from "./dexscreener.js?v=1";
-import { readCurves } from "./pump_curve.js?v=1";
+import { marketRows } from "./market.js?v=1";
 
 // Live default write RPC. NOTE: api.mainnet-beta.solana.com 403s every browser
 // request (it blocks any call carrying an Origin header), so it cannot be the
@@ -90,37 +89,14 @@ window.iqCodein = {
   renderUrl: (sig) => GATEWAYS[0] + "/render/" + sig,
 
   // The market panel and chart are one render path; each chain plugs its
-  // price source, chart embed and launchpad link in here.
-  market: (() => {
-    const dex = dexscreenerMarket("solana");
-    const WSOL = "So11111111111111111111111111111111111111112";
-    return {
-      ...dex,
-      tradeLabel: "VIEW ON PUMP.FUN",
-      tradeShort: "Pump",
-      tradeName: "pump.fun",
-      tradeUrl: (mint) => "https://pump.fun/coin/" + mint,
-      // DexScreener lists a pump.fun coin only once it graduates to a pool, so
-      // a coin still on its curve is valued from the curve account itself. Such
-      // a row has no pairAddress (nothing to chart yet). wSOL rides along in
-      // the same DexScreener request to supply the usd rate.
-      enrich: async (mints) => {
-        if (!mints.length) return [];
-        const rows = await dex.enrich(mints.concat(WSOL));
-        const sol = rows.find((r) => r.mint === WSOL);
-        const out = rows.filter((r) => r.mint !== WSOL);
-        const solUsd = sol && Number(sol.priceUsd);
-        const onCurve = mints.filter((m) => !out.some((r) => r.mint === m));
-        if (solUsd && onCurve.length) {
-          try {
-            (await readCurves(new Connection(activeRpc, "confirmed"), onCurve)).forEach((c) =>
-              out.push({ mint: c.mint, priceUsd: c.priceSol * solUsd, mcap: c.mcapSol * solUsd, chg24: null }));
-          } catch (e) { /* rpc hiccup: those coins stay unvalued this tick */ }
-        }
-        return out;
-      },
-    };
-  })(),
+  // launchpad link in here, and its price rows come from the shared source.
+  market: {
+    tradeLabel: "VIEW ON PUMP.FUN",
+    tradeShort: "Pump",
+    tradeName: "pump.fun",
+    tradeUrl: (mint) => "https://pump.fun/coin/" + mint,
+    enrich: (mints) => marketRows("solana", mints),
+  },
   // board = the global feed table rows; mine = the user's assets (the gateway
   // resolves the inventory PDA our writes reference). The SDK reader returns the
   // same row shape as the gateway ({...cols, __txSignature}), so both feed the

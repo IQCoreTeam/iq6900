@@ -13,7 +13,7 @@
 // clean txs regardless of file size, not one per batch. Needs sdk >= 0.4.3
 // (writeRowWithInventory). The official public RPC is CORS-open + unthrottled.
 import { toAscii } from "./ascii.js?v=1";
-import { dexscreenerMarket } from "./dexscreener.js?v=1";
+import { marketRows } from "./market.js?v=1";
 import { BrowserProvider, JsonRpcProvider, Wallet, formatEther, parseEther, keccak256, toUtf8Bytes } from "https://cdn.jsdelivr.net/npm/ethers@6.17.0/+esm";
 import * as sdk from "https://cdn.jsdelivr.net/npm/@iqlabs-official/ethereum-sdk@0.4.3/+esm";
 
@@ -314,16 +314,13 @@ const surface = {
   imgUrl: (hash) => GATEWAYS[0] + "/img/" + hash + ".png?" + NET,
   renderUrl: (hash) => GATEWAYS[0] + "/render/" + hash + "?" + NET,
 
-  // Same DexScreener source as the solana adapter (chainId "robinhood"). It
-  // indexes graduated uniswap pools, so a pons coin still on its bonding curve
-  // has no pair yet and is simply absent: the panel lists it as "new" with a
-  // link to pons until it graduates.
+  // Same market source as the solana adapter; only the launchpad link differs.
   market: {
-    ...dexscreenerMarket("robinhood"),
     tradeLabel: "VIEW ON PONS",
     tradeShort: "Pons",
     tradeName: "pons",
     tradeUrl: (mint) => "https://www.ponsfamily.com/launchpad/" + mint,
+    enrich: (mints) => marketRows("robinhood", mints),
   },
 
   // The pons launcher signs with the same wallet session this adapter holds.

@@ -14,6 +14,12 @@
 #ci2_xchain:hover{opacity:1;background:rgba(43,213,45,.1)}
 #ci2.hood #ci2_xchain{color:#e8e4d6;border-color:rgba(232,228,214,.45)}
 #ci2.hood #ci2_xchain:hover{background:rgba(232,228,214,.1)}
+/* "powered by" launchpad credit, shown in the markets.exe bar (pump.fun on
+   code-in, Pons on hood-in). Set per chain in applyHoodTheme. The logos read
+   on the dark markets panel in both skins. */
+#ci2 #ci2_mk_powered{display:inline-flex;align-items:center;gap:5px;margin-left:12px;font-size:9.5px;letter-spacing:.04em;text-decoration:none;color:var(--fg);opacity:.6;transition:opacity .3s}
+#ci2 #ci2_mk_powered:hover{opacity:1}
+#ci2 #ci2_mk_powered img{height:15px;width:auto;display:block}
 #ci2{font-family:'Kode Mono',monospace;color:var(--fg);padding:14px 16px 40px;width:100%;box-sizing:border-box}
 #ci2 #ci2_scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:4px}
 #ci2 .bar{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--fg35);padding:11px 16px;font-size:12px;letter-spacing:.14em}
@@ -192,6 +198,7 @@
        COMING SOON here until robinhood launches open. -->
   <div id="ci2_markets_panel" class="panel">
     <div class="bar"><span id="ci2_mk_title" style="opacity:.8">markets.exe</span>
+      <a id="ci2_mk_powered" href="https://pump.fun" target="_blank" rel="noopener noreferrer" title="token launches powered by pump.fun"><span>powered by</span><img src="img/pump-logomark.svg" alt="pump.fun"></a>
       <button id="ci2_mk_launch" class="btn" style="margin-left:auto;padding:7px 12px">LAUNCH A TOKEN</button>
     </div>
     <div class="body">
@@ -199,7 +206,7 @@
         <div class="mkhead"><span>NAME</span><span>PRICE</span><span>24H</span><span class="cap">MCAP &#9662;</span><span class="act">ACTION</span></div>
         <div id="ci2_mk_rows"></div>
         <p id="ci2_mk_empty" class="muted" style="text-align:center;padding:26px 12px">loading...</p>
-        <p class="muted" style="padding:10px 14px;border-top:1px solid var(--fg10)">// coins launched from this board, sorted by market cap. prices from dexscreener, 30s refresh. a fresh launch reads "indexing" until picked up.</p>
+        <p class="muted" style="padding:10px 14px;border-top:1px solid var(--fg10)">// coins launched from this board, sorted by market cap, refreshed every 30s. a fresh launch reads "indexing" until picked up.</p>
       </div>
       <div id="ci2_mk_soon" class="hide">
         <div style="font:400 22px 'Zen Dots',monospace;color:var(--fg);letter-spacing:.06em">MARKETS &middot; COMING SOON</div>
