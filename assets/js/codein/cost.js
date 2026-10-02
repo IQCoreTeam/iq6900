@@ -1,13 +1,12 @@
 import { contract, constants } from "@iqlabs-official/solana-sdk";
-// cost.js - exact lamports to top the burner up to for one inscription.
-// firstTime adds the burner's one-time user_init rent (user_inventory plus
-// code_account), which is only paid on a user's very first inscription because
-// the burner is reused. The funder over-provisions slightly and the leftover
-// is swept back, so estimates that round up are safe.
+// cost.js - funding budget for one inscription, including retry headroom.
+// getAccountRent quotes only the missing or undersized inscription accounts.
+// A conservative default is used before that quote; excess funding is swept
+// back after the write.
 const TX_FEE = 5000; // lamports per signature
 const CHUNK_BYTES = 3600; // v1 chunk payload budget (SDK constants CHUNK_SIZE_V1)
 const SESSION_RENT = 1545120; // session PDA rent budget (measured 726k on mainnet; overshoot sweeps back)
-const INIT_RENT = 69307680; // user_inventory + code_account, first inscription only (devnet-measured ~0.05 SOL)
+const INIT_RENT = 69307680; // default account-rent budget before the quote (~0.0693 SOL)
 // The burner is the fee payer, so after the finalize it must hold either 0 or
 // the rent-exempt minimum (~890,880). Reserve the floor up front (swept back);
 // without it a finalize that spends down to sub-rent dust is rejected in

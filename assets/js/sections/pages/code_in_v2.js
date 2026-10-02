@@ -1072,12 +1072,10 @@
     }
 
     // ---- markets.exe (the desk's right panel) ----
-    // kind=token registry rows priced live from the DexScreener API, sorted by
-    // market cap, refreshed every 30s. A row click opens the chart.exe modal
-    // (the real dexscreener embed). Solana only; hood shows COMING SOON in the
-    // panel (design: Hood In Flow.dc.html) until robinhood launches open.
+    // Both chains use the adapter's shared market source, sorted by market cap
+    // and refreshed every 30s. Each row supplies its chart and attribution.
     const MK_PAGES = 8;       // 8 x 50 feed rows covers the young board
-    const MK_MS = 30000;      // dexscreener refresh
+    const MK_MS = 30000;      // price refresh
     const MK_FEED_TICKS = 5;  // re-read the feed every 5th price tick
     let mkTokens = [];
     let mkCurrent = null;     // coin shown in the chart modal
@@ -1087,9 +1085,8 @@
     function startMarkets() {
       if (mkTimer) { clearInterval(mkTimer); mkTimer = null; } // a prior page's timer must not tick into this DOM
       $("#ci2_mk_launch").on("click", () => tkOpen());
-      // Both chains run the live market through DexScreener
-      // (window.iqCodein.market). A pons coin still on its bonding curve has no
-      // DEX pool yet, so it shows as "new" until it graduates.
+      // DexScreener is primary; GeckoTerminal fills missing curve-stage coins.
+      // A coin stays "new" only while neither source provides a price.
       loadMarkets();
       mkTimer = setInterval(onMarketTick, MK_MS);
     }
