@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=65";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=66";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -24,11 +24,18 @@
     let currentSig = "";   // post shown in the view modal, for the share link
     let boardCursor = null; // gateway nextCursor for pagination
     let boardLoading = false; // guard so scroll + button don't double-fetch a page
+    let pendingInscription = null; // The submitted payload and confirmed result belong to this compose/retry operation.
+    let walletGeneration = 0;
+    let removeWalletListeners = () => {};
+    const confirmedPosts = new Map(); // Recent writes in this tab, keyed by chain + signature.
     let boardGen = 0;      // load generation; a fresh load supersedes in-flight ones
 
     function init(post, chainName, opts) {
+      walletGeneration++;
+      removeWalletListeners();
       chain = chainName === "evm" ? "evm" : "solana";
       who = null; burner = null; bigAck = false; // route switch = fresh wallet state
+      pendingInscription = null;
       // Keep the route in the URL so refreshing stays on this board instead of
       // falling back to the home page (stack cards call init() directly).
       try {
@@ -56,7 +63,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=14", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=16", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -67,10 +74,21 @@
     }
 
     function wire() {
-      // provider is resolved lazily in connect() (resolveSolanaProvider): Brave
-      // grabs the generic window.solana slot early and can delay Phantom's inject,
-      // so resolving once here would miss a late Phantom / mispick Brave's wallet.
-      $("#ci2_connect").on("click", connect);
+      // Phantom first (its window.solana shim also claims the generic slot),
+      // then Backpack's own provider, then whatever claimed window.solana.
+      provider = window.phantom?.solana || window.backpack || window.solana || null;
+      $("#ci2_connect, #ci2_change_wallet").on("click", () => connect());
+      $("#ci2_wallet_close").on("click", () => document.getElementById("ci2_wallet_dialog").close(""));
+      $("#ci2_wallet_disconnect").on("click", () => {
+        walletGeneration++;
+        removeWalletListeners();
+        window.iqCodein.disconnectWallet();
+        showWallet(null);
+        $("#ci2_rpcwarn").addClass("hide");
+        document.getElementById("ci2_wallet_dialog").close("");
+      });
+      $(window).off("iq:evm-wallets.codein");
+      if (isEvm()) $(window).on("iq:evm-wallets.codein", renderWalletOptions);
       $("#ci2_home_dot").on("click", () => { window.location.href = window.location.pathname; });
       // Cross-chain hop (design: header "ROBINHOOD? -> /HOODIN" / "SOLANA? -> /CODEIN").
       // init() re-renders the template, updates ?menu= and resets timers/wallet state.
@@ -147,6 +165,7 @@
       refreshCost();
       loadBoard();
       startMarkets();
+      restoreWallet();
     }
 
     // Same template, hood skin: swap the theme tokens (CSS class) and the
@@ -175,6 +194,16 @@
       });
     }
 
+    function renderWalletOptions() {
+      $("#ci2_wallet_disconnect").toggleClass("hide", !who);
+      const options = window.iqCodein.getWallets();
+      const box = $("#ci2_wallet_options").empty();
+      $("#ci2_wallet_empty").toggleClass("hide", options.length > 0);
+      for (const wallet of options) box.append($("<button>").attr("type", "button").addClass("btn ghost")
+        .text(wallet.name + (wallet.selected && who ? " · Connected" : ""))
+        .on("click", () => document.getElementById("ci2_wallet_dialog").close(wallet.id)));
+    }
+
     // Resolve a Solana wallet at click time. Prefer Phantom/Backpack's own
     // handles (Brave never creates window.phantom, so window.phantom.solana is
     // always the real Phantom) over whoever claimed the generic window.solana,
@@ -187,31 +216,95 @@
     }
 
     async function connect() {
+      let walletId;
       if (isEvm()) {
-        try { who = await window.iqCodein.connectWallet(); }
-        catch (e) { alert(String((e && e.message) || e)); return; }
-        // Preflight the wallet-side RPC before any signature is requested; a
-        // dead saved RPC for chain 4663 fails every send with -32603.
-        window.iqCodein.checkWalletRpc().then((h) => {
-          if (h.ok) { $("#ci2_rpcwarn").addClass("hide"); return; }
-          $("#ci2_rpcwarn").removeClass("hide").text(
-            "warning: the Robinhood Chain RPC saved in your wallet is " + h.reason +
-            ", so writes will fail before anything is spent. open your wallet network settings for chain 4663 and set the RPC to https://rpc.mainnet.chain.robinhood.com, then reconnect.");
+        const dialog = document.getElementById("ci2_wallet_dialog");
+        if (dialog.open) return;
+        renderWalletOptions();
+        dialog.returnValue = "";
+        walletId = await new Promise(resolve => {
+          dialog.addEventListener("close", () => resolve(dialog.returnValue), { once: true });
+          dialog.showModal();
         });
+        if (!walletId) return;
+      }
+      const generation = ++walletGeneration; // Ignore a late silent reconnect after an explicit choice.
+      removeWalletListeners();
+      showWallet(null);
+      let address;
+      if (isEvm()) {
+        try { address = await window.iqCodein.connectWallet({ walletId }); }
+        catch (e) { alert(String((e && e.message) || e)); return; }
+        if (generation !== walletGeneration) return;
+        bindWalletListeners();
+        if (!await walletRpcHealthy()) return;
       } else {
         provider = await resolveSolanaProvider();
         if (!provider) { alert("No Solana wallet found. Install Phantom or Backpack.\n\nBrave users: open brave://settings/wallet and set Default cryptocurrency wallet to \"Extensions (no fallback)\" so your extension wallet is detected."); return; }
         const res = await provider.connect();
-        who = (res?.publicKey || provider.publicKey).toString();
+        address = (res?.publicKey || provider.publicKey).toString();
       }
-      // ci2_who starts hidden (no meaningless "not connected"); reveal it with
-      // the short address once a wallet is actually connected. On mobile the
-      // media query keeps it hidden to save the narrow header's width.
-      $("#ci2_who").text(who.slice(0, 4) + "..." + who.slice(-4)).removeClass("hide");
-      // +NEW INSCRIPTION takes the connect button's place once connected.
-      $("#ci2_connect").addClass("hide");
-      $("#ci2_new").removeClass("hide");
-      loadBoard();
+      if (generation !== walletGeneration) return;
+      showWallet(address);
+      if (!isEvm()) bindWalletListeners();
+    }
+
+    async function walletRpcHealthy() {
+      const generation = walletGeneration;
+      const h = await window.iqCodein.checkWalletRpc();
+      if (generation !== walletGeneration) return false;
+      if (h.ok) { $("#ci2_rpcwarn").addClass("hide"); return true; }
+      $("#ci2_rpcwarn").removeClass("hide").text(
+        "warning: the Robinhood Chain RPC saved in your wallet is " + h.reason +
+        ", so writes will fail before anything is spent. open your wallet network settings for chain 4663 and set the RPC to https://rpc.mainnet.chain.robinhood.com, then reconnect.");
+      return false;
+    }
+
+    function showWallet(address) {
+      if (who !== address) burner = null;
+      who = address;
+      if (isEvm() && address) {
+        const selected = window.iqCodein.getWallets().find(wallet => wallet.selected);
+        $("#ci2_change_wallet").text(selected ? selected.name + " · CHANGE WALLET" : "CHANGE WALLET");
+      }
+      $("#ci2_change_wallet").toggleClass("hide", !isEvm() || !who);
+      $("#ci2_who").text(who ? who.slice(0, 4) + "..." + who.slice(-4) : "").toggleClass("hide", !who);
+      $("#ci2_connect").toggleClass("hide", !!who);
+      $("#ci2_new").toggleClass("hide", !who);
+      if (tab === "mine") loadBoard();
+    }
+
+    function bindWalletListeners() {
+      removeWalletListeners();
+      const activeProvider = isEvm() ? window.iqCodein.getWalletProvider() : provider;
+      if (!activeProvider) return;
+      const changed = () => {
+        walletGeneration++;
+        burner = null;
+        if (isEvm()) window.iqCodein.disconnectWallet();
+        showWallet(null);
+      };
+      const accountEvent = isEvm() ? "accountsChanged" : "accountChanged";
+      activeProvider.on?.(accountEvent, changed);
+      activeProvider.on?.("disconnect", changed);
+      if (isEvm()) activeProvider.on?.("chainChanged", changed);
+      removeWalletListeners = () => {
+        activeProvider.removeListener?.(accountEvent, changed);
+        activeProvider.removeListener?.("disconnect", changed);
+        activeProvider.removeListener?.("chainChanged", changed);
+      };
+    }
+    async function restoreWallet() {
+      const generation = walletGeneration;
+      if (!isEvm()) { provider = await resolveSolanaProvider(); if (generation !== walletGeneration) return; bindWalletListeners(); }
+      try {
+        const address = isEvm()
+          ? await window.iqCodein.connectWallet({ onlyIfTrusted: true })
+          : (await provider?.connect({ onlyIfTrusted: true }))?.publicKey?.toString();
+        if (generation !== walletGeneration || !address) return;
+        if (isEvm()) { bindWalletListeners(); if (!await walletRpcHealthy()) return; }
+        if (generation === walletGeneration) showWallet(address);
+      } catch (_) { /* Locked or unapproved wallet: keep the connect button. */ }
     }
 
     function switchTab(t) {
@@ -258,6 +351,11 @@
           cursor = res.nextCursor;
         }
         if (gen !== boardGen) return; // superseded mid-flight
+        if (!before) {
+          const local = [...confirmedPosts.values()].filter(post => post.chain === chain && (tab !== "mine" || post.row.who === who)).map(post => post.row);
+          const signatures = new Set(local.map(row => row.__txSignature));
+          rows = [...local.reverse(), ...rows.filter(it => !signatures.has((it.row || it).__txSignature || it.__txSignature || it.signature))];
+        }
         rows.forEach((it) => {
           const obj = it.row || it;
           // launch registry rows (kind "token") are the on-chain index the
@@ -456,6 +554,7 @@
       // one click (solana only); text/ascii get the gateway card render. Only
       // the owner may tokenize their own post - on someone else's, the button
       // is hidden, so you can only launch what you inscribed.
+      renderLinkedCoins();
       const mine = !!who && owner === who;
       const canTokenize = mine && tkUsable(obj.kind, body);
       $("#ci2_view_token").toggleClass("hide", !canTokenize).off("click");
@@ -606,6 +705,7 @@
     }
 
     function openCompose() {
+      pendingInscription = null;
       $("#ci2_modal").removeClass("hide");
       $("#ci2_compose").removeClass("hide"); $("#ci2_progress").addClass("hide"); $("#ci2_done").addClass("hide");
       $("#ci2_win").text(isEvm() ? "hood_in.exe" : "code_in.exe");
@@ -614,11 +714,14 @@
     function closeModal() { $("#ci2_modal").addClass("hide"); }
 
     async function doInscribe() {
-      if (!who) { await connect(); if (!who) return; }
-      const pay = currentPayload();
+      if (!who && !pendingInscription?.result) { await connect(); if (!who) return; }
+      const inscription = pendingInscription || { pay: currentPayload(), author: who, chain, adapter: window.iqCodein };
+      const { pay, author, adapter } = inscription;
       if (!pay.body) return;
-      const bytes = new TextEncoder().encode(JSON.stringify({ kind: pay.kind, body: pay.body, who })).length;
+      const inscriptionChain = inscription.chain;
+      const bytes = new TextEncoder().encode(JSON.stringify({ kind: pay.kind, body: pay.body, who: author })).length;
       if (overCapNow(bytes)) { openCap("choice"); return; }
+      pendingInscription = inscription;
 
       $("#ci2_compose").addClass("hide"); $("#ci2_progress").removeClass("hide");
       $("#ci2_win").text("writing...");
@@ -626,21 +729,21 @@
       setBar(0, "starting");
 
       try {
-        const res = await inscribeRaw({ kind: pay.kind, body: pay.body, onPct: setBar });
+        const res = inscription.result || await inscribeRaw({ kind: pay.kind, body: pay.body, onPct: setBar, author });
+        inscription.result = res;
         $("#ci2_progress").addClass("hide"); $("#ci2_done").removeClass("hide");
         $("#ci2_win").text("done.exe");
-        $("#ci2_sig").text((isEvm() ? "tx: " : "sig: ") + res.sig.slice(0, 12) + "..." + res.sig.slice(-8));
+        $("#ci2_sig").text((inscriptionChain === "evm" ? "tx: " : "sig: ") + res.sig.slice(0, 12) + "..." + res.sig.slice(-8));
         // a fresh image/text/ascii inscription can go straight into the launcher
         lastInscribed = { body: pay.body, sig: res.sig };
         const canLaunch = tkUsable(pay.kind, pay.body);
         $("#ci2_launch_after").toggleClass("hide", !canLaunch);
         $("#ci2_view").toggleClass("ghost", canLaunch); // LAUNCH is the primary when present
-        if (isEvm()) $("#ci2_donenote").text("// the storage fee charges once, at the final step. every tx before it is gas only.");
-        // Fire-and-forget: warming the durable index can take ~15s on robinhood
-        // (uncached cold-walk), and the done screen is already up, so do not
-        // block the board refresh on it. The launcher's inventory read benefits
-        // from the warm even though the board reloads immediately.
-        Promise.resolve(window.iqCodein.notify(res.sig, { kind: pay.kind, body: pay.body, who })).catch(() => {});
+        if (inscriptionChain === "evm") $("#ci2_donenote").text("// the storage fee charges once, at the final step. every tx before it is gas only.");
+        const confirmed = { kind: pay.kind, body: pay.body, who: author, __txSignature: res.sig, __blockTime: Math.floor(Date.now() / 1000) };
+        confirmedPosts.set(inscriptionChain + ":" + res.sig, { chain: inscriptionChain, row: confirmed });
+        if (confirmedPosts.size > 20) confirmedPosts.delete(confirmedPosts.keys().next().value);
+        Promise.resolve().then(() => adapter.notify(res.sig, { kind: pay.kind, body: pay.body, who: author })).catch(() => {});
         loadBoard();
       } catch (e) {
         // Never show "failed". solana: refund the burner to the wallet and say
@@ -651,12 +754,18 @@
         $("#ci2_retry").removeClass("hide");
         const msg = String((e && e.message) || e);
         let note = "";
+        if (isEvm() && (e?.code === "INSUFFICIENT_FUNDS" || /insufficient funds/i.test(msg))) {
+          $("#ci2_pct").text("not enough ETH on Robinhood Chain");
+          $("#ci2_log").text("The selected wallet needs ETH on Robinhood Chain for storage and gas. Fund that address on this network or choose another wallet, then retry. Earlier transactions, if any, may have paid fees.");
+          console.error("[code-in] insufficient funds:", e);
+          return;
+        }
         if (isEvm()) {
           note = /user rejected|denied|4001/i.test(msg)
             ? "you canceled the signature in your wallet - tap retry when ready. "
             : /oversized|too large|exceeds|-32603|could not coalesce|Unexpected error/i.test(msg)
-            ? "your wallet could not broadcast one of these transactions. this is usually a transient network hiccup, so retry, which re-signs only what did not land. if it keeps failing on a large file, the steady path is the SDK / CLI. nothing was spent. "
-            : "nothing but tiny gas was spent (the storage fee only charges at the final tx). retry resumes from where it stopped - chunks already on chain are never re-signed. ";
+            ? "your wallet could not complete this write. Check your wallet activity before retrying; earlier transactions may have landed and paid fees. "
+            : "The write did not complete. Earlier transactions may have paid gas or storage fees. Check wallet activity before retrying. ";
         } else {
           try {
             const back = burner ? await window.iqCodein.sweep(window.iqCodein.connect(), burner, provider.publicKey) : 0;
@@ -683,11 +792,15 @@
     // shared by inscriptions and token registry writes.
     async function ensureBurner() {
       if (burner) return burner;
+      const generation = walletGeneration;
+      const walletProvider = provider;
       const signMessage = async (msg) => {
-        const out = await provider.signMessage(msg instanceof Uint8Array ? msg : new TextEncoder().encode(msg), "utf8");
+        const out = await walletProvider.signMessage(msg instanceof Uint8Array ? msg : new TextEncoder().encode(msg), "utf8");
         return out.signature || out;
       };
-      burner = await window.iqCodein.deriveBurner(signMessage);
+      const derived = await window.iqCodein.deriveBurner(signMessage);
+      if (generation !== walletGeneration) throw new Error("The wallet changed before submission. Connect again and retry.");
+      burner = derived;
       return burner;
     }
 
@@ -695,16 +808,19 @@
     // result ({sig}). The single place that builds the per-chain inscribe call,
     // shared by the compose flow and the launcher's album-art write. onPct is
     // called with (percent, label) across both chains.
-    async function inscribeRaw({ kind, body, onPct }) {
+    async function inscribeRaw({ kind, body, onPct, author = who }) {
+      const adapter = window.iqCodein;
       if (isEvm()) {
-        return window.iqCodein.inscribe({ kind, body, who, onStatus: (pct, label) => onPct && onPct(pct, label) });
+        return adapter.inscribe({ kind, body, who: author, onStatus: (pct, label) => onPct && onPct(pct, label) });
       }
+      const walletProvider = provider;
+      if (!walletProvider || String(walletProvider.publicKey) !== author) throw new Error("The wallet changed before submission. Connect again and retry.");
       await ensureBurner();
-      const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
-      const connection = window.iqCodein.connect();
-      const manual = window.iqCodein.getSpeed();
-      const speed = manual !== "auto" ? manual : window.iqCodein.recommendSpeed(window.iqCodein.hasOwnRpc());
-      return window.iqCodein.inscribe({
+      const wallet = { publicKey: walletProvider.publicKey, signTransaction: (tx) => walletProvider.signTransaction(tx) };
+      const connection = adapter.connect();
+      const manual = adapter.getSpeed();
+      const speed = manual !== "auto" ? manual : adapter.recommendSpeed(adapter.hasOwnRpc());
+      return adapter.inscribe({
         connection, wallet, burner, kind, body, speed,
         onProgress: (pct) => onPct && onPct(pct, "writing " + pct + "%"),
         onRetry: (n) => onPct && onPct(0, "network congestion - retrying (" + (n + 1) + "/2)"),
@@ -829,13 +945,16 @@
       const sync = coinImageUrl();
       if (sync) return sync;
       if (srcNeedsImage(tkSrcKind, tkSrcBody) && tkArtData) {
-        const res = await inscribeRaw({ kind: "image", body: tkArtData, onPct });
-        tkImgSig = res.sig; tkImgBody = tkArtData;
+        const adapter = window.iqCodein;
+        const author = who;
+        const body = tkArtData;
+        const res = await inscribeRaw({ kind: "image", body, onPct, author });
+        tkImgSig = res.sig; tkImgBody = body;
         // Index the album-art inscription so its own viewer link loads (the
         // compose flow notifies every write; this launch-time write must too,
         // or /slice returns empty for it and the post shows "could not load").
-        Promise.resolve(window.iqCodein.notify(res.sig, { kind: "image", body: tkArtData, who })).catch(() => {});
-        return window.iqCodein.imgUrl(res.sig);
+        Promise.resolve().then(() => adapter.notify(res.sig, { kind: "image", body, who: author })).catch(() => {});
+        return adapter.imgUrl(res.sig);
       }
       return "";
     }
@@ -1004,6 +1123,7 @@
       } else {
         $("#ci2_tk_src").text("coin image from your inscription " + (needsImg ? tkImgSig : tkSrcSig).slice(0, 8) + "... - the coin page links back to the on-chain original.");
       }
+      renderLinkedCoins();
       tkValidate();
     }
 
@@ -1187,8 +1307,8 @@
         $("#ci2_tk_pct").text("paused - tap retry");
         $("#ci2_tk_retry").removeClass("hide");
         $("#ci2_tk_log").text(/user rejected|denied|4001/i.test(msg)
-          ? "you canceled the signature in your wallet. nothing was spent - tap retry when ready."
-          : "the launch stopped before completing. nothing is charged unless the create transaction lands. (" + msg + ")");
+          ? "You cancelled the wallet request. Completed metadata inscriptions and network fees may already have been paid."
+          : "The launch did not complete. The platform fee is included only if token creation lands; metadata and network fees may already have been paid. (" + msg + ")");
         console.error("[make-token] launch paused:", e);
       }
     }
@@ -1197,36 +1317,45 @@
     // is the on-chain mint -> inscription mapping (the metadata description
     // carries the same recovery pointer on chain) - and warms the gateway feed
     // index via notify so it lists in seconds instead of on the next cold read.
-    // Pure: returns true if it landed, false otherwise. The coin already exists
+    // Returns true if it landed, false otherwise. The coin already exists
     // either way, so callers never treat false as a launch failure.
+    let registryWriting = false;
     async function tkRegistryWrite() {
-      if (!tkLast) return true;
+      if (!tkLast || tkLast.registrySig) return true;
+      if (registryWriting) return false;
+      registryWriting = true;
+      const author = who;
+      const adapter = window.iqCodein;
+      const launched = tkLast;
       try {
-        const body = JSON.stringify({ mint: tkLast.mint, name: tkLast.name, symbol: tkLast.symbol, src: tkLast.src, meta: tkLast.meta });
+        const body = JSON.stringify({ mint: launched.mint, name: launched.name, symbol: launched.symbol, src: launched.src, meta: launched.meta });
         let res;
         if (isEvm()) {
           // A tiny inline row - board-only via the wallet (no burner, no
           // inventory finalize), so it lists fast without extra machinery.
-          res = await window.iqCodein.inscribeBoard({ kind: "token", body, who });
+          res = await adapter.inscribeBoard({ kind: "token", body, who: author });
         } else {
           await ensureBurner();
           const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
-          res = await window.iqCodein.inscribe({ connection: window.iqCodein.connect(), wallet, burner, kind: "token", body, speed: "light" });
+          res = await adapter.inscribe({ connection: adapter.connect(), wallet, burner, kind: "token", body, speed: "light" });
         }
-        await window.iqCodein.notify(res.sig, { kind: "token", body, who });
-        loadMarkets();
+        launched.registrySig = res.sig;
+        if (!mkTokens.some(token => token.mint === launched.mint)) mkTokens.push({ ...JSON.parse(body), sig: res.sig });
+        renderLinkedCoins();
+        renderMarkets();
+        Promise.resolve().then(() => adapter.notify(res.sig, { kind: "token", body, who: author })).catch(() => {});
         return true;
       } catch (e) {
         console.error("[make-token] registry write failed:", e);
         return false;
-      }
+      } finally { registryWriting = false; }
     }
 
     // Renders the registry outcome on the done panel - single source for both
     // the inline launch path and the manual retry button.
     function tkShowRegistryResult(ok) {
       $("#ci2_tk_regnote").text(ok
-        ? "// launched and listed. it appears in markets.exe within a minute."
+        ? "// launched and registered on chain. Gateway listing may take a moment."
         : "// your token exists, but indexing it failed - it will not show in markets.exe until this lands.");
       $("#ci2_tk_reg_retry")[ok ? "addClass" : "removeClass"]("hide");
     }
@@ -1273,6 +1402,7 @@
       renderMarkets();
     }
 
+    let marketReadState = "loading";
     async function readMarketTokens() {
       const next = [];
       let cursor = null;
@@ -1291,8 +1421,31 @@
           cursor = res.nextCursor;
           if (!cursor) break;
         }
+        // Keep our confirmed registration visible while the gateway catches up.
+        const registered = tkLast && tkLast.registrySig && mkTokens.find(token => token.mint === tkLast.mint);
+        if (registered && !next.some(token => token.mint === registered.mint)) next.push(registered);
         mkTokens = next;
-      } catch (e) { /* keep whatever we had */ }
+        marketReadState = cursor ? "partial" : "loaded";
+      } catch (e) { marketReadState = "unavailable"; }
+      renderLinkedCoins();
+    }
+
+    function renderLinkedCoins() {
+      for (const [target, source] of [["#ci2_view_coins", currentSig], ["#ci2_tk_coins", tkSrcSig]]) {
+        const box = $(target).empty().toggleClass("hide", !source);
+        if (!source) continue;
+        const linked = mkTokens.filter(token => token.src === source);
+        if (linked.length) {
+          box.append($("<p>").text(linked.length + (linked.length === 1 ? " linked coin" : " linked coins")));
+          for (const token of linked) box.append($("<button>").addClass("btn ghost")
+            .text("$" + token.symbol + " · " + token.name)
+            .on("click", () => { $("#ci2_view_modal, #ci2_tk_modal").addClass("hide"); openChart(token.mint, token); }));
+          if (target === "#ci2_tk_coins") box.append($("<p>").addClass("muted").text("This inscription already has a linked coin. Continuing creates another token."));
+        } else box.append($("<p>").addClass("muted").text(
+          marketReadState === "loading" ? "Checking linked coins…" :
+          marketReadState === "unavailable" ? "Linked coins could not be checked." :
+          marketReadState === "partial" ? "No linked coins found in the loaded records." : "No linked coins found on the IQ board."));
+      }
     }
 
     async function enrichMarkets() {
