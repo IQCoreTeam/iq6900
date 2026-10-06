@@ -613,26 +613,7 @@
       setBar(0, "starting");
 
       try {
-        let res;
-        if (isEvm()) {
-          // One overall bar: funding 0-10, upload 10-80, finalization 80-100.
-          // The adapter reports real stages; batch count is not signature count.
-          res = await window.iqCodein.inscribe({
-            kind: pay.kind, body: pay.body, who,
-            onStatus: setBar,
-          });
-        } else {
-          await ensureBurner();
-          const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
-          const connection = window.iqCodein.connect();
-          const manual = window.iqCodein.getSpeed();
-          const speed = manual !== "auto" ? manual : window.iqCodein.recommendSpeed(window.iqCodein.hasOwnRpc());
-          res = await window.iqCodein.inscribe({
-            connection, wallet, burner, kind: pay.kind, body: pay.body, speed,
-            onProgress: (pct) => setBar(pct, "writing " + pct + "%"),
-            onRetry: (n) => setBar(0, "network congestion - retrying (" + (n + 1) + "/2)"),
-          });
-        }
+        const res = await inscribeRaw({ kind: pay.kind, body: pay.body, onPct: setBar });
         $("#ci2_progress").addClass("hide"); $("#ci2_done").removeClass("hide");
         $("#ci2_win").text("done.exe");
         $("#ci2_sig").text((isEvm() ? "tx: " : "sig: ") + res.sig.slice(0, 12) + "..." + res.sig.slice(-8));
@@ -697,6 +678,26 @@
       return burner;
     }
 
+    // Write one {kind, body} payload through the active adapter and return its
+    // result ({sig}). The single place that builds the per-chain inscribe call,
+    // shared by the compose flow and the launcher's album-art write. onPct is
+    // called with (percent, label) across both chains.
+    async function inscribeRaw({ kind, body, onPct }) {
+      if (isEvm()) {
+        return window.iqCodein.inscribe({ kind, body, who, onStatus: (pct, label) => onPct && onPct(pct, label) });
+      }
+      await ensureBurner();
+      const wallet = { publicKey: provider.publicKey, signTransaction: (tx) => provider.signTransaction(tx) };
+      const connection = window.iqCodein.connect();
+      const manual = window.iqCodein.getSpeed();
+      const speed = manual !== "auto" ? manual : window.iqCodein.recommendSpeed(window.iqCodein.hasOwnRpc());
+      return window.iqCodein.inscribe({
+        connection, wallet, burner, kind, body, speed,
+        onProgress: (pct) => onPct && onPct(pct, "writing " + pct + "%"),
+        onRetry: (n) => onPct && onPct(0, "network congestion - retrying (" + (n + 1) + "/2)"),
+      });
+    }
+
     // ---- make it as token (pump.fun launcher) ----
     // Seller flow: step 1 picks an inscription from the user's inventory
     // (empty inventory routes to the compose modal, whose done panel loops
@@ -708,6 +709,7 @@
     let tkSrcBody = "";      // its body, for the local preview only
     let tkImgSig = "";       // a separate image inscription used as the coin logo
     let tkImgBody = "";      // its body, for the local preview only
+    let tkArtData = "";      // album art pulled from an audio source, inscribed at launch
     let tkPicked = null;     // picker candidate before CONTINUE
     let tkMetaSig = "";      // metadata inscription tx, kept across retries
     let tkMetaRw = "";       // rewards mode baked into that metadata (mismatch = re-inscribe)
@@ -743,11 +745,83 @@
       if (s.slice(0, 5) === "data:") return "file";
       return "text";
     };
-    // A fresh source selection drops any logo image chosen for a previous one.
+    // A fresh source selection drops any logo image chosen for a previous one,
+    // then (for audio) tries to pull the track's embedded cover.
     const tkSetSource = (sig, body, kind) => {
       tkSrcSig = sig; tkSrcBody = body || ""; tkSrcKind = kind || kindFromBody(body);
       tkImgSig = ""; tkImgBody = "";
+      tkArtData = tkSrcBody.slice(0, 11) === "data:audio/" ? extractAlbumArt(tkSrcBody) : "";
     };
+
+    // Pull an embedded cover (ID3v2 APIC, or the v2.2 PIC frame) out of an audio
+    // data url. Returns an image data url, or "" when the track carries no art.
+    // Pure byte parse, no deps; the tag sits at the file start so it is cheap.
+    function extractAlbumArt(dataUrl) {
+      try {
+        const s = String(dataUrl || "");
+        if (s.slice(0, 11) !== "data:audio/") return "";
+        const bin = atob(s.slice(s.indexOf(",") + 1));
+        const n = bin.length;
+        const B = (i) => bin.charCodeAt(i) & 0xff;
+        if (n < 10 || bin.slice(0, 3) !== "ID3") return "";
+        const ver = B(3);
+        const end = Math.min(n, 10 + (((B(6) << 21) | (B(7) << 14) | (B(8) << 7) | B(9)))); // synchsafe tag size
+        const out = (mime, img) => img.length ? "data:" + mime + ";base64," + btoa(img) : "";
+        const mimeOf = (m) => /png/i.test(m) ? "image/png" : /gif/i.test(m) ? "image/gif" : /webp/i.test(m) ? "image/webp" : "image/jpeg";
+        let p = 10;
+        if (ver === 2) { // v2.2: 3-byte id, 3-byte size; PIC = encoding(1) + 3-char fmt + type(1) + desc\0 + data
+          while (p + 6 <= end) {
+            const size = (B(p + 3) << 16) | (B(p + 4) << 8) | B(p + 5);
+            if (size <= 0) break;
+            const body = p + 6;
+            if (bin.slice(p, p + 3) === "PIC") {
+              let q = body + 1 + 3 + 1;
+              while (q < body + size && B(q) !== 0) q++;
+              return out(mimeOf(bin.slice(body + 1, body + 4)), bin.slice(q + 1, body + size));
+            }
+            p = body + size;
+          }
+          return "";
+        }
+        // v2.3 / v2.4: 4-byte id, 4-byte size (v2.4 synchsafe), 2-byte flags
+        const u32 = (i) => (B(i) << 24) | (B(i + 1) << 16) | (B(i + 2) << 8) | B(i + 3);
+        const syn = (i) => (B(i) << 21) | (B(i + 1) << 14) | (B(i + 2) << 7) | B(i + 3);
+        while (p + 10 <= end) {
+          const size = ver === 4 ? syn(p + 4) : u32(p + 4);
+          if (size <= 0) break;
+          const body = p + 10;
+          if (bin.slice(p, p + 4) === "APIC") {
+            const enc = B(body);
+            let q = body + 1, mime = "";
+            while (q < body + size && B(q) !== 0) { mime += String.fromCharCode(B(q)); q++; }
+            q += 1 + 1; // mime terminator + picture type
+            if (enc === 1 || enc === 2) { while (q + 1 < body + size && !(B(q) === 0 && B(q + 1) === 0)) q += 2; q += 2; }
+            else { while (q < body + size && B(q) !== 0) q++; q += 1; }
+            return out(mimeOf(mime), bin.slice(q, body + size));
+          }
+          p = body + size;
+        }
+        return "";
+      } catch (e) { return ""; }
+    }
+
+    // Validation gate: a coin image is ready if the source resolves to one
+    // synchronously, or audio art is staged to be inscribed at launch.
+    const coinImageReady = () => !!coinImageUrl() || (srcNeedsImage(tkSrcKind, tkSrcBody) && !!tkArtData);
+
+    // The launch-time resolver: returns a logo url, inscribing the staged album
+    // art as its own small image first when that is the chosen source. The sig
+    // is cached in tkImgSig so a RETRY never writes the art twice.
+    async function resolveCoinLogo(onPct) {
+      const sync = coinImageUrl();
+      if (sync) return sync;
+      if (srcNeedsImage(tkSrcKind, tkSrcBody) && tkArtData) {
+        const res = await inscribeRaw({ kind: "image", body: tkArtData, onPct });
+        tkImgSig = res.sig; tkImgBody = tkArtData;
+        return window.iqCodein.imgUrl(res.sig);
+      }
+      return "";
+    }
 
     // One place for every launcher string that differs between the two
     // launchpads (pump.fun on solana, pons on robinhood); runs on open so the
@@ -889,20 +963,25 @@
       $("#ci2_tk_pick").addClass("hide");
       $("#ci2_tk_form").removeClass("hide");
       const needsImg = srcNeedsImage(tkSrcKind, tkSrcBody);
-      // Preview: an image source shows its own bytes; audio/file shows the
-      // separately chosen coin image (or a prompt to choose one); text/ascii
-      // shows the gateway card that becomes the coin image.
+      // the staged album art is the default coin image for an audio source until
+      // the user picks a different image inscription
+      const usingArt = needsImg && !tkImgSig && !!tkArtData;
+      // Preview: image source shows its own bytes; audio/file shows the picked
+      // image, else the track's album art, else a prompt; text/ascii shows the
+      // gateway card that becomes the coin image.
       let preview;
       if (bodyIsImage(tkSrcBody)) preview = tkSrcBody;
-      else if (needsImg) preview = tkImgBody || "";
+      else if (needsImg) preview = tkImgBody || tkArtData || "";
       else preview = window.iqCodein.renderUrl(tkSrcSig);
       $("#ci2_tk_prev").html(preview ? $("<img>").attr("src", preview) : "");
-      // audio/file get an explicit "choose a coin image" control; the back-link
-      // still points at the audio/file source either way.
+      // audio/file get an explicit coin-image control; the back-link still
+      // points at the audio/file source either way.
       $("#ci2_tk_pickimg").toggleClass("hide", !needsImg)
-        .text(tkImgSig ? "change coin image" : "choose a coin image");
-      if (needsImg && !tkImgSig) {
-        $("#ci2_tk_src").text("audio and files have no card to show, so pick an image inscription as the coin image. the coin page still links back to " + tkSrcSig.slice(0, 8) + "...");
+        .text(tkImgSig || tkArtData ? "choose a different image" : "choose a coin image");
+      if (usingArt) {
+        $("#ci2_tk_src").text("coin image from the track's album art - it is inscribed on-chain as a small image when you launch. the coin page links back to your audio " + tkSrcSig.slice(0, 8) + "...");
+      } else if (needsImg && !tkImgSig) {
+        $("#ci2_tk_src").text("this track has no embedded cover. pick an image inscription as the coin image. the coin page still links back to " + tkSrcSig.slice(0, 8) + "...");
       } else {
         $("#ci2_tk_src").text("coin image from your inscription " + (needsImg ? tkImgSig : tkSrcSig).slice(0, 8) + "... - the coin page links back to the on-chain original.");
       }
@@ -911,7 +990,7 @@
 
     function tkValidate() {
       const ok = ($("#ci2_tk_name").val() || "").trim() && ($("#ci2_tk_symbol").val() || "").trim()
-        && tkSrcSig && !!coinImageUrl();
+        && tkSrcSig && coinImageReady();
       $("#ci2_tk_go").prop("disabled", !ok);
     }
 
@@ -948,12 +1027,23 @@
       const web = ($("#ci2_tk_web").val() || "").trim() || viewLink;
       // The coin image: an image inscription IS its own token image (raw bytes
       // the gateway reconstructs at /img/{sig}.png); text and ascii become the
-      // terminal card at /render/{sig}; audio and non-image files use a
-      // separately chosen image inscription (/render of their raw base64 would
-      // be garbage). coinImageUrl() is the single source of that rule, shared
-      // with the form preview and validation.
-      const image = coinImageUrl();
+      // terminal card at /render/{sig}; audio and non-image files use a chosen
+      // image inscription. When the source is audio with embedded album art and
+      // nothing else was picked, that art is inscribed now as its own small
+      // image (an extra on-chain write) and its /img becomes the logo. The sig
+      // is cached so a RETRY never writes it twice.
+      let image;
+      if (!coinImageUrl() && tkArtData) setTkBar(2, "inscribing the coin image from the track art");
+      try {
+        image = await resolveCoinLogo((pct, label) =>
+          setTkBar(2 + Math.round((pct || 0) * 0.08), label || ("inscribing the coin image " + (pct || 0) + "%")));
+      } catch (e) {
+        $("#ci2_tk_retry").removeClass("hide"); $("#ci2_tk_form").removeClass("hide"); $("#ci2_tk_prog").addClass("hide");
+        $("#ci2_tk_log").text("could not inscribe the coin image from the track's art. retry, or choose an image instead. (" + String((e && e.message) || e) + ")");
+        return;
+      }
       if (!image) { $("#ci2_tk_log").text("choose a coin image first."); $("#ci2_tk_form").removeClass("hide"); $("#ci2_tk_prog").addClass("hide"); return; }
+      setTkBar(10, steps[0]);
       // The recovery pointers are already on chain in the launch itself, not
       // just in this prose: socials.website below is the viewer link, and the
       // logo url path IS the src inscription tx. Solana's pump.fun page renders
