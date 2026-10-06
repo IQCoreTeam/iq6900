@@ -4,6 +4,6 @@
   "type": "module",
   "description": "Code-in core (framework-agnostic). Browser loads the SDK via importmap/CDN; node_modules is for the devnet test only. web3.js is inherited from the SDK to avoid a dual-package clash.",
   "dependencies": {
-    "@iqlabs-official/solana-sdk": "0.3.0"
+    "@iqlabs-official/solana-sdk": "0.3.6"
   }
 }

@@ -1,12 +1,12 @@
-// cost.js - exact lamports to top the burner up to for one inscription.
-// firstTime adds the burner's one-time user_init rent (user_inventory plus
-// code_account), which is only paid on a user's very first inscription because
-// the burner is reused. The funder over-provisions slightly and the leftover
-// is swept back, so estimates that round up are safe.
+import { contract, constants } from "@iqlabs-official/solana-sdk";
+// cost.js - funding budget for one inscription, including retry headroom.
+// getAccountRent quotes only the missing or undersized inscription accounts.
+// A conservative default is used before that quote; excess funding is swept
+// back after the write.
 const TX_FEE = 5000; // lamports per signature
 const CHUNK_BYTES = 3600; // v1 chunk payload budget (SDK constants CHUNK_SIZE_V1)
 const SESSION_RENT = 1545120; // session PDA rent budget (measured 726k on mainnet; overshoot sweeps back)
-const INIT_RENT = 50000000; // user_inventory + code_account, first inscription only (devnet-measured ~0.05 SOL)
+const INIT_RENT = 69307680; // default account-rent budget before the quote (~0.0693 SOL)
 // The burner is the fee payer, so after the finalize it must hold either 0 or
 // the rent-exempt minimum (~890,880). Reserve the floor up front (swept back);
 // without it a finalize that spends down to sub-rent dust is rejected in
@@ -31,11 +31,29 @@ function writeFee(chunks, byteLength) {
   return 3000000;
 }
 
-export function estimateCost(byteLength, { firstTime }) {
+export function estimateCost(byteLength, { accountRent = INIT_RENT } = {}) {
   const chunks = Math.max(1, Math.ceil(byteLength / CHUNK_BYTES));
   const network = (chunks + 2) * TX_FEE; // chunks + create-session + finalize
   const codeInFee = writeFee(chunks, byteLength);
-  const rent = SESSION_RENT + (firstTime ? INIT_RENT : 0);
+  const rent = SESSION_RENT + accountRent;
   const total = network + codeInFee + rent + RENT_FLOOR + MARGIN;
   return { chunks, network, codeInFee, rent, total };
+}
+
+export async function getAccountRent(connection, publicKey) {
+  // UserState includes the discriminator, owner, two bounded vectors and counter.
+  const accounts = [
+    [contract.getCodeAccountPda(publicKey), constants.CODE_ACCOUNT_SPACE],
+    [contract.getUserInventoryPda(publicKey), constants.USER_INVENTORY_SPACE],
+    [contract.getUserPda(publicKey), 8 + 32 + 4 + 1000 + 4 + 90 + 8],
+  ];
+  const existing = await connection.getMultipleAccountsInfo(accounts.map(([address]) => address));
+  const rents = await Promise.all(accounts.map(async ([, size], i) => {
+    const account = existing[i];
+    if (account && !account.owner.equals(contract.PROGRAM_ID)) throw new Error("unexpected inscription account owner");
+    if (account && account.data.length >= size) return 0;
+    const rent = await connection.getMinimumBalanceForRentExemption(size);
+    return Math.max(0, rent - (account?.lamports || 0));
+  }));
+  return rents.reduce((total, rent) => total + rent, 0);
 }
