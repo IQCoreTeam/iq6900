@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=60";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=61";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -399,12 +399,14 @@
       $("#ci2_view_modal").removeClass("hide");
       $("#ci2_view_meta").text("loading...");
       $("#ci2_view_body").empty();
+      $("#ci2_view_file_notice").addClass("hide");
       let obj = preloaded || null;
       if (!obj) { try { obj = await window.iqCodein.readOne(sig); } catch (e) { /* handled below */ } }
       if (!obj) { $("#ci2_view_meta").text("could not load this post. set your own RPC and retry."); return; }
       const owner = String(obj.who || "");
       $("#ci2_view_meta").text("sig: " + sig.slice(0, 8) + "..." + sig.slice(-6) + "  ·  owner: " + (owner ? owner.slice(0, 4) + "..." + owner.slice(-4) : "unknown") + "  ·  " + (obj.kind || "text"));
       const body = String(obj.body || "");
+      $("#ci2_view_file_notice").toggleClass("hide", obj.kind !== "file");
       const $b = $("#ci2_view_body");
       if (body.slice(0, 11) === "data:image/") $b.html($("<img>").attr("src", body).css({ borderRadius: "5px" }));
       else if (body.slice(0, 11) === "data:audio/") {
@@ -712,10 +714,9 @@
     let tkLast = null;       // last successful launch, for the registry retry
     let lastInscribed = null;// last inscription, for the done-panel loop back
 
-    // text and ascii render as a terminal card via the gateway, so they can
-    // be a coin image just like an actual image post
+    // File/audio inscriptions are valid token sources too. Registry rows are not.
     const tkUsable = (kind, body) =>
-      String(body).slice(0, 11) === "data:image/" || kind === "text" || kind === "ascii";
+      ["image", "text", "ascii", "file"].includes(kind) && String(body || "").length > 0;
 
     // One place for every launcher string that differs between the two
     // launchpads (pump.fun on solana, pons on robinhood); runs on open so the
@@ -778,7 +779,7 @@
       $("#ci2_tk_noinv, #ci2_tk_onlyimg").addClass("hide");
       $("#ci2_tk_inv_load").removeClass("hide").text("loading your inventory...");
       tkPicked = null;
-      $("#ci2_tk_continue").prop("disabled", true).text("PICK AN IMAGE TO CONTINUE");
+      $("#ci2_tk_continue").prop("disabled", true).text("PICK AN INSCRIPTION TO CONTINUE");
       if (!who) { await connect(); if (!who) { $("#ci2_tk_inv_load").text("connect your wallet to see your inventory."); return; } }
       let rows = [];
       try { rows = ((await window.iqCodein.readMine(who, 50)) || {}).rows || []; } catch (e) {}
@@ -798,6 +799,7 @@
         const $th = $('<div class="th"></div>');
         if (isImg) $th.append($("<img>").attr("src", body));
         else if (body.slice(0, 11) === "data:audio/") $th.addClass("txt").text("|> audio");
+        else if (kind === "file") $th.addClass("txt").text(fileNameOf(body) || "[ file ]");
         else if (kind === "ascii") $th.addClass("art").text(body.slice(0, 400));
         else $th.addClass("txt").text(body.slice(0, 60));
         const card = $('<div class="rec"></div>').append($th)
