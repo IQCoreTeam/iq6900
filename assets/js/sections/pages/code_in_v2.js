@@ -1113,7 +1113,10 @@
           // get the recovery coordinates machine-readable.
           metaJson.attributes = [
             { trait_type: "inscription tx", value: tkSrcSig },
-            { trait_type: "inscription kind", value: isImg ? "image" : "text" },
+            { trait_type: "inscription kind", value:
+              bodyIsImage(tkSrcBody) ? "image"
+              : tkSrcBody.slice(0, 11) === "data:audio/" ? "audio"
+              : tkSrcKind === "file" ? "file" : "text" },
             { trait_type: "rewards", value: rewards === "creator" ? "creator" : "token holders" },
             { trait_type: "storage", value: "fully on-chain (solana code-in)" },
             { trait_type: "program", value: "9KLLchQVJpGkw4jPuUmnvqESdR7mtNCYr3qS4iQLabs" },
