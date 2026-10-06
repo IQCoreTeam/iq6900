@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=59";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=60";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -256,7 +256,10 @@
           const sig = obj.__txSignature || it.__txSignature || it.signature || "";
           const owner = String(obj.who || "");
           const who2 = owner ? owner.slice(0, 4) + "..." + owner.slice(-4) : "";
-          const card = $('<div class="rec"><div class="th"></div><div class="m"><span class="tag">' + (obj.kind || "text") + '</span> <span class="ago">' + relTime(obj.__blockTime) + '</span><div class="own">' + who2 + "</div></div></div>");
+          const card = $('<div class="rec"><div class="th"></div><div class="m"><span class="tag"></span> <span class="ago"></span><div class="own"></div></div></div>');
+          card.find(".tag").text(String(obj.kind || "text"));
+          card.find(".ago").text(relTime(obj.__blockTime));
+          card.find(".own").text(who2);
           renderThumb(card.find(".th"), obj);
           if (sig) card.css("cursor", "pointer").on("click", () => openPost(sig, obj));
           grid.append(card);
@@ -413,7 +416,7 @@
         if (meta.artist || meta.album) $w.append($("<div>").addClass("t2").text([meta.artist, meta.album].filter(Boolean).join("  ·  ")));
         $b.html($w.append($("<audio>").attr({ src: body, controls: true })));
       }
-      else if (obj.kind === "file") {
+      else if (obj.kind === "file" && body.startsWith("data:")) {
         const name = fileNameOf(body);
         const $w = $("<div>").css("text-align", "center");
         if (name) $w.append($("<div>").addClass("muted").css("margin-bottom", "8px").text(name));
@@ -544,7 +547,7 @@
     function refreshCost() {
       const pay = currentPayload();
       const bytes = new TextEncoder().encode(JSON.stringify({ kind: pay.kind, body: pay.body, who: who || "" })).length;
-      const est = window.iqCodein.estimateCost(bytes, { firstTime: !burner });
+      const est = window.iqCodein.estimateCost(bytes);
       $("#ci2_size").text((bytes / 1024).toFixed(1) + " KB");
       $("#ci2_chunks").text(isEvm() ? "x " + est.sigs : "x " + est.chunks);
       $("#ci2_total").text(isEvm() ? est.totalLabel : (est.total / 1e9).toFixed(4) + " SOL");
@@ -1069,12 +1072,10 @@
     }
 
     // ---- markets.exe (the desk's right panel) ----
-    // kind=token registry rows priced live from the DexScreener API, sorted by
-    // market cap, refreshed every 30s. A row click opens the chart.exe modal
-    // (the real dexscreener embed). Solana only; hood shows COMING SOON in the
-    // panel (design: Hood In Flow.dc.html) until robinhood launches open.
+    // Both chains use the adapter's shared market source, sorted by market cap
+    // and refreshed every 30s. Each row supplies its chart and attribution.
     const MK_PAGES = 8;       // 8 x 50 feed rows covers the young board
-    const MK_MS = 30000;      // dexscreener refresh
+    const MK_MS = 30000;      // price refresh
     const MK_FEED_TICKS = 5;  // re-read the feed every 5th price tick
     let mkTokens = [];
     let mkCurrent = null;     // coin shown in the chart modal
@@ -1084,9 +1085,8 @@
     function startMarkets() {
       if (mkTimer) { clearInterval(mkTimer); mkTimer = null; } // a prior page's timer must not tick into this DOM
       $("#ci2_mk_launch").on("click", () => tkOpen());
-      // Both chains run the live market through DexScreener
-      // (window.iqCodein.market). A pons coin still on its bonding curve has no
-      // DEX pool yet, so it shows as "new" until it graduates.
+      // DexScreener is primary; GeckoTerminal fills missing curve-stage coins.
+      // A coin stays "new" only while neither source provides a price.
       loadMarkets();
       mkTimer = setInterval(onMarketTick, MK_MS);
     }
