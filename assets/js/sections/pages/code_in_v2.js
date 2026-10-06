@@ -240,7 +240,13 @@
           rows = res.rows || [];
         } else {
           let res = { rows: [], nextCursor: null };
-          try { res = await window.iqCodein.readBoard(24, before || null); } catch (e) { /* leave empty */ }
+          // The gateway's POST /notify warms only a fixed set of head-page
+          // limits ([50,100,20,10,5]); a just-inscribed post is prepended into
+          // those cache keys so it lists in seconds. Read the feed at one of
+          // them (20) so a fresh inscription shows immediately instead of
+          // waiting ~30-60s for the limit's own cache to refresh. (24 was off
+          // that list, which is why new posts - audio/files especially - lagged.)
+          try { res = await window.iqCodein.readBoard(20, before || null); } catch (e) { /* leave empty */ }
           rows = res.rows || [];
           cursor = res.nextCursor;
         }
