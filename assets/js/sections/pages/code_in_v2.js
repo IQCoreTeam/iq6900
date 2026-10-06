@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=64";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=65";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -121,6 +121,13 @@
       $("#ci2_tk_makenew").on("click", tkMakeNew);
       $("#ci2_tk_repick").on("click", () => tkShowPicker());
       $("#ci2_tk_pickimg").on("click", () => tkShowPicker("image"));
+      // Fill WEBSITE with the current source's on-chain viewer link (pinned to
+      // the live domain, same as the launch metadata), so the user does not
+      // have to open the board and copy it. Hood-only control.
+      $("#ci2_tk_onchainlink_btn").on("click", () => {
+        if (!tkSrcSig) return;
+        $("#ci2_tk_web").val("https://iqlabs.dev/" + new URL(window.iqCodein.viewUrl(tkSrcSig)).search);
+      });
       $("#ci2_launch_after").on("click", () => {
         if (!lastInscribed) return;
         closeModal();
@@ -844,6 +851,9 @@
       const hood = isEvm();
       $("#ci2_tk_buyrow, #ci2_tk_buymeter, #ci2_tk_rw_sol").toggleClass("hide", hood);
       $("#ci2_tk_rw_hood").toggleClass("hide", !hood);
+      // the on-chain-link helper is pons-only: pump.fun renders website fine, so
+      // solana needs no hint or button (solana form stays unchanged).
+      $("#ci2_tk_onchainlink").toggleClass("hide", !hood);
       // fresh open: reset the hood advanced panel to its defaults (holders take
       // no cut, no creator fields, buyback on), then repaint the pick cards.
       $("input[name=ci2rw_hood][value=holders]").prop("checked", true);

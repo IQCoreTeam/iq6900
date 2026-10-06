@@ -500,6 +500,10 @@ await writer.writeRow(conn, signer,
             <div><span class="tk_lbl">X LINK (OPTIONAL)</span><input id="ci2_tk_x" class="tk_in" placeholder="https://x.com/..."></div>
             <div><span class="tk_lbl">WEBSITE (OPTIONAL)</span><input id="ci2_tk_web" class="tk_in" placeholder="defaults to your launch post"></div>
           </div>
+          <div id="ci2_tk_onchainlink" class="hide" style="margin-top:8px">
+            <button id="ci2_tk_onchainlink_btn" class="btn ghost" style="font-size:11px;padding:7px 12px">USE MY ON-CHAIN LINK</button>
+            <p class="muted" style="margin:6px 2px 0;font-size:10.5px;line-height:1.6">fills WEBSITE with your inscription's on-chain viewer link (no need to copy it from the board). it is saved on-chain in the launch either way. note: the pons coin page shows X and telegram links, not website, so add those above to appear on pons.</p>
+          </div>
           <div class="tk_row" id="ci2_tk_buyrow">
             <div style="flex:0 0 180px"><span class="tk_lbl">INITIAL DEV BUY (SOL)</span><input id="ci2_tk_buy" class="tk_in" type="number" min="0" step="0.001" value="0.01"></div>
           </div>
