@@ -917,11 +917,9 @@
         if (kind === "token") return;
         const isImg = bodyIsImage(body);
         const $th = $('<div class="th"></div>');
-        if (isImg) $th.append($("<img>").attr("src", body));
-        else if (body.slice(0, 11) === "data:audio/") $th.addClass("txt").text("|> audio");
-        else if (kind === "file") $th.addClass("txt").text(fileNameOf(body) || "[ file ]");
-        else if (kind === "ascii") $th.addClass("art").text(body.slice(0, 400));
-        else $th.addClass("txt").text(body.slice(0, 60));
+        // Same rich thumb the board uses: album art + ID3 title/artist for
+        // audio, filename for files, cover image for images, etc. (one source).
+        renderThumb($th, obj);
         const card = $('<div class="rec"></div>').append($th)
           .append($('<div class="m"></div>').append($('<span class="tag"></span>').text(kind)));
         // image mode only lights up image inscriptions; source mode lights up any usable source
@@ -987,7 +985,8 @@
       if (usingArt) {
         $("#ci2_tk_src").text("coin image from the track's album art - it is inscribed on-chain as a small image when you launch. the coin page links back to your audio " + tkSrcSig.slice(0, 8) + "...");
       } else if (needsImg && !tkImgSig) {
-        $("#ci2_tk_src").text("this track has no embedded cover. pick an image inscription as the coin image. the coin page still links back to " + tkSrcSig.slice(0, 8) + "...");
+        const lead = tkSrcBody.slice(0, 11) === "data:audio/" ? "this track has no embedded cover. " : "this file has no image. ";
+        $("#ci2_tk_src").text(lead + "pick an image inscription as the coin image. the coin page still links back to " + tkSrcSig.slice(0, 8) + "...");
       } else {
         $("#ci2_tk_src").text("coin image from your inscription " + (needsImg ? tkImgSig : tkSrcSig).slice(0, 8) + "... - the coin page links back to the on-chain original.");
       }
