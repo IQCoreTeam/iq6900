@@ -150,6 +150,13 @@ window.iqCodein = {
       const res = await gwFetch(`/table/${feedTable}/slice?sigs=${sig}`);
       if (res.ok) { const d = await res.json(); const row = (d.rows || [])[0]; if (row) return row; }
     } catch (e) {}
+    // Not in the index (e.g. a launch's album-art inscription, written but
+    // never notified): reassemble per-tx so it loads instead of failing. Works
+    // even on the default RPC, which blocks the browser reader below.
+    try {
+      const dr = await gwFetch(`/data/${sig}`);
+      if (dr.ok) { const j = await dr.json(); return Object.assign(JSON.parse(j.data), { __txSignature: j.signature || sig, __signer: j.signer, __blockTime: j.blockTime }); }
+    } catch (e) {}
     if (activeRpc === DEFAULT_RPC) return null;
     const out = await reader.readCodeIn(sig);
     try { return JSON.parse(out.data); } catch (e) { return { kind: "text", body: out.data || "" }; }

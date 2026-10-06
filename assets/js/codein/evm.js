@@ -326,9 +326,19 @@ const surface = {
 
   readOne: async (hash) => {
     const res = await gwFetch(`/table/${DB_ROOT_ID}/${TABLE}/slice?sigs=${hash}&${NET}`);
-    if (!res.ok) return null;
-    const d = await res.json();
-    return normRows(d.rows)[0] || null;
+    if (res.ok) { const d = await res.json(); const row = normRows(d.rows)[0]; if (row) return row; }
+    // The row may be on-chain but absent from the index (e.g. a launch's
+    // album-art inscription, written but never notified). /data reassembles it
+    // per-tx: slower on a cold read, but it loads instead of failing.
+    try {
+      const dr = await gwFetch(`/data/${hash}?${NET}`);
+      if (dr.ok) {
+        const j = await dr.json();
+        const inner = JSON.parse(j.data);
+        return Object.assign(inner, { __txSignature: j.txHash || hash, __signer: j.signer, __blockTime: j.blockTime });
+      }
+    } catch (e) { /* fall through to null */ }
+    return null;
   },
 
   viewUrl: (hash) => {
