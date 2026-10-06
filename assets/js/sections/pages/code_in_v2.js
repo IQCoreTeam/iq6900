@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=63";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=64";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -120,6 +120,7 @@
       $("#ci2_tk_continue").on("click", tkContinue);
       $("#ci2_tk_makenew").on("click", tkMakeNew);
       $("#ci2_tk_repick").on("click", () => tkShowPicker());
+      $("#ci2_tk_pickimg").on("click", () => tkShowPicker("image"));
       $("#ci2_launch_after").on("click", () => {
         if (!lastInscribed) return;
         closeModal();
@@ -703,17 +704,50 @@
     // starts as an on-chain inscription: the source sig is all the launch
     // needs, since the gateway derives the coin metadata (and the image, via
     // /render/{sig}) from the registry row. No uploads, no IPFS.
-    let tkSrcSig = "";       // the inscription behind the coin
+    let tkSrcSig = "";       // the inscription behind the coin (the back-link)
     let tkSrcBody = "";      // its body, for the local preview only
+    let tkImgSig = "";       // a separate image inscription used as the coin logo
+    let tkImgBody = "";      // its body, for the local preview only
     let tkPicked = null;     // picker candidate before CONTINUE
     let tkMetaSig = "";      // metadata inscription tx, kept across retries
     let tkMetaRw = "";       // rewards mode baked into that metadata (mismatch = re-inscribe)
     let tkLast = null;       // last successful launch, for the registry retry
     let lastInscribed = null;// last inscription, for the done-panel loop back
 
-    // File/audio inscriptions are valid token sources too. Registry rows are not.
+    // File/audio inscriptions are valid token SOURCES (the back-link). Registry rows are not.
     const tkUsable = (kind, body) =>
       ["image", "text", "ascii", "file"].includes(kind) && String(body || "").length > 0;
+    const bodyIsImage = (body) => String(body || "").slice(0, 11) === "data:image/";
+    // The coin LOGO is derived from the source: an image is its own logo (raw
+    // bytes at /img), text and ascii become the terminal card at /render. Audio
+    // and non-image files have no sensible card (/render would draw their raw
+    // base64 as garbage), so they need a separate image inscription as the logo.
+    // The picker records the source kind so the classifier works even when the
+    // body is plain text (text/ascii carry no data: prefix).
+    let tkSrcKind = "";
+    const srcNeedsImage = (kind, body) =>
+      !bodyIsImage(body) && (kind === "file" || String(body || "").slice(0, 11) === "data:audio/");
+    // The coin logo url for the active adapter, or "" when a separate image pick
+    // is still required (audio / non-image file with nothing chosen yet).
+    const coinImageUrl = () => {
+      if (bodyIsImage(tkSrcBody)) return window.iqCodein.imgUrl(tkSrcSig);
+      if (srcNeedsImage(tkSrcKind, tkSrcBody)) return tkImgSig ? window.iqCodein.imgUrl(tkImgSig) : "";
+      return window.iqCodein.renderUrl(tkSrcSig); // text / ascii -> terminal card
+    };
+    // Infer the kind for a prefill source (viewer button / fresh inscription /
+    // done-loop) which carries only {sig, body}. Any non-image data: payload is
+    // a file (audio included), so it routes to the image-pick path.
+    const kindFromBody = (b) => {
+      const s = String(b || "");
+      if (s.slice(0, 11) === "data:image/") return "image";
+      if (s.slice(0, 5) === "data:") return "file";
+      return "text";
+    };
+    // A fresh source selection drops any logo image chosen for a previous one.
+    const tkSetSource = (sig, body, kind) => {
+      tkSrcSig = sig; tkSrcBody = body || ""; tkSrcKind = kind || kindFromBody(body);
+      tkImgSig = ""; tkImgBody = "";
+    };
 
     // One place for every launcher string that differs between the two
     // launchpads (pump.fun on solana, pons on robinhood); runs on open so the
@@ -762,18 +796,27 @@
       if (prefill && prefill.sig) {
         // arriving from a specific post (viewer button or a fresh inscription):
         // the source is already chosen, skip the picker
-        tkSrcSig = prefill.sig; tkSrcBody = prefill.body || "";
+        tkSetSource(prefill.sig, prefill.body, prefill.kind);
         tkShowForm();
       } else {
         tkShowPicker();
       }
     }
 
-    async function tkShowPicker() {
+    // One picker serves two jobs: mode "source" chooses the inscription behind
+    // the coin (image/text/ascii/audio/file), mode "image" chooses an image
+    // inscription to use as the coin logo (needed when the source is audio or a
+    // non-image file, which have no sensible card render).
+    async function tkShowPicker(mode) {
+      mode = mode === "image" ? "image" : "source";
       $("#ci2_tk_form").addClass("hide");
       $("#ci2_tk_pick").removeClass("hide");
       $("#ci2_tk_inv").empty();
       $("#ci2_tk_noinv, #ci2_tk_onlyimg").addClass("hide");
+      // the source step keeps its CONTINUE button; the image step is single-click
+      $("#ci2_tk_continue").toggleClass("hide", mode === "image");
+      $("#ci2_tk_makenew").toggleClass("hide", mode === "image");
+      $("#ci2_tk_pick_step").text(mode === "image" ? "// PICK A COIN IMAGE" : "// STEP 1 OF 2 - PICK YOUR INSCRIPTION");
       $("#ci2_tk_inv_load").removeClass("hide").text("loading your inventory...");
       tkPicked = null;
       $("#ci2_tk_continue").prop("disabled", true).text("PICK AN INSCRIPTION TO CONTINUE");
@@ -792,7 +835,7 @@
         // coin - hide them from the picker on both chains (the board already
         // filters them out of the feed/inventory views).
         if (kind === "token") return;
-        const isImg = body.slice(0, 11) === "data:image/";
+        const isImg = bodyIsImage(body);
         const $th = $('<div class="th"></div>');
         if (isImg) $th.append($("<img>").attr("src", body));
         else if (body.slice(0, 11) === "data:audio/") $th.addClass("txt").text("|> audio");
@@ -801,25 +844,36 @@
         else $th.addClass("txt").text(body.slice(0, 60));
         const card = $('<div class="rec"></div>').append($th)
           .append($('<div class="m"></div>').append($('<span class="tag"></span>').text(kind)));
-        if (tkUsable(kind, body) && sig) {
+        // image mode only lights up image inscriptions; source mode lights up any usable source
+        const selectable = sig && (mode === "image" ? isImg : tkUsable(kind, body));
+        if (selectable) {
           usable++;
           card.on("click", () => {
-            tkPicked = { body, sig };
+            if (mode === "image") { tkImgSig = sig; tkImgBody = body; tkShowForm(); return; }
+            tkPicked = { body, sig, kind };
             $("#ci2_tk_inv .rec").removeClass("picked");
             card.addClass("picked");
             $("#ci2_tk_continue").prop("disabled", false)
-              .text("CONTINUE WITH " + (isImg ? (fileNameOf(body) || "THIS IMAGE") : "THIS " + kind.toUpperCase() + " CARD"));
+              .text("CONTINUE WITH " + (isImg ? (fileNameOf(body) || "THIS IMAGE") : "THIS " + kind.toUpperCase() + (kind === "file" ? "" : " CARD")));
           });
         } else card.addClass("dim");
         $inv.append(card);
       });
-      if (!usable) $("#ci2_tk_noinv").removeClass("hide");
-      else $("#ci2_tk_onlyimg").removeClass("hide");
+      if (!usable) {
+        $("#ci2_tk_noinv").removeClass("hide");
+        $("#ci2_tk_noinv_txt").text(mode === "image"
+          ? "you have no image inscriptions yet. inscribe an image first, then come back to pick it as the coin image."
+          : $("#ci2_tk_noinv_txt").text());
+      } else {
+        $("#ci2_tk_onlyimg").removeClass("hide").text(mode === "image"
+          ? "only image inscriptions can be a coin image. pick one."
+          : "image, text, ascii, audio and file inscriptions are selectable. token registry entries are excluded.");
+      }
     }
 
     function tkContinue() {
       if (!tkPicked) return;
-      tkSrcSig = tkPicked.sig; tkSrcBody = tkPicked.body;
+      tkSetSource(tkPicked.sig, tkPicked.body, tkPicked.kind);
       tkShowForm();
     }
 
@@ -834,18 +888,30 @@
     function tkShowForm() {
       $("#ci2_tk_pick").addClass("hide");
       $("#ci2_tk_form").removeClass("hide");
-      // image posts preview from their own bytes; text/ascii preview the same
-      // gateway card render that will be the coin image
-      const preview = tkSrcBody.slice(0, 11) === "data:image/"
-        ? tkSrcBody
-        : window.iqCodein.renderUrl(tkSrcSig);
-      $("#ci2_tk_prev").html($("<img>").attr("src", preview));
-      $("#ci2_tk_src").text("coin image from your inscription " + tkSrcSig.slice(0, 8) + "... - the coin page links back to the on-chain original.");
+      const needsImg = srcNeedsImage(tkSrcKind, tkSrcBody);
+      // Preview: an image source shows its own bytes; audio/file shows the
+      // separately chosen coin image (or a prompt to choose one); text/ascii
+      // shows the gateway card that becomes the coin image.
+      let preview;
+      if (bodyIsImage(tkSrcBody)) preview = tkSrcBody;
+      else if (needsImg) preview = tkImgBody || "";
+      else preview = window.iqCodein.renderUrl(tkSrcSig);
+      $("#ci2_tk_prev").html(preview ? $("<img>").attr("src", preview) : "");
+      // audio/file get an explicit "choose a coin image" control; the back-link
+      // still points at the audio/file source either way.
+      $("#ci2_tk_pickimg").toggleClass("hide", !needsImg)
+        .text(tkImgSig ? "change coin image" : "choose a coin image");
+      if (needsImg && !tkImgSig) {
+        $("#ci2_tk_src").text("audio and files have no card to show, so pick an image inscription as the coin image. the coin page still links back to " + tkSrcSig.slice(0, 8) + "...");
+      } else {
+        $("#ci2_tk_src").text("coin image from your inscription " + (needsImg ? tkImgSig : tkSrcSig).slice(0, 8) + "... - the coin page links back to the on-chain original.");
+      }
       tkValidate();
     }
 
     function tkValidate() {
-      const ok = ($("#ci2_tk_name").val() || "").trim() && ($("#ci2_tk_symbol").val() || "").trim() && tkSrcSig;
+      const ok = ($("#ci2_tk_name").val() || "").trim() && ($("#ci2_tk_symbol").val() || "").trim()
+        && tkSrcSig && !!coinImageUrl();
       $("#ci2_tk_go").prop("disabled", !ok);
     }
 
@@ -880,12 +946,14 @@
       const userDesc = ($("#ci2_tk_desc").val() || "").trim().slice(0, 300);
       const x = ($("#ci2_tk_x").val() || "").trim();
       const web = ($("#ci2_tk_web").val() || "").trim() || viewLink;
-      // The coin image: an image inscription IS its own token image (the raw
-      // bytes the gateway reconstructs at /img/{sig}.png), while text and
-      // ascii become the terminal card at /render/{sig}. The form preview
-      // above uses the same split (local data url for images, card for text).
-      const isImg = tkSrcBody.slice(0, 11) === "data:image/";
-      const image = isImg ? window.iqCodein.imgUrl(tkSrcSig) : window.iqCodein.renderUrl(tkSrcSig);
+      // The coin image: an image inscription IS its own token image (raw bytes
+      // the gateway reconstructs at /img/{sig}.png); text and ascii become the
+      // terminal card at /render/{sig}; audio and non-image files use a
+      // separately chosen image inscription (/render of their raw base64 would
+      // be garbage). coinImageUrl() is the single source of that rule, shared
+      // with the form preview and validation.
+      const image = coinImageUrl();
+      if (!image) { $("#ci2_tk_log").text("choose a coin image first."); $("#ci2_tk_form").removeClass("hide"); $("#ci2_tk_prog").addClass("hide"); return; }
       // The recovery pointers are already on chain in the launch itself, not
       // just in this prose: socials.website below is the viewer link, and the
       // logo url path IS the src inscription tx. Solana's pump.fun page renders

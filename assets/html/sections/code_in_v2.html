@@ -467,8 +467,8 @@ await writer.writeRow(conn, signer,
       <div class="body">
         <!-- step 1: pick an inscription from your inventory -->
         <div id="ci2_tk_pick">
-          <p class="tk_step">// STEP 1 OF 2 - PICK YOUR INSCRIPTION</p>
-          <p class="muted" style="margin:0 0 12px;font-size:11px">a coin from this board starts as YOUR inscription. pick one from your inventory: an image becomes the coin image as-is; other inscriptions use a rendered card. the coin page links back to the on-chain original.</p>
+          <p class="tk_step" id="ci2_tk_pick_step">// STEP 1 OF 2 - PICK YOUR INSCRIPTION</p>
+          <p class="muted" style="margin:0 0 12px;font-size:11px">a coin from this board starts as YOUR inscription. pick one from your inventory: an image becomes the coin image as-is; text and ascii use a rendered card; audio and files let you choose a coin image next. the coin page links back to the on-chain original.</p>
           <div id="ci2_tk_inv"></div>
           <p id="ci2_tk_inv_load" class="muted" style="text-align:center;padding:16px 0">loading your inventory...</p>
           <div id="ci2_tk_noinv" class="hide" style="text-align:center;padding:10px 0 4px">
@@ -492,7 +492,8 @@ await writer.writeRow(conn, signer,
             <div id="ci2_tk_prev"></div>
             <div style="flex:1;min-width:0">
               <span id="ci2_tk_src" class="muted" style="display:block"></span>
-              <span id="ci2_tk_repick" class="muted" style="text-decoration:underline;cursor:pointer">pick a different inscription</span>
+              <span id="ci2_tk_pickimg" class="muted hide" style="text-decoration:underline;cursor:pointer;display:block;margin-top:4px">choose a coin image</span>
+              <span id="ci2_tk_repick" class="muted" style="text-decoration:underline;cursor:pointer;display:block;margin-top:4px">pick a different inscription</span>
             </div>
           </div>
           <div class="tk_row">
