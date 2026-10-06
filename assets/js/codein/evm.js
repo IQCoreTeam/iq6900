@@ -115,7 +115,7 @@ async function getBurner() {
 // buffer stays tiny and any excess is swept back. The USER pays the inventory
 // fee on their own userInventoryCodeIn tx, so it is not funded here. A funded
 // deterministic burner is reused, so later inscriptions usually skip this.
-async function fundBurner(burner, rowLen) {
+async function fundBurner(burner, rowLen, onStatus) {
   const boardFeeEth = rowLen <= 700 ? fees.basic : fees.linked;
   // Generous flat gas buffer per tx: robinhood gas is sub-cent so this is tiny
   // in ETH, and any excess is swept back - over-funding is cheap, running the
@@ -133,7 +133,9 @@ async function fundBurner(burner, rowLen) {
     throw new Error("not enough ETH in your wallet to start the write (need ~"
       + Number(formatEther(topUp)).toFixed(5) + " ETH, most of it comes back). add ETH and retry.");
   }
+  onStatus?.(3, "funding - approve the transfer in your wallet");
   const tx = await signer.sendTransaction({ to: burner.address, value: topUp });
+  onStatus?.(6, "funding - waiting for confirmation");
   await tx.wait();
 }
 
@@ -235,17 +237,45 @@ const surface = {
   // with a phase checkpoint; keeping it keyed to the exact row lets RETRY resume
   // (skipping already-landed chunks/fees) instead of redoing everything. Returns
   // the board row's tx (boardTx) as sig, which is what the feed/UI keys on.
-  inscribe: async ({ kind, body, who, onProgress }) => {
+  inscribe: async ({ kind, body, who, onProgress, onStatus }) => {
     if (!signer) throw new Error("connect the wallet first");
     const row = JSON.stringify({ kind, body, who });
+    onStatus?.(0, "preparing session - approve the wallet message if prompted");
     const burner = await getBurner();
     const resume = inscribeCheckpoint && inscribeCheckpoint.row === row ? inscribeCheckpoint.at : undefined;
-    await fundBurner(burner, row.length);
+    onStatus?.(2, "checking session funds");
+    await fundBurner(burner, row.length, onStatus);
+    const batches = surface.estimateCost(new TextEncoder().encode(row).length).chunks;
+    onStatus?.(resume?.onChainPath !== undefined ? 80 : 10,
+      resume?.onChainPath !== undefined ? "upload already complete - finalizing" : "uploading - burner sends the batches");
+    // Observe only this write's wallet sends, without changing the shared signer
+    // or SDK. A resumed inventory write may only need the second signature.
+    let finalStep = resume?.inventoryTx ? 1 : 0;
+    const finalizeSigner = new Proxy(signer, {
+      get(target, key) {
+        if (key === "sendTransaction") return async (...args) => {
+          const step = ++finalStep;
+          onStatus?.(step === 1 ? 85 : 95, "final signature " + step + "/2 - approve in your wallet");
+          const tx = await target.sendTransaction(...args);
+          onStatus?.(step === 1 ? 90 : 98, "final transaction " + step + "/2 - waiting for confirmation");
+          return tx;
+        };
+        const value = Reflect.get(target, key, target);
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    });
     try {
       const out = await sdk.writer.writeRowWithInventory(
-        burner, signer, DB_ROOT_ID, TABLE, row,
-        { filename: kind, filetype: "text/plain", onProgress: (pct) => onProgress && onProgress(pct), resume },
+        burner, finalizeSigner, DB_ROOT_ID, TABLE, row,
+        { filename: kind, filetype: "text/plain", resume, onProgress: (pct) => {
+          const progress = Math.max(0, Math.min(100, Number(pct) || 0));
+          onProgress?.(progress);
+          onStatus?.(10 + Math.floor(progress * 0.7), progress >= 100
+            ? "upload complete - saving board record"
+            : "uploading " + Math.min(batches, Math.round(progress * batches / 100)) + "/" + batches + " batches");
+        } },
       );
+      onStatus?.(100, "complete - all transactions confirmed");
       inscribeCheckpoint = null;
       sweepBurner(burner, signer.address); // fire-and-forget return of leftover
       return { sig: out.boardTx };

@@ -1,8 +1,8 @@
 // Code-In v2 page module. Loads html/sections/code_in_v2.html into #main_section
 // and drives it through window.iqCodein - either the solana adapter
 // (js/codein/browser.js, ?menu=codein, Model B burner) or the EVM adapter
-// (js/codein/evm.js, ?menu=hoodin on Robinhood Chain, Model A: the user's
-// wallet signs every tx sequentially, no burner). One UI, two chains.
+// (js/codein/evm.js, ?menu=hoodin on Robinhood Chain, hybrid burner upload
+// with wallet finalization). One UI, two chains.
 (function ($) {
   $.extend(true, window, { code_in_v2: CodeInV2 });
 
@@ -56,7 +56,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=12", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=13", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -612,23 +612,11 @@
       try {
         let res;
         if (isEvm()) {
-          // Model A: the wallet signs each tx of the linked list in order.
-          // Batches sign sequentially, so the signature counter derives from
-          // the batch progress the SDK reports.
-          const est = window.iqCodein.estimateCost(bytes);
-          setBar(0, "signature 1/" + est.sigs + " - approve in your wallet");
-          // The SDK progress only covers the data batches; the last 2
-          // signatures (row commit + tail pointer) come after it hits 100%.
-          // Scale the bar to the SIGNATURE count so it never sits full while
-          // the wallet still asks for more.
+          // One overall bar: funding 0-10, upload 10-80, finalization 80-100.
+          // The adapter reports real stages; batch count is not signature count.
           res = await window.iqCodein.inscribe({
             kind: pay.kind, body: pay.body, who,
-            onProgress: (pct) => {
-              const batchesDone = Math.round((pct / 100) * est.chunks);
-              const scaled = Math.round((batchesDone / est.sigs) * 100);
-              if (pct >= 100) setBar(scaled, "signature " + (est.chunks + 1) + "/" + est.sigs + " - finalizing, approve the last " + (est.sigs - est.chunks) + " in your wallet");
-              else setBar(scaled, "signature " + Math.min(est.sigs, batchesDone + 1) + "/" + est.sigs + " - writing");
-            },
+            onStatus: setBar,
           });
         } else {
           await ensureBurner();
