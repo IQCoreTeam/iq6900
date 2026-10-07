@@ -77,7 +77,8 @@
       // Phantom first (its window.solana shim also claims the generic slot),
       // then Backpack's own provider, then whatever claimed window.solana.
       provider = window.phantom?.solana || window.backpack || window.solana || null;
-      $("#ci2_connect, #ci2_change_wallet").on("click", () => connect());
+      $("#ci2_connect").on("click", () => connect());        // auto: picker only when ambiguous
+      $("#ci2_change_wallet").on("click", () => connect(true)); // explicit switch
       $("#ci2_wallet_close").on("click", () => document.getElementById("ci2_wallet_dialog").close(""));
       $("#ci2_wallet_disconnect").on("click", () => {
         walletGeneration++;
@@ -215,26 +216,41 @@
       return p;
     }
 
-    async function connect() {
+    // Open the wallet picker dialog; resolves to the chosen wallet id ("" = cancelled).
+    function pickWallet() {
+      const dialog = document.getElementById("ci2_wallet_dialog");
+      if (dialog.open) return Promise.resolve("");
+      renderWalletOptions();
+      dialog.returnValue = "";
+      return new Promise(resolve => {
+        dialog.addEventListener("close", () => resolve(dialog.returnValue), { once: true });
+        dialog.showModal();
+      });
+    }
+
+    // forcePicker (CHANGE WALLET) always opens the picker. A plain CONNECT
+    // auto-connects the saved or only EVM wallet: connectWallet() picks a
+    // single/saved wallet itself and throws "Choose an EVM wallet first" only
+    // when ambiguous (2+ wallets, none saved), so the picker opens only then.
+    // Solana resolves its provider lazily below (Brave aware).
+    async function connect(forcePicker) {
       let walletId;
-      if (isEvm()) {
-        const dialog = document.getElementById("ci2_wallet_dialog");
-        if (dialog.open) return;
-        renderWalletOptions();
-        dialog.returnValue = "";
-        walletId = await new Promise(resolve => {
-          dialog.addEventListener("close", () => resolve(dialog.returnValue), { once: true });
-          dialog.showModal();
-        });
-        if (!walletId) return;
-      }
+      if (isEvm() && forcePicker) { walletId = await pickWallet(); if (!walletId) return; }
       const generation = ++walletGeneration; // Ignore a late silent reconnect after an explicit choice.
       removeWalletListeners();
       showWallet(null);
       let address;
       if (isEvm()) {
         try { address = await window.iqCodein.connectWallet({ walletId }); }
-        catch (e) { alert(String((e && e.message) || e)); return; }
+        catch (e) {
+          // auto attempt and the choice is ambiguous: open the picker once and retry
+          if (!walletId && !forcePicker && /choose an evm wallet/i.test(String((e && e.message) || e))) {
+            walletId = await pickWallet();
+            if (!walletId || generation !== walletGeneration) return;
+            try { address = await window.iqCodein.connectWallet({ walletId }); }
+            catch (e2) { alert(String((e2 && e2.message) || e2)); return; }
+          } else { alert(String((e && e.message) || e)); return; }
+        }
         if (generation !== walletGeneration) return;
         bindWalletListeners();
         if (!await walletRpcHealthy()) return;
