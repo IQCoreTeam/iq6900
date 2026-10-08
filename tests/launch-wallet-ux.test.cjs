@@ -117,7 +117,7 @@ for (const event of ['accountsChanged', 'chainChanged', 'disconnect']) {
    connectWallet:async options=>options.onlyIfTrusted&&!restoring?null:'0xabc',
    checkWalletRpc:()=>new Promise(resolve=>{finish=resolve;}),disconnectWallet:()=>{disconnected++;}
   });
-  if(!restoring){v.w.$('#ci2_connect').trigger('click');v.w.document.getElementById('ci2_wallet_dialog').close('metamask');await tick();}
+  if(!restoring){v.w.$('#ci2_connect').trigger('click');await tick();}
   assert.equal(typeof listeners.get(event),'function');listeners.get(event)();
   finish({ok:true});await tick();
   assert.equal(disconnected,1);assert.equal(v.w.$('#ci2_connect').hasClass('hide'),false);
