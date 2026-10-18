@@ -41,6 +41,14 @@
     #nftl .log pre { margin:0; padding:10px; max-height:220px; overflow:auto; font-size:.66rem; line-height:1.5; color:#bfe8cf; white-space:pre-wrap; word-break:break-all; }
     #nftl .log .t { color:var(--dim); }
     #nftl .log .e { color:#ff9a9a; }
+    #nftl .hgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; margin-top:14px; }
+    #nftl .ccard { border:1px solid var(--line); border-radius:8px; background:var(--card); padding:14px; cursor:pointer; text-decoration:none; color:inherit; display:block; }
+    #nftl .ccard:hover { border-color:var(--green); }
+    #nftl .ccard .cn { font-family:"Zen Dots",monospace; font-size:1rem; margin-bottom:2px; }
+    #nftl .ccard .cs { color:var(--dim); font-size:.68rem; margin-bottom:8px; }
+    #nftl .ccard .cp { font-size:.8rem; }
+    #nftl .ccard .tag { float:right; font-size:.6rem; color:var(--green); border:1px solid var(--green); border-radius:4px; padding:1px 5px; }
+    #nftl .ccard .tag.out { color:var(--dim); border-color:var(--line); }
   </style>
 
   <div class="exe">
@@ -48,7 +56,13 @@
       <span class="ttl">launchpad.exe // inscription NFT</span></div>
     <div class="env" id="nftl_env">env: loading...</div>
     <div class="body">
-      <div id="nftl_loading" class="muted">loading collection...</div>
+      <div id="nftl_loading" class="muted">loading...</div>
+
+      <div id="nftl_home" style="display:none">
+        <h2>inscription collections</h2>
+        <div class="sub">fully on-chain NFTs. pick a collection to mint.</div>
+        <div class="hgrid" id="nftl_home_grid"></div>
+      </div>
 
       <div id="nftl_view" style="display:none">
         <h2 id="nftl_name">-</h2>

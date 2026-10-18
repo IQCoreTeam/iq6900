@@ -21,7 +21,7 @@
   }
   function slugFromUrl() {
     const p = new URLSearchParams(window.location.search).get("nft");
-    return p && p.trim() ? p.trim() : "test-monks";
+    return p && p.trim() ? p.trim() : null; // null -> show the home list
   }
   const sol = (lamports) => (Number(lamports || 0) / 1e9).toFixed(4) + " SOL";
   const setBar = (pct) => $("#nftl_progbar").css("width", Math.max(0, Math.min(100, pct)) + "%");
@@ -33,9 +33,31 @@
       $.get(TEMPLATE, (html) => {
         $("#main_section").show().empty().append($(html));
         $("#nftl_log_clear").on("click", () => $("#nftl_log").empty());
-        this.dbg("page init, slug=" + slug);
+        this.dbg("page init" + (slug ? ", slug=" + slug : ", home"));
         this.renderEnv();
-        bridge(() => { this.dbg("bridge ready (window.iqNft)"); this.load(slug).catch((e) => this.fail(e)); });
+        bridge(() => {
+          this.dbg("bridge ready (window.iqNft)");
+          (slug ? this.load(slug) : this.loadHome()).catch((e) => this.fail(e));
+        });
+      });
+    },
+
+    loadHome: async function () {
+      const cols = await window.iqNft.getCollections();
+      this.dbg("home: " + cols.length + " collection(s)");
+      $("#nftl_loading").hide();
+      $("#nftl_home").show();
+      const $g = $("#nftl_home_grid").empty();
+      if (!cols.length) { $g.append($("<div class='muted'>").text("no collections yet")); return; }
+      cols.forEach((c) => {
+        const minted = Number(c.minted || 0), supply = Number(c.maxSupply || 0);
+        const soldout = supply > 0 && minted >= supply;
+        const card = $("<a class='ccard'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(c.slug));
+        card.append($("<span>").addClass("tag" + (soldout ? " out" : "")).text(soldout ? "SOLD OUT" : (supply ? "LIVE" : "SINGLE")));
+        card.append($("<div class='cn'>").text(c.name || c.slug));
+        card.append($("<div class='cs'>").text((c.symbol || "") + (supply ? "  .  " + minted + "/" + supply + " minted" : "  .  single-mint")));
+        card.append($("<div class='cp'>").text(sol(c.priceLamports)));
+        $g.append(card);
       });
     },
 
@@ -76,6 +98,7 @@
       this.dbg("collection loaded: " + col.slug + " supply=" + col.maxSupply + " price=" + col.priceLamports + " deposit=" + col.depositLamports + " minted=" + col.minted + " treasury=" + short(col.treasury));
       $("#nftl_loading").hide();
       $("#nftl_view").show();
+      if (!$("#nftl_back").length) $("#nftl_name").before($("<a id='nftl_back'>").attr("href", "?menu=nft").css("font-size", ".7rem").text("← all collections"));
       $("#nftl_name").text(col.name || slug);
       $("#nftl_meta").text([col.symbol, col.creator ? "by " + short(col.creator) : "", col.sequential ? "sequential" : "random"].filter(Boolean).join("  .  "));
       $("#nftl_price").text(sol(col.priceLamports));
