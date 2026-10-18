@@ -9,6 +9,7 @@ import { deriveBurner } from "./burner.js";
 import * as nft from "./nft.js?v=2";
 import { deploy, pendingDeploy } from "./nft_create.js?v=1";
 import { compressImage } from "./image_compress.js?v=1";
+import { readAsset } from "./nft_asset.js?v=1";
 
 // The NFT program + backend currently run on DEVNET while the rest of the site
 // is mainnet, so the NFT page keeps its own RPC under its own localStorage key.
@@ -67,6 +68,9 @@ window.iqNft = Object.assign({}, nft, {
   },
   pendingDeploy,
   compressImage,
+  // On-chain NFT viewer: reads an asset entirely from the chain (no backend).
+  // setRpcUrl points the SDK reader's linked-list/session walk at this cluster.
+  viewAsset: async (asset, onStep) => { setRpcUrl(rpc()); return readAsset(connection(), asset, onStep); },
 });
 window.iqNftReady = true;
 window.dispatchEvent(new Event("iqnft:ready"));

@@ -3,7 +3,7 @@
 // (js/codein/nft_bridge.js). v1 = one collection's buyer mint view: header,
 // item grid, and a mint panel that drives iqNft.mint() stage by stage.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=1";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=2";
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet...",
     deposit: "paying the deposit...",
@@ -23,6 +23,10 @@
     const p = new URLSearchParams(window.location.search).get("nft");
     return p && p.trim() ? p.trim() : null; // null -> show the home list
   }
+  function assetFromUrl() {
+    const p = new URLSearchParams(window.location.search).get("asset");
+    return p && p.trim() ? p.trim() : null; // present -> show the on-chain viewer
+  }
   const sol = (lamports) => (Number(lamports || 0) / 1e9).toFixed(4) + " SOL";
   const setBar = (pct) => $("#nftl_progbar").css("width", Math.max(0, Math.min(100, pct)) + "%");
   const short = (s) => (s ? s.slice(0, 8) + "..." + s.slice(-6) : "");
@@ -30,14 +34,16 @@
   $.nft_launch = {
     init: function () {
       const slug = slugFromUrl();
+      const asset = assetFromUrl();
       $.get(TEMPLATE, (html) => {
         $("#main_section").show().empty().append($(html));
         $("#nftl_log_clear").on("click", () => $("#nftl_log").empty());
-        this.dbg("page init" + (slug ? ", slug=" + slug : ", home"));
+        this.dbg("page init" + (asset ? ", asset=" + asset : slug ? ", slug=" + slug : ", home"));
         this.renderEnv();
         bridge(() => {
           this.dbg("bridge ready (window.iqNft)");
-          (slug ? this.load(slug) : this.loadHome()).catch((e) => this.fail(e));
+          const route = asset ? this.loadAsset(asset, slug) : slug ? this.load(slug) : this.loadHome();
+          route.catch((e) => this.fail(e));
         });
       });
     },
@@ -59,6 +65,54 @@
         card.append($("<div class='cp'>").text(sol(c.priceLamports)));
         $g.append(card);
       });
+    },
+
+    // On-chain NFT viewer (?menu=nft&asset=<addr>). Reads the asset from the
+    // chain only (no backend) and shows the recovered image + metadata, proving
+    // the "recover without us" claim. slug (optional) just drives the back link.
+    loadAsset: async function (addr, slug) {
+      $("#nftl_loading").hide();
+      $("#nftl_viewer").show();
+      $("#nftl_vback").attr("href", slug ? "?menu=nft&nft=" + encodeURIComponent(slug) : "?menu=nft").text(slug ? "← " + slug : "← all collections");
+      $("#nftl_vname").text("recovering " + short(addr) + " ...");
+      this.dbg("viewer: read asset " + addr);
+      const a = await window.iqNft.viewAsset(addr, (step) => { $("#nftl_vname").text("recovering (" + step + ") ..."); });
+      this.dbg("viewer recovered: C=" + short(a.C) + " M=" + short(a.M) + " img=" + (a.imageDataUrl ? "yes" : "no"));
+      $("#nftl_vname").text(a.name || short(addr));
+      $("#nftl_vsub").text([a.collection ? "collection " + short(a.collection) : "", a.owner ? "owner " + short(a.owner) : ""].filter(Boolean).join("  .  "));
+
+      if (a.imageDataUrl) {
+        $("#nftl_vimg").attr("src", a.imageDataUrl).show();
+        $("#nftl_vimgnote").text("decoded in your browser from the image inscription (tx C).");
+      } else {
+        $("#nftl_vimg").hide();
+        $("#nftl_vimgnote").html("image not recovered on this RPC. metadata image pointer: " + (a.metadata && a.metadata.image ? a.metadata.image : "-"));
+      }
+
+      const rows = [
+        ["name", a.name],
+        ["collection", a.collection || "-"],
+        ["index", a.attributes.index || "-"],
+        ["inscription (C)", a.C || "-"],
+        ["metadata (M)", a.M || "-"],
+        ["std", a.attributes.std || "-"],
+        ["uri", a.uri],
+      ];
+      const $p = $("#nftl_vattrs").empty();
+      rows.forEach(([k, v]) => {
+        $p.append($("<div>").css({ display: "flex", "justify-content": "space-between", gap: "10px", padding: "5px 0", "border-bottom": "1px solid var(--line)", "font-size": ".68rem" })
+          .append($("<span class='k'>").text(k))
+          .append($("<span>").css({ color: "var(--cream)", "word-break": "break-all", "text-align": "right" }).text(v)));
+      });
+
+      const L = $("#nftl_vlinks").empty();
+      if (a.C) L.append($("<a>").attr({ href: window.iqNft.solscanTx(a.C), target: "_blank" }).text("raw tx C"));
+      if (a.M) L.append($("<a>").attr({ href: window.iqNft.solscanTx(a.M), target: "_blank" }).text("raw tx M"));
+      const dev = window.iqNft.getRpc().indexOf("devnet") >= 0 ? "?cluster=devnet" : "";
+      L.append($("<a>").attr({ href: "https://solscan.io/account/" + addr + dev, target: "_blank" }).text("asset on solscan"));
+      L.append($("<a>").attr({ href: "https://magiceden.io/item-details/" + addr, target: "_blank" }).text("magic eden"));
+
+      $("#nftl_vmeta").text(JSON.stringify(a.metadata, null, 2));
     },
 
     // Prominent debug log: every step + raw errors land here and in the console,
@@ -128,9 +182,17 @@
       try {
         const data = await window.iqNft.getItems(slug, 0, 120);
         (data.items || []).forEach((it) => {
-          $g.append($("<div>").addClass("cell" + (it.minted ? " minted" : ""))
-            .append($("<b>").text("#" + it.index))
-            .append(document.createTextNode(it.minted ? "minted" : "open")));
+          if (it.minted && it.asset) {
+            // Minted cells link into the on-chain viewer for that asset.
+            $g.append($("<a>").addClass("cell minted").css("text-decoration", "none")
+              .attr("href", "?menu=nft&nft=" + encodeURIComponent(slug) + "&asset=" + it.asset)
+              .append($("<b>").text("#" + it.index))
+              .append(document.createTextNode("view")));
+          } else {
+            $g.append($("<div>").addClass("cell" + (it.minted ? " minted" : ""))
+              .append($("<b>").text("#" + it.index))
+              .append(document.createTextNode(it.minted ? "minted" : "open")));
+          }
         });
       } catch (e) { $g.append($("<div class='cell'>").text("items unavailable")); }
     },
@@ -188,6 +250,7 @@
       $("#nftl_c").text(res.C);
       $("#nftl_m").text(res.M);
       const links = $("#nftl_links").empty();
+      links.append($("<a>").attr({ href: "?menu=nft&nft=" + encodeURIComponent(res.slug) + "&asset=" + res.asset }).text("view nft"));
       if (res.mintSig) links.append($("<a>").attr({ href: window.iqNft.solscanTx(res.mintSig), target: "_blank" }).text("mint tx"));
       links.append($("<a>").attr({ href: window.iqNft.solscanTx(res.C), target: "_blank" }).text("image tx"));
       links.append($("<a>").attr({ href: window.iqNft.solscanTx(res.M), target: "_blank" }).text("metadata tx"));

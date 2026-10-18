@@ -97,6 +97,33 @@
         </div>
       </div>
 
+      <div id="nftl_viewer" style="display:none">
+        <a id="nftl_vback" style="font-size:.7rem">← back</a>
+        <h2 id="nftl_vname" style="margin-top:6px">-</h2>
+        <div class="sub" id="nftl_vsub">-</div>
+        <div class="row" style="margin-top:12px">
+          <div class="col" style="flex:0 1 300px">
+            <img id="nftl_vimg" alt="" style="width:100%; border:1px solid var(--line); border-radius:6px; background:var(--card); display:none" />
+            <div class="note" id="nftl_vimgnote"></div>
+          </div>
+          <div class="col">
+            <div class="k">// ON THE ASSET ACCOUNT (attributes plugin, immutable)</div>
+            <div class="panel" id="nftl_vattrs" style="margin-top:8px"></div>
+            <div class="k" style="margin-top:14px">// RECOVER WITHOUT US (rpc only, zero backend)</div>
+            <div class="note">
+              1. read the asset account &rarr; attributes.inscription (hex)<br>
+              2. hex &rarr; base58 = the image tx (C); the uri's last segment = the metadata tx (M)<br>
+              3. getTransaction + SDK reader &rarr; your bytes. this page just did exactly that.
+            </div>
+            <div class="links" id="nftl_vlinks" style="margin-top:10px"></div>
+            <div style="margin-top:12px">
+              <div class="k">recovered metadata (decoded from tx M)</div>
+              <pre id="nftl_vmeta" style="margin:6px 0 0; padding:10px; max-height:220px; overflow:auto; font-size:.64rem; line-height:1.5; color:#bfe8cf; background:#0f0d0b; border:1px solid var(--line); border-radius:6px; white-space:pre-wrap; word-break:break-all"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="nftl_error" class="err" style="display:none"></div>
 
       <div class="log">
