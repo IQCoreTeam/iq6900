@@ -1,0 +1,80 @@
+<section id="nftl">
+  <style>
+    #nftl { --bg:#141210; --cream:#efe7d6; --dim:#9a8f79; --green:#8fffb0; --line:#2b2824; --card:#1b1813;
+      color:var(--cream); font-family:"Kode Mono",monospace; max-width:1000px; margin:0 auto; padding:16px; }
+    #nftl a { color:var(--green); }
+    #nftl .exe { border:1px solid var(--line); border-radius:8px; background:var(--bg); overflow:hidden; }
+    #nftl .bar { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line); background:#191611; }
+    #nftl .dot { width:10px; height:10px; border-radius:50%; background:#3a352d; }
+    #nftl .dot.g { background:var(--green); }
+    #nftl .ttl { font-size:.8rem; color:var(--dim); letter-spacing:.04em; }
+    #nftl .body { padding:16px; }
+    #nftl h2 { font-family:"Zen Dots",monospace; font-size:1.3rem; margin:0 0 4px; }
+    #nftl .sub { color:var(--dim); font-size:.8rem; margin-bottom:12px; }
+    #nftl .prog { height:8px; background:#2b2824; border-radius:4px; overflow:hidden; margin:10px 0 4px; }
+    #nftl .prog > i { display:block; height:100%; background:var(--green); width:0; transition:width .3s; }
+    #nftl .row { display:flex; flex-wrap:wrap; gap:16px; }
+    #nftl .col { flex:1 1 320px; min-width:280px; }
+    #nftl .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; max-height:360px; overflow:auto; }
+    #nftl .cell { border:1px solid var(--line); border-radius:6px; background:var(--card); padding:6px; font-size:.65rem; text-align:center; color:var(--dim); }
+    #nftl .cell.minted { opacity:.4; }
+    #nftl .cell b { display:block; color:var(--cream); font-size:.7rem; }
+    #nftl .panel { border:1px solid var(--line); border-radius:8px; background:var(--card); padding:14px; }
+    #nftl .k { color:var(--dim); font-size:.72rem; }
+    #nftl .v { font-size:1.1rem; margin-bottom:8px; }
+    #nftl .note { color:var(--dim); font-size:.68rem; line-height:1.5; margin:8px 0; }
+    #nftl .btn { font-family:inherit; cursor:pointer; border:1px solid var(--green); background:transparent; color:var(--green);
+      padding:10px 16px; border-radius:6px; font-size:.85rem; width:100%; }
+    #nftl .btn:disabled { opacity:.4; cursor:not-allowed; }
+    #nftl .btn.solid { background:var(--green); color:#0c0a08; font-weight:700; }
+    #nftl .status { font-size:.75rem; color:var(--green); min-height:18px; margin-top:10px; white-space:pre-wrap; }
+    #nftl .err { color:#ff9a9a; }
+    #nftl .result { display:none; margin-top:12px; border-top:1px solid var(--line); padding-top:10px; font-size:.72rem; }
+    #nftl .result code { color:var(--cream); word-break:break-all; }
+    #nftl .result .links { display:flex; gap:12px; margin-top:8px; flex-wrap:wrap; }
+    #nftl .muted { color:var(--dim); }
+  </style>
+
+  <div class="exe">
+    <div class="bar"><span class="dot g"></span><span class="dot"></span><span class="dot"></span>
+      <span class="ttl">launchpad.exe // inscription NFT</span></div>
+    <div class="body">
+      <div id="nftl_loading" class="muted">loading collection...</div>
+
+      <div id="nftl_view" style="display:none">
+        <h2 id="nftl_name">-</h2>
+        <div class="sub" id="nftl_meta">-</div>
+        <div class="prog"><i id="nftl_progbar"></i></div>
+        <div class="sub"><span id="nftl_minted">0</span> / <span id="nftl_supply">0</span> minted</div>
+
+        <div class="row" style="margin-top:14px">
+          <div class="col">
+            <div class="k">items</div>
+            <div class="grid" id="nftl_grid"></div>
+          </div>
+          <div class="col" style="flex:0 1 320px">
+            <div class="panel">
+              <div class="k">price</div>
+              <div class="v" id="nftl_price">-</div>
+              <div class="k">your wallet</div>
+              <div class="v" id="nftl_addr" style="font-size:.78rem">not connected</div>
+              <button class="btn" id="nftl_connect" type="button">CONNECT WALLET</button>
+              <button class="btn solid" id="nftl_mint" type="button" style="display:none; margin-top:8px">MINT</button>
+              <div class="note" id="nftl_fee">a small network + inscription fee is added on top of the price; leftover is returned to your wallet.</div>
+              <div class="status" id="nftl_status"></div>
+              <div class="result" id="nftl_result">
+                <div class="k">your NFT</div>
+                <div>asset <code id="nftl_asset"></code></div>
+                <div>image tx (C) <code id="nftl_c"></code></div>
+                <div>metadata tx (M) <code id="nftl_m"></code></div>
+                <div class="links" id="nftl_links"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="nftl_error" class="err" style="display:none"></div>
+    </div>
+  </div>
+</section>
