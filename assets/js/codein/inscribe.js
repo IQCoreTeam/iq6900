@@ -26,7 +26,6 @@ export async function inscribe({ connection, wallet, burner, kind, body, speed, 
 
   await topUp(connection, wallet, burner.publicKey, total);
 
-  const userInvPda = contract.getUserInventoryPda(wallet.publicKey, programId);
   // One in-place retry: the burner keeps the funds and chunks are cheap to
   // re-send, and the SDK already absorbs false blockheight expiries at the
   // chunk level. Kept at one pass to stay clear of rate limits; beyond that
@@ -34,7 +33,7 @@ export async function inscribe({ connection, wallet, burner, kind, body, speed, 
   let sig;
   for (let attempt = 1; ; attempt++) {
     try {
-      sig = await writer.writeRow(connection, burner, dbRootSeed, feedSeed, row, false, [userInvPda], { speed, onProgress });
+      sig = await writeFeedRow({ connection, burner, row, owner: wallet.publicKey, speed, onProgress });
       break;
     } catch (e) {
       if (attempt >= 2) throw e;
@@ -54,6 +53,15 @@ export async function inscribe({ connection, wallet, burner, kind, body, speed, 
   return { sig };
 }
 
+// Write one feed-table row, funding-free: the burner must already hold enough.
+// The single source of truth for "inscribe this row referencing owner's
+// inventory PDA". inscribe() funds + sweeps around it with a retry; the NFT
+// mint funds once for several writes and calls it directly. Returns the tx sig.
+export async function writeFeedRow({ connection, burner, row, owner, speed, onProgress }) {
+  const userInvPda = contract.getUserInventoryPda(owner, programId);
+  return writer.writeRow(connection, burner, dbRootSeed, feedSeed, row, false, [userInvPda], { speed, onProgress });
+}
+
 // A PLAIN code-in write - no table, no board row, no inventory reference.
 // Used for a launched coin's Metaplex metadata JSON: the returned tx
 // signature becomes the path of the coin's on-chain uri, so the JSON is
@@ -70,7 +78,7 @@ export async function inscribeMeta({ connection, wallet, burner, json }) {
 
 // Fund the burner up to `target`, sending only the shortfall so a reused burner
 // with leftover balance costs less. The user signs this one transfer.
-async function topUp(connection, wallet, burnerPubkey, target) {
+export async function topUp(connection, wallet, burnerPubkey, target) {
   const have = await connection.getBalance(burnerPubkey);
   if (have >= target) return;
   const need = target - have;
