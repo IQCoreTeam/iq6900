@@ -138,7 +138,7 @@ async function sendRegister(connection, co, burner, asset) {
 // ── mint ────────────────────────────────────────────────────────────────
 // onStage(stage, extra) reports: funding, deposit, reserve, image, metadata,
 // register, confirming, done. onProgress drives the chunk progress bar for C.
-export async function mint({ connection, wallet, burner, slug, collection, speed, onStage, onProgress }) {
+export async function mint({ connection, wallet, burner, slug, collection, onStage, onProgress }) {
   const who = wallet.publicKey.toBase58();
   const burnerPk = burner.publicKey.toBase58();
   const stage = (s, x) => { try { onStage && onStage(s, x); } catch (e) {} };
@@ -189,7 +189,7 @@ export async function mint({ connection, wallet, burner, slug, collection, speed
     await touch();
     const bytes = await fetchItemBytes(col.arweaveGateway || "https://gateway.irys.xyz", p.arweaveId, p.imageSha256);
     const row = JSON.stringify({ kind: "image", body: `data:${p.imageMime};base64,${bytesToBase64(bytes)}`, who });
-    p.C = await writeFeedRow({ connection, burner, row, owner: wallet.publicKey, speed, onProgress });
+    p.C = await writeFeedRow({ connection, burner, row, owner: wallet.publicKey, onProgress });
     saveProgress(slug, p);
   }
 

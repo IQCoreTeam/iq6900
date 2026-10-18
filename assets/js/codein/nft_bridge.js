@@ -35,37 +35,27 @@ async function burnerFor(provider) {
   return deriveBurner(signMessage);
 }
 
-window.iqNft = {
-  setApi: nft.setNftApi,
-  api: nft.nftApi,
-  setRpc: (u) => { try { u ? localStorage.setItem(RPC_KEY, u) : localStorage.removeItem(RPC_KEY); } catch (e) {} },
+// The page calls nft.js's reads/helpers under their real names across the
+// ESM->window boundary (it is a classic script and cannot import), so the whole
+// module is re-exposed by spread. Only the entries that need a wallet, an RPC,
+// or the backend host are defined here; `mint` and `estimateMintCost` override
+// the engine's pure versions by supplying the browser's connection/wallet/burner.
+window.iqNft = Object.assign({}, nft, {
   getRpc: rpc,
-  health: async () => { try { const r = await fetch(nft.nftApi() + "/health"); return await r.json(); } catch (e) { return { ok: false, error: String(e) }; } },
-  getCollections: nft.getCollections,
-  getCollection: nft.getCollection,
-  getItems: nft.getItems,
-  getRecent: nft.getRecent,
-  pendingMint: nft.pendingMint,
+  setRpc: (u) => { try { u ? localStorage.setItem(RPC_KEY, u) : localStorage.removeItem(RPC_KEY); } catch (e) {} },
+  health: async () => { try { return await (await fetch(nft.nftApi() + "/health")).json(); } catch (e) { return { ok: false, error: String(e) }; } },
   solscanTx: (sig) => `https://solscan.io/tx/${sig}${rpc().indexOf("devnet") >= 0 ? "?cluster=devnet" : ""}`,
-  // Connect the wallet, return its address (for the connect button).
   connect: async () => (await ensureConnected()).publicKey.toBase58(),
   connected: () => { try { return phantom().publicKey ? phantom().publicKey.toBase58() : null; } catch (e) { return null; } },
-  // Best-effort funding estimate (lamports) to show before the popup.
-  estimateCost: async (col) => {
-    try {
-      const p = phantom();
-      if (!p.publicKey) return await nft.estimateMintCost(col);
-      return await nft.estimateMintCost(col, connection(), await burnerFor(p));
-    } catch (e) { return await nft.estimateMintCost(col); }
+  estimateMintCost: async (col) => {
+    try { const p = phantom(); return p.publicKey ? nft.estimateMintCost(col, connection(), await burnerFor(p)) : nft.estimateMintCost(col); }
+    catch (e) { return nft.estimateMintCost(col); }
   },
-  // The whole buyer mint. onStage(stage, extra), onProgress(pct, label) for the C upload.
   mint: async ({ slug, collection, onStage, onProgress }) => {
     const provider = await ensureConnected();
-    const conn = connection();
     setRpcUrl(rpc()); // SDK global RPC; point it at the NFT cluster for this write
-    const burner = await burnerFor(provider);
-    return nft.mint({ connection: conn, wallet: provider, burner, slug, collection, onStage, onProgress });
+    return nft.mint({ connection: connection(), wallet: provider, burner: await burnerFor(provider), slug, collection, onStage, onProgress });
   },
-};
+});
 window.iqNftReady = true;
 window.dispatchEvent(new Event("iqnft:ready"));

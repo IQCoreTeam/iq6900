@@ -74,7 +74,7 @@
     },
 
     renderEnv: async function () {
-      const api = window.iqNft.api(), rpc = window.iqNft.getRpc();
+      const api = window.iqNft.nftApi(), rpc = window.iqNft.getRpc();
       $("#nftl_env").html("env: api <b>" + api + "</b> . rpc <b>" + rpc + "</b> . cluster <b>...</b>");
       try {
         const h = await window.iqNft.health();
@@ -140,7 +140,7 @@
       $("#nftl_connect").hide();
       $("#nftl_mint").show();
       this.dbg("wallet connected: " + addr);
-      window.iqNft.estimateCost(this.col).then((lamports) => {
+      window.iqNft.estimateMintCost(this.col).then((lamports) => {
         $("#nftl_fee").text("minting will ask to fund ~" + sol(lamports) + " (price + deposit + inscription/network fees). leftover returns to your wallet.");
         this.dbg("funding estimate ~" + sol(lamports));
       }).catch((e) => this.dbg("estimate failed: " + (e && e.message), "e"));
