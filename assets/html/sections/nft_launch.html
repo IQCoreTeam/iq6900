@@ -33,11 +33,20 @@
     #nftl .result code { color:var(--cream); word-break:break-all; }
     #nftl .result .links { display:flex; gap:12px; margin-top:8px; flex-wrap:wrap; }
     #nftl .muted { color:var(--dim); }
+    #nftl .env { font-size:.62rem; color:var(--dim); padding:6px 12px; border-bottom:1px solid var(--line); background:#16130f; word-break:break-all; }
+    #nftl .env b { color:var(--cream); }
+    #nftl .log { margin-top:14px; border:1px solid var(--line); border-radius:6px; background:#0f0d0b; }
+    #nftl .log .lh { display:flex; justify-content:space-between; align-items:center; padding:6px 10px; border-bottom:1px solid var(--line); font-size:.66rem; color:var(--dim); }
+    #nftl .log .lh button { font-family:inherit; font-size:.6rem; color:var(--dim); background:transparent; border:1px solid var(--line); border-radius:4px; padding:2px 6px; cursor:pointer; }
+    #nftl .log pre { margin:0; padding:10px; max-height:220px; overflow:auto; font-size:.66rem; line-height:1.5; color:#bfe8cf; white-space:pre-wrap; word-break:break-all; }
+    #nftl .log .t { color:var(--dim); }
+    #nftl .log .e { color:#ff9a9a; }
   </style>
 
   <div class="exe">
     <div class="bar"><span class="dot g"></span><span class="dot"></span><span class="dot"></span>
       <span class="ttl">launchpad.exe // inscription NFT</span></div>
+    <div class="env" id="nftl_env">env: loading...</div>
     <div class="body">
       <div id="nftl_loading" class="muted">loading collection...</div>
 
@@ -75,6 +84,11 @@
       </div>
 
       <div id="nftl_error" class="err" style="display:none"></div>
+
+      <div class="log">
+        <div class="lh"><span>debug log</span><button type="button" id="nftl_log_clear">clear</button></div>
+        <pre id="nftl_log"></pre>
+      </div>
     </div>
   </div>
 </section>

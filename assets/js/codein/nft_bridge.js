@@ -40,6 +40,7 @@ window.iqNft = {
   api: nft.nftApi,
   setRpc: (u) => { try { u ? localStorage.setItem(RPC_KEY, u) : localStorage.removeItem(RPC_KEY); } catch (e) {} },
   getRpc: rpc,
+  health: async () => { try { const r = await fetch(nft.nftApi() + "/health"); return await r.json(); } catch (e) { return { ok: false, error: String(e) }; } },
   getCollections: nft.getCollections,
   getCollection: nft.getCollection,
   getItems: nft.getItems,

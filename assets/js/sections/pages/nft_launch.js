@@ -32,19 +32,48 @@
       const slug = slugFromUrl();
       $.get(TEMPLATE, (html) => {
         $("#main_section").show().empty().append($(html));
-        bridge(() => this.load(slug).catch((e) => this.fail(e)));
+        $("#nftl_log_clear").on("click", () => $("#nftl_log").empty());
+        this.dbg("page init, slug=" + slug);
+        this.renderEnv();
+        bridge(() => { this.dbg("bridge ready (window.iqNft)"); this.load(slug).catch((e) => this.fail(e)); });
       });
+    },
+
+    // Prominent debug log: every step + raw errors land here and in the console,
+    // so a failing mint is diagnosable without opening devtools.
+    dbg: function (msg, cls) {
+      const t = new Date().toTimeString().slice(0, 8);
+      const line = $("<div>").append($("<span class='t'>").text("[" + t + "] "));
+      line.append($("<span>").addClass(cls || "").text(typeof msg === "string" ? msg : JSON.stringify(msg)));
+      $("#nftl_log").append(line);
+      const el = document.getElementById("nftl_log");
+      if (el) el.scrollTop = el.scrollHeight;
+      (cls === "e" ? console.error : console.log)("[iqnft] " + (typeof msg === "string" ? msg : JSON.stringify(msg)));
+    },
+
+    renderEnv: async function () {
+      const api = window.iqNft.api(), rpc = window.iqNft.getRpc();
+      $("#nftl_env").html("env: api <b>" + api + "</b> . rpc <b>" + rpc + "</b> . cluster <b>...</b>");
+      try {
+        const h = await window.iqNft.health();
+        $("#nftl_env").html("env: api <b>" + api + "</b> . rpc <b>" + rpc + "</b> . cluster <b>" + (h.cluster || "?") + "</b> . program <b>" + (h.programId ? h.programId.slice(0, 8) + "..." : "?") + "</b>");
+        this.dbg("health: " + JSON.stringify(h));
+      } catch (e) { this.dbg("health failed: " + (e && e.message), "e"); }
     },
 
     fail: function (e) {
       $("#nftl_loading").hide();
-      $("#nftl_error").show().text("error: " + (e && e.message ? e.message : e));
+      const msg = e && e.message ? e.message : String(e);
+      $("#nftl_error").show().text("error: " + msg);
+      this.dbg("LOAD FAILED: " + msg, "e");
+      if (e && e.stack) this.dbg(e.stack.split("\n").slice(0, 3).join(" | "), "e");
     },
 
     load: async function (slug) {
       const col = await window.iqNft.getCollection(slug);
       if (!col || col.error) throw new Error(col && col.error ? col.error : "collection not found: " + slug);
       this.col = col;
+      this.dbg("collection loaded: " + col.slug + " supply=" + col.maxSupply + " price=" + col.priceLamports + " deposit=" + col.depositLamports + " minted=" + col.minted + " treasury=" + short(col.treasury));
       $("#nftl_loading").hide();
       $("#nftl_view").show();
       $("#nftl_name").text(col.name || slug);
@@ -87,22 +116,30 @@
       $("#nftl_addr").text(short(addr));
       $("#nftl_connect").hide();
       $("#nftl_mint").show();
+      this.dbg("wallet connected: " + addr);
+      window.iqNft.estimateCost(this.col).then((lamports) => {
+        $("#nftl_fee").text("minting will ask to fund ~" + sol(lamports) + " (price + deposit + inscription/network fees). leftover returns to your wallet.");
+        this.dbg("funding estimate ~" + sol(lamports));
+      }).catch((e) => this.dbg("estimate failed: " + (e && e.message), "e"));
     },
 
     status: function (msg, isErr) {
       $("#nftl_status").toggleClass("err", !!isErr).text(msg || "");
+      if (msg) this.dbg(msg, isErr ? "e" : "");
     },
 
     mint: async function (slug) {
       $("#nftl_mint").prop("disabled", true);
       $("#nftl_result").hide();
       setBar(0);
+      this.dbg("MINT start: " + slug);
       try {
         const res = await window.iqNft.mint({
           slug,
           collection: this.col,
           onStage: (s, x) => {
             this.status(STAGE_TEXT[s] || s);
+            if (x) this.dbg("stage:" + s + " " + JSON.stringify(x));
             if (s === "image") setBar(5);
           },
           onProgress: (p) => {
@@ -110,9 +147,13 @@
             setBar(pct);
           },
         });
+        this.dbg("MINT ok: " + JSON.stringify({ index: res.index, asset: res.asset, C: res.C, M: res.M, mintSig: res.mintSig }));
         this.showResult(res);
       } catch (e) {
-        this.status((e && e.message) || String(e), true);
+        const msg = (e && e.message) || String(e);
+        this.status(msg, true);
+        this.dbg("MINT ERROR: " + msg, "e");
+        if (e && e.logs) this.dbg("sim logs: " + e.logs.slice(-4).join(" ; "), "e");
         $("#nftl_mint").prop("disabled", false);
       }
     },
