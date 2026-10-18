@@ -72,7 +72,11 @@ export async function deploy({ connection, wallet, burner, spec, items, onStage 
     const staged = [];
     for (let i = 0; i < items.length; i++) {
       stage("compress", { done: i, total: items.length });
-      const { bytes, mime } = await compressImage(items[i].imageData, spec.compress);
+      // imageData may be a thunk (generative sets build one composite at a time,
+      // so thousands of raw bitmaps never sit in memory at once).
+      const src = items[i].imageData;
+      const imageData = typeof src === "function" ? await src() : src;
+      const { bytes, mime } = await compressImage(imageData, spec.compress);
       staged.push({ index: items[i].index ?? i + 1, name: items[i].name, mime, imageBase64: bytesToBase64(bytes), template: items[i].template || {} });
     }
     stage("stage", { total: items.length });

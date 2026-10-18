@@ -53,6 +53,10 @@
       this.dbg("home: " + cols.length + " collection(s)");
       $("#nftl_loading").hide();
       $("#nftl_home").show();
+      if (!$("#nftl_launch_cta").length) {
+        $("#nftl_home_grid").before($("<a id='nftl_launch_cta' class='btn solid' style='display:inline-block;width:auto;text-decoration:none;margin-bottom:12px'>")
+          .attr("href", "?menu=nft-create").text("+ LAUNCH A COLLECTION"));
+      }
       const $g = $("#nftl_home_grid").empty();
       if (!cols.length) { $g.append($("<div class='muted'>").text("no collections yet")); return; }
       cols.forEach((c) => {

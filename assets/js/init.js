@@ -25,6 +25,8 @@ $(document).ready(function() {
             $.code_in_v2.init(post);
         }else if(menu == "nft"){
             $.nft_launch.init(post); // inscription NFT launchpad (?nft=<slug>)
+        }else if(menu == "nft-create"){
+            $.nft_studio.init(); // creator wizard: launch a collection
         }else if(menu == "hoodin"){
             $.code_in_v2.init(post, "evm"); // same page, robinhood adapter + hood theme
         }

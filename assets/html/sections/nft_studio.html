@@ -1,0 +1,263 @@
+<section id="nfts">
+  <style>
+    #nfts { --bg:#141210; --cream:#efe7d6; --dim:#9a8f79; --green:#8fffb0; --amber:#e0a84e; --red:#ff9a9a; --line:#2b2824; --card:#1b1813;
+      color:var(--cream); font-family:"Kode Mono",monospace; max-width:1040px; margin:0 auto; padding:16px; }
+    #nfts a { color:var(--green); }
+    #nfts .exe { border:1px solid var(--line); border-radius:8px; background:var(--bg); overflow:hidden; }
+    #nfts .bar { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line); background:#191611; }
+    #nfts .dot { width:10px; height:10px; border-radius:50%; background:#3a352d; }
+    #nfts .dot.g { background:var(--green); }
+    #nfts .ttl { font-size:.8rem; color:var(--dim); letter-spacing:.04em; }
+    #nfts .bar .r { margin-left:auto; font-size:.62rem; color:var(--dim); }
+    #nfts .env { font-size:.62rem; color:var(--dim); padding:6px 12px; border-bottom:1px solid var(--line); background:#16130f; word-break:break-all; }
+    #nfts .env b { color:var(--cream); }
+    #nfts .body { padding:16px; }
+    #nfts h2 { font-family:"Zen Dots",monospace; font-size:1.1rem; margin:0 0 4px; }
+    #nfts .sub { color:var(--dim); font-size:.78rem; margin-bottom:10px; line-height:1.6; }
+    #nfts .steps { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+    #nfts .steps .st { flex:1; min-width:96px; text-align:center; border:1px solid var(--line); border-radius:5px; padding:8px 0; font-size:.66rem; letter-spacing:.1em; cursor:pointer; color:var(--dim); }
+    #nfts .steps .st.on { border-color:var(--cream); color:var(--cream); }
+    #nfts .steps .st.done { border-color:var(--green); color:var(--green); }
+    #nfts .fl { font-size:.64rem; letter-spacing:.1em; color:var(--dim); margin-bottom:6px; text-transform:uppercase; }
+    #nfts .inp { width:100%; box-sizing:border-box; background:rgba(0,0,0,.35); color:var(--cream); border:1px solid var(--line); border-radius:5px; font:500 .78rem "Kode Mono",monospace; padding:9px 11px; outline:none; }
+    #nfts .inp:focus { border-color:var(--dim); }
+    #nfts .field { margin-bottom:12px; }
+    #nfts .slugbox { display:flex; align-items:center; background:rgba(0,0,0,.35); border:1px solid var(--line); border-radius:5px; padding:0 11px; overflow:hidden; }
+    #nfts .slugbox span { opacity:.45; font-size:.78rem; white-space:nowrap; }
+    #nfts .slugbox input { flex:1; min-width:0; border:none; background:none; outline:none; color:var(--cream); font:500 .78rem "Kode Mono",monospace; padding:9px 0; }
+    #nfts .slughint { font-size:.66rem; margin-top:6px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; color:var(--dim); }
+    #nfts .tag-ok { color:var(--green); font-weight:700; }
+    #nfts .tag-bad { color:var(--red); font-weight:700; }
+    #nfts .tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    #nfts .tile { border:1px solid var(--line); border-radius:6px; padding:12px; text-align:center; font-size:.72rem; letter-spacing:.08em; }
+    #nfts .tile .t2 { font-size:.6rem; color:var(--dim); margin-top:4px; }
+    #nfts .tile.on { border-color:var(--green); color:var(--green); }
+    #nfts .tile.off { opacity:.4; cursor:not-allowed; }
+    #nfts .seg { display:inline-block; border:1px solid var(--line); border-radius:5px; padding:7px 12px; font-size:.68rem; letter-spacing:.08em; cursor:pointer; color:var(--dim); margin-right:6px; }
+    #nfts .seg.on { background:var(--cream); color:#0c0a08; border-color:var(--cream); font-weight:700; }
+    #nfts .note { color:var(--dim); font-size:.66rem; line-height:1.6; margin:8px 0; }
+    #nfts .btn { font-family:inherit; cursor:pointer; border:1px solid var(--green); background:transparent; color:var(--green); padding:9px 14px; border-radius:6px; font-size:.78rem; }
+    #nfts .btn:disabled { opacity:.4; cursor:not-allowed; }
+    #nfts .btn.solid { background:var(--green); color:#0c0a08; font-weight:700; }
+    #nfts .btn2 { font-family:inherit; cursor:pointer; border:1px solid var(--line); background:transparent; color:var(--cream); padding:8px 12px; border-radius:5px; font-size:.68rem; }
+    #nfts .btn2:hover { border-color:var(--cream); }
+    #nfts .navrow { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+    #nfts .gw { display:grid; grid-template-columns:minmax(0,320px) minmax(0,1fr); gap:16px; }
+    @media (max-width:900px){ #nfts .gw { grid-template-columns:1fr; } #nfts .tiles { grid-template-columns:1fr; } }
+    #nfts .lrow { display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:6px; padding:8px 10px; background:rgba(0,0,0,.2); margin-bottom:6px; }
+    #nfts .lrow.sel { border-color:var(--green); background:rgba(143,255,176,.06); }
+    #nfts .lrow .ln { flex:1; min-width:0; font-size:.74rem; cursor:pointer; }
+    #nfts .lrow .lc { font-size:.6rem; color:var(--dim); }
+    #nfts .arw { width:22px; height:20px; border:1px solid var(--line); border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:.7rem; cursor:pointer; }
+    #nfts .arw:hover { border-color:var(--cream); }
+    #nfts .gallery { display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; }
+    #nfts .gtile { position:relative; flex:0 0 92px; width:92px; height:92px; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:#0d0c0a; }
+    #nfts .gtile img { width:100%; height:100%; object-fit:cover; display:block; }
+    #nfts .gtile .gn { position:absolute; left:0; right:0; bottom:0; padding:2px 4px; background:linear-gradient(transparent,rgba(0,0,0,.85)); font-size:.56rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    #nfts .gtile .gx { position:absolute; top:0; right:3px; cursor:pointer; font-size:.8rem; color:#fff; }
+    #nfts .gadd { flex:0 0 92px; width:92px; height:92px; border:1px dashed var(--line); border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:.6rem; color:var(--dim); text-align:center; }
+    #nfts .preview { width:220px; height:220px; border:1px solid var(--line); border-radius:8px; background:#0d0c0a; object-fit:contain; display:block; }
+    #nfts .legend { font-size:.68rem; }
+    #nfts .legend .lg { display:flex; gap:8px; padding:3px 0; }
+    #nfts .legend .lg .lk { width:90px; color:var(--dim); }
+    #nfts .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:8px; }
+    #nfts .card { position:relative; aspect-ratio:1; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:#0d0c0a; cursor:pointer; }
+    #nfts .card.sel { outline:2px solid var(--green); outline-offset:-2px; }
+    #nfts .card img { width:100%; height:100%; object-fit:cover; display:block; }
+    #nfts .card .cn { position:absolute; left:0; right:0; bottom:0; padding:3px 5px; background:linear-gradient(transparent,rgba(0,0,0,.8)); font-size:.58rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    #nfts .card.add { display:flex; align-items:center; justify-content:center; border-style:dashed; font-size:.62rem; color:var(--dim); text-align:center; }
+    #nfts .chip { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); border-radius:5px; padding:4px 7px; font-size:.64rem; margin:0 6px 6px 0; }
+    #nfts .chip .cx { opacity:.5; cursor:pointer; }
+    #nfts .drop { border:1px dashed var(--line); border-radius:7px; padding:30px; text-align:center; cursor:pointer; }
+    #nfts .drop.hot { border-color:var(--green); background:rgba(143,255,176,.05); }
+    #nfts .kv { display:flex; justify-content:space-between; gap:12px; padding:7px 12px; border-bottom:1px solid var(--line); font-size:.7rem; }
+    #nfts .kv:last-child { border-bottom:none; }
+    #nfts .kv .kk { color:var(--dim); }
+    #nfts .panel { border:1px solid var(--line); border-radius:7px; background:var(--card); }
+    #nfts .deploybox { border:1px solid var(--green); border-radius:7px; background:rgba(143,255,176,.05); padding:14px; margin-top:12px; }
+    #nfts .prog { height:8px; background:#2b2824; border-radius:4px; overflow:hidden; margin:10px 0 4px; }
+    #nfts .prog > i { display:block; height:100%; background:var(--green); width:0; transition:width .3s; }
+    #nfts .status { font-size:.72rem; color:var(--green); min-height:16px; margin-top:8px; white-space:pre-wrap; }
+    #nfts .status.err { color:var(--red); }
+    #nfts .muted { color:var(--dim); }
+    #nfts .amber { color:var(--amber); }
+    #nfts .log { margin-top:14px; border:1px solid var(--line); border-radius:6px; background:#0f0d0b; }
+    #nfts .log .lh { display:flex; justify-content:space-between; align-items:center; padding:6px 10px; border-bottom:1px solid var(--line); font-size:.64rem; color:var(--dim); }
+    #nfts .log .lh button { font-family:inherit; font-size:.58rem; color:var(--dim); background:transparent; border:1px solid var(--line); border-radius:4px; padding:2px 6px; cursor:pointer; }
+    #nfts .log pre { margin:0; padding:10px; max-height:200px; overflow:auto; font-size:.64rem; line-height:1.5; color:#bfe8cf; white-space:pre-wrap; word-break:break-all; }
+    #nfts .log .t { color:var(--dim); }
+    #nfts .log .e { color:var(--red); }
+    #nfts .hidden { display:none; }
+  </style>
+
+  <div class="exe">
+    <div class="bar"><span class="dot g"></span><span class="dot"></span><span class="dot"></span>
+      <span class="ttl">launch_collection.exe // inscription NFT</span><span class="r" id="nfts_hr">4 steps, 1 signature</span></div>
+    <div class="env" id="nfts_env">env: loading...</div>
+    <div class="body">
+      <a id="nfts_back" href="?menu=nft" style="font-size:.7rem">← all collections</a>
+      <div class="steps" id="nfts_steps"></div>
+
+      <!-- STEP 1 NAME -->
+      <div class="stepbody hidden" data-step="1">
+        <h2>name your collection</h2>
+        <div class="sub">name, link handle, symbol. the handle is your public mint page and is set once.</div>
+        <div class="field"><div class="fl">collection name (max 80)</div><input class="inp" id="nfts_name" placeholder="Pixel Monks" maxlength="80"></div>
+        <div class="field">
+          <div class="fl">your collection link · pick a handle</div>
+          <div class="slugbox"><span id="nfts_slugpre">iqlabs.dev/c/</span><input id="nfts_slug" placeholder="your-handle"></div>
+          <div class="slughint"><span id="nfts_sluglink">→ iqlabs.dev/c/your-handle</span><span id="nfts_slugtag"></span></div>
+        </div>
+        <div class="field"><div class="fl">symbol (ticker in the inscribed collection json)</div><input class="inp" id="nfts_symbol" placeholder="MONK" maxlength="10"></div>
+        <div class="field"><div class="fl">description (optional)</div><input class="inp" id="nfts_desc" placeholder="a fully on-chain pfp"></div>
+        <div class="note">// name + symbol + description go into collection.json and are inscribed at deploy. item names freeze when minted.</div>
+      </div>
+
+      <!-- STEP 2 NETWORK -->
+      <div class="stepbody hidden" data-step="2">
+        <h2>pick the chain</h2>
+        <div class="sub">one chain per collection. inscription NFTs are on Solana today.</div>
+        <div class="tiles" id="nfts_nets"></div>
+        <div class="note">// Solana: Metaplex Core asset + our registry program, image + metadata inscribed on-chain. Robinhood and Monad are not wired for NFTs yet.</div>
+      </div>
+
+      <!-- STEP 3 ITEMS -->
+      <div class="stepbody hidden" data-step="3">
+        <h2>make your items</h2>
+        <div class="sub">build here, or upload a folder. every item is 1 of 1. supply = how many you make.</div>
+        <div style="margin-bottom:12px">
+          <span class="seg" id="nfts_tab_gen">generate art</span>
+          <span class="seg" id="nfts_tab_hand">hand-craft 1/1</span>
+          <span class="seg" id="nfts_tab_upload">upload a folder</span>
+        </div>
+
+        <!-- GENERATE ART -->
+        <div id="nfts_gen" class="hidden">
+          <div class="note" style="border-left:2px solid rgba(143,255,176,.5); padding-left:10px">// a collection is built from stacked layers. each layer holds trait images; one pick per layer = one unique 1/1. top = front.</div>
+          <div class="gw" style="margin-top:12px">
+            <div>
+              <div class="fl" style="display:flex; justify-content:space-between"><span>layers</span><span class="muted" style="text-transform:none">arrows reorder · top = front</span></div>
+              <div id="nfts_layers"></div>
+              <button class="btn2" id="nfts_addlayer" type="button" style="width:100%; margin-top:4px">+ add layer</button>
+              <div style="border-top:1px solid var(--line); margin-top:12px; padding-top:12px">
+                <div class="fl">selected layer</div>
+                <input class="inp" id="nfts_layername" placeholder="Background">
+                <div style="margin-top:8px"><button class="btn2" id="nfts_addtrait" type="button">+ upload trait images</button></div>
+                <div class="note">// images show on the right. keep each small, it makes every mint cheaper. we also compress them for you.</div>
+              </div>
+            </div>
+            <div>
+              <div class="fl" id="nfts_galtitle">layer images</div>
+              <div class="gallery" id="nfts_gallery"></div>
+              <div style="display:grid; grid-template-columns:230px minmax(0,1fr); gap:16px; align-items:start; margin-top:12px" id="nfts_pw">
+                <div><img class="preview" id="nfts_preview" alt="preview"><div style="margin-top:6px"><button class="btn2" id="nfts_reroll" type="button">re-roll preview</button></div></div>
+                <div>
+                  <div class="fl">layer stack (front → back)</div>
+                  <div class="legend" id="nfts_legend"></div>
+                  <div style="border-top:1px solid var(--line); margin-top:12px; padding-top:12px">
+                    <div class="fl">how many to generate</div>
+                    <div style="display:flex; align-items:center; gap:8px"><input class="inp" id="nfts_supply" style="width:110px" value="10"><span class="muted" id="nfts_combos">of ? possible</span></div>
+                    <div class="note" id="nfts_dup"></div>
+                    <button class="btn solid" id="nfts_generate" type="button" style="margin-top:10px">GENERATE ITEMS</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="nfts_genresult" class="hidden" style="margin-top:14px">
+            <div class="fl" id="nfts_gencount">generated</div>
+            <div class="cards" id="nfts_gengrid"></div>
+          </div>
+        </div>
+
+        <!-- HAND-CRAFT -->
+        <div id="nfts_hand" class="hidden">
+          <div class="gw" style="margin-top:12px">
+            <div>
+              <div class="fl" id="nfts_handcount">your 1/1 items</div>
+              <div class="cards" id="nfts_handgrid"></div>
+              <div class="note">// each card is one unique 1/1. drop an image, name it, add traits. supply = number of cards.</div>
+            </div>
+            <div style="border-left:1px solid var(--line); padding-left:16px" id="nfts_handedit">
+              <div class="fl">edit item</div>
+              <img class="preview" id="nfts_handimg" style="width:100%; max-width:230px; aspect-ratio:1" alt="item">
+              <div style="margin-top:8px"><button class="btn2" id="nfts_handreplace" type="button">replace image</button></div>
+              <div class="field" style="margin-top:10px"><div class="fl">name</div><input class="inp" id="nfts_handname"></div>
+              <div><div class="fl">traits (optional)</div><div id="nfts_handtraits"></div><button class="btn2" id="nfts_handaddtrait" type="button">+ trait</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- UPLOAD FOLDER -->
+        <div id="nfts_upload" class="hidden">
+          <div class="panel" style="padding:12px 14px; margin-top:12px">
+            <div class="fl">expected folder format</div>
+            <div class="note" style="margin:4px 0 0">images named by token id: 0.png, 1.png, 2.png (or 1.png …). matching metadata json with the same names (0.json …) is optional; missing metadata is auto-generated. json is the OpenSea shape: name, description, attributes[]. the image field is ignored (we inscribe and point it on-chain).</div>
+          </div>
+          <div class="drop" id="nfts_drop" style="margin-top:12px">
+            <div class="fl" style="font-size:.8rem">drop a folder here, or click to choose files</div>
+            <div class="note" style="margin:6px 0 0">images + optional json are parsed and paired by name.</div>
+          </div>
+          <div id="nfts_uploadreport" class="hidden" style="margin-top:12px">
+            <div class="panel"><div class="kv"><span class="kk">media files</span><span id="nfts_up_media">-</span></div>
+              <div class="kv"><span class="kk">metadata json</span><span id="nfts_up_json">-</span></div>
+              <div class="kv"><span class="kk">items paired</span><span id="nfts_up_items">-</span></div>
+              <div class="kv"><span class="kk">errors</span><span id="nfts_up_err">-</span></div></div>
+            <div class="cards" id="nfts_upgrid" style="margin-top:10px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 MINT LISTS + DEPLOY -->
+      <div class="stepbody hidden" data-step="4">
+        <h2>price, then sign</h2>
+        <div class="sub">set the mint price and options. one signature deploys the collection and inscribes everything.</div>
+        <div class="gw">
+          <div>
+            <div class="field"><div class="fl">mint price (SOL, paid to your wallet)</div><input class="inp" id="nfts_price" value="0.01"></div>
+            <div class="field"><div class="fl">deposit at reserve (SOL, not refundable, ≤ price)</div><input class="inp" id="nfts_deposit" value="0"></div>
+            <div class="field"><div class="fl">creator royalty (%, secondary sales)</div><input class="inp" id="nfts_royalty" value="5"></div>
+            <div class="field"><div class="fl">assignment</div>
+              <span class="seg on" id="nfts_asg_random">random</span><span class="seg" id="nfts_asg_seq">sequential</span></div>
+          </div>
+          <div>
+            <div class="fl">summary</div>
+            <div class="panel">
+              <div class="kv"><span class="kk">collection</span><span id="nfts_sum_name">-</span></div>
+              <div class="kv"><span class="kk">handle</span><span id="nfts_sum_slug">-</span></div>
+              <div class="kv"><span class="kk">items</span><span id="nfts_sum_items">0</span></div>
+              <div class="kv"><span class="kk">price / deposit</span><span id="nfts_sum_price">-</span></div>
+              <div class="kv"><span class="kk">royalty / assignment</span><span id="nfts_sum_roy">-</span></div>
+            </div>
+            <div class="deploybox">
+              <div style="font-weight:700; color:var(--green)" id="nfts_deployfee">deploy fee: - SOL</div>
+              <div class="note" style="margin:4px 0 0">the creator pays Arweave (via this one-time deploy fee) + inscription + account rent; unused funding sweeps back. one signature.</div>
+              <button class="btn solid" id="nfts_deploy" type="button" style="width:100%; margin-top:10px">CONNECT WALLET</button>
+              <div class="prog hidden" id="nfts_progwrap"><i id="nfts_progbar"></i></div>
+              <div class="status" id="nfts_status"></div>
+              <div id="nfts_result" class="hidden" style="margin-top:10px; font-size:.7rem">
+                <div class="fl">deployed</div>
+                <div>collection <code id="nfts_rescol" style="color:var(--cream); word-break:break-all"></code></div>
+                <div style="margin-top:8px; display:flex; gap:12px; flex-wrap:wrap" id="nfts_reslinks"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="navrow">
+        <button class="btn2" id="nfts_prev" type="button">back</button>
+        <button class="btn" id="nfts_next" type="button">continue →</button>
+      </div>
+
+      <div id="nfts_error" style="color:var(--red); font-size:.72rem; margin-top:10px"></div>
+      <div class="log"><div class="lh"><span>debug log</span><button type="button" id="nfts_logclear">clear</button></div><pre id="nfts_log"></pre></div>
+    </div>
+  </div>
+
+  <!-- hidden file inputs -->
+  <input type="file" id="nfts_file_trait" accept="image/*" multiple class="hidden">
+  <input type="file" id="nfts_file_hand" accept="image/*" multiple class="hidden">
+  <input type="file" id="nfts_file_handreplace" accept="image/*" class="hidden">
+  <input type="file" id="nfts_file_folder" accept="image/*,.json,application/json" multiple class="hidden">
+</section>
