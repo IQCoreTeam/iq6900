@@ -6,7 +6,9 @@
 import { Connection } from "@solana/web3.js";
 import { setRpcUrl } from "@iqlabs-official/solana-sdk";
 import { deriveBurner } from "./burner.js";
-import * as nft from "./nft.js";
+import * as nft from "./nft.js?v=2";
+import { deploy, pendingDeploy } from "./nft_create.js?v=1";
+import { compressImage } from "./image_compress.js?v=1";
 
 // The NFT program + backend currently run on DEVNET while the rest of the site
 // is mainnet, so the NFT page keeps its own RPC under its own localStorage key.
@@ -56,6 +58,15 @@ window.iqNft = Object.assign({}, nft, {
     setRpcUrl(rpc()); // SDK global RPC; point it at the NFT cluster for this write
     return nft.mint({ connection: connection(), wallet: provider, burner: await burnerFor(provider), slug, collection, onStage, onProgress });
   },
+  // Creator deploy: same wallet/burner wiring as mint. compressImage is exposed
+  // so the creator page can preview a compressed size before deploying.
+  deploy: async ({ spec, items, onStage }) => {
+    const provider = await ensureConnected();
+    setRpcUrl(rpc());
+    return deploy({ connection: connection(), wallet: provider, burner: await burnerFor(provider), spec, items, onStage });
+  },
+  pendingDeploy,
+  compressImage,
 });
 window.iqNftReady = true;
 window.dispatchEvent(new Event("iqnft:ready"));

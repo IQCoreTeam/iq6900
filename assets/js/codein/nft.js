@@ -24,7 +24,7 @@ const API_KEY = "iq6900_nft_api";
 export function nftApi() { try { return localStorage.getItem(API_KEY) || NFT_API_DEFAULT; } catch (e) { return NFT_API_DEFAULT; } }
 export function setNftApi(url) { try { url ? localStorage.setItem(API_KEY, url) : localStorage.removeItem(API_KEY); } catch (e) {} }
 
-async function api(path, method = "GET", body) {
+export async function api(path, method = "GET", body) {
   const res = await fetch(nftApi() + path, {
     method,
     headers: body ? { "content-type": "application/json" } : undefined,
@@ -74,14 +74,14 @@ function saveProgress(slug, p) { try { localStorage.setItem(RKEY(slug), JSON.str
 function clearProgress(slug) { try { localStorage.removeItem(RKEY(slug)); } catch (e) {} }
 export function pendingMint(slug) { return loadProgress(slug); }
 
-// ── Helpers ─────────────────────────────────────────────────────────────
-function bytesToBase64(bytes) {
+// ── Helpers (shared with nft_create.js: one source, no duplicates) ─────────
+export function bytesToBase64(bytes) {
   let bin = "";
   const chunk = 0x8000;
   for (let i = 0; i < bytes.length; i += chunk) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
   return btoa(bin);
 }
-function base64ToBytes(b64) { return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)); }
+export function base64ToBytes(b64) { return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)); }
 async function sha256Hex(bytes) {
   const d = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(d)).map((b) => b.toString(16).padStart(2, "0")).join("");
