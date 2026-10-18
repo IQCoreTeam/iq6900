@@ -120,7 +120,7 @@ export async function topUp(connection, wallet, burnerPubkey, target) {
 // Confirm a tx, but do not trust "block height exceeded" blindly: on congested
 // public RPCs the tx frequently lands anyway, so poll its status before giving
 // up. Returns false only when the signature never shows up as confirmed.
-async function confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight) {
+export async function confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight) {
   try {
     const result = await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
     if (result.value.err) throw new Error("transfer " + sig + " failed: " + JSON.stringify(result.value.err));
