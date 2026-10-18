@@ -240,3 +240,66 @@ export async function mint({ connection, wallet, burner, slug, collection, onSta
   stage("done", result);
   return result;
 }
+
+// ── mintSingle ─────────────────────────────────────────────────────────────
+// Turn an inscription the user already made (C, a feed row with who == wallet)
+// into a 1/1 NFT in the global single collection. No reserve, no price, no
+// Arweave: the content already exists on chain. The burner builds a metadata
+// row M that names C, inscribes it, and lands the backend-co-signed
+// register_single. Checkpointed under a "single:" key, reusing the mint
+// checkpoint functions (collection slugs cannot contain ':', so no collision).
+export async function mintSingle({ connection, wallet, burner, gatewayBase, C, name, kind, onStage }) {
+  const who = wallet.publicKey.toBase58();
+  const burnerPk = burner.publicKey.toBase58();
+  const stage = (s, x) => { try { onStage && onStage(s, x); } catch (e) {} };
+  const key = "single:" + C;
+
+  let p = loadProgress(key);
+  if (p && (p.wallet !== who || p.burner !== burnerPk)) p = null;
+  p = p || { wallet: who, burner: burnerPk };
+
+  // 1. Fund once: just the metadata inscription + the register-time rents.
+  if (!p.funded) {
+    stage("funding");
+    const accountRent = await getAccountRent(connection, burner.publicKey);
+    const meta = estimateCost(META_CAP_BYTES, { accountRent }).total;
+    await topUp(connection, wallet, burner.publicKey, meta + ASSET_OVERHEAD);
+    p.funded = true; saveProgress(key, p);
+  }
+
+  // 2. Build + inscribe the metadata M (must name C in attributes.inscription).
+  if (!p.M) {
+    stage("metadata");
+    const meta = {
+      name,
+      image: `${gatewayBase}/img/${C}.png`,
+      external_url: `https://solscan.io/tx/${C}`,
+      attributes: [
+        { trait_type: "inscription", value: C },
+        { trait_type: "kind", value: kind || "image" },
+        { trait_type: "chain", value: "solana" },
+      ],
+    };
+    p.M = await writer.codeIn({ connection, signer: burner }, JSON.stringify(meta), `single-${C}.json`, 0, "json");
+    saveProgress(key, p);
+  }
+
+  // 3. Asset keypair (persisted so a resume reuses the co-signed one).
+  let asset;
+  if (p.asset) asset = Keypair.fromSecretKey(Uint8Array.from(p.asset));
+  else { asset = Keypair.generate(); p.asset = Array.from(asset.secretKey); saveProgress(key, p); }
+
+  // 4. Register (backend verifies who == wallet + M names C, then co-signs).
+  stage("register");
+  const r = await api("/single/mint", "POST", { wallet: who, burner: burnerPk, inscriptionSig: C, metaSig: p.M, asset: asset.publicKey.toBase58(), name });
+  if (r.status === 503) throw new Error("verification is temporarily unavailable; try again in a moment");
+  if (r.status !== 200) { if (r.status === 400) clearProgress(key); throw new Error(r.json?.reason || r.json?.error || `single mint failed (${r.status})`); }
+
+  stage("confirming");
+  const mintSig = await sendRegister(connection, r.json, burner, asset);
+  await sweep(connection, burner, wallet.publicKey).catch(() => {});
+  clearProgress(key);
+  const result = { C, M: p.M, asset: asset.publicKey.toBase58(), mintSig, name };
+  stage("done", result);
+  return result;
+}

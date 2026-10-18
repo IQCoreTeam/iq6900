@@ -6,10 +6,10 @@
 import { Connection } from "@solana/web3.js";
 import { setRpcUrl } from "@iqlabs-official/solana-sdk";
 import { deriveBurner } from "./burner.js";
-import * as nft from "./nft.js?v=2";
+import * as nft from "./nft.js?v=3";
 import { deploy, pendingDeploy } from "./nft_create.js?v=2";
 import { compressImage } from "./image_compress.js?v=1";
-import { readAsset } from "./nft_asset.js?v=1";
+import { readAsset, readInscription } from "./nft_asset.js?v=2";
 
 // The NFT program + backend currently run on DEVNET while the rest of the site
 // is mainnet, so the NFT page keeps its own RPC under its own localStorage key.
@@ -18,6 +18,9 @@ const RPC_DEFAULT = "https://api.devnet.solana.com";
 const RPC_KEY = "iq6900_nft_rpc";
 function rpc() { try { return localStorage.getItem(RPC_KEY) || RPC_DEFAULT; } catch (e) { return RPC_DEFAULT; } }
 function connection() { return new Connection(rpc(), "confirmed"); }
+// The gateway that serves /img and /token-meta for this cluster (matches the
+// backend's config.gatewayBase); used when the client builds a single NFT's M.
+function gatewayBase() { return rpc().indexOf("devnet") >= 0 ? "https://dev-gateway.iqlabs.dev" : "https://gateway.iqlabs.dev"; }
 
 function phantom() {
   const p = (window.phantom && window.phantom.solana) || window.solana || null;
@@ -71,6 +74,15 @@ window.iqNft = Object.assign({}, nft, {
   // On-chain NFT viewer: reads an asset entirely from the chain (no backend).
   // setRpcUrl points the SDK reader's linked-list/session walk at this cluster.
   viewAsset: async (asset, onStep) => { setRpcUrl(rpc()); return readAsset(connection(), asset, onStep); },
+  // Read one inscription feed row {kind, body, who} from chain (single-NFT view
+  // uses it to show the content and confirm the connected wallet owns it).
+  readRow: async (sig) => { setRpcUrl(rpc()); return JSON.parse(await readInscription(connection(), sig)); },
+  // Single NFT: turn the user's existing inscription C into a 1/1.
+  mintSingle: async ({ C, name, kind, onStage }) => {
+    const provider = await ensureConnected();
+    setRpcUrl(rpc());
+    return nft.mintSingle({ connection: connection(), wallet: provider, burner: await burnerFor(provider), gatewayBase: gatewayBase(), C, name, kind, onStage });
+  },
 });
 window.iqNftReady = true;
 window.dispatchEvent(new Event("iqnft:ready"));

@@ -3,7 +3,7 @@
 // (js/codein/nft_bridge.js). v1 = one collection's buyer mint view: header,
 // item grid, and a mint panel that drives iqNft.mint() stage by stage.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=2";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=3";
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet...",
     deposit: "paying the deposit...",
@@ -27,6 +27,10 @@
     const p = new URLSearchParams(window.location.search).get("asset");
     return p && p.trim() ? p.trim() : null; // present -> show the on-chain viewer
   }
+  function singleFromUrl() {
+    const p = new URLSearchParams(window.location.search).get("single");
+    return p && p.trim() ? p.trim() : null; // present -> show the single-NFT (make it a token) view
+  }
   const sol = (lamports) => (Number(lamports || 0) / 1e9).toFixed(4) + " SOL";
   const setBar = (pct) => $("#nftl_progbar").css("width", Math.max(0, Math.min(100, pct)) + "%");
   const short = (s) => (s ? s.slice(0, 8) + "..." + s.slice(-6) : "");
@@ -35,14 +39,15 @@
     init: function () {
       const slug = slugFromUrl();
       const asset = assetFromUrl();
+      const single = singleFromUrl();
       $.get(TEMPLATE, (html) => {
         $("#main_section").show().empty().append($(html));
         $("#nftl_log_clear").on("click", () => $("#nftl_log").empty());
-        this.dbg("page init" + (asset ? ", asset=" + asset : slug ? ", slug=" + slug : ", home"));
+        this.dbg("page init" + (single ? ", single=" + single : asset ? ", asset=" + asset : slug ? ", slug=" + slug : ", home"));
         this.renderEnv();
         bridge(() => {
           this.dbg("bridge ready (window.iqNft)");
-          const route = asset ? this.loadAsset(asset, slug) : slug ? this.load(slug) : this.loadHome();
+          const route = single ? this.loadSingle(single) : asset ? this.loadAsset(asset, slug) : slug ? this.load(slug) : this.loadHome();
           route.catch((e) => this.fail(e));
         });
       });
@@ -117,6 +122,79 @@
       L.append($("<a>").attr({ href: "https://magiceden.io/item-details/" + addr, target: "_blank" }).text("magic eden"));
 
       $("#nftl_vmeta").text(JSON.stringify(a.metadata, null, 2));
+    },
+
+    // Single NFT "make it a token" view (?menu=nft&single=<C>). Reads the user's
+    // inscription from chain, gates on ownership (feed row who == wallet), and
+    // mints a 1/1 via iqNft.mintSingle.
+    loadSingle: async function (C) {
+      $("#nftl_loading").hide();
+      $("#nftl_single").show();
+      $("#nftl_sc").text(C);
+      this.singleC = C;
+      this.dbg("single: read inscription " + C);
+      let row;
+      try { row = await window.iqNft.readRow(C); }
+      catch (e) { $("#nftl_scontent").text("could not read that inscription on this RPC: " + (e && e.message)); this.dbg("single read failed: " + (e && e.message), "e"); return; }
+      this.singleRow = row;
+      $("#nftl_sowner").text(short(row.who || "-"));
+      const body = row.body || "";
+      if ((row.kind === "image" || /^data:image\//.test(body)) && body) {
+        $("#nftl_simg").attr("src", body).show(); $("#nftl_stext").hide(); $("#nftl_scontent").text("this image is inscribed on chain (tx C).");
+      } else {
+        $("#nftl_stext").text(typeof body === "string" ? body : JSON.stringify(row)).show(); $("#nftl_simg").hide(); $("#nftl_scontent").text("kind: " + (row.kind || "?"));
+      }
+      $("#nftl_sname").val("");
+      this.wireSingle();
+      const addr = window.iqNft.connected();
+      if (addr) this.onSingleConnected(addr);
+    },
+    wireSingle: function () {
+      $("#nftl_sconnect").off("click").on("click", async () => {
+        try { this.onSingleConnected(await window.iqNft.connect()); }
+        catch (e) { $("#nftl_sstatus").addClass("err").text(e.message || String(e)); }
+      });
+      $("#nftl_smint").off("click").on("click", () => this.mintSingle());
+    },
+    onSingleConnected: function (addr) {
+      this.singleWallet = addr;
+      this.dbg("single wallet: " + addr);
+      $("#nftl_sconnect").hide();
+      const owner = this.singleRow && this.singleRow.who;
+      if (owner && owner !== addr) {
+        $("#nftl_smint").hide();
+        $("#nftl_sstatus").addClass("err").text("only the owner of this inscription (" + short(owner) + ") can tokenize it. connected: " + short(addr));
+      } else {
+        $("#nftl_smint").show();
+        $("#nftl_sstatus").removeClass("err").text("");
+      }
+    },
+    mintSingle: async function () {
+      const name = ($("#nftl_sname").val() || "").trim();
+      if (!name) { $("#nftl_sstatus").addClass("err").text("give your NFT a name"); return; }
+      $("#nftl_smint").prop("disabled", true);
+      $("#nftl_sresult").hide();
+      this.dbg("SINGLE mint start: " + this.singleC);
+      try {
+        const res = await window.iqNft.mintSingle({
+          C: this.singleC, name, kind: this.singleRow && this.singleRow.kind,
+          onStage: (s, x) => { $("#nftl_sstatus").removeClass("err").text(STAGE_TEXT[s] || s); if (x) this.dbg("stage:" + s + " " + JSON.stringify(x)); },
+        });
+        this.dbg("SINGLE mint ok: " + JSON.stringify({ asset: res.asset, M: res.M, mintSig: res.mintSig }));
+        $("#nftl_sstatus").removeClass("err").text(STAGE_TEXT.done);
+        $("#nftl_sasset").text(res.asset);
+        const L = $("#nftl_slinks").empty();
+        L.append($("<a>").attr("href", "?menu=nft&asset=" + res.asset).text("view nft"));
+        if (res.mintSig) L.append($("<a>").attr({ href: window.iqNft.solscanTx(res.mintSig), target: "_blank" }).text("mint tx"));
+        L.append($("<a>").attr({ href: window.iqNft.solscanTx(res.M), target: "_blank" }).text("metadata tx"));
+        $("#nftl_sresult").show();
+        $("#nftl_smint").prop("disabled", false).text("MAKE ANOTHER");
+      } catch (e) {
+        const msg = (e && e.message) || String(e);
+        $("#nftl_sstatus").addClass("err").text(msg);
+        this.dbg("SINGLE mint ERROR: " + msg, "e");
+        $("#nftl_smint").prop("disabled", false);
+      }
     },
 
     // Prominent debug log: every step + raw errors land here and in the console,

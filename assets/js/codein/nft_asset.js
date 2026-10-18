@@ -50,7 +50,7 @@ function parseAttributes(d, o) {
   } catch (e) { return {}; }
 }
 
-async function readInscription(connection, sig) {
+export async function readInscription(connection, sig) {
   const tx = await connection.getTransaction(sig, { maxSupportedTransactionVersion: 1 });
   if (!tx) throw new Error("inscription tx not found on this RPC: " + sig);
   const res = await reader.readUserInventoryCodeInFromTx(tx);

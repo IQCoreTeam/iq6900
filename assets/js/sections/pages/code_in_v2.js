@@ -632,6 +632,14 @@
         $("#ci2_view_modal").addClass("hide");
         tkOpen({ sig: sig, body: body });
       });
+      // A Solana inscription you own can also become a 1 of 1 NFT (separate from
+      // the coin launcher above). Hands the sig to the NFT studio's single-mint
+      // view, which re-reads it from chain and gates on ownership again.
+      const canNft = mine && !isEvm();
+      let $nft = $("#ci2_view_nft");
+      if (!$nft.length) { $nft = $("<button id='ci2_view_nft' type='button' class='btn ghost'>MINT AS NFT</button>"); $("#ci2_view_token").after($nft); }
+      $nft.toggleClass("hide", !canNft).off("click");
+      if (canNft) $nft.on("click", () => { window.location.href = "?menu=nft&single=" + encodeURIComponent(sig); });
     }
 
     // Share the site's direct record link; opening it loads the board + viewer.

@@ -124,6 +124,38 @@
         </div>
       </div>
 
+      <div id="nftl_single" style="display:none">
+        <a id="nftl_sback" href="?menu=nft" style="font-size:.7rem">← all collections</a>
+        <h2 style="margin-top:6px">make it a token</h2>
+        <div class="sub">turn one of your inscriptions into a 1 of 1 NFT. the content already lives on chain; this just mints the token that points at it.</div>
+        <div class="row">
+          <div class="col" style="flex:0 1 280px">
+            <img id="nftl_simg" alt="" style="width:100%; border:1px solid var(--line); border-radius:6px; background:var(--card); display:none" />
+            <pre id="nftl_stext" style="display:none; margin:0; padding:10px; max-height:200px; overflow:auto; font-size:.66rem; color:#bfe8cf; background:#0f0d0b; border:1px solid var(--line); border-radius:6px; white-space:pre-wrap; word-break:break-all"></pre>
+            <div class="note" id="nftl_scontent">loading inscription...</div>
+          </div>
+          <div class="col" style="flex:0 1 320px">
+            <div class="panel">
+              <div class="k">inscription (C)</div>
+              <div class="v" style="font-size:.74rem; word-break:break-all" id="nftl_sc">-</div>
+              <div class="k">owner</div>
+              <div class="v" style="font-size:.78rem" id="nftl_sowner">-</div>
+              <div class="k" style="margin-top:6px">name your NFT</div>
+              <input class="inp" id="nftl_sname" placeholder="My Inscription #1" maxlength="80" style="width:100%; box-sizing:border-box; background:rgba(0,0,0,.35); color:var(--cream); border:1px solid var(--line); border-radius:5px; font:500 .78rem 'Kode Mono',monospace; padding:9px 11px; outline:none; margin:4px 0 8px" />
+              <button class="btn" id="nftl_sconnect" type="button">CONNECT WALLET</button>
+              <button class="btn solid" id="nftl_smint" type="button" style="display:none; margin-top:8px">MAKE IT A TOKEN</button>
+              <div class="note" id="nftl_sfee">a small inscription + network fee is added; leftover returns to your wallet.</div>
+              <div class="status" id="nftl_sstatus"></div>
+              <div class="result" id="nftl_sresult">
+                <div class="k">your NFT</div>
+                <div>asset <code id="nftl_sasset"></code></div>
+                <div class="links" id="nftl_slinks"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="nftl_error" class="err" style="display:none"></div>
 
       <div class="log">
