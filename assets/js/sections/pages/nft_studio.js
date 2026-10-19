@@ -200,6 +200,7 @@
     renderNets: function () {
       const nets = [
         { k: "solana", label: "SOLANA", sub: "Core + registry", on: true },
+        { k: "ethereum", label: "ETHEREUM", sub: "coming soon", off: true },
         { k: "robinhood", label: "ROBINHOOD", sub: "coming soon", off: true },
         { k: "monad", label: "MONAD", sub: "coming soon", off: true },
       ];
