@@ -68,6 +68,7 @@
         const minted = Number(c.minted || 0), supply = Number(c.maxSupply || 0);
         const soldout = supply > 0 && minted >= supply;
         const card = $("<a class='ccard'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(c.slug));
+        if (c.logo) card.append($("<img>").attr("src", c.logo).css({ width: "100%", "aspect-ratio": "16/9", "object-fit": "cover", "border-radius": "6px", "margin-bottom": "8px", display: "block" }).on("error", function () { this.style.display = "none"; }));
         card.append($("<span>").addClass("tag" + (soldout ? " out" : "")).text(soldout ? "SOLD OUT" : (supply ? "LIVE" : "SINGLE")));
         card.append($("<div class='cn'>").text(c.name || c.slug));
         card.append($("<div class='cs'>").text((c.symbol || "") + (supply ? "  .  " + minted + "/" + supply + " minted" : "  .  single-mint")));
@@ -235,6 +236,14 @@
       $("#nftl_loading").hide();
       $("#nftl_view").show();
       if (!$("#nftl_back").length) $("#nftl_name").before($("<a id='nftl_back'>").attr("href", "?menu=nft").css("font-size", ".7rem").text("← all collections"));
+      // Collection banner + logo (from the inscribed collection.json).
+      $("#nftl_banner_wrap").remove();
+      if (col.banner || col.logo) {
+        const wrap = $("<div id='nftl_banner_wrap' style='margin:8px 0 12px'>");
+        if (col.banner) wrap.append($("<img>").attr("src", col.banner).css({ width: "100%", "max-height": "180px", "object-fit": "cover", border: "1px solid var(--line)", "border-radius": "8px", display: "block" }).on("error", function () { this.style.display = "none"; }));
+        if (col.logo) wrap.append($("<img>").attr("src", col.logo).css({ width: "64px", height: "64px", "object-fit": "cover", border: "1px solid var(--line)", "border-radius": "8px", "margin-top": col.banner ? "-32px" : "0", "margin-left": "12px", position: "relative", display: "block" }).on("error", function () { this.style.display = "none"; }));
+        $("#nftl_name").before(wrap);
+      }
       $("#nftl_name").text(col.name || slug);
       $("#nftl_meta").text([col.symbol, col.creator ? "by " + short(col.creator) : "", col.sequential ? "sequential" : "random"].filter(Boolean).join("  .  "));
       $("#nftl_price").text(sol(col.priceLamports));

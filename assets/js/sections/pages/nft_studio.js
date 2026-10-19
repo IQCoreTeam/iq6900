@@ -6,13 +6,15 @@
 // real: trait files are composited on a canvas (generate), or decoded from the
 // creator's files (hand-craft / upload). Nothing here is mocked.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_studio.html?ver=1";
+  const TEMPLATE = "./html/sections/nft_studio.html?ver=2";
   const COMPOSITE = 512; // deploy images are built at this edge; compressImage downscales to <=512 anyway
   const STAGE_TEXT = {
     compress: "compressing images...",
     stage: "uploading to Arweave + building the manifest...",
     funding: "approve the funding transfer in your wallet...",
     manifest: "inscribing the manifest...",
+    logo: "inscribing the logo...",
+    banner: "inscribing the banner...",
     collection: "inscribing collection.json...",
     deploy: "deploying the collection + registry...",
     finalize: "finalizing...",
@@ -140,6 +142,13 @@
       $("#nfts_slug").on("input", (e) => { s.slug = e.target.value; this.refreshSlug(); });
       $("#nfts_symbol").on("input", (e) => { s.symbol = e.target.value; });
       $("#nfts_desc").on("input", (e) => { s.description = e.target.value; });
+      // optional collection logo + banner
+      $("#nfts_logo_btn").on("click", () => $("#nfts_file_logo").val("").trigger("click"));
+      $("#nfts_file_logo").on("change", (e) => this.onBrand(e.target.files, "logo"));
+      $("#nfts_logo_clear").on("click", () => this.clearBrand("logo"));
+      $("#nfts_banner_btn").on("click", () => $("#nfts_file_banner").val("").trigger("click"));
+      $("#nfts_file_banner").on("change", (e) => this.onBrand(e.target.files, "banner"));
+      $("#nfts_banner_clear").on("click", () => this.clearBrand("banner"));
 
       // step 3 tabs
       $("#nfts_tab_gen").on("click", () => { s.itemsMode = "gen"; this.renderItemsTab(); });
@@ -194,6 +203,24 @@
         this.slugOk = !taken;
         $tag.attr("class", taken ? "tag-bad" : "tag-ok").text(taken ? "already taken" : "available");
       } catch (e) { this.slugOk = true; $tag.attr("class", "muted").text("(could not check; will verify at deploy)"); }
+    },
+
+    // Optional collection logo / banner: decoded to a bitmap, compressed +
+    // inscribed at deploy (specFromState hands the engine a thunk).
+    onBrand: async function (files, which) {
+      if (!files || !files[0]) return;
+      try {
+        const d = await decodeFile(files[0]);
+        if (which === "logo") this.logoBitmap = d.bitmap; else this.bannerBitmap = d.bitmap;
+        $("#nfts_" + which + "_prev").attr("src", d.url).show();
+        $("#nfts_" + which + "_clear").show();
+        this.dbg(which + " set (" + d.w + "x" + d.h + ")");
+      } catch (e) { this.dbg(which + " decode failed: " + (e && e.message), "e"); }
+    },
+    clearBrand: function (which) {
+      if (which === "logo") this.logoBitmap = null; else this.bannerBitmap = null;
+      $("#nfts_" + which + "_prev").hide().removeAttr("src");
+      $("#nfts_" + which + "_clear").hide();
     },
 
     // ---- step 2: network ----
@@ -429,7 +456,13 @@
       const price = Math.round(parseFloat(s.priceSol || "0") * 1e9) || 0;
       const deposit = Math.round(parseFloat(s.depositSol || "0") * 1e9) || 0;
       const royaltyBps = Math.round(parseFloat(s.royaltyPct || "0") * 100) || 0;
-      return { slug: this.slugClean, name: s.name.trim(), symbol: s.symbol.trim(), description: s.description.trim(), price, deposit, royaltyBps, sequential: s.assignment === "sequential" };
+      const logoBmp = this.logoBitmap, bannerBmp = this.bannerBitmap;
+      return {
+        slug: this.slugClean, name: s.name.trim(), symbol: s.symbol.trim(), description: s.description.trim(),
+        price, deposit, royaltyBps, sequential: s.assignment === "sequential",
+        logo: logoBmp ? () => bitmapToImageData(logoBmp, 512) : undefined,
+        banner: bannerBmp ? () => bitmapToImageData(bannerBmp, 1024) : undefined,
+      };
     },
     renderSummary: function () {
       const s = this.state; const spec = this.specFromState();

@@ -110,7 +110,23 @@
         </div>
         <div class="field"><div class="fl">symbol (ticker in the inscribed collection json)</div><input class="inp" id="nfts_symbol" placeholder="MONK" maxlength="10"></div>
         <div class="field"><div class="fl">description (optional)</div><input class="inp" id="nfts_desc" placeholder="a fully on-chain pfp"></div>
-        <div class="note">// name + symbol + description go into collection.json and are inscribed at deploy. item names freeze when minted.</div>
+        <div class="field">
+          <div class="fl">collection logo (optional, square)</div>
+          <div style="display:flex; gap:10px; align-items:center">
+            <img id="nfts_logo_prev" alt="" style="width:56px; height:56px; object-fit:cover; border:1px solid var(--line); border-radius:6px; display:none">
+            <button class="btn2" id="nfts_logo_btn" type="button">upload logo</button>
+            <button class="btn2" id="nfts_logo_clear" type="button" style="display:none">remove</button>
+          </div>
+        </div>
+        <div class="field">
+          <div class="fl">collection banner (optional, wide)</div>
+          <div style="display:flex; gap:10px; align-items:center">
+            <img id="nfts_banner_prev" alt="" style="width:160px; height:52px; object-fit:cover; border:1px solid var(--line); border-radius:6px; display:none">
+            <button class="btn2" id="nfts_banner_btn" type="button">upload banner</button>
+            <button class="btn2" id="nfts_banner_clear" type="button" style="display:none">remove</button>
+          </div>
+        </div>
+        <div class="note">// name, symbol, description go into collection.json. logo + banner (optional) are compressed and inscribed on-chain at deploy and written into collection.json, so marketplaces and this launchpad show them. item names freeze when minted.</div>
       </div>
 
       <!-- STEP 2 NETWORK -->
@@ -260,4 +276,6 @@
   <input type="file" id="nfts_file_hand" accept="image/*" multiple class="hidden">
   <input type="file" id="nfts_file_handreplace" accept="image/*" class="hidden">
   <input type="file" id="nfts_file_folder" accept="image/*,.json,application/json" multiple class="hidden">
+  <input type="file" id="nfts_file_logo" accept="image/*" class="hidden">
+  <input type="file" id="nfts_file_banner" accept="image/*" class="hidden">
 </section>

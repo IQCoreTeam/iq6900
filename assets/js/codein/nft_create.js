@@ -16,7 +16,7 @@
 import { Keypair, Transaction } from "@solana/web3.js";
 import { writer } from "@iqlabs-official/solana-sdk";
 import { api, bytesToBase64, base64ToBytes } from "./nft.js?v=3";
-import { topUp, sweep, confirmOrCheck } from "./inscribe.js?v=8";
+import { topUp, sweep, confirmOrCheck, writeFeedRow } from "./inscribe.js?v=8";
 import { estimateCost, getAccountRent } from "./cost.js?v=6";
 import { compressImage } from "./image_compress.js?v=1";
 
@@ -91,19 +91,42 @@ export async function deploy({ connection, wallet, burner, spec, items, onStage 
     saveProgress(slug, p);
   }
 
-  // 2. Fund once.
+  // 2. Fund once (covers the manifest, collection.json, the deploy tx, and the
+  //    optional logo/banner inscriptions).
   if (!p.funded) {
     stage("funding");
-    await topUp(connection, wallet, burner.publicKey, await deployBudget(connection, burner, p));
+    let budget = await deployBudget(connection, burner, p);
+    const extraImgs = (spec.logo ? 1 : 0) + (spec.banner ? 1 : 0);
+    if (extraImgs) budget += extraImgs * estimateCost(Math.ceil((160 * 1024 * 4) / 3) + 128, { accountRent: 0 }).total;
+    await topUp(connection, wallet, burner.publicKey, budget);
     p.funded = true; saveProgress(slug, p);
   }
 
-  // 3. Inscribe the manifest, then collection.json, via the burner.
+  // 3. Inscribe the manifest.
   if (!p.manifestSig) {
     stage("manifest");
     p.manifestSig = await writer.codeIn({ connection, signer: burner }, p.manifestJson, "manifest.json", 0, "json");
     saveProgress(slug, p);
   }
+
+  // 3b. Optional collection logo/banner: compress + inscribe each as a feed-row
+  //     image (so gateway/img/{sig} serves it), then rebuild collection.json so
+  //     its image/banner point at those inscriptions. imageData may be a thunk.
+  const resolve = async (x) => (typeof x === "function" ? await x() : x);
+  const inscribeImage = async (imageData, maxEdge) => {
+    const { bytes, mime } = await compressImage(imageData, { maxEdge });
+    const row = JSON.stringify({ kind: "image", body: `data:${mime};base64,${bytesToBase64(bytes)}`, who });
+    return writeFeedRow({ connection, burner, row, owner: wallet.publicKey });
+  };
+  if (spec.logo && !p.logoSig) { stage("logo"); p.logoSig = await inscribeImage(await resolve(spec.logo), 512); saveProgress(slug, p); }
+  if (spec.banner && !p.bannerSig) { stage("banner"); p.bannerSig = await inscribeImage(await resolve(spec.banner), 1024); saveProgress(slug, p); }
+  if ((spec.logo || spec.banner) && !p.collFinal) {
+    const r = await api("/creator/collection-json", "POST", { stagingId: p.stagingId, logoSig: p.logoSig, bannerSig: p.bannerSig });
+    if (r.status !== 200) throw new Error(r.json?.error || `collection-json failed (${r.status})`);
+    p.collectionJson = r.json.collectionJson; p.collFinal = true; saveProgress(slug, p);
+  }
+
+  // 4. Inscribe collection.json.
   if (!p.metaSig) {
     stage("collection");
     p.metaSig = await writer.codeIn({ connection, signer: burner }, p.collectionJson, "collection.json", 0, "json");
