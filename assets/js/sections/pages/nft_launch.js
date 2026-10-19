@@ -261,20 +261,25 @@
     renderGrid: async function (slug, col) {
       const $g = $("#nftl_grid").empty();
       if (!col.maxSupply) { $g.append($("<div class='cell'>").text("single-mint")); return; }
+      // Every item has its (compressed) image on Arweave, so the grid is a real
+      // gallery: open and minted alike show a thumbnail. Minted cells link to the
+      // on-chain viewer; the image makes a just-minted item obviously succeed.
+      const gw = col.arweaveGateway ? col.arweaveGateway.replace(/\/$/, "") : null;
       try {
         const data = await window.iqNft.getItems(slug, 0, 120);
         (data.items || []).forEach((it) => {
-          if (it.minted && it.asset) {
-            // Minted cells link into the on-chain viewer for that asset.
-            $g.append($("<a>").addClass("cell minted").css("text-decoration", "none")
-              .attr("href", "?menu=nft&nft=" + encodeURIComponent(slug) + "&asset=" + it.asset)
-              .append($("<b>").text("#" + it.index))
-              .append(document.createTextNode("view")));
-          } else {
-            $g.append($("<div>").addClass("cell" + (it.minted ? " minted" : ""))
-              .append($("<b>").text("#" + it.index))
-              .append(document.createTextNode(it.minted ? "minted" : "open")));
+          const $cell = (it.minted && it.asset)
+            ? $("<a class='cell'>").css("text-decoration", "none").attr("href", "?menu=nft&nft=" + encodeURIComponent(slug) + "&asset=" + it.asset)
+            : $("<div class='cell'>");
+          if (gw && it.arweaveId) {
+            const img = $("<img>").attr("src", gw + "/" + it.arweaveId)
+              .css({ width: "100%", "aspect-ratio": "1", "object-fit": "cover", "border-radius": "4px", display: "block", "margin-bottom": "4px" });
+            img.on("error", function () { this.style.display = "none"; });
+            $cell.append(img);
           }
+          $cell.append($("<b>").text("#" + it.index));
+          $cell.append($("<div>").css("color", it.minted ? "var(--green)" : "var(--dim)").text(it.minted ? "minted ▸ view" : "open"));
+          $g.append($cell);
         });
       } catch (e) { $g.append($("<div class='cell'>").text("items unavailable")); }
     },
@@ -325,9 +330,22 @@
       }
     },
 
-    showResult: function (res) {
+    showResult: async function (res) {
       this.status(STAGE_TEXT.done);
       setBar(100);
+      // Show the minted image so success is obvious (Arweave, same as the grid).
+      $("#nftl_result .resimg").remove();
+      const gw = this.col && this.col.arweaveGateway ? this.col.arweaveGateway.replace(/\/$/, "") : null;
+      if (gw) {
+        try {
+          const data = await window.iqNft.getItems(res.slug, 0, 200);
+          const it = (data.items || []).find((x) => x.index === res.index);
+          if (it && it.arweaveId) {
+            $("#nftl_result").prepend($("<img class='resimg'>").attr("src", gw + "/" + it.arweaveId)
+              .css({ width: "140px", "aspect-ratio": "1", "object-fit": "cover", border: "1px solid var(--green)", "border-radius": "6px", "margin-bottom": "10px", display: "block" }));
+          }
+        } catch (e) {}
+      }
       $("#nftl_asset").text(res.asset);
       $("#nftl_c").text(res.C);
       $("#nftl_m").text(res.M);
