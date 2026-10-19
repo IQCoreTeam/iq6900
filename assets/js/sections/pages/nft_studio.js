@@ -241,13 +241,26 @@
       const s = this.state; const $l = $("#nfts_layers").empty();
       s.layers.forEach((l, i) => {
         const row = $("<div class='lrow'>").toggleClass("sel", i === s.selLayer);
-        row.append($("<div class='ln'>").append($("<div>").text(l.name)).append($("<div class='lc'>").text(l.traits.length + " traits"))
+        // The layer name is click-to-rename inline (swaps to an input).
+        const $nameText = $("<div>").text(l.name).attr("title", "click to rename").css("cursor", "text");
+        $nameText.on("click", (e) => {
+          e.stopPropagation();
+          s.selLayer = i;
+          const $inp = $("<input>").val(l.name).css({ width: "100%", "box-sizing": "border-box", background: "rgba(0,0,0,.35)", color: "var(--cream)", border: "1px solid var(--green)", "border-radius": "4px", font: "600 .74rem 'Kode Mono',monospace", padding: "2px 6px", outline: "none" });
+          $nameText.replaceWith($inp);
+          $inp[0].focus(); $inp[0].select();
+          const commit = () => { const v = ($inp.val() || "").trim(); if (v) l.name = v; this.renderGen(); };
+          $inp.on("blur", commit).on("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); $inp[0].blur(); } else if (ev.key === "Escape") { this.renderGen(); } });
+        });
+        row.append($("<div class='ln'>").append($nameText).append($("<div class='lc'>").text(l.traits.length + " traits"))
           .on("click", () => { s.selLayer = i; this.renderGen(); }));
         const up = $("<div class='arw'>").text("↑").on("click", (e) => { e.stopPropagation(); this.reorder(i, i - 1); });
         const dn = $("<div class='arw'>").text("↓").on("click", (e) => { e.stopPropagation(); this.reorder(i, i + 1); });
         if (i === 0) up.css({ opacity: .25, "pointer-events": "none" });
         if (i === s.layers.length - 1) dn.css({ opacity: .25, "pointer-events": "none" });
-        row.append($("<div style='display:flex;flex-direction:column;gap:3px'>").append(up).append(dn));
+        const rm = $("<div class='arw'>").text("×").attr("title", "remove layer").css({ "border-color": "rgba(255,154,154,.5)", color: "var(--red)" })
+          .on("click", (e) => { e.stopPropagation(); this.removeLayer(i); });
+        row.append($("<div style='display:flex;flex-direction:column;gap:3px'>").append(up).append(dn).append(rm));
         $l.append(row);
       });
       if (!s.layers.length) $l.append($("<div class='note'>").text("no layers yet. add a layer (e.g. Background), then upload its trait images."));
@@ -255,6 +268,12 @@
     reorder: function (from, to) {
       const s = this.state; if (to < 0 || to >= s.layers.length) return;
       const m = s.layers.splice(from, 1)[0]; s.layers.splice(to, 0, m); s.selLayer = to;
+      s.roll = rollOne(s.layers); this.renderGen();
+    },
+    removeLayer: function (i) {
+      const s = this.state;
+      s.layers.splice(i, 1);
+      if (s.selLayer >= s.layers.length) s.selLayer = Math.max(0, s.layers.length - 1);
       s.roll = rollOne(s.layers); this.renderGen();
     },
     renderGallery: function () {
