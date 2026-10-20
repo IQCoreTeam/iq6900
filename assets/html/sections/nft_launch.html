@@ -153,6 +153,11 @@
     #nftl .vimg pre{position:absolute;inset:0;margin:0;padding:10px;overflow:auto;font:500 9px/1.5 'Kode Mono',monospace;color:#bfe8cf;background:rgba(0,0,0,.6);white-space:pre-wrap;word-break:break-all;text-align:left}
     #nftl pre.meta{margin:12px 0 0;padding:10px;max-height:180px;overflow:auto;font:500 9px/1.5 'Kode Mono',monospace;color:#bfe8cf;background:rgba(0,0,0,.35);border:1px solid rgba(232,228,214,.25);border-radius:5px;white-space:pre-wrap;word-break:break-all}
     #nftl .steps{font:500 9.5px/1.9 'Kode Mono',monospace;opacity:.7;margin-top:6px}
+    /* item preview modal (design: the nft.exe overlay, for items not minted yet) */
+    #nftl .modal{position:fixed;inset:0;z-index:60;background:rgba(4,6,4,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto}
+    #nftl .modal .win{width:760px;max-width:100%;background:rgba(20,19,16,.97)}
+    #nftl .modal .x{margin-left:auto;cursor:pointer;opacity:.7}
+    #nftl .modal .x:hover{opacity:1}
     @media (max-width:1100px){#nftl #nftl_nav_mid{display:none}}
     @media (max-width:980px){#nftl #nftl_desk{flex-direction:column}#nftl #nftl_mw{flex:none}#nftl .colscroll{max-height:none}#nftl .feed{max-height:none}#nftl #nftl_colpage,#nftl #nftl_vgrid,#nftl #nftl_sgrid{grid-template-columns:1fr}#nftl .cleft,#nftl .vleft{border-right:none;border-bottom:1px solid rgba(232,228,214,.2)}#nftl .itemgrid{grid-template-columns:repeat(4,1fr)}}
     @media (max-width:560px){#nftl .colgrid{grid-template-columns:1fr}#nftl .itemgrid{grid-template-columns:repeat(3,1fr)}#nftl .nav .logo{display:none}}
@@ -303,6 +308,30 @@
           <div><div class="fl">NAME YOUR NFT</div><input class="inp" id="nftl_sname" placeholder="My Inscription #1" maxlength="80"></div>
           <div id="nftl_sstate" class="mstate"></div>
           <div class="cm">// 2 wallet popups, like a mint: the metadata json is inscribed (M), then the asset is registered. leftover returns to your wallet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ITEM PREVIEW (not minted yet) ===== -->
+  <div id="nftl_item_modal" class="modal" style="display:none">
+    <div class="win">
+      <div class="wh"><span class="dr"></span><span class="da"></span><span class="dg"></span>
+        <span style="margin-left:6px;opacity:.8">item.exe // <span id="nftl_im_title"></span></span><span class="x" id="nftl_im_close">[ x ]</span></div>
+      <div id="nftl_vgrid" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)">
+        <div class="vleft">
+          <div class="vimg" id="nftl_im_box"><img id="nftl_im_img" alt=""><div class="cap" id="nftl_im_cap"></div></div>
+          <div class="cm" id="nftl_im_sub" style="margin-top:10px"></div>
+        </div>
+        <div class="vright">
+          <div class="lab" style="letter-spacing:.2em;opacity:.7">// NOT MINTED YET</div>
+          <div class="kvbox" id="nftl_im_kv" style="margin-top:10px"></div>
+          <div class="cm" style="margin-top:12px">// no asset exists for this item yet. at mint the buyer inscribes this image (C) and its metadata (M) on solana, then the asset is registered pointing at both.</div>
+          <div class="cm" id="nftl_im_assign" style="margin-top:4px"></div>
+          <div class="lab" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">
+            <button class="btng" type="button" id="nftl_im_mint" style="padding:9px 16px">MINT ONE &rarr;</button>
+            <a class="btn2" id="nftl_im_src" target="_blank" style="padding:7px 12px">IMAGE SOURCE (ARWEAVE)</a>
+          </div>
         </div>
       </div>
     </div>

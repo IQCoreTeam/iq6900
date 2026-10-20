@@ -4,7 +4,7 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=10";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=11";
   const PER_PAGE = 6; // design: 6 collections per registry page
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet",
@@ -308,7 +308,7 @@
         const fresh = it.index === this.freshIndex;
         const $cell = (it.minted && it.asset)
           ? $("<a class='it'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(col.slug) + "&asset=" + it.asset)
-          : $("<div class='it'>");
+          : $("<div class='it'>").on("click", () => this.openItem(it));
         $cell.toggleClass("minted", !!it.minted && !fresh).toggleClass("fresh", fresh);
         const $im = $("<div class='im'>");
         const src = arweaveUrl(col, it.arweaveId);
@@ -318,6 +318,29 @@
         $g.append($cell);
       });
     },
+
+    // Preview of an item nobody has minted yet (design: the nft.exe overlay).
+    // There is no asset to read, so this shows the creator's Arweave copy and
+    // what the mint will do; MINT ONE jumps to the mint panel.
+    openItem: function (it) {
+      const col = this.col, src = arweaveUrl(col, it.arweaveId);
+      $("#nftl_im_title").text((col.name || col.slug) + " #" + it.index);
+      $("#nftl_im_img").attr("src", src || "").toggle(!!src);
+      $("#nftl_im_cap").text((it.name || "#" + it.index) + " \u00b7 arweave copy, inscribed on solana at mint");
+      $("#nftl_im_sub").text("// " + (col.name || col.slug) + " \u00b7 not minted yet");
+      const $kv = $("#nftl_im_kv").empty();
+      [["name", it.name || "#" + it.index], ["index", "#" + it.index], ["status", "open", "nftl-g"], ["collection", short(col.collection)], ["price", solNum(col.priceLamports) + " SOL"]]
+        .forEach(([k, v, cls]) => $kv.append($("<div class='kv'>").append($("<span class='kvk'>").text(k)).append($("<span class='kvv'>").addClass(cls || "").text(v))));
+      $("#nftl_im_assign").text(col.sequential
+        ? "// assignment is sequential: minting gives the next open number, so this one comes up in order."
+        : "// assignment is random (shuffled at launch): minting gives a random open item, not necessarily this one.");
+      $("#nftl_im_src").attr("href", src || "#").toggle(!!src);
+      $("#nftl_im_mint").off("click").on("click", () => { this.closeItem(); $("#nftl_mstate")[0].scrollIntoView({ behavior: "smooth", block: "center" }); });
+      $("#nftl_im_close").off("click").on("click", () => this.closeItem());
+      $("#nftl_item_modal").off("click").on("click", (e) => { if (e.target === e.currentTarget) this.closeItem(); }).css("display", "flex");
+      $(document).off("keydown.nftlItem").on("keydown.nftlItem", (e) => { if (e.key === "Escape") this.closeItem(); });
+    },
+    closeItem: function () { $("#nftl_item_modal").hide(); $(document).off("keydown.nftlItem"); },
 
     // Mint panel states (design: idle / approve / confirming / done, + error).
     mintState: function (state, x) {
