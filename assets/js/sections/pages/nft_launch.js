@@ -371,9 +371,15 @@
         $("#nftl_vphtxt").hide();
         $("#nftl_vimg").attr("src", a.imageDataUrl).show();
         $("#nftl_vimgnote").text("// decoded in your browser from the image inscription (tx C). no gateway, no backend.");
+      } else if (a.metadata && a.metadata.image) {
+        // Direct decode failed (public rpcs rate-limit the chunk walk of bigger
+        // images); show the gateway's cached render of the same tx C instead.
+        $("#nftl_vphtxt").text("rpc rate-limited, showing the gateway cache");
+        $("#nftl_vimg").attr("src", a.metadata.image).on("load", () => $("#nftl_vphtxt").hide()).on("error", function () { $(this).hide(); }).show();
+        $("#nftl_vimgnote").text("// this rpc could not stream tx C in time; the image shown is the gateway's cache of that same inscription. set your own rpc to decode it here.");
       } else {
         $("#nftl_vphtxt").text("image not recovered on this rpc");
-        $("#nftl_vimgnote").text("// metadata image pointer: " + (a.metadata && a.metadata.image ? a.metadata.image : "-"));
+        $("#nftl_vimgnote").text("// no image pointer in the metadata");
       }
       const $p = $("#nftl_vattrs").empty();
       [["name", a.name], ["collection", a.collection || "-"], ["index", a.attributes.index || "-"], ["inscription (C)", a.C || "-", "nftl-g"], ["metadata (M)", a.M || "-", "nftl-g"], ["std", a.attributes.std || "-"], ["uri", a.uri]]
