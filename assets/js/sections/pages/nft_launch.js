@@ -3,7 +3,7 @@
 // (js/codein/nft_bridge.js). v1 = one collection's buyer mint view: header,
 // item grid, and a mint panel that drives iqNft.mint() stage by stage.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=3";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=4";
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet...",
     deposit: "paying the deposit...",
@@ -42,39 +42,97 @@
       const single = singleFromUrl();
       $.get(TEMPLATE, (html) => {
         $("#main_section").show().empty().append($(html));
-        $("#nftl_log_clear").on("click", () => $("#nftl_log").empty());
         this.dbg("page init" + (single ? ", single=" + single : asset ? ", asset=" + asset : slug ? ", slug=" + slug : ", home"));
-        this.renderEnv();
         bridge(() => {
-          this.dbg("bridge ready (window.iqNft)");
           const route = single ? this.loadSingle(single) : asset ? this.loadAsset(asset, slug) : slug ? this.load(slug) : this.loadHome();
           route.catch((e) => this.fail(e));
         });
       });
     },
 
+    // Home: launchpad.exe (collection cards + MY NFTS) + minted.exe (recent mints).
     loadHome: async function () {
       const cols = await window.iqNft.getCollections();
       this.dbg("home: " + cols.length + " collection(s)");
       $("#nftl_loading").hide();
       $("#nftl_home").show();
-      if (!$("#nftl_launch_cta").length) {
-        $("#nftl_home_grid").before($("<a id='nftl_launch_cta' class='btn solid' style='display:inline-block;width:auto;text-decoration:none;margin-bottom:12px'>")
-          .attr("href", "?menu=nft-create").text("+ LAUNCH A COLLECTION"));
-      }
-      const $g = $("#nftl_home_grid").empty();
-      if (!cols.length) { $g.append($("<div class='muted'>").text("no collections yet")); return; }
-      cols.forEach((c) => {
-        const minted = Number(c.minted || 0), supply = Number(c.maxSupply || 0);
-        const soldout = supply > 0 && minted >= supply;
-        const card = $("<a class='ccard'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(c.slug));
-        if (c.logo) card.append($("<img>").attr("src", c.logo).css({ width: "100%", "aspect-ratio": "16/9", "object-fit": "cover", "border-radius": "6px", "margin-bottom": "8px", display: "block" }).on("error", function () { this.style.display = "none"; }));
-        card.append($("<span>").addClass("tag" + (soldout ? " out" : "")).text(soldout ? "SOLD OUT" : (supply ? "LIVE" : "SINGLE")));
-        card.append($("<div class='cn'>").text(c.name || c.slug));
-        card.append($("<div class='cs'>").text((c.symbol || "") + (supply ? "  .  " + minted + "/" + supply + " minted" : "  .  single-mint")));
-        card.append($("<div class='cp'>").text(sol(c.priceLamports)));
-        $g.append(card);
+      this.cols = cols;
+      $("#nftl_tab_cols").off("click").on("click", () => this.homeTab("cols"));
+      $("#nftl_tab_mine").off("click").on("click", () => this.homeTab("mine"));
+      this.renderCols(cols);
+      this.renderMintedFeed(cols); // async, fills the right window as it goes
+    },
+    homeTab: function (tab) {
+      $("#nftl_tab_cols").toggleClass("on", tab === "cols");
+      $("#nftl_tab_mine").toggleClass("on", tab === "mine");
+      $("#nftl_colgrid").toggle(tab === "cols");
+      $("#nftl_desk_cap").toggle(tab === "cols");
+      $("#nftl_mine").toggle(tab === "mine");
+      if (tab === "mine") this.renderMine();
+    },
+    renderCols: function (cols) {
+      const $g = $("#nftl_colgrid").empty();
+      if (!cols.length) { $g.append($("<div class='cm' style='grid-column:1/-1;padding:20px 0'>").text("no collections yet. be the first: + LAUNCH A COLLECTION")); return; }
+      // live first, then upcoming, then sold out
+      const rank = (c) => { const s = this.statusOf(c); return s.label === "LIVE" ? 0 : s.label === "UPCOMING" ? 1 : s.label === "SINGLE" ? 2 : 3; };
+      cols.slice().sort((a, b) => rank(a) - rank(b)).forEach((c) => {
+        const supply = Number(c.maxSupply || 0), minted = Number(c.minted || 0), st = this.statusOf(c);
+        const $card = $("<a class='ccard'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(c.slug));
+        const $cov = $("<div class='cov ph' style='position:relative'>").text("[ " + (c.symbol || c.name || c.slug) + " ]");
+        if (c.logo) $cov.append($("<img>").attr("src", c.logo).css({ position: "absolute", inset: 0, width: "100%", height: "100%", "object-fit": "cover" }).on("error", function () { $(this).remove(); }));
+        const $head = $("<div style='display:flex;justify-content:space-between;align-items:center;gap:8px'>")
+          .append($("<span class='cn'>").text(c.name || c.slug))
+          .append($("<span>").addClass("chip " + st.cls).text(st.label));
+        const pct = supply ? (minted / supply) * 100 : 0;
+        const $body = $("<div class='cbody'>")
+          .append($head)
+          .append($("<div class='cby'>").text("by " + short(c.creator)))
+          .append($("<div class='pbar'>").append($("<i>").css("width", pct + "%")))
+          .append($("<div class='crow'>").append($("<span>").text(supply ? minted + " / " + supply : "single mint")).append($("<span style='color:var(--green)'>").text(sol(c.priceLamports))));
+        $card.append($cov).append($body);
+        $g.append($card);
       });
+    },
+    renderMine: function () {
+      const addr = window.iqNft.connected();
+      const $m = $("#nftl_mine").empty();
+      if (!addr) {
+        $m.append($("<div style='text-align:center;padding:44px 0'>")
+          .append($("<div style='font:400 18px \"Zen Dots\",monospace;opacity:.85'>").text("CONNECT TO SEE YOURS."))
+          .append($("<div class='cm' style='margin:10px 0 16px'>").text("your NFTs are read from the chain by your wallet address."))
+          .append($("<button class='btn' id='nftl_mine_connect' type='button'>").text("CONNECT WALLET")));
+        $("#nftl_mine_connect").on("click", async () => { try { await window.iqNft.connect(); this.renderMine(); } catch (e) {} });
+        return;
+      }
+      $m.append($("<div class='cm' style='padding:34px 0;text-align:center;line-height:1.9'>")
+        .html("connected as " + short(addr) + ".<br>a full owned-NFT gallery reads DAS (getAssetsByOwner), which needs an indexing RPC not wired on this devnet endpoint yet.<br>open a collection: your minted items show there, and each links to the on-chain viewer."));
+    },
+    // Recent mints across all collections, newest first.
+    renderMintedFeed: async function (cols) {
+      const $r = $("#nftl_minted_rows").empty();
+      const rows = [];
+      for (const c of cols) {
+        try { (await window.iqNft.getRecent(c.slug, 8)).forEach((x) => rows.push({ ...x, colName: c.name || c.slug, slug: c.slug })); } catch (e) {}
+      }
+      rows.sort((a, b) => (Number(b.registeredAt) || 0) - (Number(a.registeredAt) || 0));
+      if (!rows.length) { $r.append($("<div class='cm' style='padding:16px 14px'>").text("no mints yet")); return; }
+      rows.slice(0, 16).forEach((x) => {
+        const $row = $("<div class='mrow'>").on("click", () => { window.location.href = "?menu=nft&nft=" + encodeURIComponent(x.slug) + "&asset=" + x.asset; });
+        $row.append($("<div class='mn'>")
+          .append($("<span class='mth ph'>").css("font-size", "8px").text("#" + x.index))
+          .append($("<div style='min-width:0'>").append($("<div class='mnt'>").text(x.colName + " #" + x.index)).append($("<div class='mna'>").text(short(x.asset)))));
+        $row.append($("<span class='mc'>").text(x.colName));
+        $row.append($("<span class='mo'>").text(short(x.owner)));
+        $r.append($row);
+      });
+    },
+    statusOf: function (c) {
+      const supply = Number(c.maxSupply || 0), minted = Number(c.minted || 0);
+      const now = Math.floor(Date.now() / 1000);
+      if (!supply) return { label: "SINGLE", cls: "" };
+      if (minted >= supply) return { label: "SOLD OUT", cls: "out" };
+      if (Number(c.startAt) > now) return { label: "UPCOMING", cls: "soon" };
+      return { label: "LIVE", cls: "live" };
     },
 
     // On-chain NFT viewer (?menu=nft&asset=<addr>). Reads the asset from the
@@ -198,26 +256,9 @@
       }
     },
 
-    // Prominent debug log: every step + raw errors land here and in the console,
-    // so a failing mint is diagnosable without opening devtools.
+    // Step + error trace to the console only (open F12 to follow a mint).
     dbg: function (msg, cls) {
-      const t = new Date().toTimeString().slice(0, 8);
-      const line = $("<div>").append($("<span class='t'>").text("[" + t + "] "));
-      line.append($("<span>").addClass(cls || "").text(typeof msg === "string" ? msg : JSON.stringify(msg)));
-      $("#nftl_log").append(line);
-      const el = document.getElementById("nftl_log");
-      if (el) el.scrollTop = el.scrollHeight;
       (cls === "e" ? console.error : console.log)("[iqnft] " + (typeof msg === "string" ? msg : JSON.stringify(msg)));
-    },
-
-    renderEnv: async function () {
-      const api = window.iqNft.nftApi(), rpc = window.iqNft.getRpc();
-      $("#nftl_env").html("env: api <b>" + api + "</b> . rpc <b>" + rpc + "</b> . cluster <b>...</b>");
-      try {
-        const h = await window.iqNft.health();
-        $("#nftl_env").html("env: api <b>" + api + "</b> . rpc <b>" + rpc + "</b> . cluster <b>" + (h.cluster || "?") + "</b> . program <b>" + (h.programId ? h.programId.slice(0, 8) + "..." : "?") + "</b>");
-        this.dbg("health: " + JSON.stringify(h));
-      } catch (e) { this.dbg("health failed: " + (e && e.message), "e"); }
     },
 
     fail: function (e) {
