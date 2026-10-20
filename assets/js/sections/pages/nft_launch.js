@@ -4,7 +4,7 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=9";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=10";
   const PER_PAGE = 6; // design: 6 collections per registry page
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet",
@@ -96,7 +96,7 @@
       this.tab = "cols"; this.chain = "all"; this.page = 1;
       this.renderSkeleton();
       $("#nftl_tabs .tab").on("click", (e) => this.homeTab($(e.currentTarget).data("tab")));
-      $("#nftl_chains div").on("click", (e) => {
+      $("#nftl_chains div").not(".soon").on("click", (e) => {
         this.chain = $(e.currentTarget).data("chain"); this.page = 1;
         $("#nftl_chains div").removeClass("on"); $(e.currentTarget).addClass("on");
         this.renderCols();
@@ -139,9 +139,7 @@
       const all = this.visibleCols(), shown = all.slice(0, this.page * PER_PAGE);
       const $g = $("#nftl_colgrid").empty();
       if (!all.length) {
-        $g.append($("<div class='cm' style='grid-column:1/-1;padding:20px 0'>").text(this.chain === "robinhood"
-          ? "// no collections on robinhood chain yet. inscription nfts there are coming; the code-in board already runs on it (HOOD IN)."
-          : "// no collections yet. be the first: + LAUNCH A COLLECTION"));
+        $g.append($("<div class='cm' style='grid-column:1/-1;padding:20px 0'>").text("// no collections yet. be the first: + LAUNCH A COLLECTION"));
         $("#nftl_pager").empty();
         return;
       }
@@ -149,7 +147,7 @@
       const pages = Math.max(1, Math.ceil(all.length / PER_PAGE));
       const $p = $("#nftl_pager").empty().append($("<span>").text("// page " + this.page + " / " + pages + " · showing " + shown.length + " of " + all.length));
       if (shown.length < all.length) $p.append($("<span class='more'>").text("LOAD MORE ↓").on("click", () => this.loadMore()));
-      else $p.append($("<span class='eof'>").text("EOF · " + all.length + (this.chain === "all" ? " collections, all chains" : this.chain === "solana" ? " on solana" : " on robinhood chain")));
+      else $p.append($("<span class='eof'>").text("EOF · " + all.length + (this.chain === "all" ? " collections, all chains" : " on solana")));
     },
     // One collection card (design: cover + name/chip + creator + bar + minted/price
     // + OWNERS/SUPPLY/VOLUME/FLOOR + chain/std/HOT chips). Every value is ours:
