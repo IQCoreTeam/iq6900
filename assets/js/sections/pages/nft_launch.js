@@ -78,10 +78,11 @@
       cols.slice().sort((a, b) => rank(a) - rank(b)).forEach((c) => {
         const supply = Number(c.maxSupply || 0), minted = Number(c.minted || 0), st = this.statusOf(c);
         const $card = $("<a class='ccard'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(c.slug));
-        // cover image: the creator logo if set, else a representative item image
-        // (both real, inscribed on chain); striped placeholder only if neither loads.
+        // cover image: the registered banner if set, else a representative item
+        // image (both real, inscribed on chain); striped placeholder only if
+        // neither loads (banner falls back to the item image on devnet).
         const $cov = $("<div class='cov ph' style='position:relative'>").text("[ " + (c.symbol || c.name || c.slug) + " ]");
-        const primary = c.logo || c.cover, secondary = c.logo && c.cover && c.cover !== c.logo ? c.cover : null;
+        const primary = c.banner || c.cover, secondary = c.banner && c.cover && c.cover !== c.banner ? c.cover : null;
         if (primary) {
           const $im = $("<img>").attr("src", primary).css({ position: "absolute", inset: 0, width: "100%", height: "100%", "object-fit": "cover" });
           let fellBack = false;
