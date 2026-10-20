@@ -4,7 +4,8 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=7";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=9";
+  const PER_PAGE = 6; // design: 6 collections per registry page
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet",
     deposit: "paying the deposit",
@@ -27,7 +28,7 @@
   const solNum = (lamports) => { const n = Number(lamports || 0) / 1e9; return n >= 1 ? n.toFixed(2) : n.toFixed(3).replace(/0+$/, "").replace(/\.$/, "") || "0"; };
   const short = (s) => (s ? s.slice(0, 4) + "..." + s.slice(-4) : "");
   const num = (n) => Number(n || 0).toLocaleString("en-US");
-  const fmtK = (n) => (n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "K" : String(n));
+  const fmtK = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n >= 1e3 ? (n / 1e3).toFixed(n >= 1e4 ? 0 : 1) + "K" : String(n));
   const ago = (ts) => {
     const t = Number(ts || 0); if (!t) return "-";
     const d = Math.max(0, Math.floor(Date.now() / 1000) - t);
@@ -40,6 +41,18 @@
   };
   const esc = (s) => $("<i>").text(s == null ? "" : String(s)).html();
   const link = (text, href, cls) => $("<a>").addClass(cls || "btn2").css("padding", "6px 12px").attr({ href, target: /^https?:/.test(href) ? "_blank" : null }).text(text);
+  const arweaveUrl = (c, id) => (c && c.arweaveGateway && id ? c.arweaveGateway.replace(/\/$/, "") + "/" + id : null);
+  // Cover image into a dark box: the item cover (Arweave, always serves) shows
+  // at once; the inscribed banner/logo (gateway) replaces it when it has loaded.
+  // No image at all -> the striped placeholder with the symbol.
+  const coverInto = ($box, base, upgrade, label) => {
+    $box.empty();
+    if (!base && !upgrade) { $box.append($("<div class='none'>").text(label)); return; }
+    const $im = $("<img alt='' loading='lazy'>").on("error", function () { $(this).remove(); if (!$box.find("img").length) $box.prepend($("<div class='none'>").text(label)); });
+    $im.attr("src", base || upgrade);
+    $box.prepend($im);
+    if (base && upgrade && upgrade !== base) { const pre = new Image(); pre.onload = () => $im.attr("src", upgrade); pre.src = upgrade; }
+  };
 
   $.nft_launch = {
     init: function () {
@@ -71,80 +84,118 @@
       if (!silent) this.dbg("wallet connected: " + addr);
       if (this.col) this.onConnected(addr);
       if (this.singleRow) this.onSingleConnected(addr);
-      if ($("#nftl_mine").is(":visible")) this.renderMine();
+      if (this.tab === "mine") this.renderMine();
     },
     navMid: (t) => $("#nftl_nav_mid").text(t),
 
     // ── home ──────────────────────────────────────────────────────────────
     loadHome: async function () {
-      const cols = await window.iqNft.getCollections();
-      this.dbg("home: " + cols.length + " collection(s)");
       $("#nftl_loading").hide();
       $("#nftl_home").show();
       this.navMid("// COLLECTIONS + MINTED");
+      this.tab = "cols"; this.chain = "all"; this.page = 1;
+      this.renderSkeleton();
+      $("#nftl_tabs .tab").on("click", (e) => this.homeTab($(e.currentTarget).data("tab")));
+      $("#nftl_chains div").on("click", (e) => {
+        this.chain = $(e.currentTarget).data("chain"); this.page = 1;
+        $("#nftl_chains div").removeClass("on"); $(e.currentTarget).addClass("on");
+        this.renderCols();
+      });
+      $("#nftl_colscroll").on("scroll", (e) => { const el = e.currentTarget; if (el.scrollTop + el.clientHeight >= el.scrollHeight - 80) this.loadMore(); });
+      const cols = await window.iqNft.getCollections();
+      this.dbg("home: " + cols.length + " collection(s)");
       this.cols = cols;
-      $("#nftl_tab_cols").off("click").on("click", () => this.homeTab("cols"));
-      $("#nftl_tab_mine").off("click").on("click", () => this.homeTab("mine"));
-      this.renderCols(cols);
+      this.renderCols();
       this.renderMintedFeed(cols); // async, fills the right window as it goes
     },
     homeTab: function (tab) {
-      $("#nftl_tab_cols").toggleClass("on", tab === "cols");
-      $("#nftl_tab_mine").toggleClass("on", tab === "mine");
-      $("#nftl_colgrid, #nftl_cols_note").toggle(tab === "cols");
-      $("#nftl_mine").toggle(tab === "mine");
+      this.tab = tab;
+      $("#nftl_tabs .tab").removeClass("on").filter("[data-tab='" + tab + "']").addClass("on");
+      $("#nftl_cols").css("display", tab === "cols" ? "flex" : "none");
+      $("#nftl_market").css("display", tab === "market" ? "flex" : "none");
+      $("#nftl_mine").css("display", tab === "mine" ? "flex" : "none");
       $("#nftl_desk_cap").text(tab === "cols"
         ? "// collections launched from this board. each one = a core collection + N inscriptions. pick one, mint one."
+        : tab === "market" ? "// secondary market for everything minted here. not built yet: minted items trade on magic eden and tensor for now."
         : "// nfts owned by your wallet. collection mints and single mints side by side.");
+      if (tab === "market") this.renderMarket();
       if (tab === "mine") this.renderMine();
     },
-    // Card cover: the registered banner, else the first item's image (both
-    // inscribed, real), else the striped placeholder with the symbol.
-    coverInto: function ($ph, primary, secondary, label) {
-      $ph.empty().text(label);
-      if (!primary) return;
-      const $im = $("<img>").attr("src", primary);
-      let fellBack = false;
-      $im.on("error", function () { if (!fellBack && secondary) { fellBack = true; this.src = secondary; } else { $(this).remove(); } });
-      $ph.append($im);
-    },
-    renderCols: function (cols) {
+    renderSkeleton: function () {
       const $g = $("#nftl_colgrid").empty();
-      if (!cols.length) { $g.append($("<div class='cm' style='grid-column:1/-1;padding:20px 0'>").text("// no collections yet. be the first: + LAUNCH A COLLECTION")); return; }
-      cols.forEach((c) => { // backend order = latest mint first (bump order)
-        const supply = Number(c.maxSupply || 0), minted = Number(c.minted || 0), st = this.statusOf(c);
-        const $card = $("<a class='card'>").toggleClass("out", st.label === "SOLD OUT").attr("href", "?menu=nft&nft=" + encodeURIComponent(c.slug));
-        const $cov = $("<div class='ph cov'>");
-        this.coverInto($cov, c.banner || c.cover, c.banner && c.cover && c.cover !== c.banner ? c.cover : null, "[ " + (c.symbol || c.name || c.slug) + " ]");
-        const $cb = $("<div class='cb'>")
-          .append($("<div style='display:flex;justify-content:space-between;align-items:center;gap:8px'>")
-            .append($("<span class='cn'>").text(c.name || c.slug))
-            .append($("<span>").addClass("chip " + st.cls).text(st.label)))
-          .append($("<div class='cby'>").text("by " + short(c.creator)))
-          .append($("<div class='bar'>").append($("<i>").css("width", (supply ? Math.round(100 * minted / supply) : 0) + "%")))
-          .append($("<div class='crow'>")
-            .append($("<span>").text(supply ? num(minted) + " / " + num(supply) : "single mints"))
-            .append($("<span class='nftl-g'>").text(supply ? solNum(c.priceLamports) + " SOL" : "free to tokenize")));
-        // OWNERS + SUPPLY come from our registry mirror; VOLUME + FLOOR live on
-        // secondary marketplaces we do not index, so they stay "-".
-        const $stats = $("<div class='stats'>");
-        [["OWNERS", c.owners != null ? fmtK(Number(c.owners)) : "-"], ["SUPPLY", supply ? fmtK(supply) : "-"], ["VOLUME", "-"], ["FLOOR", "-"]]
-          .forEach(([k, v]) => $stats.append($("<div class='st'>").append($("<div class='k'>").text(k)).append($("<div class='v'>").text(v))));
-        $g.append($card.append($cov).append($cb.append($stats)));
-      });
+      for (let i = 0; i < 3; i++) $g.append($("<div class='skel'>").append($("<div class='a'>")).append($("<div style='padding:10px 12px 12px'>").append($("<div class='b'>")).append($("<div class='c'>")).append($("<div class='d'>"))));
+      $("#nftl_pager").empty().append($("<span>").text("// reading the registry…"));
+    },
+    visibleCols: function () {
+      return (this.cols || []).filter((c) => this.chain === "all" || (c.chain || "solana") === this.chain); // backend order = latest mint first
+    },
+    loadMore: function () {
+      const total = this.visibleCols().length;
+      if (this.page * PER_PAGE >= total) return;
+      this.page++;
+      this.renderCols();
+    },
+    renderCols: function () {
+      const all = this.visibleCols(), shown = all.slice(0, this.page * PER_PAGE);
+      const $g = $("#nftl_colgrid").empty();
+      if (!all.length) {
+        $g.append($("<div class='cm' style='grid-column:1/-1;padding:20px 0'>").text(this.chain === "robinhood"
+          ? "// no collections on robinhood chain yet. inscription nfts there are coming; the code-in board already runs on it (HOOD IN)."
+          : "// no collections yet. be the first: + LAUNCH A COLLECTION"));
+        $("#nftl_pager").empty();
+        return;
+      }
+      shown.forEach((c) => $g.append(this.card(c)));
+      const pages = Math.max(1, Math.ceil(all.length / PER_PAGE));
+      const $p = $("#nftl_pager").empty().append($("<span>").text("// page " + this.page + " / " + pages + " · showing " + shown.length + " of " + all.length));
+      if (shown.length < all.length) $p.append($("<span class='more'>").text("LOAD MORE ↓").on("click", () => this.loadMore()));
+      else $p.append($("<span class='eof'>").text("EOF · " + all.length + (this.chain === "all" ? " collections, all chains" : this.chain === "solana" ? " on solana" : " on robinhood chain")));
+    },
+    // One collection card (design: cover + name/chip + creator + bar + minted/price
+    // + OWNERS/SUPPLY/VOLUME/FLOOR + chain/std/HOT chips). Every value is ours:
+    // volume + floor live on secondary marketplaces we do not index, so "-".
+    card: function (c) {
+      const supply = Number(c.maxSupply || 0), minted = Number(c.minted || 0), st = this.statusOf(c);
+      const now = Math.floor(Date.now() / 1000), hot = st.label === "LIVE" && Number(c.lastMintAt) > now - 86400;
+      const $card = $("<a class='card'>").toggleClass("out", st.label === "SOLD OUT").attr("href", "?menu=nft&nft=" + encodeURIComponent(c.slug));
+      const $cov = $("<div class='cov'>");
+      coverInto($cov, c.cover, c.banner, "[ " + (c.symbol || c.slug) + " ]");
+      $cov.append($("<span class='tag'>").text("[ " + (c.symbol || c.slug).toUpperCase() + " ]"));
+      const $cb = $("<div class='cb'>")
+        .append($("<div style='display:flex;justify-content:space-between;align-items:center;gap:8px'>")
+          .append($("<span class='cn'>").text(c.name || c.slug))
+          .append($("<span>").addClass("chip " + st.cls).text(st.label)))
+        .append($("<div class='cby'>").text("by " + short(c.creator)))
+        .append($("<div class='bar'>").append($("<i>").css("width", (supply ? Math.round(100 * minted / supply) : 0) + "%")))
+        .append($("<div class='crow'>")
+          .append($("<span>").text(supply ? num(minted) + " / " + num(supply) : "single mints"))
+          .append($("<span class='nftl-g'>").text(st.label === "SOLD OUT" ? "minted out" : supply ? solNum(c.priceLamports) + " SOL" : "free to tokenize")));
+      const $stats = $("<div class='stats'>");
+      [[c.owners != null ? fmtK(Number(c.owners)) : "-", "OWNERS"], [supply ? fmtK(supply) : "-", "SUPPLY"], ["-", "VOLUME"], ["-", "FLOOR"]]
+        .forEach(([v, k]) => $stats.append($("<div class='st'>").append($("<div class='v'>").text(v)).append($("<div class='k'>").text(k))));
+      const $chips = $("<div class='chips'>")
+        .append($("<span class='chip chain'>").text("◎ " + short(c.collection)))
+        .append($("<span class='chip'>").text("MPL CORE"));
+      if (hot) $chips.append($("<span class='chip hot'>").text("▲ HOT"));
+      return $card.append($cov).append($cb.append($stats).append($chips));
+    },
+    renderMarket: function () {
+      $("#nftl_market").empty().append($("<div class='empty'>")
+        .append($("<div class='zen'>").text("MARKET.EXE NOT BUILT YET."))
+        .append($("<div class='cm' style='opacity:.55'>").html("listing and buying through our own marketplace program is on the roadmap.<br>until then every minted item is a normal core asset: it trades on magic eden and tensor like any other nft.")));
     },
     renderMine: function () {
       const addr = window.iqNft.connected();
       const $m = $("#nftl_mine").empty();
       if (!addr) {
-        $m.append($("<div style='flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:50px 0;text-align:center'>")
-          .append($("<div style='font:400 20px \"Zen Dots\",monospace;opacity:.85'>").text("CONNECT TO SEE YOURS."))
+        $m.append($("<div class='empty'>")
+          .append($("<div class='zen'>").text("CONNECT TO SEE YOURS."))
           .append($("<div class='cm' style='opacity:.55'>").text("your nfts are read by your wallet address; each asset's own attributes point back to the inscription."))
           .append($("<button class='btn' type='button' style='padding:10px 18px'>").text("CONNECT WALLET").on("click", () => $("#nftl_hconnect").trigger("click"))));
         return;
       }
-      $m.append($("<div style='flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:50px 0;text-align:center'>")
-        .append($("<div style='font:400 20px \"Zen Dots\",monospace;opacity:.85'>").text("CONNECTED " + short(addr).toUpperCase()))
+      $m.append($("<div class='empty'>")
+        .append($("<div class='zen'>").text("CONNECTED " + short(addr).toUpperCase()))
         .append($("<div class='cm' style='opacity:.55'>").html("a full owned-nft gallery reads DAS (getAssetsByOwner), which this devnet endpoint does not index yet.<br>open a collection: your minted items show in its grid, each linking to the on-chain viewer.")));
     },
     // Recent mints across all collections, newest first (WHEN = first seen by
@@ -153,14 +204,14 @@
       const $r = $("#nftl_minted_rows").empty();
       const rows = [];
       for (const c of cols) {
-        try { (await window.iqNft.getRecent(c.slug, 8)).forEach((x) => rows.push({ ...x, colName: c.name || c.slug, slug: c.slug, gw: c.arweaveGateway })); } catch (e) {}
+        try { (await window.iqNft.getRecent(c.slug, 8)).forEach((x) => rows.push({ ...x, colName: c.name || c.slug, slug: c.slug, img: arweaveUrl(c, x.arweaveId) })); } catch (e) {}
       }
       rows.sort((a, b) => (Number(b.registeredAt) || 0) - (Number(a.registeredAt) || 0) || b.index - a.index);
       if (!rows.length) { $r.append($("<div class='cm' style='padding:16px 14px'>").text("// no mints yet")); return; }
       rows.slice(0, 16).forEach((x) => {
         const $row = $("<div class='fr'>").on("click", () => { window.location.href = "?menu=nft&nft=" + encodeURIComponent(x.slug) + "&asset=" + x.asset; });
-        $row.append($("<div class='fn'>")
-          .append($("<span class='ph fth'>").text("#" + x.index))
+        const $th = x.img ? $("<img class='fth' alt=''>").attr("src", x.img).on("error", function () { $(this).replaceWith($("<span class='ph fth'>").text("#" + x.index)); }) : $("<span class='ph fth'>").text("#" + x.index);
+        $row.append($("<div class='fn'>").append($th)
           .append($("<div style='min-width:0'>").append($("<div class='fnt'>").text(x.colName + " #" + x.index)).append($("<div class='fna'>").text(short(x.asset)))));
         $row.append($("<span class='fc'>").text(x.colName));
         $row.append($("<span class='fo'>").text(short(x.owner)));
@@ -193,7 +244,7 @@
       if (col.banner) {
         $("#nftl_cbanner").show().find("img").attr("src", col.banner).on("error", () => $("#nftl_cbanner").hide());
       } else $("#nftl_cbanner").hide();
-      this.coverInto($("#nftl_ccov"), col.logo || col.cover, col.logo && col.cover ? col.cover : null, "[ " + (col.symbol || col.slug) + " ]");
+      coverInto($("#nftl_ccov"), col.cover, col.logo, "[ " + (col.symbol || col.slug) + " ]");
       $("#nftl_name").text(col.name || slug);
       const st = this.statusOf(col);
       $("#nftl_chip").attr("class", "chip " + st.cls).text(st.label);
@@ -205,7 +256,7 @@
         .append(link("REGISTRY", "https://solscan.io/account/" + col.registry + dev))
         .append(link("CREATOR", "https://solscan.io/account/" + col.creator + dev));
       $("#nftl_price").html(esc(solNum(col.priceLamports)) + " <small>SOL</small>");
-      $("#nftl_fee").text([Number(col.depositLamports) > 0 ? "+ " + solNum(col.depositLamports) + " deposit at reserve" : "", "+ platform fee", "+ inscription rent", "leftover returns"].filter(Boolean).join(" \u00b7 "));
+      $("#nftl_fee").text([Number(col.depositLamports) > 0 ? "+ " + solNum(col.depositLamports) + " deposit at reserve" : "", "+ platform fee", "+ inscription rent", "leftover returns"].filter(Boolean).join(" · "));
       $("#nftl_items_lab").text("// ITEMS · " + (col.sequential ? "sequential (#1, #2, #3 …)" : "random (shuffled at launch)"));
       $("#nftl_filters .tab").off("click").on("click", (e) => {
         this.filter = $(e.currentTarget).data("f");
@@ -223,9 +274,9 @@
       $("#nftl_progbar").css("width", (supply ? Math.round(100 * minted / supply) : 0) + "%");
       $("#nftl_progtxt").text(num(minted) + " / " + num(supply) + " MINTED");
     },
-    canMint: function () { const s = this.statusOf(this.col).label; return s === "LIVE"; },
+    canMint: function () { return this.statusOf(this.col).label === "LIVE"; },
     renderKv: function () {
-      const c = this.col, st = this.statusOf(c), now = Math.floor(Date.now() / 1000);
+      const c = this.col, st = this.statusOf(c);
       const phase = st.label === "UPCOMING" ? { t: "STARTS " + (fmtDate(c.startAt) || "soon").toUpperCase(), cls: "nftl-a" }
         : st.label === "LIVE" ? { t: c.allowlistOnly ? "ALLOWLIST" : "PUBLIC", cls: "nftl-g" }
         : { t: st.label === "SOLD OUT" ? "MINTED OUT" : "ENDED", cls: "" };
@@ -241,7 +292,6 @@
       ];
       const $kv = $("#nftl_kv").empty();
       rows.forEach(([k, v, cls, dim]) => $kv.append($("<div class='kv'>").append($("<span class='kvk'>").text(k)).append($("<span class='kvv'>").addClass(cls || "").css("opacity", dim ? .5 : 1).text(v))));
-      void now;
     },
     renderGrid: async function (slug, col) {
       const $g = $("#nftl_grid").empty();
@@ -254,7 +304,6 @@
     },
     paintGrid: function () {
       const $g = $("#nftl_grid").empty(), col = this.col, f = this.filter || "all";
-      const gw = col.arweaveGateway ? col.arweaveGateway.replace(/\/$/, "") : null;
       const items = (this.items || []).filter((it) => f === "all" || (f === "avail" && !it.minted) || (f === "minted" && it.minted));
       if (!items.length) { $g.append($("<div class='cm' style='grid-column:1/-1'>").text("// nothing here")); return; }
       items.forEach((it) => {
@@ -263,9 +312,11 @@
           ? $("<a class='it'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(col.slug) + "&asset=" + it.asset)
           : $("<div class='it'>");
         $cell.toggleClass("minted", !!it.minted && !fresh).toggleClass("fresh", fresh);
-        const $ph = $("<div class='ph'>").text("#" + it.index);
-        if (gw && it.arweaveId) $ph.append($("<img>").attr("src", gw + "/" + it.arweaveId).on("error", function () { $(this).remove(); }));
-        $cell.append($ph).append($("<div class='if'>").append($("<span>").text("#" + it.index)).append($("<span class='st'>").text(fresh ? "MINTED ✓" : it.minted ? "minted" : "open")));
+        const $im = $("<div class='im'>");
+        const src = arweaveUrl(col, it.arweaveId);
+        if (src) $im.append($("<img alt='' loading='lazy'>").attr("src", src).on("error", function () { $(this).remove(); }));
+        $im.append($("<span class='tag'>").text(fresh ? "yours" : "#" + it.index));
+        $cell.append($im).append($("<div class='if'>").append($("<span>").text("#" + it.index)).append($("<span class='st'>").text(fresh ? "MINTED ✓" : it.minted ? "minted" : "open")));
         $g.append($cell);
       });
     },
@@ -288,7 +339,7 @@
         $s.append($("<div style='text-align:center;padding:6px 0 2px'>")
           .append($("<div class='done'>").text("MINTED."))
           .append($("<div class='cm' style='margin-top:10px;opacity:.65'>").text((this.col.name || this.col.slug) + " #" + r.index + " · asset " + short(r.asset) + " · owner " + short(this.wallet))));
-        if (r.image) $s.append($("<div class='ph' style='height:140px;border:1px solid rgba(43,213,45,.6);border-radius:6px'>").append($("<img>").attr("src", r.image)));
+        if (r.image) $s.append($("<div class='vimg' style='height:140px;border-color:rgba(43,213,45,.6)'>").append($("<img alt=''>").attr("src", r.image)));
         $s.append($("<div class='kvbox'>")
           .append($("<div class='kv'>").append($("<span class='kvk'>").text("image inscription C")).append($("<span class='kvv nftl-g'>").text(short(r.C))))
           .append($("<div class='kv'>").append($("<span class='kvk'>").text("metadata inscription M")).append($("<span class='kvv nftl-g'>").text(short(r.M))))
@@ -341,9 +392,8 @@
         });
         this.dbg("MINT ok: " + JSON.stringify({ index: res.index, asset: res.asset, C: res.C, M: res.M, mintSig: res.mintSig }));
         this.freshIndex = res.index;
-        const gw = this.col.arweaveGateway ? this.col.arweaveGateway.replace(/\/$/, "") : null;
         const it = (this.items || []).find((i) => i.index === res.index);
-        this.mintState("done", { ...res, image: gw && it && it.arweaveId ? gw + "/" + it.arweaveId : null });
+        this.mintState("done", { ...res, image: it ? arweaveUrl(this.col, it.arweaveId) : null });
         window.iqNft.getCollection(res.slug).then((c) => { if (c && !c.error) { this.col = c; this.renderProgress(); this.renderKv(); this.renderGrid(res.slug, c); } }).catch(() => {});
       } catch (e) {
         const msg = (e && e.message) || String(e);
@@ -367,19 +417,20 @@
       this.dbg("viewer recovered: C=" + short(a.C) + " M=" + short(a.M) + " img=" + (a.imageDataUrl ? "yes" : "no"));
       $("#nftl_vwin").text(a.name || short(addr));
       $("#nftl_vsub").text("// " + [a.collection ? "collection " + short(a.collection) : "", a.owner ? "owner " + short(a.owner) : ""].filter(Boolean).join(" · "));
+      const cap = (t) => $("#nftl_vcap").show().text(t);
       if (a.imageDataUrl) {
         $("#nftl_vphtxt").hide();
         $("#nftl_vimg").attr("src", a.imageDataUrl).show();
-        $("#nftl_vimgnote").text("// decoded in your browser from the image inscription (tx C). no gateway, no backend.");
+        cap((a.name || short(addr)) + " · decoded in your browser from tx C. no gateway, no backend.");
       } else if (a.metadata && a.metadata.image) {
         // Direct decode failed (public rpcs rate-limit the chunk walk of bigger
         // images); show the gateway's cached render of the same tx C instead.
         $("#nftl_vphtxt").text("rpc rate-limited, showing the gateway cache");
         $("#nftl_vimg").attr("src", a.metadata.image).on("load", () => $("#nftl_vphtxt").hide()).on("error", function () { $(this).hide(); }).show();
-        $("#nftl_vimgnote").text("// this rpc could not stream tx C in time; the image shown is the gateway's cache of that same inscription. set your own rpc to decode it here.");
+        cap((a.name || short(addr)) + " · gateway /img/C.png (this rpc could not stream tx C in time; set your own rpc to decode it here)");
       } else {
         $("#nftl_vphtxt").text("image not recovered on this rpc");
-        $("#nftl_vimgnote").text("// no image pointer in the metadata");
+        cap("no image pointer in the metadata");
       }
       const $p = $("#nftl_vattrs").empty();
       [["name", a.name], ["collection", a.collection || "-"], ["index", a.attributes.index || "-"], ["inscription (C)", a.C || "-", "nftl-g"], ["metadata (M)", a.M || "-", "nftl-g"], ["std", a.attributes.std || "-"], ["uri", a.uri]]
@@ -403,17 +454,17 @@
       this.dbg("single: read inscription " + C);
       let row;
       try { row = await window.iqNft.readRow(C); }
-      catch (e) { $("#nftl_sphtxt").text("could not read that inscription on this rpc"); $("#nftl_scontent").text("// " + (e && e.message)); this.dbg("single read failed: " + (e && e.message), "e"); return; }
+      catch (e) { $("#nftl_sphtxt").text("could not read that inscription on this rpc: " + (e && e.message)); this.dbg("single read failed: " + (e && e.message), "e"); return; }
       this.singleRow = row;
       $("#nftl_sowner").text(short(row.who || "-"));
       const body = row.body || "";
       $("#nftl_sphtxt").hide();
       if ((row.kind === "image" || /^data:image\//.test(body)) && body) {
         $("#nftl_simg").attr("src", body).show();
-        $("#nftl_scontent").text("// this image is inscribed on chain (tx C).");
+        $("#nftl_scap").show().text("this image is inscribed on chain (tx C)");
       } else {
         $("#nftl_stext").text(typeof body === "string" ? body : JSON.stringify(row)).show();
-        $("#nftl_scontent").text("// kind: " + (row.kind || "?"));
+        $("#nftl_scap").show().text("kind: " + (row.kind || "?") + " · inscribed on chain (tx C)");
       }
       $("#nftl_sname").val("");
       this.singleState("idle");

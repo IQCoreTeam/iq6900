@@ -1,9 +1,10 @@
 <section id="nftl">
   <style>
-    /* Ported 1:1 from the design (NFT Launchpad Flow.dc.html): the same tokens,
-       window chrome, card, feed, collection page and mint panel geometry, scoped
-       under #nftl. The site already draws the animated background behind
-       #main_section, so only the dark overlay is added here. */
+    /* Ported 1:1 from the live design (NFT Launchpad Flow.dc.html, claude.ai):
+       same tokens, window chrome, card/feed/collection/mint-panel geometry,
+       scoped under #nftl. The site already draws the animated background
+       behind #main_section. Color utilities are nftl- prefixed because the
+       site's global .green is a dot. */
     #nftl { color:#e8e4d6; font-family:'Kode Mono',monospace; width:100%; box-sizing:border-box; padding:14px 16px 24px; position:relative; }
     #nftl a { color:#e8e4d6; text-decoration:none; } #nftl a:hover { color:#fff; }
     #nftl button { font-family:inherit; }
@@ -34,60 +35,95 @@
     #nftl .fl{font:500 9.5px 'Kode Mono',monospace;letter-spacing:.14em;opacity:.7;margin-bottom:6px}
     #nftl .chip{border:1px solid rgba(232,228,214,.4);border-radius:3px;padding:1px 6px;letter-spacing:.08em;font:500 9px 'Kode Mono',monospace;white-space:nowrap}
     #nftl .live{color:#2BD52D;border-color:rgba(43,213,45,.6)}#nftl .soon{color:#e0a84e;border-color:rgba(224,168,78,.6)}#nftl .out{opacity:.5}
+    #nftl .chip.chain{color:#e8e4d6;border-color:rgba(232,228,214,.55)}
+    #nftl .chip.hot{color:#e0a84e;border-color:rgba(224,168,78,.6)}
     #nftl .tab{border:1px solid rgba(232,228,214,.5);border-radius:4px;padding:7px 16px;opacity:.6;cursor:pointer;transition:all .3s}
     #nftl .tab.on{background:#e8e4d6;color:#1b1a17;padding:8px 16px;font-weight:700;opacity:1;border-color:#e8e4d6}
+    #nftl .seg{display:flex;border:1px solid rgba(232,228,214,.5);border-radius:5px;overflow:hidden;margin-bottom:12px}
+    #nftl .seg div{flex:1;text-align:center;padding:8px 0;cursor:pointer;transition:background .3s;opacity:.55}
+    #nftl .seg div+div{border-left:1px solid rgba(232,228,214,.3)}
+    #nftl .seg div.on{background:#e8e4d6;color:#1b1a17;opacity:1}
     #nftl .nftl-g{color:#2BD52D}#nftl .nftl-a{color:#e0a84e}#nftl .nftl-e{color:#ff9a9a}
     /* nav (design: the sticky top bar) */
     #nftl .nav{display:flex;justify-content:space-between;align-items:center;gap:14px;border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.9);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:11px 16px;margin-bottom:14px}
     #nftl .nav .logo{height:18px;display:block;filter:brightness(0) invert(0.93) sepia(0.18) saturate(1.2) brightness(0.98)}
     #nftl .pill{display:flex;align-items:center;gap:8px;letter-spacing:.1em;border:1px solid rgba(43,213,45,.5);border-radius:4px;padding:7px 12px;color:#2BD52D;white-space:nowrap}
     #nftl .pill i{width:7px;height:7px;border-radius:50%;background:#2BD52D;display:block}
-    /* desk: launchpad.exe + minted.exe */
+    /* desk: launchpad.exe + minted.exe (inner areas scroll, like the design's 100vh page) */
     #nftl #nftl_desk{display:flex;gap:14px;align-items:stretch}
-    #nftl #nftl_lp{flex:1.5}#nftl #nftl_mw{flex:1}
+    #nftl #nftl_lp{flex:1.5;min-height:0}#nftl #nftl_mw{flex:1;min-height:0}
+    #nftl .lpbody{min-height:0;overflow:hidden;padding:20px 22px 22px;flex:1;display:flex;flex-direction:column}
+    #nftl .colscroll{flex:1;min-height:0;max-height:calc(100vh - 340px);overflow-y:auto;padding-right:6px;margin-right:-6px;scrollbar-width:thin;scrollbar-color:rgba(232,228,214,.35) transparent}
     #nftl .colgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-    #nftl .card{border:1px solid rgba(232,228,214,.5);border-radius:5px;overflow:hidden;cursor:pointer;transition:border-color .35s,background .35s;display:block;color:inherit;min-width:0}
+    #nftl .card{display:flex;flex-direction:column;border:1px solid rgba(232,228,214,.5);border-radius:5px;overflow:hidden;cursor:pointer;transition:border-color .35s,background .35s;color:inherit;min-width:0}
     #nftl .card:hover{border-color:#e8e4d6;background:rgba(232,228,214,.05);color:inherit}
     #nftl .card.out{border-color:rgba(232,228,214,.3);opacity:.75}
-    #nftl .card .cov{height:110px}
-    #nftl .card .cb{padding:10px 12px 12px;font:500 10px 'Kode Mono',monospace}
+    #nftl .card .cov{position:relative;height:150px;border-bottom:1px solid rgba(232,228,214,.25);overflow:hidden;background:#0a0a09}
+    #nftl .card .cov img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.85) contrast(1.02);transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+    #nftl .card:hover .cov img{transform:scale(1.04)}
+    #nftl .card .cov .tag{position:absolute;left:8px;bottom:6px;font:600 8.5px 'Kode Mono',monospace;letter-spacing:.1em;background:rgba(20,19,16,.85);border:1px solid rgba(232,228,214,.35);border-radius:3px;padding:2px 6px}
+    #nftl .card .cov .none{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 9.5px 'Kode Mono',monospace;color:#2BD52D;background:repeating-linear-gradient(135deg,rgba(232,228,214,.07) 0 6px,rgba(0,0,0,.25) 6px 12px)}
+    #nftl .card .cb{padding:10px 12px 12px;font:500 10px 'Kode Mono',monospace;display:flex;flex-direction:column;flex:1}
     #nftl .card .cn{font-weight:700;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #nftl .card .cby{opacity:.45;margin-top:4px}
     #nftl .card .bar{margin-top:9px;position:relative;height:6px;border:1px solid rgba(232,228,214,.35);border-radius:3px;overflow:hidden}
     #nftl .card .bar i{position:absolute;inset:0;width:0;background:#2BD52D;display:block}
     #nftl .card.out .bar i{background:rgba(232,228,214,.5)}
-    #nftl .card .crow{display:flex;justify-content:space-between;margin-top:6px;opacity:.75}
-    #nftl .card .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;padding-top:8px;border-top:1px dotted rgba(232,228,214,.25)}
-    #nftl .card .st{min-width:0}
-    #nftl .card .st .k{font-size:8.5px;letter-spacing:.12em;opacity:.45}
-    #nftl .card .st .v{font-weight:700;font-size:11px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    #nftl .feed{background:rgba(0,0,0,.28);flex:1;display:flex;flex-direction:column;font-family:'Kode Mono',monospace}
+    #nftl .card .crow{display:flex;justify-content:space-between;gap:8px;margin-top:6px;opacity:.75}
+    #nftl .card .crow span{white-space:nowrap}
+    #nftl .card .stats{display:grid;grid-template-columns:repeat(4,1fr);margin-top:10px;border-top:1px solid rgba(232,228,214,.2);padding-top:8px}
+    #nftl .card .st{text-align:center;padding:4px 0;border-right:1px solid rgba(232,228,214,.15);min-width:0}
+    #nftl .card .st:last-child{border-right:none}
+    #nftl .card .st .v{font-size:12px;font-weight:700;white-space:nowrap}
+    #nftl .card .st .k{font-size:8px;letter-spacing:.14em;opacity:.5;margin-top:2px}
+    #nftl .card .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:10px}
+    #nftl .skel{border:1px solid rgba(232,228,214,.25);border-radius:5px;overflow:hidden;animation:nftl_pulse 1.2s ease-in-out infinite}
+    #nftl .skel .a{height:150px;background:rgba(232,228,214,.06)}
+    #nftl .skel .b{height:11px;width:60%;background:rgba(232,228,214,.12);border-radius:2px}
+    #nftl .skel .c{height:8px;width:40%;background:rgba(232,228,214,.08);border-radius:2px;margin-top:8px}
+    #nftl .skel .d{height:6px;background:rgba(232,228,214,.08);border-radius:3px;margin-top:12px}
+    #nftl .pager{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 2px 4px;font:500 9.5px 'Kode Mono',monospace;opacity:.6}
+    #nftl .pager .more{cursor:pointer;border:1px solid rgba(232,228,214,.4);border-radius:3px;padding:4px 10px;letter-spacing:.1em;transition:background .3s}
+    #nftl .pager .more:hover{background:rgba(232,228,214,.1)}
+    #nftl .pager .eof{letter-spacing:.1em;opacity:.7}
+    #nftl .feed{background:rgba(0,0,0,.28);flex:1;min-height:0;display:flex;flex-direction:column;font-family:'Kode Mono',monospace;overflow-y:auto;max-height:calc(100vh - 200px);scrollbar-width:thin;scrollbar-color:rgba(232,228,214,.35) transparent}
     #nftl .fh{display:grid;grid-template-columns:minmax(0,1.6fr) 1fr .9fr .6fr;gap:10px;padding:10px 14px;font-size:9.5px;letter-spacing:.06em;opacity:.55;border-bottom:1px solid rgba(232,228,214,.16)}
     #nftl .fr{display:grid;grid-template-columns:minmax(0,1.6fr) 1fr .9fr .6fr;gap:10px;align-items:center;padding:11px 14px;border-bottom:1px solid rgba(232,228,214,.16);font-size:11px;white-space:nowrap;cursor:pointer;transition:background .3s}
     #nftl .fr:hover{background:rgba(232,228,214,.06)}
     #nftl .fr.fresh{background:rgba(43,213,45,.07)}
     #nftl .fr .fn{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden}
-    #nftl .fr .fth{width:26px;height:26px;border-radius:4px;border:1px solid rgba(232,228,214,.35);font-size:8px;flex:0 0 auto}
+    #nftl .fr .fth{width:26px;height:26px;border-radius:4px;border:1px solid rgba(232,228,214,.35);object-fit:cover;flex:0 0 auto;display:block;background:#0a0a09}
+    #nftl .fr .fth.ph{font-size:8px}
     #nftl .fr .fnt{font-weight:700;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #nftl .fr .fna{font-size:9px;opacity:.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #nftl .fr .fc{font-size:10px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #nftl .fr .fo{font-size:10px;opacity:.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #nftl .fr .fw{text-align:right;font-size:9.5px;opacity:.6}
+    #nftl .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:50px 0;text-align:center}
+    #nftl .empty .zen{font:400 20px 'Zen Dots',monospace;opacity:.85}
     /* collection page */
     #nftl #nftl_colpage{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,.9fr);gap:0}
     #nftl .cleft{padding:22px 24px;border-right:1px solid rgba(232,228,214,.2);min-width:0}
     #nftl .cright{padding:22px 24px;display:flex;flex-direction:column;gap:14px;min-width:0}
-    #nftl .cbanner{height:150px;border-bottom:1px solid rgba(232,228,214,.25);overflow:hidden}
+    #nftl .cbanner{height:150px;border-bottom:1px solid rgba(232,228,214,.25);overflow:hidden;background:#0a0a09}
     #nftl .cbanner img{width:100%;height:100%;object-fit:cover;display:block}
     #nftl .chead{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
-    #nftl .ccov{width:120px;height:120px;border:1px solid rgba(232,228,214,.4);border-radius:6px;flex:0 0 auto}
+    #nftl .ccov{position:relative;width:120px;height:120px;border:1px solid rgba(232,228,214,.4);border-radius:6px;flex:0 0 auto;overflow:hidden;background:#0a0a09}
+    #nftl .ccov img{width:100%;height:100%;object-fit:cover;display:block}
+    #nftl .ccov .none{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 9.5px 'Kode Mono',monospace;color:#2BD52D;background:repeating-linear-gradient(135deg,rgba(232,228,214,.07) 0 6px,rgba(0,0,0,.25) 6px 12px)}
     #nftl .ctitle{font:400 24px 'Zen Dots',monospace;min-width:0;word-break:break-word}
     #nftl .itemgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px}
     #nftl .it{border:1px solid rgba(232,228,214,.5);border-radius:4px;overflow:hidden;cursor:pointer;transition:border-color .3s;display:block;color:inherit;min-width:0}
     #nftl .it:hover{border-color:#e8e4d6;color:inherit}
     #nftl .it.minted{border-color:rgba(232,228,214,.25);opacity:.45}
     #nftl .it.fresh{border-color:rgba(43,213,45,.8);opacity:1}
-    #nftl .it .ph{height:72px;border-bottom:none}
+    #nftl .it .im{position:relative;height:72px;overflow:hidden;background:#0a0a09}
+    #nftl .it .im img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.9)}
+    #nftl .it.minted .im img{filter:grayscale(1) brightness(.55)}
+    #nftl .it.fresh .im img{filter:none;outline:2px solid #2BD52D;outline-offset:-2px}
+    #nftl .it .im .tag{position:absolute;right:4px;bottom:4px;font:600 8px 'Kode Mono',monospace;background:rgba(20,19,16,.85);border-radius:2px;padding:1px 4px}
+    #nftl .it.minted .im .tag{color:rgba(232,228,214,.6)}
+    #nftl .it.fresh .im .tag{color:#2BD52D}
     #nftl .it .if{display:flex;justify-content:space-between;padding:6px 8px;font:500 9px 'Kode Mono',monospace;border-top:1px solid rgba(232,228,214,.25)}
     #nftl .it .if .st{color:#2BD52D}
     #nftl .it.minted .if .st{color:#e8e4d6;opacity:.6}
@@ -108,12 +144,15 @@
     #nftl #nftl_vgrid,#nftl #nftl_sgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:0}
     #nftl .vleft{padding:20px;border-right:1px solid rgba(232,228,214,.2);min-width:0}
     #nftl .vright{padding:20px 22px;min-width:0}
-    #nftl .vimg{height:240px;border:1px solid rgba(232,228,214,.4);border-radius:6px;font-size:11px}
+    #nftl .vimg{position:relative;height:240px;border:1px solid rgba(232,228,214,.4);border-radius:6px;overflow:hidden;background:#0a0a09}
+    #nftl .vimg img{width:100%;height:100%;object-fit:cover;display:block}
+    #nftl .vimg .wait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 11px 'Kode Mono',monospace;color:#2BD52D;background:repeating-linear-gradient(135deg,rgba(232,228,214,.07) 0 6px,rgba(0,0,0,.25) 6px 12px);text-align:center;padding:0 16px}
+    #nftl .vimg .cap{position:absolute;left:0;right:0;bottom:0;padding:6px 10px;font:500 8.5px/1.5 'Kode Mono',monospace;background:rgba(20,19,16,.85);color:#2BD52D}
     #nftl .vimg pre{position:absolute;inset:0;margin:0;padding:10px;overflow:auto;font:500 9px/1.5 'Kode Mono',monospace;color:#bfe8cf;background:rgba(0,0,0,.6);white-space:pre-wrap;word-break:break-all;text-align:left}
     #nftl pre.meta{margin:12px 0 0;padding:10px;max-height:180px;overflow:auto;font:500 9px/1.5 'Kode Mono',monospace;color:#bfe8cf;background:rgba(0,0,0,.35);border:1px solid rgba(232,228,214,.25);border-radius:5px;white-space:pre-wrap;word-break:break-all}
     #nftl .steps{font:500 9.5px/1.9 'Kode Mono',monospace;opacity:.7;margin-top:6px}
     @media (max-width:1100px){#nftl #nftl_nav_mid{display:none}}
-    @media (max-width:980px){#nftl #nftl_desk{flex-direction:column}#nftl #nftl_mw{flex:none}#nftl #nftl_colpage,#nftl #nftl_vgrid,#nftl #nftl_sgrid{grid-template-columns:1fr}#nftl .cleft,#nftl .vleft{border-right:none;border-bottom:1px solid rgba(232,228,214,.2)}#nftl .itemgrid{grid-template-columns:repeat(4,1fr)}}
+    @media (max-width:980px){#nftl #nftl_desk{flex-direction:column}#nftl #nftl_mw{flex:none}#nftl .colscroll{max-height:none}#nftl .feed{max-height:none}#nftl #nftl_colpage,#nftl #nftl_vgrid,#nftl #nftl_sgrid{grid-template-columns:1fr}#nftl .cleft,#nftl .vleft{border-right:none;border-bottom:1px solid rgba(232,228,214,.2)}#nftl .itemgrid{grid-template-columns:repeat(4,1fr)}}
     @media (max-width:560px){#nftl .colgrid{grid-template-columns:1fr}#nftl .itemgrid{grid-template-columns:repeat(3,1fr)}#nftl .nav .logo{display:none}}
   </style>
 
@@ -140,15 +179,22 @@
         <div class="wh"><span class="dr"></span><span class="da"></span><span class="dg"></span>
           <span style="margin-left:6px;opacity:.8">launchpad.exe</span>
           <span style="margin-left:auto;opacity:.5;font-size:9px">inscription nft &middot; gateway.iqlabs.dev</span></div>
-        <div style="padding:20px 22px 22px;flex:1;display:flex;flex-direction:column">
+        <div class="lpbody">
+          <div class="seg lab" id="nftl_chains"><div class="on" data-chain="all">ALL CHAINS</div><div data-chain="solana">&#9678; SOLANA</div><div data-chain="robinhood">&#9650; ROBINHOOD</div></div>
           <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-            <div style="display:flex;gap:8px" class="lab"><div id="nftl_tab_cols" class="tab on">COLLECTIONS</div><div id="nftl_tab_mine" class="tab">MY NFTS</div></div>
+            <div style="display:flex;gap:8px" class="lab" id="nftl_tabs"><div class="tab on" data-tab="cols">COLLECTIONS</div><div class="tab" data-tab="market">MARKET</div><div class="tab" data-tab="mine">MY NFTS</div></div>
             <a href="?menu=nft-create" class="btn">+ LAUNCH A COLLECTION</a>
           </div>
           <p class="cm" id="nftl_desk_cap" style="margin:12px 0 14px">// collections launched from this board. each one = a core collection + N inscriptions. pick one, mint one.</p>
-          <div id="nftl_colgrid" class="colgrid"></div>
-          <p class="cm" id="nftl_cols_note" style="margin:14px 0 0">// every item is inscribed at mint: image + metadata json live on solana, the gateway only caches. sorted by latest mint.</p>
-          <div id="nftl_mine" style="display:none;flex:1"></div>
+          <div id="nftl_cols" style="flex:1;min-height:0;display:flex;flex-direction:column">
+            <div class="colscroll" id="nftl_colscroll">
+              <div id="nftl_colgrid" class="colgrid"></div>
+              <div class="pager" id="nftl_pager"></div>
+            </div>
+            <p class="cm" style="margin:12px 0 0">// every item is inscribed at mint: image + metadata json live on solana, the gateway only caches. sorted by latest mint. scroll = next page from the registry (6 per page).</p>
+          </div>
+          <div id="nftl_market" style="display:none;flex:1;min-height:0;flex-direction:column"></div>
+          <div id="nftl_mine" style="display:none;flex:1;min-height:0;flex-direction:column"></div>
         </div>
       </div>
       <div class="win" id="nftl_mw">
@@ -174,9 +220,9 @@
       <div id="nftl_colpage">
         <div class="cleft">
           <div class="chead">
-            <div id="nftl_ccov" class="ph ccov"></div>
+            <div id="nftl_ccov" class="ccov"></div>
             <div style="min-width:0;flex:1">
-              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="ctitle" id="nftl_name">-</div><span class="chip" id="nftl_chip"></span></div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="ctitle" id="nftl_name">-</div><span class="chip" id="nftl_chip"></span><span class="chip">&#9678; SOLANA &middot; MPL CORE</span></div>
               <div class="cm" id="nftl_meta" style="margin-top:6px;opacity:.6"></div>
               <p id="nftl_desc" style="margin:10px 0 0;font:500 10.5px/1.8 'Kode Mono',monospace;opacity:.8"></p>
               <div id="nftl_clinks" class="lab" style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"></div>
@@ -193,7 +239,7 @@
           <div class="lab" style="letter-spacing:.2em;opacity:.7">// MINT</div>
           <div style="text-align:center;padding:10px 0 4px">
             <div class="price" id="nftl_price">- <small>SOL</small></div>
-            <div class="cm" id="nftl_fee" style="margin-top:8px">+ deposit at reserve &middot; + platform fee &middot; + inscription rent &middot; leftover returns</div>
+            <div class="cm" id="nftl_fee" style="margin-top:8px">+ platform fee &middot; + inscription rent &middot; leftover returns</div>
           </div>
           <div class="bigbar"><i id="nftl_progbar"></i><span id="nftl_progtxt">0 / 0 MINTED</span></div>
           <div class="kvbox" id="nftl_kv"></div>
@@ -215,9 +261,8 @@
         <a id="nftl_vback" class="whback">&larr; back</a></div>
       <div id="nftl_vgrid">
         <div class="vleft">
-          <div class="ph vimg" id="nftl_vph"><img id="nftl_vimg" alt="" style="display:none"><span id="nftl_vphtxt">reading the asset account&hellip;</span></div>
+          <div class="vimg" id="nftl_vph"><img id="nftl_vimg" alt="" style="display:none"><div class="wait" id="nftl_vphtxt">reading the asset account&hellip;</div><div class="cap" id="nftl_vcap" style="display:none"></div></div>
           <div class="cm" id="nftl_vsub" style="margin-top:10px"></div>
-          <div class="cm" id="nftl_vimgnote"></div>
         </div>
         <div class="vright">
           <div class="lab" style="letter-spacing:.2em;opacity:.7">// ON THE ASSET ACCOUNT (attributes plugin, immutable)</div>
@@ -243,8 +288,7 @@
         <a href="?menu=nft" class="whback">&larr; all collections</a></div>
       <div id="nftl_sgrid">
         <div class="vleft">
-          <div class="ph vimg" id="nftl_sph"><img id="nftl_simg" alt="" style="display:none"><pre id="nftl_stext" style="display:none"></pre><span id="nftl_sphtxt">reading your inscription&hellip;</span></div>
-          <div class="cm" id="nftl_scontent" style="margin-top:10px"></div>
+          <div class="vimg" id="nftl_sph"><img id="nftl_simg" alt="" style="display:none"><pre id="nftl_stext" style="display:none"></pre><div class="wait" id="nftl_sphtxt">reading your inscription&hellip;</div><div class="cap" id="nftl_scap" style="display:none"></div></div>
           <div class="kvbox" style="margin-top:14px">
             <div class="kv"><span class="kvk">inscription (C)</span><span class="kvv nftl-g" id="nftl_sc">-</span></div>
             <div class="kv"><span class="kvk">owner</span><span class="kvv" id="nftl_sowner">-</span></div>
