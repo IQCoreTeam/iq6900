@@ -4,7 +4,7 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=11";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=12";
   const PER_PAGE = 6; // design: 6 collections per registry page
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet",
@@ -326,7 +326,7 @@
       const col = this.col, src = arweaveUrl(col, it.arweaveId);
       $("#nftl_im_title").text((col.name || col.slug) + " #" + it.index);
       $("#nftl_im_img").attr("src", src || "").toggle(!!src);
-      $("#nftl_im_cap").text((it.name || "#" + it.index) + " \u00b7 arweave copy, inscribed on solana at mint");
+      $("#nftl_im_cap").text((it.name || "#" + it.index) + " \u00b7 staged preview, inscribed on solana at mint");
       $("#nftl_im_sub").text("// " + (col.name || col.slug) + " \u00b7 not minted yet");
       const $kv = $("#nftl_im_kv").empty();
       [["name", it.name || "#" + it.index], ["index", "#" + it.index], ["status", "open", "nftl-g"], ["collection", short(col.collection)], ["price", solNum(col.priceLamports) + " SOL"]]
