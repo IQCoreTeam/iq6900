@@ -3,7 +3,7 @@
 // (js/codein/nft_bridge.js). v1 = one collection's buyer mint view: header,
 // item grid, and a mint panel that drives iqNft.mint() stage by stage.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=4";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=5";
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet...",
     deposit: "paying the deposit...",
@@ -73,9 +73,9 @@
     renderCols: function (cols) {
       const $g = $("#nftl_colgrid").empty();
       if (!cols.length) { $g.append($("<div class='cm' style='grid-column:1/-1;padding:20px 0'>").text("no collections yet. be the first: + LAUNCH A COLLECTION")); return; }
-      // live first, then upcoming, then sold out
-      const rank = (c) => { const s = this.statusOf(c); return s.label === "LIVE" ? 0 : s.label === "UPCOMING" ? 1 : s.label === "SINGLE" ? 2 : 3; };
-      cols.slice().sort((a, b) => rank(a) - rank(b)).forEach((c) => {
+      const fmtK = (n) => (n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "K" : String(n));
+      // backend order is bump order (most recently minted first); keep it.
+      cols.forEach((c) => {
         const supply = Number(c.maxSupply || 0), minted = Number(c.minted || 0), st = this.statusOf(c);
         const $card = $("<a class='ccard'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(c.slug));
         // cover image: the registered banner if set, else a representative item
@@ -98,6 +98,12 @@
           .append($("<div class='cby'>").text("by " + short(c.creator)))
           .append($("<div class='pbar'>").append($("<i>").css("width", pct + "%")))
           .append($("<div class='crow'>").append($("<span>").text(supply ? minted + " / " + supply : "single mint")).append($("<span style='color:var(--green)'>").text(sol(c.priceLamports))));
+        // stat row: owners + supply are real (our data); volume + floor live on
+        // secondary marketplaces we do not index yet, so they show "-".
+        const $stats = $("<div class='cstats'>");
+        [["OWNERS", c.owners != null ? fmtK(Number(c.owners)) : "-"], ["SUPPLY", supply ? fmtK(supply) : "-"], ["VOLUME", "-"], ["FLOOR", "-"]]
+          .forEach(([k, v]) => $stats.append($("<div class='cstat'>").append($("<div class='sv'>").text(v)).append($("<div class='sk'>").text(k))));
+        $body.append($stats);
         $card.append($cov).append($body);
         $g.append($card);
       });
