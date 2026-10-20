@@ -1,6 +1,6 @@
-// nft_asset.js - read an inscription NFT entirely from chain, no backend.
-//
-// This is the "recover without us" path the viewer demonstrates: given only an
+// nft_asset.js - read an inscription NFT: the asset account from chain, then
+// either the gateway cache (default, fast) or the chain itself (the "recover
+// without us" proof). The chain path: given only an
 // asset address and an RPC, it reads the Core asset account, pulls the metadata
 // inscription (M, the last path segment of the on-chain uri) and the image
 // inscription (C, the inscription attribute inside that metadata), and decodes
@@ -57,27 +57,48 @@ export async function readInscription(connection, sig) {
   return res.data; // the inscribed body, verbatim
 }
 
-// readAsset(connection, assetAddress) -> everything the viewer shows, all from
-// chain. onStep(name) reports: account, metadata, image. Throws with a plain
-// message if the address is not a minted inscription NFT.
-export async function readAsset(connection, assetAddress, onStep) {
-  const step = (s) => { try { onStep && onStep(s); } catch (e) {} };
+// readAssetAccount(connection, assetAddress) -> the Core asset account alone
+// (one getAccountInfo): name, owner, collection, uri, the Attributes we wrote,
+// and M = the metadata inscription (last path segment of the uri). This is the
+// fast, shared first step of both viewer paths below.
+export async function readAssetAccount(connection, assetAddress) {
   const pk = new PublicKey(assetAddress); // throws on a malformed address
-
-  step("account");
   const ai = await connection.getAccountInfo(pk);
   if (!ai) throw new Error("no account at that address");
   const data = new Uint8Array(ai.data);
   if (data[0] !== 1) throw new Error("not a Metaplex Core asset");
   const base = parseAssetBase(data);
   const attrs = parseAttributes(data, base.pluginOffset);
-
   const M = (base.uri.split("/").pop() || "").trim();
   if (!M) throw new Error("asset has no metadata uri");
+  return { asset: assetAddress, name: base.name, owner: base.owner, collection: base.collection, uri: base.uri, attributes: attrs, M };
+}
+
+// viewAssetViaGateway(connection, gatewayBase, assetAddress) -> what the viewer
+// shows by default: the account from chain, then the metadata JSON and the
+// image from the gateway cache (/token-meta/{M}, /img/{C}.png). Fast (1 rpc
+// call + 2 cached http gets); the gateway only serves what is on chain.
+export async function viewAssetViaGateway(connection, gatewayBase, assetAddress) {
+  const account = await readAssetAccount(connection, assetAddress);
+  const res = await fetch(gatewayBase + "/token-meta/" + account.M);
+  if (!res.ok) throw new Error("gateway has no metadata for " + account.M + " (http " + res.status + ")");
+  const metadata = await res.json();
+  const C = (metadata.attributes || []).find((a) => a.trait_type === "inscription")?.value || null;
+  return { ...account, C, metadata, imageUrl: C ? gatewayBase + "/img/" + C + ".png" : null };
+}
+
+// readAsset(connection, assetAddress) -> the same thing decoded from chain only
+// (the "recover without us" proof). onStep(name) reports: account, metadata,
+// image. Throws with a plain message if the address is not a minted
+// inscription NFT.
+export async function readAsset(connection, assetAddress, onStep) {
+  const step = (s) => { try { onStep && onStep(s); } catch (e) {} };
+  step("account");
+  const account = await readAssetAccount(connection, assetAddress);
 
   // M -> the metadata JSON that was inscribed, verbatim.
   step("metadata");
-  const metaStr = await readInscription(connection, M);
+  const metaStr = await readInscription(connection, account.M);
   let metadata;
   try { metadata = JSON.parse(metaStr); } catch (e) { throw new Error("metadata inscription is not valid JSON"); }
   const C = (metadata.attributes || []).find((a) => a.trait_type === "inscription")?.value || null;
@@ -93,16 +114,5 @@ export async function readAsset(connection, assetAddress, onStep) {
     } catch (e) { imageDataUrl = null; } // image recovery is best-effort; metadata already carries a pointer
   }
 
-  return {
-    asset: assetAddress,
-    name: base.name,
-    owner: base.owner,
-    collection: base.collection,
-    uri: base.uri,
-    attributes: attrs, // { index, inscription (hex), metadata (hex), std }
-    M,
-    C,
-    metadata,
-    imageDataUrl,
-  };
+  return { ...account, C, metadata, imageDataUrl };
 }

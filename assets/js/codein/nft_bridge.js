@@ -9,7 +9,7 @@ import { deriveBurner } from "./burner.js";
 import * as nft from "./nft.js?v=3";
 import { deploy, pendingDeploy } from "./nft_create.js?v=3";
 import { compressImage } from "./image_compress.js?v=1";
-import { readAsset, readInscription } from "./nft_asset.js?v=2";
+import { readAsset, readInscription, viewAssetViaGateway } from "./nft_asset.js?v=3";
 
 // The NFT program + backend currently run on DEVNET while the rest of the site
 // is mainnet, so the NFT page keeps its own RPC under its own localStorage key.
@@ -73,7 +73,10 @@ window.iqNft = Object.assign({}, nft, {
   compressImage,
   // On-chain NFT viewer: reads an asset entirely from the chain (no backend).
   // setRpcUrl points the SDK reader's linked-list/session walk at this cluster.
-  viewAsset: async (asset, onStep) => { setRpcUrl(rpc()); return readAsset(connection(), asset, onStep); },
+  // Default viewer path: account from chain + metadata/image from the gateway cache.
+  viewAsset: async (asset) => viewAssetViaGateway(connection(), gatewayBase(), asset),
+  // The proof path: everything decoded from chain by the browser, no gateway.
+  recoverAsset: async (asset, onStep) => { setRpcUrl(rpc()); return readAsset(connection(), asset, onStep); },
   // Read one inscription feed row {kind, body, who} from chain (single-NFT view
   // uses it to show the content and confirm the connected wallet owns it).
   readRow: async (sig) => { setRpcUrl(rpc()); return JSON.parse(await readInscription(connection(), sig)); },

@@ -408,38 +408,60 @@
       $("#nftl_loading").hide();
       $("#nftl_viewer").show();
       this.navMid("// NFT VIEWER");
-      $("#nftl_vback").attr("href", slug ? "?menu=nft&nft=" + encodeURIComponent(slug) : "?menu=nft").text(slug ? "← " + slug : "← all collections");
+      $("#nftl_vback").attr("href", slug ? "?menu=nft&nft=" + encodeURIComponent(slug) : "?menu=nft").text(slug ? "\u2190 " + slug : "\u2190 all collections");
       $("#nftl_vwin").text(short(addr));
       this.dbg("viewer: read asset " + addr);
-      const a = await window.iqNft.viewAsset(addr, (step) => $("#nftl_vphtxt").text("reading (" + step + ")…"));
-      this.dbg("viewer recovered: C=" + short(a.C) + " M=" + short(a.M) + " img=" + (a.imageDataUrl ? "yes" : "no"));
+      // Default = gateway cache: one rpc read for the account, then the metadata
+      // json and the image come from the gateway (fast). DECODE FROM CHAIN below
+      // re-does it with rpc only.
+      const a = await window.iqNft.viewAsset(addr);
+      this.dbg("viewer: C=" + short(a.C) + " M=" + short(a.M) + " image=" + (a.imageUrl ? "gateway" : "none"));
+      this.asset = a;
       $("#nftl_vwin").text(a.name || short(addr));
-      $("#nftl_vsub").text("// " + [a.collection ? "collection " + short(a.collection) : "", a.owner ? "owner " + short(a.owner) : ""].filter(Boolean).join(" · "));
-      const cap = (t) => $("#nftl_vcap").show().text(t);
-      if (a.imageDataUrl) {
-        $("#nftl_vphtxt").hide();
-        $("#nftl_vimg").attr("src", a.imageDataUrl).show();
-        cap((a.name || short(addr)) + " · decoded in your browser from tx C. no gateway, no backend.");
-      } else if (a.metadata && a.metadata.image) {
-        // Direct decode failed (public rpcs rate-limit the chunk walk of bigger
-        // images); show the gateway's cached render of the same tx C instead.
-        $("#nftl_vphtxt").text("rpc rate-limited, showing the gateway cache");
-        $("#nftl_vimg").attr("src", a.metadata.image).on("load", () => $("#nftl_vphtxt").hide()).on("error", function () { $(this).hide(); }).show();
-        cap((a.name || short(addr)) + " · gateway /img/C.png (this rpc could not stream tx C in time; set your own rpc to decode it here)");
+      $("#nftl_vsub").text("// " + [a.collection ? "collection " + short(a.collection) : "", a.owner ? "owner " + short(a.owner) : ""].filter(Boolean).join(" \u00b7 "));
+      if (a.imageUrl) {
+        $("#nftl_vimg").attr("src", a.imageUrl).on("load", () => $("#nftl_vphtxt").hide()).on("error", () => $("#nftl_vphtxt").text("gateway could not render tx C; try DECODE FROM CHAIN")).show();
+        this.vcap((a.name || short(addr)) + " \u00b7 gateway /img/C.png (cache of tx C). fallback: decode tx C directly");
       } else {
-        $("#nftl_vphtxt").text("image not recovered on this rpc");
-        cap("no image pointer in the metadata");
+        $("#nftl_vphtxt").text("no image pointer in the metadata");
       }
       const $p = $("#nftl_vattrs").empty();
       [["name", a.name], ["collection", a.collection || "-"], ["index", a.attributes.index || "-"], ["inscription (C)", a.C || "-", "nftl-g"], ["metadata (M)", a.M || "-", "nftl-g"], ["std", a.attributes.std || "-"], ["uri", a.uri]]
         .forEach(([k, v, cls]) => $p.append($("<div class='kv'>").append($("<span class='kvk'>").text(k)).append($("<span class='kvv'>").addClass(cls || "").text(v))));
       const dev = window.iqNft.getRpc().indexOf("devnet") >= 0 ? "?cluster=devnet" : "";
       const L = $("#nftl_vlinks").empty();
+      L.append($("<button class='btng' type='button' id='nftl_recover'>").css("padding", "7px 12px").text("DECODE FROM CHAIN").on("click", () => this.recoverAsset(addr)));
       L.append(link("SOLSCAN", "https://solscan.io/account/" + addr + dev).css("padding", "7px 12px"));
       if (a.C) L.append(link("RAW TX C", window.iqNft.solscanTx(a.C)).css("padding", "7px 12px"));
       if (a.M) L.append(link("RAW TX M", window.iqNft.solscanTx(a.M)).css("padding", "7px 12px"));
       L.append(link("MAGIC EDEN", "https://magiceden.io/item-details/" + addr).css("padding", "7px 12px"));
       $("#nftl_vmeta").text(JSON.stringify(a.metadata, null, 2));
+    },
+    vcap: (t) => $("#nftl_vcap").show().text(t),
+    // The proof: re-read everything with rpc only (no gateway) and swap the image
+    // for the bytes decoded in the browser. Public rpcs rate-limit the chunk walk
+    // of bigger images, so this can take a while or fail; the gateway view stays.
+    recoverAsset: async function (addr) {
+      const $b = $("#nftl_recover").prop("disabled", true).text("DECODING\u2026");
+      this.dbg("viewer: decode from chain " + addr);
+      try {
+        const a = await window.iqNft.recoverAsset(addr, (step) => $b.text("DECODING (" + step + ")\u2026"));
+        this.dbg("viewer decoded: C=" + short(a.C) + " M=" + short(a.M) + " img=" + (a.imageDataUrl ? "yes" : "no"));
+        $("#nftl_vmeta").text(JSON.stringify(a.metadata, null, 2));
+        if (a.imageDataUrl) {
+          $("#nftl_vimg").attr("src", a.imageDataUrl).show();
+          $("#nftl_vphtxt").hide();
+          this.vcap((a.name || short(addr)) + " \u00b7 decoded in your browser from tx C. no gateway, no backend.");
+          $b.text("DECODED FROM CHAIN \u2713");
+        } else {
+          this.vcap("metadata decoded from tx M; this rpc could not stream tx C in time (rate limit). the image above is the gateway cache.");
+          $b.prop("disabled", false).text("DECODE FROM CHAIN \u00b7 RETRY");
+        }
+      } catch (e) {
+        this.dbg("viewer decode failed: " + (e && e.message), "e");
+        this.vcap("chain decode failed on this rpc: " + ((e && e.message) || e) + ". the image above is the gateway cache.");
+        $b.prop("disabled", false).text("DECODE FROM CHAIN \u00b7 RETRY");
+      }
     },
 
     // ── single NFT "make it a token" (?menu=nft&single=<C>) ──────────────
