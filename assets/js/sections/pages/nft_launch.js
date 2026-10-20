@@ -78,8 +78,16 @@
       cols.slice().sort((a, b) => rank(a) - rank(b)).forEach((c) => {
         const supply = Number(c.maxSupply || 0), minted = Number(c.minted || 0), st = this.statusOf(c);
         const $card = $("<a class='ccard'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(c.slug));
+        // cover image: the creator logo if set, else a representative item image
+        // (both real, inscribed on chain); striped placeholder only if neither loads.
         const $cov = $("<div class='cov ph' style='position:relative'>").text("[ " + (c.symbol || c.name || c.slug) + " ]");
-        if (c.logo) $cov.append($("<img>").attr("src", c.logo).css({ position: "absolute", inset: 0, width: "100%", height: "100%", "object-fit": "cover" }).on("error", function () { $(this).remove(); }));
+        const primary = c.logo || c.cover, secondary = c.logo && c.cover && c.cover !== c.logo ? c.cover : null;
+        if (primary) {
+          const $im = $("<img>").attr("src", primary).css({ position: "absolute", inset: 0, width: "100%", height: "100%", "object-fit": "cover" });
+          let fellBack = false;
+          $im.on("error", function () { if (!fellBack && secondary) { fellBack = true; this.src = secondary; } else { $(this).remove(); } });
+          $cov.append($im);
+        }
         const $head = $("<div style='display:flex;justify-content:space-between;align-items:center;gap:8px'>")
           .append($("<span class='cn'>").text(c.name || c.slug))
           .append($("<span>").addClass("chip " + st.cls).text(st.label));
