@@ -506,11 +506,12 @@
     renderAssetRows: function (a) {
       const $p = $("#nftl_vattrs").empty();
       [["name", a.name], ["holder", a.owner || "-", "nftl-g"], this.rarityRow, ["collection", a.collection || "-"], ["index", a.attributes.index || "-"],
-       ["inscription (C)", a.C ? short(a.C) : "-", "nftl-g", a.C ? window.iqNft.solscanTx(a.C) : null],
+       ["inscription (C)", a.C ? short(a.C) : "-", "nftl-g", a.C ? window.iqNft.codeinViewUrl(a.C) : null],
        ["metadata (M)", a.M ? short(a.M) : "-", "nftl-g", a.M ? window.iqNft.solscanTx(a.M) : null],
        a.attributes.std ? ["std", a.attributes.std] : null, ["uri", a.uri], ["source", a.source || "-"]]
         .filter(Boolean).forEach(([k, v, cls, href]) => {
-          const $v = href ? $("<a class='kvv kvlink'>").attr({ href, target: "_blank", rel: "noopener" }) : $("<span class='kvv'>");
+          // external links (solscan) open a new tab; the in-site code-in viewer navigates in place
+          const $v = href ? $("<a class='kvv kvlink'>").attr({ href, target: /^https?:/.test(href) ? "_blank" : null, rel: "noopener" }) : $("<span class='kvv'>");
           $v.addClass(cls || "").css("font-weight", /^c-/.test(cls || "") ? 700 : "").text(v);
           $p.append($("<div class='kv'>").append($("<span class='kvk'>").text(k)).append($v));
         });

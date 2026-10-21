@@ -51,6 +51,9 @@ window.iqNft = Object.assign({}, nft, {
   setRpc: (u) => { try { u ? localStorage.setItem(RPC_KEY, u) : localStorage.removeItem(RPC_KEY); } catch (e) {} },
   health: async () => { try { return await (await fetch(nft.nftApi() + "/health")).json(); } catch (e) { return { ok: false, error: String(e) }; } },
   solscanTx: (sig) => `https://solscan.io/tx/${sig}${rpc().indexOf("devnet") >= 0 ? "?cluster=devnet" : ""}`,
+  // the code-in viewer (viewer.exe: renders the inscription + solscan/share/mint buttons);
+  // ?cluster=devnet makes that mainnet page read this NFT's devnet inscription
+  codeinViewUrl: (sig) => `?menu=codein&post=${sig}${rpc().indexOf("devnet") >= 0 ? "&cluster=devnet" : ""}`,
   imgUrl: (sig) => gatewayBase() + "/img/" + sig + ".png", // the gateway render of an image inscription
   metaUrl: (M) => gatewayBase() + "/token-meta/" + M, // the asset uri we register
   gatewayMeta: (M) => gatewayMetadata(gatewayBase(), M),
