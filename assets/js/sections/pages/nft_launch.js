@@ -506,8 +506,8 @@
     renderAssetRows: function (a) {
       const $p = $("#nftl_vattrs").empty();
       [["name", a.name], ["holder", a.owner || "-", "nftl-g"], this.rarityRow, ["collection", a.collection || "-"], ["index", a.attributes.index || "-"],
-       ["inscription (C)", a.C ? short(a.C) : "-", "nftl-g", a.C ? window.iqNft.imgUrl(a.C) : null],
-       ["metadata (M)", a.M ? short(a.M) : "-", "nftl-g", a.M ? window.iqNft.metaUrl(a.M) : null],
+       ["inscription (C)", a.C ? short(a.C) : "-", "nftl-g", a.C ? window.iqNft.solscanTx(a.C) : null],
+       ["metadata (M)", a.M ? short(a.M) : "-", "nftl-g", a.M ? window.iqNft.solscanTx(a.M) : null],
        a.attributes.std ? ["std", a.attributes.std] : null, ["uri", a.uri], ["source", a.source || "-"]]
         .filter(Boolean).forEach(([k, v, cls, href]) => {
           const $v = href ? $("<a class='kvv kvlink'>").attr({ href, target: "_blank", rel: "noopener" }) : $("<span class='kvv'>");
