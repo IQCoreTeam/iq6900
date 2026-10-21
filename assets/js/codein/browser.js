@@ -17,11 +17,7 @@ import { marketRows } from "./market.js?v=1";
 // default for a client that writes. publicnode is a free, keyless, CORS-open
 // mainnet endpoint (ACAO:*) that serves the write-path methods, so writes work
 // out of the box; heavy/large uploads can still set their own RPC (over-cap flow).
-// ?cluster=devnet (e.g. a devnet NFT inscription's viewer link) flips reads to
-// the devnet RPC + dev-gateway for this page load only; absent the param, this
-// stays the mainnet default, so the live code-in page is untouched.
-const URL_CLUSTER = (() => { try { return (new URLSearchParams(location.search).get("cluster") || "").toLowerCase(); } catch (e) { return ""; } })();
-const DEFAULT_RPC = URL_CLUSTER === "devnet" ? "https://api.devnet.solana.com" : "https://solana-rpc.publicnode.com";
+const DEFAULT_RPC = "https://solana-rpc.publicnode.com";
 // The feed's cluster (from DEFAULT_RPC), used for the Solscan link. It also
 // namespaces the saved-RPC key, so a devnet-era override never carries over to
 // mainnet writes (a stale devnet endpoint returned 403 after the mainnet flip).
@@ -44,7 +40,7 @@ setRpcUrl(activeRpc);
 // 404 is a real answer (empty table), so it ends the fallback chain like 2xx.
 // The gateway must match DEFAULT_RPC's cluster: the mainnet feed reads from the
 // mainnet gateway (it indexes any mainnet table by PDA, including our db_root).
-const GATEWAYS = CLUSTER === "devnet" ? ["https://dev-gateway.iqlabs.dev"] : ["https://gateway.iqlabs.dev"];
+const GATEWAYS = ["https://gateway.iqlabs.dev"];
 const GATEWAY_KEY = "iq6900_gateway";
 function gateways() {
   try { const c = localStorage.getItem(GATEWAY_KEY); if (c) return [c, ...GATEWAYS]; } catch (e) {}
