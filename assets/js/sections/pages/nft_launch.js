@@ -4,7 +4,7 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=14";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=16";
   const PER_PAGE = 6; // design: 6 collections per registry page
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet",
@@ -41,15 +41,15 @@
   };
   const esc = (s) => $("<i>").text(s == null ? "" : String(s)).html();
   const link = (text, href, cls) => $("<a>").addClass(cls || "btn2").css("padding", "6px 12px").attr({ href, target: /^https?:/.test(href) ? "_blank" : null }).text(text);
-  // The sealed tile: unminted art is never shown, a CRT "?" stands in.
-  const sealed = (size, label) => $("<div class='mys'>").addClass(size || "").append($("<b>").text("?")).append(label ? $("<i>").text(label) : null);
+  // The sealed tile: unminted art is never shown, the design's bold "?" stands in.
+  const sealed = (size) => $("<div class='q'>").addClass(size || "").text("?");
   // Cover image into a dark box: the on-chain cover (newest minted item, via the
   // gateway) shows at once; the inscribed banner/logo replaces it once loaded.
   // Nothing on chain yet -> the sealed tile.
   const coverInto = ($box, base, upgrade) => {
     $box.empty();
-    if (!base && !upgrade) { $box.append(sealed("", "SEALED")); return; }
-    const $im = $("<img alt='' loading='lazy'>").on("error", function () { $(this).remove(); if (!$box.find("img").length) $box.prepend(sealed("", "SEALED")); });
+    if (!base && !upgrade) { $box.append(sealed("lg")); return; }
+    const $im = $("<img alt='' loading='lazy'>").on("error", function () { $(this).remove(); if (!$box.find("img").length) $box.prepend(sealed("lg")); });
     $im.attr("src", base || upgrade);
     $box.prepend($im);
     if (base && upgrade && upgrade !== base) { const pre = new Image(); pre.onload = () => $im.attr("src", upgrade); pre.src = upgrade; }
@@ -88,12 +88,15 @@
       if (this.tab === "mine") this.renderMine();
     },
     navMid: (t) => $("#nftl_nav_mid").text(t),
+    // the nav's back button goes up one level: item -> its collection, collection -> the list, home -> code in
+    navBack: (text, href) => $("#nftl_navback").attr("href", href).html("&larr; " + $("<i>").text(text).html()),
 
     // ── home ──────────────────────────────────────────────────────────────
     loadHome: async function () {
       $("#nftl_loading").hide();
       $("#nftl_home").show();
       this.navMid("// COLLECTIONS + MINTED");
+      this.navBack("CODE IN", "?menu=codein");
       this.tab = "cols"; this.chain = "all"; this.page = 1;
       this.renderSkeleton();
       $("#nftl_tabs .tab").on("click", (e) => this.homeTab($(e.currentTarget).data("tab")));
@@ -238,6 +241,7 @@
       $("#nftl_loading").hide();
       $("#nftl_view").show();
       this.navMid("// " + (col.name || slug).toUpperCase());
+      this.navBack("ALL COLLECTIONS", "?menu=nft");
       $("#nftl_cslug").text(col.slug);
       // banner strip (if the creator inscribed one) + the 120px cover square
       if (col.banner) {
@@ -254,7 +258,7 @@
         .append(link("COLLECTION ON CHAIN", "https://solscan.io/account/" + col.collection + dev))
         .append(link("REGISTRY", "https://solscan.io/account/" + col.registry + dev))
         .append(link("CREATOR", "https://solscan.io/account/" + col.creator + dev));
-      $("#nftl_price").html(esc(solNum(col.priceLamports)) + " <small>SOL</small>");
+      $("#nftl_price").text(solNum(col.priceLamports));
       $("#nftl_fee").text([Number(col.depositLamports) > 0 ? "+ " + solNum(col.depositLamports) + " deposit at reserve" : "", "+ platform fee", "+ inscription rent", "leftover returns"].filter(Boolean).join(" · "));
       $("#nftl_items_lab").text("// ITEMS · " + (col.sequential ? "sequential (#1, #2, #3 …)" : "random (shuffled at launch)"));
       $("#nftl_filters .tab").off("click").on("click", (e) => {
@@ -271,7 +275,7 @@
     renderProgress: function () {
       const minted = Number(this.col.minted || 0), supply = Number(this.col.maxSupply || 0);
       $("#nftl_progbar").css("width", (supply ? Math.round(100 * minted / supply) : 0) + "%");
-      $("#nftl_progtxt").text(num(minted) + " / " + num(supply) + " MINTED");
+      $("#nftl_progtxt").text(num(minted) + " / " + num(supply));
     },
     canMint: function () { return this.statusOf(this.col).label === "LIVE"; },
     renderKv: function () {
@@ -315,7 +319,7 @@
         $cell.toggleClass("fresh", fresh).addClass(rev && tier ? "r-" + tier : "");
         const $im = $("<div class='im'>");
         if (rev && it.inscriptionSig) $im.append($("<img alt='' loading='lazy'>").attr("src", window.iqNft.imgUrl(it.inscriptionSig)).on("error", function () { $(this).remove(); }));
-        else if (!rev) $im.append(sealed("sm"));
+        else if (!rev) $im.append(sealed());
         if (rev && tier && tier !== "common") $im.append($("<span class='rb'>").addClass("c-" + tier).text(tier));
         $im.append($("<span class='tag'>").text(fresh ? "yours" : "#" + it.index));
         const $if = $("<div class='if'>")
@@ -329,7 +333,7 @@
     mintState: function (state, x) {
       const $s = $("#nftl_mstate").empty();
       if (state === "idle") {
-        if (!this.wallet) $s.append($("<button id='nftl_connect' class='btn2 wide' type='button'>").text("CONNECT WALLET TO MINT").on("click", () => $("#nftl_hconnect").trigger("click")));
+        if (!this.wallet) $s.append($("<button id='nftl_connect' class='btn3d' type='button'>").text("CONNECT WALLET TO MINT").on("click", () => $("#nftl_hconnect").trigger("click")));
         else if (this.canMint()) $s.append($("<button id='nftl_mint' class='btn wide' type='button'>").text("MINT 1 · SIGN IN WALLET").on("click", () => this.mint(this.col.slug)));
         else $s.append($("<div class='btn2 wide' style='opacity:.5;cursor:not-allowed'>").text(this.statusOf(this.col).label === "UPCOMING" ? "NOT STARTED YET" : "SOLD OUT"));
       } else if (state === "approve") {
@@ -413,19 +417,33 @@
       $("#nftl_loading").hide();
       $("#nftl_viewer").show();
       this.navMid("// NFT VIEWER");
-      $("#nftl_vback").attr("href", slug ? "?menu=nft&nft=" + encodeURIComponent(slug) : "?menu=nft").text(slug ? "\u2190 " + slug : "\u2190 all collections");
       $("#nftl_vwin").text(short(addr));
-      this.dbg("viewer: read asset " + addr);
-      // Default = gateway cache: one rpc read for the account, then the metadata
-      // json and the image come from the gateway (fast). DECODE FROM CHAIN below
-      // re-does it with rpc only.
-      const a = await window.iqNft.viewAsset(addr);
-      this.dbg("viewer: C=" + short(a.C) + " M=" + short(a.M) + " image=" + (a.imageUrl ? "gateway" : "none"));
+      this.dbg("viewer: " + addr);
+      // Fast path: the registry mirror knows the minted item (name, holder, C, M,
+      // rarity) with zero rpc calls; the json comes from the gateway cache. An
+      // asset the mirror does not track (single mints) falls back to one rpc
+      // account read. DECODE FROM CHAIN re-reads everything from chain.
+      let a, rarity = null;
+      try {
+        const m = await window.iqNft.getAsset(addr);
+        if (!m || m.error) throw new Error(m && m.error);
+        slug = slug || m.slug;
+        rarity = m.rarity;
+        a = { asset: addr, name: m.name, owner: m.owner, collection: m.collection, uri: window.iqNft.metaUrl(m.metaSig), attributes: { index: String(m.index) }, M: m.metaSig, C: m.inscriptionSig, source: "registry mirror" };
+        a.metadata = await window.iqNft.gatewayMeta(a.M);
+        a.imageUrl = window.iqNft.imgUrl(a.C);
+      } catch (e) {
+        this.dbg("viewer: not in the registry mirror (" + (e && e.message) + "), reading the account");
+        $("#nftl_vphtxt").text("reading the asset account\u2026");
+        a = await window.iqNft.viewAsset(addr);
+        a.source = "asset account";
+        if (slug && a.attributes.index) { try { const it = await window.iqNft.getItem(slug, a.attributes.index); rarity = it && it.rarity ? it.rarity : null; } catch (e2) {} }
+      }
       this.asset = a;
+      this.dbg("viewer: via " + a.source + " C=" + short(a.C) + " M=" + short(a.M));
+      this.navBack(slug ? slug : "ALL COLLECTIONS", slug ? "?menu=nft&nft=" + encodeURIComponent(slug) : "?menu=nft");
+      $("#nftl_vback").attr("href", slug ? "?menu=nft&nft=" + encodeURIComponent(slug) : "?menu=nft").text(slug ? "\u2190 " + slug : "\u2190 all collections");
       $("#nftl_vwin").text(a.name || short(addr));
-      // holder + trait rarity come from the collection registry (minted items only)
-      let rarity = null;
-      if (slug && a.attributes.index) { try { const it = await window.iqNft.getItem(slug, a.attributes.index); rarity = it && it.rarity ? it.rarity : null; } catch (e) {} }
       const tier = rarity && rarity.tier, lit = tier && tier !== "common";
       $("#nftl_vrchip").attr("class", "rchip c-" + (tier || "common")).text(lit ? tier : "").toggle(!!lit);
       $("#nftl_vph").attr("class", "vimg" + (lit ? " r-" + tier : ""));
@@ -437,9 +455,8 @@
       } else {
         $("#nftl_vphtxt").text("no image pointer in the metadata");
       }
-      const $p = $("#nftl_vattrs").empty();
-      [["name", a.name], ["holder", a.owner || "-", "nftl-g"], lit ? ["rarity", tier + " \u00b7 rank " + rarity.rank + " / " + rarity.total, "c-" + tier] : null, ["collection", a.collection || "-"], ["index", a.attributes.index || "-"], ["inscription (C)", a.C || "-", "nftl-g"], ["metadata (M)", a.M || "-", "nftl-g"], ["std", a.attributes.std || "-"], ["uri", a.uri]]
-        .filter(Boolean).forEach(([k, v, cls]) => $p.append($("<div class='kv'>").append($("<span class='kvk'>").text(k)).append($("<span class='kvv'>").addClass(cls || "").css("font-weight", /^c-/.test(cls || "") ? 700 : "").text(v))));
+      this.rarityRow = lit ? ["rarity", tier + " \u00b7 rank " + rarity.rank + " / " + rarity.total, "c-" + tier] : null;
+      this.renderAssetRows(a);
       const dev = window.iqNft.getRpc().indexOf("devnet") >= 0 ? "?cluster=devnet" : "";
       const L = $("#nftl_vlinks").empty();
       L.append($("<button class='btng' type='button' id='nftl_recover'>").css("padding", "7px 12px").text("DECODE FROM CHAIN").on("click", () => this.recoverAsset(addr)));
@@ -448,6 +465,12 @@
       if (a.M) L.append(link("RAW TX M", window.iqNft.solscanTx(a.M)).css("padding", "7px 12px"));
       L.append(link("MAGIC EDEN", "https://magiceden.io/item-details/" + addr).css("padding", "7px 12px"));
       $("#nftl_vmeta").text(JSON.stringify(a.metadata, null, 2));
+    },
+    // The attribute table: std only exists once the account itself was read.
+    renderAssetRows: function (a) {
+      const $p = $("#nftl_vattrs").empty();
+      [["name", a.name], ["holder", a.owner || "-", "nftl-g"], this.rarityRow, ["collection", a.collection || "-"], ["index", a.attributes.index || "-"], ["inscription (C)", a.C || "-", "nftl-g"], ["metadata (M)", a.M || "-", "nftl-g"], a.attributes.std ? ["std", a.attributes.std] : null, ["uri", a.uri], ["source", a.source || "-"]]
+        .filter(Boolean).forEach(([k, v, cls]) => $p.append($("<div class='kv'>").append($("<span class='kvk'>").text(k)).append($("<span class='kvv'>").addClass(cls || "").css("font-weight", /^c-/.test(cls || "") ? 700 : "").text(v))));
     },
     vcap: (t) => $("#nftl_vcap").show().text(t),
     // The proof: re-read everything with rpc only (no gateway) and swap the image
@@ -459,6 +482,8 @@
       try {
         const a = await window.iqNft.recoverAsset(addr, (step) => $b.text("DECODING (" + step + ")\u2026"));
         this.dbg("viewer decoded: C=" + short(a.C) + " M=" + short(a.M) + " img=" + (a.imageDataUrl ? "yes" : "no"));
+        a.source = "asset account + tx M, read by this browser";
+        this.renderAssetRows(a);
         $("#nftl_vmeta").text(JSON.stringify(a.metadata, null, 2));
         if (a.imageDataUrl) {
           $("#nftl_vimg").attr("src", a.imageDataUrl).show();
@@ -481,6 +506,7 @@
       $("#nftl_loading").hide();
       $("#nftl_single").show();
       this.navMid("// MAKE IT A TOKEN");
+      this.navBack("ALL COLLECTIONS", "?menu=nft");
       $("#nftl_sc").text(C);
       this.singleC = C;
       this.dbg("single: read inscription " + C);

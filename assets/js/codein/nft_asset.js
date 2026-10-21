@@ -78,11 +78,14 @@ export async function readAssetAccount(connection, assetAddress) {
 // shows by default: the account from chain, then the metadata JSON and the
 // image from the gateway cache (/token-meta/{M}, /img/{C}.png). Fast (1 rpc
 // call + 2 cached http gets); the gateway only serves what is on chain.
+export async function gatewayMetadata(gatewayBase, M) {
+  const res = await fetch(gatewayBase + "/token-meta/" + M);
+  if (!res.ok) throw new Error("gateway has no metadata for " + M + " (http " + res.status + ")");
+  return res.json();
+}
 export async function viewAssetViaGateway(connection, gatewayBase, assetAddress) {
   const account = await readAssetAccount(connection, assetAddress);
-  const res = await fetch(gatewayBase + "/token-meta/" + account.M);
-  if (!res.ok) throw new Error("gateway has no metadata for " + account.M + " (http " + res.status + ")");
-  const metadata = await res.json();
+  const metadata = await gatewayMetadata(gatewayBase, account.M);
   const C = (metadata.attributes || []).find((a) => a.trait_type === "inscription")?.value || null;
   return { ...account, C, metadata, imageUrl: C ? gatewayBase + "/img/" + C + ".png" : null };
 }

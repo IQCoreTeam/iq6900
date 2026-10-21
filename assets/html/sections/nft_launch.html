@@ -69,8 +69,8 @@
     #nftl .card .cn{font-weight:700;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #nftl .card .cby{opacity:.45;margin-top:4px}
     #nftl .card .bar{margin-top:9px;position:relative;height:6px;border:1px solid rgba(232,228,214,.35);border-radius:3px;overflow:hidden}
-    #nftl .card .bar i{position:absolute;inset:0;width:0;background:#2BD52D;display:block}
-    #nftl .card.out .bar i{background:rgba(232,228,214,.5)}
+    #nftl .card .bar i{position:absolute;inset:0;width:0;background:linear-gradient(90deg,#1f9f22,#2BD52D);box-shadow:0 0 8px rgba(43,213,45,.6);display:block;transition:width .6s}
+    #nftl .card.out .bar i{background:rgba(232,228,214,.45);box-shadow:none}
     #nftl .card .crow{display:flex;justify-content:space-between;gap:8px;margin-top:6px;opacity:.75}
     #nftl .card .crow span{white-space:nowrap}
     #nftl .card .stats{display:grid;grid-template-columns:repeat(4,1fr);margin-top:10px;border-top:1px solid rgba(232,228,214,.2);padding-top:8px}
@@ -136,12 +136,26 @@
     #nftl .it.rev .if{background:rgba(232,228,214,.06)}
     #nftl .it .if .ow{opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #nftl .it .if .st{opacity:.4;white-space:nowrap}#nftl .it.rev .if .st{opacity:1;font-weight:700}#nftl .it.fresh .if .st{color:#2BD52D}
-    #nftl .price{font:400 40px 'Zen Dots',monospace;color:#2BD52D;line-height:1.1}
-    #nftl .price small{font-size:18px}
+    #nftl .pfocus{position:relative;display:inline-flex;align-items:baseline;gap:8px;padding:12px 24px}
+    #nftl .pfocus i{position:absolute;width:12px;height:12px;border:0 solid #e8e4d6}
+    #nftl .pfocus i:nth-child(1){left:0;top:0;border-left-width:1.5px;border-top-width:1.5px}
+    #nftl .pfocus i:nth-child(2){right:0;top:0;border-right-width:1.5px;border-top-width:1.5px}
+    #nftl .pfocus i:nth-child(3){left:0;bottom:0;border-left-width:1.5px;border-bottom-width:1.5px}
+    #nftl .pfocus i:nth-child(4){right:0;bottom:0;border-right-width:1.5px;border-bottom-width:1.5px}
+    #nftl .price{font:400 40px/1 'Zen Dots',monospace;color:#2BD52D}
+    #nftl .punit{font:400 18px 'Zen Dots',monospace;color:#2BD52D}
     #nftl .bigbar{position:relative;border:1px solid rgba(232,228,214,.5);border-radius:4px;height:26px;overflow:hidden}
     #nftl .bigbar.tall{height:30px}
     #nftl .bigbar i{position:absolute;inset:0;width:0;background:repeating-linear-gradient(90deg,rgba(232,228,214,.92) 0 6px,transparent 6px 9px);display:block;transition:width .4s}
-    #nftl .bigbar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 10px 'Kode Mono',monospace;letter-spacing:.16em;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9)}
+    #nftl .bigbar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;font:700 10px 'Kode Mono',monospace;letter-spacing:.16em;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9)}
+    #nftl .bigbar.mint{border-color:rgba(43,213,45,.55);background:rgba(43,213,45,.06);box-shadow:inset 0 0 0 1px rgba(0,0,0,.5)}
+    #nftl .bigbar.mint i{background:repeating-linear-gradient(90deg,#2BD52D 0 6px,rgba(43,213,45,.18) 6px 9px);box-shadow:0 0 12px rgba(43,213,45,.45);transition:width .6s}
+    #nftl .bigbar.mint span{text-shadow:0 1px 4px rgba(0,0,0,.95),0 0 8px rgba(0,0,0,.8)}
+    #nftl .bigbar.mint span small{opacity:.75;font-size:9px}
+    /* the solid, pressable CONNECT WALLET TO MINT */
+    #nftl .btn3d{display:block;width:100%;box-sizing:border-box;padding:14px 0;font:700 11px 'Kode Mono',monospace;letter-spacing:.16em;text-align:center;cursor:pointer;background:#e8e4d6;color:#1b1a17;border:1px solid #e8e4d6;border-radius:4px;box-shadow:0 3px 0 rgba(232,228,214,.35),0 0 18px rgba(232,228,214,.18);transition:all .2s}
+    #nftl .btn3d:hover{background:#fff;color:#1b1a17;transform:translateY(-1px);box-shadow:0 4px 0 rgba(232,228,214,.45),0 0 26px rgba(232,228,214,.3)}
+    #nftl .btn3d:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(232,228,214,.35)}
     #nftl .approve{border:1px solid rgba(43,213,45,.55);border-radius:4px;text-align:center;padding:14px 0;font:700 11px 'Kode Mono',monospace;letter-spacing:.12em;color:#2BD52D;animation:nftl_pulse 1.2s ease-in-out infinite}
     #nftl .log{font:500 10px/2.1 'Kode Mono',monospace;opacity:.75;white-space:pre-wrap;word-break:break-all}
     #nftl .log .wait{animation:nftl_pulse 1.2s ease-in-out infinite}
@@ -152,27 +166,22 @@
     #nftl #nftl_vgrid,#nftl #nftl_sgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:0}
     #nftl .vleft{padding:20px;border-right:1px solid rgba(232,228,214,.2);min-width:0}
     #nftl .vright{padding:20px 22px;min-width:0}
-    #nftl .vimg{position:relative;height:240px;border:1px solid rgba(232,228,214,.4);border-radius:6px;overflow:hidden;background:#0a0a09}
+    #nftl .vimg{position:relative;min-height:240px;border:1px solid rgba(232,228,214,.4);border-radius:6px;overflow:hidden;background:#0a0a09}
     #nftl .vimg.r-rare{border:1.5px solid #5aa9ff;box-shadow:0 0 0 1px rgba(90,169,255,.35),0 0 12px rgba(90,169,255,.25)}
     #nftl .vimg.r-epic{border:1.5px solid #c77dff;box-shadow:0 0 0 1px rgba(199,125,255,.4),0 0 14px rgba(199,125,255,.3)}
     #nftl .vimg.r-legendary{border:1.5px solid #ffb347;box-shadow:0 0 0 1px rgba(255,179,71,.45),0 0 16px rgba(255,179,71,.35);animation:nftl_legend 2.6s ease-in-out infinite}
     #nftl .win.r-legendary{border-color:#ffb347;animation:nftl_legend 2.6s ease-in-out infinite}
     #nftl .rchip{border:1px solid currentColor;border-radius:3px;padding:1px 7px;font:700 9px 'Kode Mono',monospace;letter-spacing:.14em;text-transform:uppercase;margin-left:10px}
-    #nftl .vimg img{width:100%;height:100%;object-fit:cover;display:block}
+    #nftl .vimg img{width:100%;height:auto;max-height:70vh;object-fit:contain;display:block}
     #nftl .vimg .wait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 11px 'Kode Mono',monospace;color:#2BD52D;background:repeating-linear-gradient(135deg,rgba(232,228,214,.07) 0 6px,rgba(0,0,0,.25) 6px 12px);text-align:center;padding:0 16px}
     #nftl .vimg .cap{position:absolute;left:0;right:0;bottom:0;padding:6px 10px;font:500 8.5px/1.5 'Kode Mono',monospace;background:rgba(20,19,16,.85);color:#2BD52D}
     #nftl .vimg pre{position:absolute;inset:0;margin:0;padding:10px;overflow:auto;font:500 9px/1.5 'Kode Mono',monospace;color:#bfe8cf;background:rgba(0,0,0,.6);white-space:pre-wrap;word-break:break-all;text-align:left}
     #nftl pre.meta{margin:12px 0 0;padding:10px;max-height:180px;overflow:auto;font:500 9px/1.5 'Kode Mono',monospace;color:#bfe8cf;background:rgba(0,0,0,.35);border:1px solid rgba(232,228,214,.25);border-radius:5px;white-space:pre-wrap;word-break:break-all}
     #nftl .steps{font:500 9.5px/1.9 'Kode Mono',monospace;opacity:.7;margin-top:6px}
-    /* sealed tile: unminted art is never shown, a CRT "?" stands in until mint */
-    @keyframes nftl_crt { 0%,100%{opacity:1} 92%{opacity:1} 94%{opacity:.78} 96%{opacity:1} 98%{opacity:.9} }
-    #nftl .mys{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,rgba(232,228,214,.14),rgba(10,10,9,0) 60%),#0a0a09;box-shadow:inset 0 0 24px rgba(0,0,0,.85)}
-    #nftl .mys::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.42) 0 1px,transparent 1px 3px);pointer-events:none}
-    #nftl .mys::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.6) 100%);pointer-events:none}
-    #nftl .mys b{position:relative;font:400 44px/1 'Zen Dots',monospace;color:rgba(232,228,214,.92);-webkit-text-stroke:1.5px rgba(232,228,214,.55);text-shadow:-1.5px 0 rgba(255,92,92,.5),1.5px 0 rgba(92,214,255,.5),0 0 8px rgba(232,228,214,.7),0 0 22px rgba(232,228,214,.35),0 0 46px rgba(224,168,78,.25);animation:nftl_crt 4s steps(1) infinite}
-    #nftl .mys.sm b{font-size:30px;-webkit-text-stroke:1px rgba(232,228,214,.55)}
-    #nftl .mys.lg b{font-size:120px;-webkit-text-stroke:3px rgba(232,228,214,.55);text-shadow:-3px 0 rgba(255,92,92,.5),3px 0 rgba(92,214,255,.5),0 0 14px rgba(232,228,214,.7),0 0 40px rgba(232,228,214,.35),0 0 90px rgba(224,168,78,.25)}
-    #nftl .mys i{position:absolute;left:0;right:0;bottom:6px;text-align:center;font:600 8px 'Kode Mono',monospace;letter-spacing:.2em;color:rgba(232,228,214,.45);font-style:normal}
+    /* sealed tile (design: the locked cell): a dark box with a bold "?", the art
+       itself is never loaded */
+    #nftl .q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#141310;font:700 30px 'Kode Mono',monospace;color:rgba(232,228,214,.75);text-shadow:0 2px 0 #000,0 0 10px rgba(0,0,0,.8)}
+    #nftl .q.lg{font-size:44px}
     @media (max-width:1100px){#nftl #nftl_nav_mid{display:none}}
     @media (max-width:980px){#nftl #nftl_desk{flex-direction:column}#nftl #nftl_mw{flex:none}#nftl .colscroll{max-height:none}#nftl .feed{max-height:none}#nftl #nftl_colpage,#nftl #nftl_vgrid,#nftl #nftl_sgrid{grid-template-columns:1fr}#nftl .cleft,#nftl .vleft{border-right:none;border-bottom:1px solid rgba(232,228,214,.2)}#nftl .itemgrid{grid-template-columns:repeat(4,1fr)}}
     @media (max-width:560px){#nftl .colgrid{grid-template-columns:1fr}#nftl .itemgrid{grid-template-columns:repeat(3,1fr)}#nftl .nav .logo{display:none}}
@@ -181,7 +190,7 @@
   <!-- nav: same bar as the design's sticky header -->
   <div class="nav">
     <div style="display:flex;align-items:center;gap:14px;min-width:0">
-      <a href="?menu=codein" class="lab btn2" style="padding:7px 12px">&larr; CODE IN</a>
+      <a id="nftl_navback" href="?menu=codein" class="lab btn2" style="padding:7px 12px">&larr; CODE IN</a>
       <img src="img/text_logo.webp" alt="IQLabs" class="logo">
       <span class="lab" style="white-space:nowrap;letter-spacing:.18em;opacity:.5">// NFT LAUNCHPAD &middot; SOLANA</span>
     </div>
@@ -261,10 +270,10 @@
         <div class="cright">
           <div class="lab" style="letter-spacing:.2em;opacity:.7">// MINT</div>
           <div style="text-align:center;padding:10px 0 4px">
-            <div class="price" id="nftl_price">- <small>SOL</small></div>
-            <div class="cm" id="nftl_fee" style="margin-top:8px">+ platform fee &middot; + inscription rent &middot; leftover returns</div>
+            <div class="pfocus"><i></i><i></i><i></i><i></i><span class="price" id="nftl_price">-</span><span class="punit">SOL</span></div>
+            <div class="cm" id="nftl_fee" style="margin-top:10px">+ platform fee &middot; + inscription rent &middot; leftover returns</div>
           </div>
-          <div class="bigbar"><i id="nftl_progbar"></i><span id="nftl_progtxt">0 / 0 MINTED</span></div>
+          <div class="bigbar mint"><i id="nftl_progbar"></i><span><span id="nftl_progtxt">0 / 0</span><small>MINTED</small></span></div>
           <div class="kvbox" id="nftl_kv"></div>
           <div id="nftl_mstate" class="mstate"></div>
           <div class="cm">
