@@ -40,6 +40,7 @@ export async function api(path, method = "GET", body) {
 export async function getCollections() { return (await api("/c")).json?.collections ?? []; }
 export async function getCollection(slug) { return (await api(`/c/${slug}`)).json; }
 export async function getItems(slug, offset = 0, limit = 60) { return (await api(`/c/${slug}/items?offset=${offset}&limit=${limit}`)).json; }
+export async function getItem(slug, index) { return (await api(`/c/${slug}/item/${index}`)).json; }
 export async function getRecent(slug, limit = 20) { return (await api(`/c/${slug}/recent?limit=${limit}`)).json?.recent ?? []; }
 
 // ── Funding budget ─────────────────────────────────────────────────────────

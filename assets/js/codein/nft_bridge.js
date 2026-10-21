@@ -6,7 +6,7 @@
 import { Connection } from "@solana/web3.js";
 import { setRpcUrl } from "@iqlabs-official/solana-sdk";
 import { deriveBurner } from "./burner.js";
-import * as nft from "./nft.js?v=3";
+import * as nft from "./nft.js?v=4";
 import { deploy, pendingDeploy } from "./nft_create.js?v=3";
 import { compressImage } from "./image_compress.js?v=1";
 import { readAsset, readInscription, viewAssetViaGateway } from "./nft_asset.js?v=3";
@@ -51,6 +51,7 @@ window.iqNft = Object.assign({}, nft, {
   setRpc: (u) => { try { u ? localStorage.setItem(RPC_KEY, u) : localStorage.removeItem(RPC_KEY); } catch (e) {} },
   health: async () => { try { return await (await fetch(nft.nftApi() + "/health")).json(); } catch (e) { return { ok: false, error: String(e) }; } },
   solscanTx: (sig) => `https://solscan.io/tx/${sig}${rpc().indexOf("devnet") >= 0 ? "?cluster=devnet" : ""}`,
+  imgUrl: (sig) => gatewayBase() + "/img/" + sig + ".png", // the gateway render of an image inscription
   connect: async () => (await ensureConnected()).publicKey.toBase58(),
   connected: () => { try { return phantom().publicKey ? phantom().publicKey.toBase58() : null; } catch (e) { return null; } },
   estimateMintCost: async (col) => {

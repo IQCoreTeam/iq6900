@@ -15,7 +15,7 @@
 //   finalize -> the DB rows, once the registry is on chain.
 import { Keypair, Transaction } from "@solana/web3.js";
 import { writer } from "@iqlabs-official/solana-sdk";
-import { api, bytesToBase64, base64ToBytes } from "./nft.js?v=3";
+import { api, bytesToBase64, base64ToBytes } from "./nft.js?v=4";
 import { topUp, sweep, confirmOrCheck, writeFeedRow } from "./inscribe.js?v=8";
 import { estimateCost, getAccountRent } from "./cost.js?v=6";
 import { compressImage } from "./image_compress.js?v=1";

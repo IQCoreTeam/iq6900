@@ -114,22 +114,28 @@
     #nftl .ccov img{width:100%;height:100%;object-fit:cover;display:block}
     #nftl .ccov .none{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 9.5px 'Kode Mono',monospace;color:#2BD52D;background:repeating-linear-gradient(135deg,rgba(232,228,214,.07) 0 6px,rgba(0,0,0,.25) 6px 12px)}
     #nftl .ctitle{font:400 24px 'Zen Dots',monospace;min-width:0;word-break:break-word}
-    #nftl .itemgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px}
-    #nftl .it{border:1px solid rgba(232,228,214,.5);border-radius:4px;overflow:hidden;cursor:pointer;transition:border-color .3s;display:block;color:inherit;min-width:0}
-    #nftl .it:hover{border-color:#e8e4d6;color:inherit}
-    #nftl .it.minted{border-color:rgba(232,228,214,.25);opacity:.45}
-    #nftl .it.fresh{border-color:rgba(43,213,45,.8);opacity:1}
+    #nftl .itemgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px}
+    #nftl .legend{display:flex;gap:12px;margin-top:10px;font:600 8.5px 'Kode Mono',monospace;letter-spacing:.12em;opacity:.8;flex-wrap:wrap}
+    #nftl .c-common{color:rgba(232,228,214,.55)}#nftl .c-rare{color:#5aa9ff}#nftl .c-epic{color:#c77dff}#nftl .c-legendary{color:#ffb347}
+    @keyframes nftl_legend{0%,100%{box-shadow:0 0 0 1px rgba(255,179,71,.45),0 0 14px rgba(255,179,71,.3)}50%{box-shadow:0 0 0 1px rgba(255,179,71,.85),0 0 26px rgba(255,179,71,.55),0 0 50px rgba(255,179,71,.2)}}
+    #nftl .it{display:block;color:inherit;min-width:0;position:relative;border:1px solid rgba(232,228,214,.15);border-radius:4px;overflow:hidden;opacity:.4;cursor:default;transition:border-color .3s,transform .25s,filter .25s,box-shadow .25s}
+    #nftl .it.rev{opacity:1;cursor:pointer;border:1.5px solid rgba(232,228,214,.55)}
+    #nftl .it.rev:hover{color:inherit;transform:translateY(-4px) scale(1.03);z-index:2;box-shadow:0 10px 24px rgba(0,0,0,.55),0 0 0 1px rgba(232,228,214,.75),0 0 22px rgba(232,228,214,.35)}
+    #nftl .it.rev.r-rare{border-color:#5aa9ff;box-shadow:0 0 0 1px rgba(90,169,255,.35),0 0 12px rgba(90,169,255,.25)}
+    #nftl .it.rev.r-epic{border-color:#c77dff;box-shadow:0 0 0 1px rgba(199,125,255,.4),0 0 14px rgba(199,125,255,.3)}
+    #nftl .it.rev.r-legendary{border-color:#ffb347;box-shadow:0 0 0 1px rgba(255,179,71,.45),0 0 16px rgba(255,179,71,.35);animation:nftl_legend 2.6s ease-in-out infinite}
+    #nftl .it.rev.fresh{border-color:#2BD52D;box-shadow:0 0 0 1px rgba(43,213,45,.4),0 0 14px rgba(43,213,45,.3);animation:none}
     #nftl .it .im{position:relative;height:72px;overflow:hidden;background:#0a0a09}
-    #nftl .it .im img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.9)}
-    #nftl .it.minted .im img{filter:grayscale(1) brightness(.55)}
-    #nftl .it.fresh .im img{filter:none;outline:2px solid #2BD52D;outline-offset:-2px}
-    #nftl .it .im .tag{position:absolute;right:4px;bottom:4px;font:600 8px 'Kode Mono',monospace;background:rgba(20,19,16,.85);border-radius:2px;padding:1px 4px}
-    #nftl .it.minted .im .tag{color:rgba(232,228,214,.6)}
-    #nftl .it.fresh .im .tag{color:#2BD52D}
-    #nftl .it .if{display:flex;justify-content:space-between;padding:6px 8px;font:500 9px 'Kode Mono',monospace;border-top:1px solid rgba(232,228,214,.25)}
-    #nftl .it .if .st{color:#2BD52D}
-    #nftl .it.minted .if .st{color:#e8e4d6;opacity:.6}
-    #nftl .it.fresh .if .st{color:#2BD52D;font-weight:700}
+    #nftl .it .im img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.82);transition:filter .25s,transform .35s}
+    #nftl .it.rev:hover .im img{filter:brightness(1.08);transform:scale(1.06)}
+    #nftl .it.fresh .im img{outline:2px solid #2BD52D;outline-offset:-2px}
+    #nftl .it .rb{position:absolute;left:4px;top:4px;font:700 7.5px 'Kode Mono',monospace;letter-spacing:.12em;text-transform:uppercase;border-radius:2px;padding:1px 4px;background:rgba(20,19,16,.9)}
+    #nftl .it .tag{position:absolute;right:4px;bottom:4px;font:600 8px 'Kode Mono',monospace;background:rgba(20,19,16,.85);border-radius:2px;padding:1px 4px;color:rgba(232,228,214,.5)}
+    #nftl .it.rev .tag{color:#e8e4d6}#nftl .it.fresh .tag{color:#2BD52D}
+    #nftl .it .if{display:flex;justify-content:space-between;gap:6px;padding:6px 8px;font:500 9px 'Kode Mono',monospace;border-top:1px solid rgba(232,228,214,.25)}
+    #nftl .it.rev .if{background:rgba(232,228,214,.06)}
+    #nftl .it .if .ow{opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #nftl .it .if .st{opacity:.4;white-space:nowrap}#nftl .it.rev .if .st{opacity:1;font-weight:700}#nftl .it.fresh .if .st{color:#2BD52D}
     #nftl .price{font:400 40px 'Zen Dots',monospace;color:#2BD52D;line-height:1.1}
     #nftl .price small{font-size:18px}
     #nftl .bigbar{position:relative;border:1px solid rgba(232,228,214,.5);border-radius:4px;height:26px;overflow:hidden}
@@ -147,17 +153,26 @@
     #nftl .vleft{padding:20px;border-right:1px solid rgba(232,228,214,.2);min-width:0}
     #nftl .vright{padding:20px 22px;min-width:0}
     #nftl .vimg{position:relative;height:240px;border:1px solid rgba(232,228,214,.4);border-radius:6px;overflow:hidden;background:#0a0a09}
+    #nftl .vimg.r-rare{border:1.5px solid #5aa9ff;box-shadow:0 0 0 1px rgba(90,169,255,.35),0 0 12px rgba(90,169,255,.25)}
+    #nftl .vimg.r-epic{border:1.5px solid #c77dff;box-shadow:0 0 0 1px rgba(199,125,255,.4),0 0 14px rgba(199,125,255,.3)}
+    #nftl .vimg.r-legendary{border:1.5px solid #ffb347;box-shadow:0 0 0 1px rgba(255,179,71,.45),0 0 16px rgba(255,179,71,.35);animation:nftl_legend 2.6s ease-in-out infinite}
+    #nftl .win.r-legendary{border-color:#ffb347;animation:nftl_legend 2.6s ease-in-out infinite}
+    #nftl .rchip{border:1px solid currentColor;border-radius:3px;padding:1px 7px;font:700 9px 'Kode Mono',monospace;letter-spacing:.14em;text-transform:uppercase;margin-left:10px}
     #nftl .vimg img{width:100%;height:100%;object-fit:cover;display:block}
     #nftl .vimg .wait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 11px 'Kode Mono',monospace;color:#2BD52D;background:repeating-linear-gradient(135deg,rgba(232,228,214,.07) 0 6px,rgba(0,0,0,.25) 6px 12px);text-align:center;padding:0 16px}
     #nftl .vimg .cap{position:absolute;left:0;right:0;bottom:0;padding:6px 10px;font:500 8.5px/1.5 'Kode Mono',monospace;background:rgba(20,19,16,.85);color:#2BD52D}
     #nftl .vimg pre{position:absolute;inset:0;margin:0;padding:10px;overflow:auto;font:500 9px/1.5 'Kode Mono',monospace;color:#bfe8cf;background:rgba(0,0,0,.6);white-space:pre-wrap;word-break:break-all;text-align:left}
     #nftl pre.meta{margin:12px 0 0;padding:10px;max-height:180px;overflow:auto;font:500 9px/1.5 'Kode Mono',monospace;color:#bfe8cf;background:rgba(0,0,0,.35);border:1px solid rgba(232,228,214,.25);border-radius:5px;white-space:pre-wrap;word-break:break-all}
     #nftl .steps{font:500 9.5px/1.9 'Kode Mono',monospace;opacity:.7;margin-top:6px}
-    /* item preview modal (design: the nft.exe overlay, for items not minted yet) */
-    #nftl .modal{position:fixed;inset:0;z-index:60;background:rgba(4,6,4,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto}
-    #nftl .modal .win{width:760px;max-width:100%;background:rgba(20,19,16,.97)}
-    #nftl .modal .x{margin-left:auto;cursor:pointer;opacity:.7}
-    #nftl .modal .x:hover{opacity:1}
+    /* sealed tile: unminted art is never shown, a CRT "?" stands in until mint */
+    @keyframes nftl_crt { 0%,100%{opacity:1} 92%{opacity:1} 94%{opacity:.78} 96%{opacity:1} 98%{opacity:.9} }
+    #nftl .mys{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,rgba(232,228,214,.14),rgba(10,10,9,0) 60%),#0a0a09;box-shadow:inset 0 0 24px rgba(0,0,0,.85)}
+    #nftl .mys::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.42) 0 1px,transparent 1px 3px);pointer-events:none}
+    #nftl .mys::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.6) 100%);pointer-events:none}
+    #nftl .mys b{position:relative;font:400 44px/1 'Zen Dots',monospace;color:rgba(232,228,214,.92);-webkit-text-stroke:1.5px rgba(232,228,214,.55);text-shadow:-1.5px 0 rgba(255,92,92,.5),1.5px 0 rgba(92,214,255,.5),0 0 8px rgba(232,228,214,.7),0 0 22px rgba(232,228,214,.35),0 0 46px rgba(224,168,78,.25);animation:nftl_crt 4s steps(1) infinite}
+    #nftl .mys.sm b{font-size:30px;-webkit-text-stroke:1px rgba(232,228,214,.55)}
+    #nftl .mys.lg b{font-size:120px;-webkit-text-stroke:3px rgba(232,228,214,.55);text-shadow:-3px 0 rgba(255,92,92,.5),3px 0 rgba(92,214,255,.5),0 0 14px rgba(232,228,214,.7),0 0 40px rgba(232,228,214,.35),0 0 90px rgba(224,168,78,.25)}
+    #nftl .mys i{position:absolute;left:0;right:0;bottom:6px;text-align:center;font:600 8px 'Kode Mono',monospace;letter-spacing:.2em;color:rgba(232,228,214,.45);font-style:normal}
     @media (max-width:1100px){#nftl #nftl_nav_mid{display:none}}
     @media (max-width:980px){#nftl #nftl_desk{flex-direction:column}#nftl #nftl_mw{flex:none}#nftl .colscroll{max-height:none}#nftl .feed{max-height:none}#nftl #nftl_colpage,#nftl #nftl_vgrid,#nftl #nftl_sgrid{grid-template-columns:1fr}#nftl .cleft,#nftl .vleft{border-right:none;border-bottom:1px solid rgba(232,228,214,.2)}#nftl .itemgrid{grid-template-columns:repeat(4,1fr)}}
     @media (max-width:560px){#nftl .colgrid{grid-template-columns:1fr}#nftl .itemgrid{grid-template-columns:repeat(3,1fr)}#nftl .nav .logo{display:none}}
@@ -239,8 +254,9 @@
             <div class="lab" id="nftl_items_lab" style="opacity:.7">// ITEMS</div>
             <div id="nftl_filters" style="display:flex;gap:8px" class="lab"><div class="tab on" data-f="all">ALL</div><div class="tab" data-f="avail">AVAILABLE</div><div class="tab" data-f="minted">MINTED</div></div>
           </div>
+          <div id="nftl_legend" class="legend" style="display:none"><span class="c-legendary">&#9632; LEGENDARY 2%</span><span class="c-epic">&#9632; EPIC 8%</span><span class="c-rare">&#9632; RARE 20%</span><span style="opacity:.6">&#9632; COMMON</span><span style="opacity:.4;margin-left:auto">? = unrevealed &middot; mint to reveal</span></div>
           <div id="nftl_grid" class="itemgrid"></div>
-          <p class="cm" style="margin:14px 0 0">// open items show the creator's staged preview; a minted item is the same bytes inscribed on solana (its viewer reads the gateway cache of that inscription). minted = owned by someone, dimmed.</p>
+          <p class="cm" style="margin:14px 0 0">// lit = minted and revealed with its holder (the inscribed image, via the gateway). ? = still in the machine. click a lit one for the on-chain viewer.</p>
         </div>
         <div class="cright">
           <div class="lab" style="letter-spacing:.2em;opacity:.7">// MINT</div>
@@ -262,9 +278,9 @@
 
   <!-- ===== NFT VIEWER ===== -->
   <div id="nftl_viewer" style="display:none">
-    <div class="win">
+    <div class="win" id="nftl_vwinbox">
       <div class="wh"><span class="dr"></span><span class="da"></span><span class="dg"></span>
-        <span style="margin-left:6px;opacity:.8">nft.exe // <span id="nftl_vwin">reading</span></span>
+        <span style="margin-left:6px;opacity:.8">nft.exe // <span id="nftl_vwin">reading</span></span><span id="nftl_vrchip" class="rchip" style="display:none"></span>
         <a id="nftl_vback" class="whback">&larr; back</a></div>
       <div id="nftl_vgrid">
         <div class="vleft">
@@ -308,30 +324,6 @@
           <div><div class="fl">NAME YOUR NFT</div><input class="inp" id="nftl_sname" placeholder="My Inscription #1" maxlength="80"></div>
           <div id="nftl_sstate" class="mstate"></div>
           <div class="cm">// 2 wallet popups, like a mint: the metadata json is inscribed (M), then the asset is registered. leftover returns to your wallet.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== ITEM PREVIEW (not minted yet) ===== -->
-  <div id="nftl_item_modal" class="modal" style="display:none">
-    <div class="win">
-      <div class="wh"><span class="dr"></span><span class="da"></span><span class="dg"></span>
-        <span style="margin-left:6px;opacity:.8">item.exe // <span id="nftl_im_title"></span></span><span class="x" id="nftl_im_close">[ x ]</span></div>
-      <div id="nftl_vgrid" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)">
-        <div class="vleft">
-          <div class="vimg" id="nftl_im_box"><img id="nftl_im_img" alt=""><div class="cap" id="nftl_im_cap"></div></div>
-          <div class="cm" id="nftl_im_sub" style="margin-top:10px"></div>
-        </div>
-        <div class="vright">
-          <div class="lab" style="letter-spacing:.2em;opacity:.7">// NOT MINTED YET</div>
-          <div class="kvbox" id="nftl_im_kv" style="margin-top:10px"></div>
-          <div class="cm" style="margin-top:12px">// no asset exists for this item yet. at mint the buyer inscribes this image (C) and its metadata (M) on solana, then the asset is registered pointing at both.</div>
-          <div class="cm" id="nftl_im_assign" style="margin-top:4px"></div>
-          <div class="lab" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">
-            <button class="btng" type="button" id="nftl_im_mint" style="padding:9px 16px">MINT ONE &rarr;</button>
-            <a class="btn2" id="nftl_im_src" target="_blank" style="padding:7px 12px">VIEW FULL SIZE</a>
-          </div>
         </div>
       </div>
     </div>
