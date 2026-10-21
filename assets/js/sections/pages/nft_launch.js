@@ -4,7 +4,7 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=17";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=18";
   const PER_PAGE = 6; // design: 6 collections per registry page
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet",
@@ -63,7 +63,17 @@
         this.dbg("page init" + (single ? ", single=" + single : asset ? ", asset=" + asset : slug ? ", slug=" + slug : ", home"));
         bridge(() => {
           this.wireNav();
-          const route = single ? this.loadSingle(single) : asset ? this.loadAsset(asset, slug) : slug ? this.load(slug) : this.loadHome();
+          // browser back and the [ x ] button both close the viewer overlay through history
+          window.addEventListener("popstate", () => { if ($("#nftl_viewer").hasClass("open")) this.hideViewer(); });
+          let route;
+          if (single) route = this.loadSingle(single);
+          else if (asset) route = (slug ? this.load(slug) : this.loadHome()).then(() => {
+            // cold deep link: render the base view, then float the viewer on top so [ x ] lands back on it
+            try { history.replaceState({}, "", this.baseUrl(slug)); history.pushState({ nftv: 1 }, "", this.viewerUrl(asset, slug)); } catch (e) {}
+            return this.loadAsset(asset, slug);
+          });
+          else if (slug) route = this.load(slug);
+          else route = this.loadHome();
           route.catch((e) => this.fail(e));
         });
       });
@@ -211,7 +221,7 @@
       rows.sort((a, b) => (Number(b.registeredAt) || 0) - (Number(a.registeredAt) || 0) || b.index - a.index);
       if (!rows.length) { $r.append($("<div class='cm' style='padding:16px 14px'>").text("// no mints yet")); return; }
       rows.slice(0, 16).forEach((x) => {
-        const $row = $("<div class='fr'>").on("click", () => { window.location.href = "?menu=nft&nft=" + encodeURIComponent(x.slug) + "&asset=" + x.asset; });
+        const $row = $("<div class='fr'>").on("click", () => this.openViewer(x.asset, x.slug));
         const $th = x.img ? $("<img class='fth' alt=''>").attr("src", x.img).on("error", function () { $(this).replaceWith($("<span class='ph fth'>").text("#" + x.index)); }) : $("<span class='ph fth'>").text("#" + x.index);
         $row.append($("<div class='fn'>").append($th)
           .append($("<div style='min-width:0'>").append($("<div class='fnt'>").text(x.colName + " #" + x.index)).append($("<div class='fna'>").text(short(x.asset)))));
@@ -315,7 +325,7 @@
         const fresh = it.index === this.freshIndex, rev = !!(it.minted && it.asset), tier = it.rarity && it.rarity.tier;
         // revealed (minted) cells light up and open the on-chain viewer; sealed
         // ones stay dim and inactive, a CRT "?" standing in for the art
-        const $cell = rev ? $("<a class='it rev'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(col.slug) + "&asset=" + it.asset) : $("<div class='it'>");
+        const $cell = rev ? $("<a class='it rev'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(col.slug) + "&asset=" + it.asset).on("click", (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.which === 2) return; e.preventDefault(); this.openViewer(it.asset, col.slug); }) : $("<div class='it'>");
         $cell.toggleClass("fresh", fresh).addClass(rev && tier ? "r-" + tier : "");
         const $im = $("<div class='im'>");
         if (rev && it.inscriptionSig) $im.append($("<img alt='' loading='lazy'>").attr("src", window.iqNft.imgUrl(it.inscriptionSig)).on("error", function () { $(this).remove(); }));
@@ -353,7 +363,7 @@
           .append($("<div class='kv'>").append($("<span class='kvk'>").text("metadata inscription M")).append($("<span class='kvv nftl-g'>").text(short(r.M))))
           .append($("<div class='kv'>").append($("<span class='kvk'>").text("uri")).append($("<span class='kvv'>").text("gateway.iqlabs.dev/token-meta/" + short(r.M)))));
         $s.append($("<div class='acts lab'>")
-          .append($("<a class='btng'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(r.slug) + "&asset=" + r.asset).text("VIEW NFT →"))
+          .append($("<a class='btng'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(r.slug) + "&asset=" + r.asset).text("VIEW NFT →").on("click", (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.which === 2) return; e.preventDefault(); this.openViewer(r.asset, r.slug); }))
           .append(r.mintSig ? link("SOLSCAN", window.iqNft.solscanTx(r.mintSig)).css("padding", "9px 16px") : null)
           .append(link("MAGIC EDEN", "https://magiceden.io/item-details/" + r.asset).css("padding", "9px 16px"))
           .append($("<button class='btn2' type='button'>").text("MINT ANOTHER").on("click", () => this.mintState("idle"))));
@@ -410,13 +420,33 @@
       }
     },
 
+    // ── viewer overlay (design: nft.exe pops over the current view) ──────────
+    baseUrl: (slug) => (slug ? "?menu=nft&nft=" + encodeURIComponent(slug) : "?menu=nft"),
+    viewerUrl: (addr, slug) => "?menu=nft&asset=" + encodeURIComponent(addr) + (slug ? "&nft=" + encodeURIComponent(slug) : ""),
+    openViewer: function (addr, slug) {
+      try { history.pushState({ nftv: 1 }, "", this.viewerUrl(addr, slug)); } catch (e) {}
+      this.loadAsset(addr, slug).catch((e) => this.fail(e));
+    },
+    closeViewer: function () {
+      if (!$("#nftl_viewer").hasClass("open")) return;
+      if (window.history.state && window.history.state.nftv) { try { history.back(); return; } catch (e) {} }
+      this.hideViewer();
+    },
+    hideViewer: function () { $("#nftl_viewer").removeClass("open"); $(document).off("keydown.nftv"); this.asset = null; },
+
     // ── on-chain viewer (?menu=nft&asset=<addr>) ─────────────────────────
     // Reads the asset from the chain only (no backend): recovered image +
-    // metadata, proving the "recover without us" claim. slug drives the back link.
+    // metadata, proving the "recover without us" claim. Floats over the base view.
     loadAsset: async function (addr, slug) {
       $("#nftl_loading").hide();
-      $("#nftl_viewer").show();
-      this.navMid("// NFT VIEWER");
+      $("#nftl_viewer").addClass("open").scrollTop(0);
+      $("#nftl_vclose").off("click").on("click", () => this.closeViewer());
+      $("#nftl_viewer").off("click.bd").on("click.bd", (e) => { if (e.target === e.currentTarget) this.closeViewer(); });
+      $(document).off("keydown.nftv").on("keydown.nftv", (e) => { if (e.key === "Escape") this.closeViewer(); });
+      // reset to the loading state each open (the overlay is reused)
+      $("#nftl_vimg").hide().attr("src", "");
+      $("#nftl_vphtxt").show().text("reading the asset account…");
+      $("#nftl_vcap").hide();
       $("#nftl_vwin").text(short(addr));
       this.dbg("viewer: " + addr);
       // Fast path: the registry mirror knows the minted item (name, holder, C, M,
@@ -441,8 +471,6 @@
       }
       this.asset = a;
       this.dbg("viewer: via " + a.source + " C=" + short(a.C) + " M=" + short(a.M));
-      this.navBack(slug ? slug : "ALL COLLECTIONS", slug ? "?menu=nft&nft=" + encodeURIComponent(slug) : "?menu=nft");
-      $("#nftl_vback").attr("href", slug ? "?menu=nft&nft=" + encodeURIComponent(slug) : "?menu=nft").text(slug ? "\u2190 " + slug : "\u2190 all collections");
       $("#nftl_vwin").text(a.name || short(addr));
       const tier = rarity && rarity.tier, lit = tier && tier !== "common";
       $("#nftl_vrchip").attr("class", "rchip c-" + (tier || "common")).text(lit ? tier : "").toggle(!!lit);
@@ -543,7 +571,7 @@
             .append($("<div class='kv'>").append($("<span class='kvk'>").text("inscription C")).append($("<span class='kvv nftl-g'>").text(short(this.singleC))))
             .append($("<div class='kv'>").append($("<span class='kvk'>").text("metadata M")).append($("<span class='kvv nftl-g'>").text(short(x.M)))))
           .append($("<div class='acts lab'>")
-            .append($("<a class='btng'>").attr("href", "?menu=nft&asset=" + x.asset).text("VIEW NFT →"))
+            .append($("<a class='btng'>").attr("href", "?menu=nft&asset=" + x.asset).text("VIEW NFT →").on("click", (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.which === 2) return; e.preventDefault(); this.openViewer(x.asset); }))
             .append(x.mintSig ? link("SOLSCAN", window.iqNft.solscanTx(x.mintSig)).css("padding", "9px 16px") : null));
       } else if (state === "error") {
         $s.append($("<div class='nftl-e' style='font:500 10.5px/1.7 \"Kode Mono\",monospace;word-break:break-word'>").text(x))
