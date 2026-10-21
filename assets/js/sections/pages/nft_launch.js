@@ -4,7 +4,7 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=18";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=19";
   const PER_PAGE = 6; // design: 6 collections per registry page
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet",
@@ -432,7 +432,7 @@
       if (window.history.state && window.history.state.nftv) { try { history.back(); return; } catch (e) {} }
       this.hideViewer();
     },
-    hideViewer: function () { $("#nftl_viewer").removeClass("open"); $(document).off("keydown.nftv"); this.asset = null; },
+    hideViewer: function () { this.closeMeta(); $("#nftl_viewer").removeClass("open"); $(document).off("keydown.nftv"); this.asset = null; },
 
     // ── on-chain viewer (?menu=nft&asset=<addr>) ─────────────────────────
     // Reads the asset from the chain only (no backend): recovered image +
@@ -442,7 +442,7 @@
       $("#nftl_viewer").addClass("open").scrollTop(0);
       $("#nftl_vclose").off("click").on("click", () => this.closeViewer());
       $("#nftl_viewer").off("click.bd").on("click.bd", (e) => { if (e.target === e.currentTarget) this.closeViewer(); });
-      $(document).off("keydown.nftv").on("keydown.nftv", (e) => { if (e.key === "Escape") this.closeViewer(); });
+      $(document).off("keydown.nftv").on("keydown.nftv", (e) => { if (e.key === "Escape") { if ($("#nftl_metapop").hasClass("open")) return; this.closeViewer(); } });
       // reset to the loading state each open (the overlay is reused)
       $("#nftl_vimg").hide().attr("src", "");
       $("#nftl_vphtxt").show().text("reading the asset account…");
@@ -488,17 +488,32 @@
       const dev = window.iqNft.getRpc().indexOf("devnet") >= 0 ? "?cluster=devnet" : "";
       const L = $("#nftl_vlinks").empty();
       L.append($("<button class='btng' type='button' id='nftl_recover'>").css("padding", "7px 12px").text("DECODE FROM CHAIN").on("click", () => this.recoverAsset(addr)));
+      L.append($("<button class='btn2' type='button'>").css("padding", "7px 12px").text("METADATA JSON").on("click", () => this.openMeta()));
       L.append(link("SOLSCAN", "https://solscan.io/account/" + addr + dev).css("padding", "7px 12px"));
-      if (a.C) L.append(link("RAW TX C", window.iqNft.solscanTx(a.C)).css("padding", "7px 12px"));
-      if (a.M) L.append(link("RAW TX M", window.iqNft.solscanTx(a.M)).css("padding", "7px 12px"));
       L.append(link("MAGIC EDEN", "https://magiceden.io/item-details/" + addr).css("padding", "7px 12px"));
       $("#nftl_vmeta").text(JSON.stringify(a.metadata, null, 2));
     },
-    // The attribute table: std only exists once the account itself was read.
+    // metadata json popup (nested over the viewer, so the panel stays compact)
+    openMeta: function () {
+      $("#nftl_metapop").addClass("open");
+      $("#nftl_metaclose").off("click").on("click", () => this.closeMeta());
+      $("#nftl_metapop").off("click.bd").on("click.bd", (e) => { if (e.target === e.currentTarget) this.closeMeta(); });
+      $(document).off("keydown.nftm").on("keydown.nftm", (e) => { if (e.key === "Escape") { e.stopPropagation(); this.closeMeta(); } });
+    },
+    closeMeta: function () { $("#nftl_metapop").removeClass("open"); $(document).off("keydown.nftm"); },
+    // The attribute table. C and M are clickable (open the raw tx on solscan);
+    // std only exists once the account itself was read.
     renderAssetRows: function (a) {
       const $p = $("#nftl_vattrs").empty();
-      [["name", a.name], ["holder", a.owner || "-", "nftl-g"], this.rarityRow, ["collection", a.collection || "-"], ["index", a.attributes.index || "-"], ["inscription (C)", a.C || "-", "nftl-g"], ["metadata (M)", a.M || "-", "nftl-g"], a.attributes.std ? ["std", a.attributes.std] : null, ["uri", a.uri], ["source", a.source || "-"]]
-        .filter(Boolean).forEach(([k, v, cls]) => $p.append($("<div class='kv'>").append($("<span class='kvk'>").text(k)).append($("<span class='kvv'>").addClass(cls || "").css("font-weight", /^c-/.test(cls || "") ? 700 : "").text(v))));
+      [["name", a.name], ["holder", a.owner || "-", "nftl-g"], this.rarityRow, ["collection", a.collection || "-"], ["index", a.attributes.index || "-"],
+       ["inscription (C)", a.C || "-", "nftl-g", a.C ? window.iqNft.solscanTx(a.C) : null],
+       ["metadata (M)", a.M || "-", "nftl-g", a.M ? window.iqNft.solscanTx(a.M) : null],
+       a.attributes.std ? ["std", a.attributes.std] : null, ["uri", a.uri], ["source", a.source || "-"]]
+        .filter(Boolean).forEach(([k, v, cls, href]) => {
+          const $v = href ? $("<a class='kvv kvlink'>").attr({ href, target: "_blank", rel: "noopener" }) : $("<span class='kvv'>");
+          $v.addClass(cls || "").css("font-weight", /^c-/.test(cls || "") ? 700 : "").text(v);
+          $p.append($("<div class='kv'>").append($("<span class='kvk'>").text(k)).append($v));
+        });
     },
     vcap: (t) => $("#nftl_vcap").show().text(t),
     // The proof: re-read everything with rpc only (no gateway) and swap the image
