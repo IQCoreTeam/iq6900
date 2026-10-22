@@ -128,10 +128,11 @@
       $("#nftl_cols").css("display", tab === "cols" ? "flex" : "none");
       $("#nftl_market").css("display", tab === "market" ? "flex" : "none");
       $("#nftl_mine").css("display", tab === "mine" ? "flex" : "none");
-      $("#nftl_desk_cap").text(tab === "cols"
+      // no caption on MY NFTS (the gallery header carries the context)
+      $("#nftl_desk_cap").css("display", tab === "mine" ? "none" : "block").text(tab === "cols"
         ? "// collections launched from this board. each one = a core collection + N inscriptions. pick one, mint one."
         : tab === "market" ? "// secondary market for everything minted here. not built yet: minted items trade on magic eden and tensor for now."
-        : "// nfts owned by your wallet. collection mints and single mints side by side.");
+        : "");
       if (tab === "market") this.renderMarket();
       if (tab === "mine") this.renderMine();
     },
@@ -146,10 +147,10 @@
         const $segs = $("<div class='segs'>");
         for (let k = 0; k < 40; k++) $segs.append($("<span>").css("background", "rgba(232,228,214,.1)"));
         $g.append($("<div class='card skel'>")
-          .append($("<div class='cov'>").append($("<span class='br1'>")).append($("<span class='br2'>")))
+          .append($("<div class='cov'>"))
           .append($("<div class='cn'>").append(bar("62%", "19px")))
           .append($("<div class='segwrap'>").append($segs).append($("<div class='segl'>").append(bar("26%", "13px"))))
-          .append(bar("80%", "16px", "9px"))
+          .append($("<div class='cdesc'>").append(bar("80%", "14px")))
           .append($("<div class='stats'>").append(col("45%")).append(col("35%")))
           .append($("<div class='chainline'>").append(bar("50%", "12px")))
           .append($("<div class='band'>").append($("<div class='bfill'>")).append($("<div class='btext'>").append(bar("40%", "13px")))));
@@ -191,7 +192,6 @@
         .attr("href", "?menu=nft&nft=" + encodeURIComponent(c.slug));
       const $cov = $("<div class='cov'>");
       coverInto($cov, c.coverSig ? window.iqNft.imgUrl(c.coverSig) : null, c.banner);
-      $cov.append($("<span class='br1'>")).append($("<span class='br2'>"));
       // 40-segment progress, colored by how far the mint has gone
       const p = supply ? minted / supply : 0, on = Math.round(40 * p);
       const segcol = p >= 1 ? "#2BD52D" : p >= 0.7 ? "#e0a84e" : p >= 0.2 ? "#f2d94e" : "rgba(232,228,214,.85)";
@@ -238,7 +238,15 @@
         return;
       }
       const token = (this.mineToken = (this.mineToken || 0) + 1);
-      $m.append($("<div class='cm' style='padding:16px 2px;opacity:.6'>").text("// reading " + short(addr) + " across every collection…"));
+      // loading skeleton (same mc shape) while we read every collection
+      const skbar = (w, h) => $("<span class='sk'>").css({ width: w, height: h });
+      const $sk = $("<div class='minegrid'>");
+      for (let i = 0; i < 8; i++) $sk.append($("<div class='mc skel'>")
+        .append($("<div class='mim'>"))
+        .append($("<div class='mnm'>").append(skbar("70%", "14px")))
+        .append($("<div class='msub'>").append(skbar("50%", "9px")))
+        .append($("<div class='mfoot'>").append(skbar("30%", "9px"))));
+      $m.append($sk);
       const cols = (this.cols && this.cols.length) ? this.cols : await window.iqNft.getCollections().catch(() => []);
       const mine = [];
       for (const c of cols) {
@@ -251,9 +259,13 @@
         } catch (e) {}
       }
       if (token !== this.mineToken) return;
+      const tierOf = (x) => (x.it.rarity && x.it.rarity.tier) || "common";
+      const counts = ["legendary", "epic", "rare", "common"].map((t) => [t, mine.filter((x) => tierOf(x) === t).length]).filter((e) => e[1]);
       $m.empty().append($("<div class='minehead'>")
-        .append($("<span class='zen' style='font-size:13px'>").text(mine.length + (mine.length === 1 ? " NFT" : " NFTS")))
-        .append($("<span class='cm' style='opacity:.5'>").text("held by " + short(addr))));
+        .append($("<div class='ml'>")
+          .append($("<span class='mcount'>").text(mine.length + (mine.length === 1 ? " NFT" : " NFTS")))
+          .append($("<span class='mheld'>").text("held by " + short(addr))))
+        .append($("<span class='mrar'>").text(counts.map((e) => e[1] + " " + e[0].toUpperCase()).join(" · "))));
       if (!mine.length) {
         $m.append($("<div class='empty'>").append($("<div class='cm' style='opacity:.55'>")
           .html("no minted items held by this wallet yet.<br>mint one from a collection and it appears here.")));
@@ -261,14 +273,16 @@
       }
       const $grid = $("<div class='minegrid'>");
       mine.forEach(({ it, slug, colName }) => {
-        const tier = (it.rarity && it.rarity.tier) || "";
-        const $cell = $("<a class='minecell'>").addClass(tier ? "r-" + tier : "").attr("href", "?menu=nft&asset=" + it.asset)
+        const tier = (it.rarity && it.rarity.tier) || "common";
+        const $cell = $("<a class='mc'>").addClass("r-" + tier).attr("href", "?menu=nft&asset=" + it.asset)
           .on("click", (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.which === 2) return; e.preventDefault(); this.openViewer(it.asset, slug); });
         const $im = $("<div class='mim'>");
         if (it.inscriptionSig) $("<img alt='' loading='lazy'>").attr("src", window.iqNft.imgUrl(it.inscriptionSig)).on("error", function () { $(this).remove(); }).appendTo($im);
-        $cell.append($im).append($("<div class='mcap'>")
+        $im.append($("<span class='mtag'>").text(tier.toUpperCase()));
+        $cell.append($im)
           .append($("<div class='mnm'>").text(it.name || (colName + " #" + it.index)))
-          .append($("<div class='mcol'>").text(colName + (tier ? " · " + tier : ""))));
+          .append($("<div class='msub'>").text(colName))
+          .append($("<div class='mfoot'>").append($("<span>").text("VIEW")).append($("<span class='lst'>").text("LIST →")));
         $grid.append($cell);
       });
       $m.append($grid);
@@ -287,9 +301,7 @@
         const $row = $("<div class='fr'>").on("click", () => this.openViewer(x.asset, x.slug));
         const $th = x.img ? $("<img class='fth' alt=''>").attr("src", x.img).on("error", function () { $(this).replaceWith($("<span class='ph fth'>").text("#" + x.index)); }) : $("<span class='ph fth'>").text("#" + x.index);
         $row.append($("<div class='fn'>").append($th)
-          .append($("<div style='min-width:0'>").append($("<div class='fnt'>").text(x.colName + " #" + x.index)).append($("<div class='fna'>").text(short(x.asset)))));
-        $row.append($("<span class='fc'>").text(x.colName));
-        $row.append($("<span class='fo'>").text(short(x.owner)));
+          .append($("<div style='min-width:0'>").append($("<div class='fnt'>").text(x.colName + " #" + x.index)).append($("<div class='fna'>").text(x.colName + " · " + short(x.owner)))));
         $row.append($("<span class='fw'>").text(ago(x.registeredAt)));
         $r.append($row);
       });
