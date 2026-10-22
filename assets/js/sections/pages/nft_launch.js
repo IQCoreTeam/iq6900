@@ -164,8 +164,8 @@
       else $p.append($("<span class='eof'>").text("EOF · " + all.length + (this.chain === "all" ? " collections, all chains" : " on solana")));
     },
     // One collection card (design: cover + name/chip + creator + bar + minted/price
-    // + OWNERS/SUPPLY/VOLUME/FLOOR + chain/std/HOT chips). Every value is ours:
-    // volume + floor live on secondary marketplaces we do not index, so "-".
+    // + OWNERS/SUPPLY/VOLUME + chain/std/HOT chips). Every value is ours: volume
+    // lives on secondary marketplaces we do not index, so "-" (floor dropped).
     card: function (c) {
       const supply = Number(c.maxSupply || 0), minted = Number(c.minted || 0), st = this.statusOf(c);
       const now = Math.floor(Date.now() / 1000), hot = st.label === "LIVE" && Number(c.lastMintAt) > now - 86400;
@@ -185,7 +185,7 @@
           .append($("<span class='pl'>").text("MINT PRICE"))
           .append($("<span class='pp'>").text(st.label === "SOLD OUT" ? "minted out" : supply ? solNum(c.priceLamports) + " SOL" : "free")));
       const $stats = $("<div class='stats'>");
-      [[c.owners != null ? fmtK(Number(c.owners)) : "-", "OWNERS"], [supply ? fmtK(supply) : "-", "SUPPLY"], ["-", "VOLUME"], ["-", "FLOOR"]]
+      [[c.owners != null ? fmtK(Number(c.owners)) : "-", "OWNERS"], [supply ? fmtK(supply) : "-", "SUPPLY"], ["-", "VOLUME"]]
         .forEach(([v, k]) => $stats.append($("<div class='st'>").append($("<div class='v'>").text(v)).append($("<div class='k'>").text(k))));
       const $chips = $("<div class='chips'>")
         .append($("<span class='chip chain'>").text("◎ " + short(c.collection)))
