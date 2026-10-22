@@ -93,11 +93,11 @@
     #nftl .card .band .barr{display:inline-block;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
     #nftl .card:hover .band .barr{transform:translateX(4px)}
     #nftl .card.out:hover .band .barr{transform:none}
-    #nftl .skel{border:1px solid rgba(232,228,214,.25);border-radius:5px;overflow:hidden;animation:nftl_pulse 1.2s ease-in-out infinite}
-    #nftl .skel .a{height:150px;background:rgba(232,228,214,.06)}
-    #nftl .skel .b{height:11px;width:60%;background:rgba(232,228,214,.12);border-radius:2px}
-    #nftl .skel .c{height:8px;width:40%;background:rgba(232,228,214,.08);border-radius:2px;margin-top:8px}
-    #nftl .skel .d{height:6px;background:rgba(232,228,214,.08);border-radius:3px;margin-top:12px}
+    /* skeleton reuses the card box + child classes so its height matches the real card exactly (no layout jump when cards load) */
+    #nftl .card.skel{cursor:default;pointer-events:none;animation:nftl_pulse 1.2s ease-in-out infinite}
+    #nftl .card.skel .cov{background:rgba(232,228,214,.05)}
+    #nftl .card.skel .sk{display:block;background:rgba(232,228,214,.13);border-radius:2px}
+    #nftl .card.skel .band .btext{mix-blend-mode:normal;color:inherit}
     #nftl .pager{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 2px 4px;font:500 9.5px 'Kode Mono',monospace;opacity:.6}
     #nftl .pager .more{cursor:pointer;border:1px solid rgba(232,228,214,.4);border-radius:3px;padding:4px 10px;letter-spacing:.1em;transition:background .3s}
     #nftl .pager .more:hover{background:rgba(232,228,214,.1)}

@@ -135,9 +135,25 @@
       if (tab === "market") this.renderMarket();
       if (tab === "mine") this.renderMine();
     },
+    // A card-shaped skeleton: same box + child classes as card(), so margins
+    // and heights come from the same CSS and the grid does not reflow when the
+    // real cards replace it. Shimmer bars (.sk) stand in for each line.
     renderSkeleton: function () {
       const $g = $("#nftl_colgrid").empty();
-      for (let i = 0; i < 3; i++) $g.append($("<div class='skel'>").append($("<div class='a'>")).append($("<div style='padding:10px 12px 12px'>").append($("<div class='b'>")).append($("<div class='c'>")).append($("<div class='d'>"))));
+      const bar = (w, h, mt) => { const $b = $("<span class='sk'>").css({ width: w, height: h }); if (mt) $b.css("marginTop", mt); return $b; };
+      const col = (vw) => $("<div class='st'>").append($("<div class='k'>").append(bar("55%", "11px"))).append($("<div class='vrow'>").append(bar(vw, "17px")));
+      for (let i = 0; i < PER_PAGE; i++) {
+        const $segs = $("<div class='segs'>");
+        for (let k = 0; k < 40; k++) $segs.append($("<span>").css("background", "rgba(232,228,214,.1)"));
+        $g.append($("<div class='card skel'>")
+          .append($("<div class='cov'>").append($("<span class='br1'>")).append($("<span class='br2'>")))
+          .append($("<div class='cn'>").append(bar("62%", "19px")))
+          .append($("<div class='segwrap'>").append($segs).append($("<div class='segl'>").append(bar("26%", "13px"))))
+          .append(bar("80%", "16px", "9px"))
+          .append($("<div class='stats'>").append(col("45%")).append(col("35%")))
+          .append($("<div class='chainline'>").append(bar("50%", "12px")))
+          .append($("<div class='band'>").append($("<div class='bfill'>")).append($("<div class='btext'>").append(bar("40%", "13px")))));
+      }
       $("#nftl_pager").empty().append($("<span>").text("// reading the registry…"));
     },
     visibleCols: function () {
