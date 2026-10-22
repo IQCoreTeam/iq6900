@@ -163,35 +163,43 @@
       if (shown.length < all.length) $p.append($("<span class='more'>").text("LOAD MORE ↓").on("click", () => this.loadMore()));
       else $p.append($("<span class='eof'>").text("EOF · " + all.length + (this.chain === "all" ? " collections, all chains" : " on solana")));
     },
-    // One collection card (design: cover + name/chip + creator + bar + minted/price
-    // + OWNERS/SUPPLY/VOLUME + chain/std/HOT chips). Every value is ours: volume
-    // lives on secondary marketplaces we do not index, so "-" (floor dropped).
+    // One collection card, ported 1:1 from the live design: cover with corner
+    // brackets, big Archivo title, a 40-segment progress bar, a description, the
+    // OWNERS / VOLUME stats, a chain line, and an animated price/CTA band. Volume
+    // lives on secondary marketplaces we do not index, so "-".
     card: function (c) {
       const supply = Number(c.maxSupply || 0), minted = Number(c.minted || 0), st = this.statusOf(c);
       const now = Math.floor(Date.now() / 1000), hot = st.label === "LIVE" && Number(c.lastMintAt) > now - 86400;
-      const $card = $("<a class='card'>").toggleClass("out", st.label === "SOLD OUT").attr("href", "?menu=nft&nft=" + encodeURIComponent(c.slug));
+      const live = st.label === "LIVE", out = st.label === "SOLD OUT", hood = (c.chain || "solana") === "hood";
+      const $card = $("<a class='card'>").toggleClass("dim", !live).toggleClass("out", out)
+        .attr("href", "?menu=nft&nft=" + encodeURIComponent(c.slug));
       const $cov = $("<div class='cov'>");
       coverInto($cov, c.coverSig ? window.iqNft.imgUrl(c.coverSig) : null, c.banner);
-      $cov.append($("<span class='tag'>").text("[ " + (c.symbol || c.slug).toUpperCase() + " ]"));
-      const $cb = $("<div class='cb'>")
-        .append($("<div style='display:flex;justify-content:space-between;align-items:center;gap:8px'>")
-          .append($("<span class='cn'>").text(c.name || c.slug))
-          .append($("<span>").addClass("chip " + st.cls).text(st.label)))
-        .append($("<div class='cby'>").text("by " + short(c.creator)))
-        .append($("<div class='barrow'>")
-          .append($("<div class='bar'>").append($("<i>").css("width", "calc(" + (supply ? Math.round(100 * minted / supply) : 0) + "% + 4px)")))
-          .append($("<span class='mint'>").text(supply ? num(minted) + " / " + num(supply) : "single")))
-        .append($("<div class='pricerow'>")
-          .append($("<span class='pl'>").text("MINT PRICE"))
-          .append($("<span class='pp'>").text(st.label === "SOLD OUT" ? "minted out" : supply ? solNum(c.priceLamports) + " SOL" : "free")));
-      const $stats = $("<div class='stats'>");
-      [[c.owners != null ? fmtK(Number(c.owners)) : "-", "OWNERS"], [supply ? fmtK(supply) : "-", "SUPPLY"], ["-", "VOLUME"]]
-        .forEach(([v, k]) => $stats.append($("<div class='st'>").append($("<div class='v'>").text(v)).append($("<div class='k'>").text(k))));
-      const $chips = $("<div class='chips'>")
-        .append($("<span class='chip chain'>").text("◎ " + short(c.collection)))
-        .append($("<span class='chip'>").text("MPL CORE"));
-      if (hot) $chips.append($("<span class='chip hot'>").text("▲ HOT"));
-      return $card.append($cov).append($cb.append($stats).append($chips));
+      $cov.append($("<span class='br1'>")).append($("<span class='br2'>"));
+      // 40-segment progress, colored by how far the mint has gone
+      const p = supply ? minted / supply : 0, on = Math.round(40 * p);
+      const segcol = p >= 1 ? "#2BD52D" : p >= 0.7 ? "#e0a84e" : p >= 0.2 ? "#f2d94e" : "rgba(232,228,214,.85)";
+      const $segs = $("<div class='segs'>");
+      for (let k = 0; k < 40; k++) $segs.append($("<span>").css("background", k < on ? segcol : "rgba(232,228,214,.1)"));
+      const $segwrap = $("<div class='segwrap'>").append($segs)
+        .append($("<div class='segl'>").text(supply ? num(minted) + " / " + num(supply) : "single mints"));
+      const desc = c.description || (supply ? num(supply) + " items, each inscribed on solana before mint." : "single inscriptions, tokenized on solana.");
+      const stat = (k, v) => $("<div class='st'>").append($("<div class='k'>").text(k))
+        .append($("<div class='vrow'>").append($("<span class='v'>").text(v)));
+      const $stats = $("<div class='stats'>")
+        .append(stat("OWNERS", c.owners != null ? fmtK(Number(c.owners)) : "-"))
+        .append(stat("VOLUME", "-"));
+      const $chain = $("<div class='chainline'>")
+        .append($("<span class='cadr'>").text((hood ? "▲ ROBINHOOD · ERC721 · " : "◎ SOLANA · MPL CORE · ") + short(c.collection)));
+      if (hot) $chain.append($("<span class='hot'>").text("▲ HOT"));
+      const price = out ? "minted out" : supply ? solNum(c.priceLamports) + " SOL" : "free";
+      const cta = live ? "MINT" : st.label === "UPCOMING" ? "NOTIFY" : "VIEW";
+      const $band = $("<div class='band'>").append($("<div class='bfill'>"))
+        .append($("<div class='btext'>")
+          .append($("<span class='bprice'>").text(price))
+          .append($("<span class='bcta'>").append(document.createTextNode(cta + " ")).append($("<span class='barr'>").text("→"))));
+      return $card.append($cov).append($("<div class='cn'>").text(c.name || c.slug)).append($segwrap)
+        .append($("<p class='cdesc'>").text(desc)).append($stats).append($chain).append($band);
     },
     renderMarket: function () {
       $("#nftl_market").empty().append($("<div class='empty'>")

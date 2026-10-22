@@ -1,5 +1,6 @@
 <section id="nftl">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;500;600;700&family=Archivo:wght@400;500;800&family=Zen+Dots&display=swap');
     /* Ported 1:1 from the live design (NFT Launchpad Flow.dc.html, claude.ai):
        same tokens, window chrome, card/feed/collection/mint-panel geometry,
        scoped under #nftl. The site already draws the animated background
@@ -57,34 +58,41 @@
     #nftl .lpbody{min-height:0;overflow:hidden;padding:20px 22px 22px;flex:1;display:flex;flex-direction:column}
     #nftl .colscroll{flex:1;min-height:0;max-height:calc(100vh - 340px);overflow-y:auto;padding-right:6px;margin-right:-6px;scrollbar-width:thin;scrollbar-color:rgba(232,228,214,.35) transparent}
     #nftl .colgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-    #nftl .card{display:flex;flex-direction:column;border:1px solid rgba(232,228,214,.5);border-radius:5px;overflow:hidden;cursor:pointer;transition:border-color .35s,background .35s;color:inherit;min-width:0}
-    #nftl .card:hover{border-color:#e8e4d6;background:rgba(232,228,214,.05);color:inherit}
-    #nftl .card.out{border-color:rgba(232,228,214,.3);opacity:.75}
-    #nftl .card .cov{position:relative;aspect-ratio:16/9;border-bottom:1px solid rgba(232,228,214,.25);overflow:hidden;background:#0a0a09}
-    #nftl .card .cov img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.85) contrast(1.02);transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+    #nftl .card{display:flex;flex-direction:column;padding:18px;border:1px solid rgba(232,228,214,.28);border-radius:3px;background:rgba(232,228,214,.025);overflow:hidden;cursor:pointer;transition:background .35s,border-color .35s,transform .35s;color:inherit;min-width:0}
+    #nftl .card:hover{background:rgba(232,228,214,.05);border-color:rgba(232,228,214,.45);transform:translateY(-2px);color:inherit}
+    #nftl .card.dim{border-color:rgba(232,228,214,.15);opacity:.6}
+    #nftl .card .cov{position:relative;height:150px;overflow:hidden;background:#0a0a09;flex:0 0 auto;border:1px solid rgba(232,228,214,.22)}
+    #nftl .card .cov img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.9);transition:transform .7s cubic-bezier(.2,.7,.2,1)}
     #nftl .card:hover .cov img{transform:scale(1.04)}
-    #nftl .card .cov .tag{position:absolute;left:8px;bottom:6px;font:600 8.5px 'Kode Mono',monospace;letter-spacing:.1em;background:rgba(20,19,16,.85);border:1px solid rgba(232,228,214,.35);border-radius:3px;padding:2px 6px}
-    #nftl .card .cov .none{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 9.5px 'Kode Mono',monospace;color:#2BD52D;background:repeating-linear-gradient(135deg,rgba(232,228,214,.07) 0 6px,rgba(0,0,0,.25) 6px 12px)}
-    #nftl .card .cb{padding:10px 12px 12px;font:500 10px 'Kode Mono',monospace;display:flex;flex-direction:column;flex:1}
-    #nftl .card .cn{font-weight:700;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    #nftl .card .cby{opacity:.45;margin-top:4px}
-    #nftl .card .barrow{display:flex;align-items:center;gap:8px;margin-top:8px}
-    #nftl .card .bar{flex:1;position:relative;height:9px;border:1px solid rgba(43,213,45,.5);border-radius:4px;background:rgba(43,213,45,.07);overflow:hidden}
-    #nftl .card .bar i{position:absolute;top:0;bottom:0;left:-4px;width:0;background:repeating-linear-gradient(-70deg,#2BD52D 0 5px,rgba(43,213,45,.12) 5px 8px);display:block;transition:width .6s}
-    #nftl .card.out .bar{border-color:rgba(232,228,214,.4);background:rgba(232,228,214,.05)}
-    #nftl .card.out .bar i{background:repeating-linear-gradient(-70deg,rgba(232,228,214,.55) 0 5px,transparent 5px 8px)}
-    #nftl .card .mint{font:700 9px 'Kode Mono',monospace;color:#2BD52D;white-space:nowrap;letter-spacing:.06em}
-    #nftl .card.out .mint{color:rgba(232,228,214,.7)}
-    #nftl .card .pricerow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px}
-    #nftl .card .pricerow .pl{font:600 8.5px 'Kode Mono',monospace;letter-spacing:.14em;opacity:.55}
-    #nftl .card .pricerow .pp{font:700 10px 'Kode Mono',monospace;color:#2BD52D;white-space:nowrap;border:1px solid rgba(43,213,45,.6);background:rgba(43,213,45,.1);border-radius:3px;padding:3px 8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.4),0 0 10px rgba(43,213,45,.2)}
-    #nftl .card.out .pricerow .pp{color:rgba(232,228,214,.7);border-color:rgba(232,228,214,.4);background:rgba(232,228,214,.08);box-shadow:none}
-    #nftl .card .stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:10px;border-top:1px solid rgba(232,228,214,.2);padding-top:8px}
-    #nftl .card .st{text-align:center;padding:4px 0;border-right:1px solid rgba(232,228,214,.15);min-width:0}
-    #nftl .card .st:last-child{border-right:none}
-    #nftl .card .st .v{font-size:12px;font-weight:700;white-space:nowrap}
-    #nftl .card .st .k{font-size:8px;letter-spacing:.14em;opacity:.5;margin-top:2px}
-    #nftl .card .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:10px}
+    #nftl .card .cov .br1{position:absolute;left:-1px;top:-1px;width:9px;height:9px;border-left:2px solid #e8e4d6;border-top:2px solid #e8e4d6}
+    #nftl .card .cov .br2{position:absolute;right:-1px;bottom:-1px;width:9px;height:9px;border-right:2px solid #e8e4d6;border-bottom:2px solid #e8e4d6}
+    #nftl .card .cn{margin-top:16px;font:800 22px/1.05 'Archivo',sans-serif;letter-spacing:-.02em;color:#f2efe6;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #nftl .card .segwrap{margin-top:14px}
+    #nftl .card .segs{display:flex;gap:3px;height:22px}
+    #nftl .card .segs span{flex:1;border-radius:1px}
+    #nftl .card .segl{display:flex;justify-content:flex-end;align-items:baseline;margin-top:7px;font:600 10px 'Kode Mono',monospace;letter-spacing:.06em;color:#e8e4d6}
+    #nftl .card .cdesc{margin:14px 0 0;font:400 12px/1.5 'Archivo',sans-serif;color:rgba(232,228,214,.7);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px}
+    #nftl .card .stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+    #nftl .card .st{border-top:1px solid rgba(232,228,214,.2);padding-top:10px;min-width:0}
+    #nftl .card .st .k{font:600 8.5px 'Kode Mono',monospace;letter-spacing:.16em;opacity:.5}
+    #nftl .card .st .vrow{display:flex;align-items:baseline;gap:10px;margin-top:4px;min-width:0}
+    #nftl .card .st .v{font:700 15px 'Kode Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #nftl .card .st .d{font:600 9.5px 'Kode Mono',monospace;color:#2BD52D;white-space:nowrap}
+    #nftl .card .chainline{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto;padding-top:16px;font:500 9px 'Kode Mono',monospace;letter-spacing:.1em;opacity:.6;white-space:nowrap;min-width:0}
+    #nftl .card .chainline .cadr{overflow:hidden;text-overflow:ellipsis}
+    #nftl .card .chainline .hot{color:#e0a84e;opacity:1;flex:0 0 auto}
+    #nftl .card .band{position:relative;display:flex;align-items:center;gap:12px;margin:14px -18px -18px;padding:12px 18px;border-top:1px solid rgba(232,228,214,.2);background:rgba(232,228,214,.06);color:#e8e4d6;overflow:hidden;isolation:isolate}
+    #nftl .card .band .bfill{position:absolute;inset:0;background:#e8e4d6;transform:scaleX(0);transform-origin:left;transition:transform .45s cubic-bezier(.2,.7,.2,1);z-index:0}
+    #nftl .card.dim .band .bfill{background:rgba(232,228,214,.16)}
+    #nftl .card.out .band .bfill{display:none}
+    #nftl .card:hover .band .bfill{transform:scaleX(1)}
+    #nftl .card .band .btext{position:relative;z-index:1;display:flex;align-items:center;gap:12px;width:100%}
+    #nftl .card:not(.dim) .band .btext{mix-blend-mode:difference;color:#e8e4d6}
+    #nftl .card .band .bprice{font:700 11px 'Kode Mono',monospace;letter-spacing:.1em}
+    #nftl .card .band .bcta{margin-left:auto;font:700 10px 'Kode Mono',monospace;letter-spacing:.16em;display:inline-flex;gap:6px;align-items:center}
+    #nftl .card .band .barr{display:inline-block;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+    #nftl .card:hover .band .barr{transform:translateX(4px)}
+    #nftl .card.out:hover .band .barr{transform:none}
     #nftl .skel{border:1px solid rgba(232,228,214,.25);border-radius:5px;overflow:hidden;animation:nftl_pulse 1.2s ease-in-out infinite}
     #nftl .skel .a{height:150px;background:rgba(232,228,214,.06)}
     #nftl .skel .b{height:11px;width:60%;background:rgba(232,228,214,.12);border-radius:2px}
