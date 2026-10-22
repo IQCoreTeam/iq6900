@@ -178,10 +178,12 @@
           .append($("<span class='cn'>").text(c.name || c.slug))
           .append($("<span>").addClass("chip " + st.cls).text(st.label)))
         .append($("<div class='cby'>").text("by " + short(c.creator)))
-        .append($("<div class='bar'>").append($("<i>").css("width", (supply ? Math.round(100 * minted / supply) : 0) + "%")))
-        .append($("<div class='crow'>")
-          .append($("<span>").text(supply ? num(minted) + " / " + num(supply) : "single mints"))
-          .append($("<span class='nftl-g'>").text(st.label === "SOLD OUT" ? "minted out" : supply ? solNum(c.priceLamports) + " SOL" : "free to tokenize")));
+        .append($("<div class='barrow'>")
+          .append($("<div class='bar'>").append($("<i>").css("width", "calc(" + (supply ? Math.round(100 * minted / supply) : 0) + "% + 4px)")))
+          .append($("<span class='mint'>").text(supply ? num(minted) + " / " + num(supply) : "single")))
+        .append($("<div class='pricerow'>")
+          .append($("<span class='pl'>").text("MINT PRICE"))
+          .append($("<span class='pp'>").text(st.label === "SOLD OUT" ? "minted out" : supply ? solNum(c.priceLamports) + " SOL" : "free")));
       const $stats = $("<div class='stats'>");
       [[c.owners != null ? fmtK(Number(c.owners)) : "-", "OWNERS"], [supply ? fmtK(supply) : "-", "SUPPLY"], ["-", "VOLUME"], ["-", "FLOOR"]]
         .forEach(([v, k]) => $stats.append($("<div class='st'>").append($("<div class='v'>").text(v)).append($("<div class='k'>").text(k))));
