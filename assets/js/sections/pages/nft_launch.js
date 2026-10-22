@@ -105,7 +105,7 @@
     loadHome: async function () {
       $("#nftl_loading").hide();
       $("#nftl_home").show();
-      this.navMid("// COLLECTIONS + MINTED");
+      this.navMid("");
       this.navBack("CODE IN", "?menu=codein");
       this.tab = "cols"; this.chain = "all"; this.page = 1;
       this.renderSkeleton();
