@@ -50,6 +50,9 @@
     /* nav (design: the sticky top bar) */
     #nftl .nav{display:flex;justify-content:space-between;align-items:center;gap:14px;border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.9);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:11px 16px;margin-bottom:14px}
     #nftl .nav .logo{height:18px;display:block;filter:brightness(0) invert(0.93) sepia(0.18) saturate(1.2) brightness(0.98)}
+    /* no stray focus ring left on the banner after clicking connect; keep keyboard focus elsewhere */
+    #nftl .nav a:focus,#nftl .nav a:focus-visible,#nftl .nav button:focus,#nftl .nav button:focus-visible{outline:none}
+    #nftl a:focus:not(:focus-visible),#nftl button:focus:not(:focus-visible){outline:none}
     #nftl .pill{display:flex;align-items:center;gap:8px;letter-spacing:.1em;border:1px solid rgba(43,213,45,.5);border-radius:4px;padding:7px 12px;color:#2BD52D;white-space:nowrap}
     #nftl .pill i{width:7px;height:7px;border-radius:50%;background:#2BD52D;display:block}
     /* desk: launchpad.exe + minted.exe (inner areas scroll, like the design's 100vh page) */
@@ -98,6 +101,19 @@
     #nftl .card.skel .cov{background:rgba(232,228,214,.05)}
     #nftl .card.skel .sk{display:block;background:rgba(232,228,214,.13);border-radius:2px}
     #nftl .card.skel .band .btext{mix-blend-mode:normal;color:inherit}
+    /* MY NFTS gallery */
+    #nftl .minehead{display:flex;align-items:baseline;gap:10px;padding:4px 2px 14px}
+    #nftl .minegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+    #nftl .minecell{display:flex;flex-direction:column;border:1px solid rgba(232,228,214,.3);border-radius:4px;overflow:hidden;color:inherit;background:rgba(232,228,214,.02);transition:border-color .3s,transform .3s}
+    #nftl .minecell:hover{border-color:#e8e4d6;transform:translateY(-2px);color:inherit}
+    #nftl .minecell .mim{position:relative;aspect-ratio:1;background:#0a0a09;overflow:hidden}
+    #nftl .minecell .mim img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated;display:block}
+    #nftl .minecell .mcap{padding:8px 9px}
+    #nftl .minecell .mnm{font:700 11px 'Kode Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #nftl .minecell .mcol{font:500 9px 'Kode Mono',monospace;opacity:.5;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase;letter-spacing:.06em}
+    #nftl .minecell.r-legendary{border-color:rgba(255,179,71,.7)}
+    #nftl .minecell.r-epic{border-color:rgba(183,148,255,.7)}
+    #nftl .minecell.r-rare{border-color:rgba(109,212,255,.6)}
     #nftl .pager{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 2px 4px;font:500 9.5px 'Kode Mono',monospace;opacity:.6}
     #nftl .pager .more{cursor:pointer;border:1px solid rgba(232,228,214,.4);border-radius:3px;padding:4px 10px;letter-spacing:.1em;transition:background .3s}
     #nftl .pager .more:hover{background:rgba(232,228,214,.1)}

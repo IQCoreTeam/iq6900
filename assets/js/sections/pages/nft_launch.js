@@ -222,19 +222,56 @@
         .append($("<div class='zen'>").text("MARKET.EXE NOT BUILT YET."))
         .append($("<div class='cm' style='opacity:.55'>").html("listing and buying through our own marketplace program is on the roadmap.<br>until then every minted item is a normal core asset: it trades on magic eden and tensor like any other nft.")));
     },
-    renderMine: function () {
+    // MY NFTS: the public devnet RPC does not serve DAS getAssetsByOwner, so we
+    // aggregate across every collection's items (the registry mirror carries the
+    // holder per minted index) and keep the ones this wallet holds. Each cell
+    // opens the on-chain viewer. Single-mint registries are not item-indexed, so
+    // they are not listed here yet.
+    renderMine: async function () {
       const addr = window.iqNft.connected();
       const $m = $("#nftl_mine").empty();
       if (!addr) {
         $m.append($("<div class='empty'>")
           .append($("<div class='zen'>").text("CONNECT TO SEE YOURS."))
-          .append($("<div class='cm' style='opacity:.55'>").text("your nfts are read by your wallet address; each asset's own attributes point back to the inscription."))
+          .append($("<div class='cm' style='opacity:.55'>").text("your nfts are read from your wallet address across every collection on this board."))
           .append($("<button class='btn' type='button' style='padding:10px 18px'>").text("CONNECT WALLET").on("click", () => $("#nftl_hconnect").trigger("click"))));
         return;
       }
-      $m.append($("<div class='empty'>")
-        .append($("<div class='zen'>").text("CONNECTED " + short(addr).toUpperCase()))
-        .append($("<div class='cm' style='opacity:.55'>").html("a full owned-nft gallery reads DAS (getAssetsByOwner), which this devnet endpoint does not index yet.<br>open a collection: your minted items show in its grid, each linking to the on-chain viewer.")));
+      const token = (this.mineToken = (this.mineToken || 0) + 1);
+      $m.append($("<div class='cm' style='padding:16px 2px;opacity:.6'>").text("// reading " + short(addr) + " across every collection…"));
+      const cols = (this.cols && this.cols.length) ? this.cols : await window.iqNft.getCollections().catch(() => []);
+      const mine = [];
+      for (const c of cols) {
+        if (token !== this.mineToken) return; // a newer render (tab switch / reconnect) took over
+        try {
+          const data = await window.iqNft.getItems(c.slug, 0, 300);
+          ((data && data.items) || []).forEach((it) => {
+            if (it.minted && it.asset && it.owner === addr) mine.push({ it: it, slug: c.slug, colName: c.name || c.slug });
+          });
+        } catch (e) {}
+      }
+      if (token !== this.mineToken) return;
+      $m.empty().append($("<div class='minehead'>")
+        .append($("<span class='zen' style='font-size:13px'>").text(mine.length + (mine.length === 1 ? " NFT" : " NFTS")))
+        .append($("<span class='cm' style='opacity:.5'>").text("held by " + short(addr))));
+      if (!mine.length) {
+        $m.append($("<div class='empty'>").append($("<div class='cm' style='opacity:.55'>")
+          .html("no minted items held by this wallet yet.<br>mint one from a collection and it appears here.")));
+        return;
+      }
+      const $grid = $("<div class='minegrid'>");
+      mine.forEach(({ it, slug, colName }) => {
+        const tier = (it.rarity && it.rarity.tier) || "";
+        const $cell = $("<a class='minecell'>").addClass(tier ? "r-" + tier : "").attr("href", "?menu=nft&asset=" + it.asset)
+          .on("click", (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.which === 2) return; e.preventDefault(); this.openViewer(it.asset, slug); });
+        const $im = $("<div class='mim'>");
+        if (it.inscriptionSig) $("<img alt='' loading='lazy'>").attr("src", window.iqNft.imgUrl(it.inscriptionSig)).on("error", function () { $(this).remove(); }).appendTo($im);
+        $cell.append($im).append($("<div class='mcap'>")
+          .append($("<div class='mnm'>").text(it.name || (colName + " #" + it.index)))
+          .append($("<div class='mcol'>").text(colName + (tier ? " · " + tier : ""))));
+        $grid.append($cell);
+      });
+      $m.append($grid);
     },
     // Recent mints across all collections, newest first (WHEN = first seen by
     // the registry mirror; older mints without a time sort last and show "-").
