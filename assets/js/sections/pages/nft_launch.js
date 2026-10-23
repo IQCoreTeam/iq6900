@@ -175,6 +175,11 @@
         return;
       }
       shown.forEach((c) => $g.append(this.card(c)));
+      // fill the gauges: a reflow commits the dim state as the transition start,
+      // then setting each on-segment to its color animates it (staggered via the
+      // per-segment transition-delay) regardless of frame timing
+      if ($g[0]) $g[0].offsetWidth;
+      $g.find(".segs span.on").each(function () { this.style.background = this.getAttribute("data-c"); });
       const pages = Math.max(1, Math.ceil(all.length / PER_PAGE));
       const $p = $("#nftl_pager").empty().append($("<span>").text("// page " + this.page + " / " + pages + " · showing " + shown.length + " of " + all.length));
       if (shown.length < all.length) $p.append($("<span class='more'>").text("LOAD MORE ↓").on("click", () => this.loadMore()));
@@ -196,7 +201,13 @@
       const p = supply ? minted / supply : 0, on = Math.round(40 * p);
       const segcol = p >= 1 ? "#2BD52D" : p >= 0.7 ? "#e0a84e" : p >= 0.2 ? "#f2d94e" : "rgba(232,228,214,.85)";
       const $segs = $("<div class='segs'>");
-      for (let k = 0; k < 40; k++) $segs.append($("<span>").css("background", k < on ? segcol : "rgba(232,228,214,.1)"));
+      // on-segments start dim and fill to their color on load, staggered left to
+      // right (renderCols flips them once the grid is in the DOM)
+      for (let k = 0; k < 40; k++) {
+        const $s = $("<span>").css("background", "rgba(232,228,214,.1)");
+        if (k < on) $s.addClass("on").attr("data-c", segcol).css("transition-delay", (k * 24) + "ms");
+        $segs.append($s);
+      }
       const $segwrap = $("<div class='segwrap'>").append($segs)
         .append($("<div class='segl'>").text(supply ? num(minted) + " / " + num(supply) : "single mints"));
       const desc = c.description || (supply ? num(supply) + " items, each inscribed on solana before mint." : "single inscriptions, tokenized on solana.");
@@ -293,7 +304,9 @@
       const $r = $("#nftl_minted_rows").empty();
       const rows = [];
       for (const c of cols) {
-        try { (await window.iqNft.getRecent(c.slug, 8)).forEach((x) => rows.push({ ...x, colName: c.name || c.slug, slug: c.slug, img: x.inscriptionSig ? window.iqNft.imgUrl(x.inscriptionSig) : null })); } catch (e) {}
+        // the mint price is the collection price we already hold; no extra call
+        const price = Number(c.maxSupply) ? solNum(c.priceLamports) + " SOL" : "free";
+        try { (await window.iqNft.getRecent(c.slug, 8)).forEach((x) => rows.push({ ...x, colName: c.name || c.slug, slug: c.slug, price: price, img: x.inscriptionSig ? window.iqNft.imgUrl(x.inscriptionSig) : null })); } catch (e) {}
       }
       rows.sort((a, b) => (Number(b.registeredAt) || 0) - (Number(a.registeredAt) || 0) || b.index - a.index);
       if (!rows.length) { $r.append($("<div class='cm' style='padding:16px 14px'>").text("// no mints yet")); return; }
@@ -301,7 +314,8 @@
         const $row = $("<div class='fr'>").on("click", () => this.openViewer(x.asset, x.slug));
         const $th = x.img ? $("<img class='fth' alt=''>").attr("src", x.img).on("error", function () { $(this).replaceWith($("<span class='ph fth'>").text("#" + x.index)); }) : $("<span class='ph fth'>").text("#" + x.index);
         $row.append($("<div class='fn'>").append($th)
-          .append($("<div style='min-width:0'>").append($("<div class='fnt'>").text(x.colName + " #" + x.index)).append($("<div class='fna'>").text(x.colName + " · " + short(x.owner)))));
+          .append($("<div style='min-width:0'>").append($("<div class='fnt'>").text(x.colName + " #" + x.index))
+            .append($("<div class='fna'>").append($("<span class='fev'>").text("MINT")).append(document.createTextNode(" " + x.price)))));
         $row.append($("<span class='fw'>").text(ago(x.registeredAt)));
         $r.append($row);
       });
