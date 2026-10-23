@@ -193,7 +193,7 @@
       const supply = Number(c.maxSupply || 0), minted = Number(c.minted || 0), st = this.statusOf(c);
       const now = Math.floor(Date.now() / 1000), hot = st.label === "LIVE" && Number(c.lastMintAt) > now - 86400;
       const live = st.label === "LIVE", out = st.label === "SOLD OUT", hood = (c.chain || "solana") === "hood";
-      const $card = $("<a class='card'>").toggleClass("dim", !live).toggleClass("out", out)
+      const $card = $("<a class='card'>").toggleClass("dim", !live).toggleClass("out", out).toggleClass("flick", live)
         .attr("href", "?menu=nft&nft=" + encodeURIComponent(c.slug));
       const $cov = $("<div class='cov'>");
       coverInto($cov, c.coverSig ? window.iqNft.imgUrl(c.coverSig) : null, c.banner);
@@ -320,7 +320,7 @@
       rows.sort((a, b) => (Number(b.registeredAt) || 0) - (Number(a.registeredAt) || 0) || b.index - a.index);
       if (!rows.length) { $r.append($("<div class='cm' style='padding:16px 14px'>").text("// no mints yet")); return; }
       rows.slice(0, 16).forEach((x) => {
-        const $row = $("<div class='fr'>").on("click", () => this.openViewer(x.asset, x.slug));
+        const $row = $("<div class='fr flickrow'>").on("click", () => this.openViewer(x.asset, x.slug));
         const $th = x.img ? $("<img class='fth' alt=''>").attr("src", x.img).on("error", function () { $(this).replaceWith($("<span class='ph fth'>").text("#" + x.index)); }) : $("<span class='ph fth'>").text("#" + x.index);
         $row.append($("<div class='fn'>").append($th)
           .append($("<div style='min-width:0'>").append($("<div class='fnt'>").text(x.colName + " #" + x.index))
