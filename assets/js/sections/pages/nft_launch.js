@@ -570,25 +570,37 @@
       this.asset = a;
       this.dbg("viewer: via " + a.source + " C=" + short(a.C) + " M=" + short(a.M));
       $("#nftl_vwin").text(a.name || short(addr));
-      const tier = rarity && rarity.tier, lit = tier && tier !== "common";
-      $("#nftl_vrchip").attr("class", "rchip c-" + (tier || "common")).text(lit ? tier : "").toggle(!!lit);
+      const tier = (rarity && rarity.tier) || "common", lit = tier !== "common";
+      const RC = { common: "#e8e4d6", rare: "#5aa9ff", epic: "#c77dff", legendary: "#ffb347" };
+      $("#nftl_vrchip").attr("class", "rchip c-" + tier).text(lit ? tier : "").toggle(lit);
       $("#nftl_vph").attr("class", "vimg" + (lit ? " r-" + tier : ""));
-      $("#nftl_vwinbox").attr("class", "win" + (tier === "legendary" ? " r-legendary" : ""));
-      $("#nftl_vsub").text("// " + [a.collection ? "collection " + short(a.collection) : "", a.owner ? "owner " + short(a.owner) : ""].filter(Boolean).join(" \u00b7 "));
+      $("#nftl_vwinbox").attr("class", "win" + (lit ? " r-" + tier : ""));
+      // LEFT column: identity / rarity / holder / status
+      $("#nftl_vname").text(a.name || short(addr));
+      $("#nftl_vcol").text(a.collection ? "collection " + short(a.collection) : "");
+      $("#nftl_vrarity").text(tier).css("color", RC[tier]);
+      const lvl = { common: 1, rare: 2, epic: 3, legendary: 4 }[tier];
+      const $pips = $("#nftl_vpips").empty();
+      for (let i = 0; i < 4; i++) $pips.append($("<span>").css("background", i < lvl ? RC[tier] : "rgba(232,228,214,.15)"));
+      $("#nftl_vholder").text(a.owner ? short(a.owner) : "-");
+      $("#nftl_vstd").text(a.attributes.std || "iqnft-0.1");
+      // CENTER: image
       if (a.imageUrl) {
         $("#nftl_vimg").attr("src", a.imageUrl).on("load", () => $("#nftl_vphtxt").hide()).on("error", () => $("#nftl_vphtxt").text("gateway could not render tx C; try DECODE FROM CHAIN")).show();
-        this.vcap((a.name || short(addr)) + " \u00b7 gateway /img/C.png (cache of tx C). fallback: decode tx C directly");
+        this.vcap((a.name || short(addr)) + " \u00b7 /img/C.png");
       } else {
         $("#nftl_vphtxt").text("no image pointer in the metadata");
       }
-      this.rarityRow = lit ? ["rarity", tier + " \u00b7 rank " + rarity.rank + " / " + rarity.total, "c-" + tier] : null;
+      // RIGHT column: on-chain account rows + action buttons
       this.renderAssetRows(a);
       const dev = window.iqNft.getRpc().indexOf("devnet") >= 0 ? "?cluster=devnet" : "";
       const L = $("#nftl_vlinks").empty();
-      L.append($("<button class='btng' type='button' id='nftl_recover'>").css("padding", "7px 12px").text("DECODE FROM CHAIN").on("click", () => this.recoverAsset(addr)));
-      L.append($("<button class='btn2' type='button'>").css("padding", "7px 12px").text("METADATA JSON").on("click", () => this.openMeta()));
-      L.append(link("SOLSCAN", "https://solscan.io/account/" + addr + dev).css("padding", "7px 12px"));
-      L.append(link("MAGIC EDEN", "https://magiceden.io/item-details/" + addr).css("padding", "7px 12px"));
+      L.append($("<button class='btng' type='button' id='nftl_recover'>").text("DECODE").on("click", () => this.recoverAsset(addr)));
+      L.append($("<button class='btn2' type='button'>").text("METADATA").on("click", () => this.openMeta()));
+      if (a.C) L.append(link("RAW TX C", window.iqNft.viewUrl(a.C)));
+      if (a.M) L.append(link("RAW TX M", window.iqNft.viewUrl(a.M)));
+      L.append(link("SOLSCAN", "https://solscan.io/account/" + addr + dev));
+      L.append(link("MAGIC EDEN", "https://magiceden.io/item-details/" + addr));
       $("#nftl_vmeta").text(JSON.stringify(a.metadata, null, 2));
     },
     // metadata json popup (nested over the viewer, so the panel stays compact)
@@ -601,18 +613,18 @@
     closeMeta: function () { $("#nftl_metapop").removeClass("open"); $(document).off("keydown.nftm"); },
     // The attribute table. C and M are clickable (open the raw tx on solscan);
     // std only exists once the account itself was read.
+    // The right-column ON-CHAIN ACCOUNT grid: collection + C/M (clickable to the
+    // gateway viewer) + uri. Identity/rarity/holder live in the left column now.
     renderAssetRows: function (a) {
       const $p = $("#nftl_vattrs").empty();
-      [["name", a.name], ["holder", a.owner || "-", "nftl-g"], this.rarityRow, ["collection", a.collection || "-"], ["index", a.attributes.index || "-"],
-       ["inscription (C)", a.C ? short(a.C) : "-", "nftl-g", a.C ? window.iqNft.viewUrl(a.C) : null],
-       ["metadata (M)", a.M ? short(a.M) : "-", "nftl-g", a.M ? window.iqNft.viewUrl(a.M) : null],
-       a.attributes.std ? ["std", a.attributes.std] : null, ["uri", a.uri], ["source", a.source || "-"]]
-        .filter(Boolean).forEach(([k, v, cls, href]) => {
-          // C / M open the gateway's hosted viewer page in a new tab
-          const $v = href ? $("<a class='kvv kvlink'>").attr({ href, target: "_blank", rel: "noopener" }) : $("<span class='kvv'>");
-          $v.addClass(cls || "").css("font-weight", /^c-/.test(cls || "") ? 700 : "").text(v);
-          $p.append($("<div class='kv'>").append($("<span class='kvk'>").text(k)).append($v));
-        });
+      const row = (k, v, href) => {
+        $p.append($("<span class='k'>").text(k));
+        $p.append(href ? $("<a class='kvlink'>").attr({ href, target: "_blank", rel: "noopener" }).text(v) : $("<span>").text(v));
+      };
+      row("collection", a.collection ? short(a.collection) : "-");
+      row("inscr (C)", a.C ? short(a.C) : "-", a.C ? window.iqNft.viewUrl(a.C) : null);
+      row("meta (M)", a.M ? short(a.M) : "-", a.M ? window.iqNft.viewUrl(a.M) : null);
+      row("uri", a.uri || "-");
     },
     vcap: (t) => $("#nftl_vcap").show().text(t),
     // The proof: re-read everything with rpc only (no gateway) and swap the image
@@ -631,15 +643,15 @@
           $("#nftl_vimg").attr("src", a.imageDataUrl).show();
           $("#nftl_vphtxt").hide();
           this.vcap((a.name || short(addr)) + " \u00b7 decoded in your browser from tx C. no gateway, no backend.");
-          $b.text("DECODED FROM CHAIN \u2713");
+          $b.text("DECODED \u2713");
         } else {
           this.vcap("metadata decoded from tx M; this rpc could not stream tx C in time (rate limit). the image above is the gateway cache.");
-          $b.prop("disabled", false).text("DECODE FROM CHAIN \u00b7 RETRY");
+          $b.prop("disabled", false).text("RETRY");
         }
       } catch (e) {
         this.dbg("viewer decode failed: " + (e && e.message), "e");
         this.vcap("chain decode failed on this rpc: " + ((e && e.message) || e) + ". the image above is the gateway cache.");
-        $b.prop("disabled", false).text("DECODE FROM CHAIN \u00b7 RETRY");
+        $b.prop("disabled", false).text("RETRY");
       }
     },
 
