@@ -304,9 +304,18 @@
       const $r = $("#nftl_minted_rows").empty();
       const rows = [];
       for (const c of cols) {
-        // the mint price is the collection price we already hold; no extra call
-        const price = Number(c.maxSupply) ? solNum(c.priceLamports) + " SOL" : "free";
-        try { (await window.iqNft.getRecent(c.slug, 8)).forEach((x) => rows.push({ ...x, colName: c.name || c.slug, slug: c.slug, price: price, img: x.inscriptionSig ? window.iqNft.imgUrl(x.inscriptionSig) : null })); } catch (e) {}
+        // mint price = the collection price we already hold (no extra call); a
+        // sale row carries its own on-chain sale price (lamports, from Tensor)
+        const mintPrice = Number(c.maxSupply) ? solNum(c.priceLamports) + " SOL" : "free";
+        try {
+          (await window.iqNft.getRecent(c.slug, 8)).forEach((x) => {
+            const sale = x.kind === "sale";
+            rows.push({ ...x, colName: c.name || c.slug, slug: c.slug, sale: sale,
+              ev: sale ? "SALE" : "MINT",
+              priceLabel: sale ? (x.price ? solNum(x.price) + " SOL" : "-") : mintPrice,
+              img: x.inscriptionSig ? window.iqNft.imgUrl(x.inscriptionSig) : null });
+          });
+        } catch (e) {}
       }
       rows.sort((a, b) => (Number(b.registeredAt) || 0) - (Number(a.registeredAt) || 0) || b.index - a.index);
       if (!rows.length) { $r.append($("<div class='cm' style='padding:16px 14px'>").text("// no mints yet")); return; }
@@ -315,7 +324,7 @@
         const $th = x.img ? $("<img class='fth' alt=''>").attr("src", x.img).on("error", function () { $(this).replaceWith($("<span class='ph fth'>").text("#" + x.index)); }) : $("<span class='ph fth'>").text("#" + x.index);
         $row.append($("<div class='fn'>").append($th)
           .append($("<div style='min-width:0'>").append($("<div class='fnt'>").text(x.colName + " #" + x.index))
-            .append($("<div class='fna'>").append($("<span class='fev'>").text("MINT")).append(document.createTextNode(" " + x.price)))));
+            .append($("<div class='fna'>").append($("<span class='fev'>").toggleClass("sale", x.sale).text(x.ev)).append(document.createTextNode(" " + x.priceLabel)))));
         $row.append($("<span class='fw'>").text(ago(x.registeredAt)));
         $r.append($row);
       });
