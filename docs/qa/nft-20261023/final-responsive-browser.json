@@ -1,0 +1,97 @@
+[
+  {
+    "case": "collection320",
+    "cover": {
+      "bottom": 574,
+      "height": 122,
+      "left": 41,
+      "right": 163,
+      "top": 452,
+      "width": 122,
+      "x": 41,
+      "y": 452
+    },
+    "links": [
+      {
+        "left": 41,
+        "right": 200,
+        "text": "COLLECTION ON CHAIN"
+      },
+      {
+        "left": 41,
+        "right": 123,
+        "text": "REGISTRY"
+      },
+      {
+        "left": 131,
+        "right": 206,
+        "text": "CREATOR"
+      }
+    ],
+    "nav": [
+      {
+        "rect": {
+          "bottom": 271,
+          "height": 29,
+          "left": 33,
+          "right": 178.0234375,
+          "top": 242,
+          "width": 145.0234375,
+          "x": 33,
+          "y": 242
+        },
+        "text": "← ALL COLLECTIONS"
+      },
+      {
+        "rect": {
+          "bottom": 314,
+          "height": 29,
+          "left": 33,
+          "right": 161.8046875,
+          "top": 285,
+          "width": 128.8046875,
+          "x": 33,
+          "y": 285
+        },
+        "text": "CONNECT WALLET"
+      }
+    ],
+    "pageWidth": 320,
+    "width": 320
+  },
+  {
+    "case": "viewer320",
+    "headerTop": 25,
+    "scrollWidth": 320,
+    "viewport": 320
+  },
+  {
+    "case": "metadata390",
+    "right": 366,
+    "top": 97.6015625,
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  {
+    "case": "viewer1280",
+    "height": 720,
+    "rect": {
+      "bottom": 601.4921875,
+      "height": 482.9921875,
+      "left": 259,
+      "right": 1021,
+      "top": 118.5,
+      "width": 762,
+      "x": 259,
+      "y": 118.5
+    },
+    "width": 1280
+  },
+  {
+    "case": "home320",
+    "pageWidth": 320,
+    "viewport": 320
+  }
+]

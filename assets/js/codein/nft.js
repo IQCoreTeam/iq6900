@@ -14,6 +14,7 @@
 //   M = writer.codeIn of the backend's /json body, inscribed verbatim.
 import { Keypair, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { writer } from "@iqlabs-official/solana-sdk";
+import { notifyNftFeedRow } from "./nft_notify.js?v=1";
 import { writeFeedRow, topUp, sweep, confirmOrCheck } from "./inscribe.js?v=8";
 import { estimateCost, getAccountRent } from "./cost.js?v=6";
 
@@ -190,9 +191,10 @@ export async function mint({ connection, wallet, burner, slug, collection, onSta
     stage("image", { index: p.index, name: p.name });
     await touch();
     const bytes = await fetchItemBytes(col.arweaveGateway || "https://gateway.irys.xyz", p.arweaveId, p.imageSha256);
-    const row = JSON.stringify({ kind: "image", body: `data:${p.imageMime};base64,${bytesToBase64(bytes)}`, who });
-    p.C = await writeFeedRow({ connection, burner, row, owner: wallet.publicKey, onProgress });
+    const row = { kind: "image", body: `data:${p.imageMime};base64,${bytesToBase64(bytes)}`, who };
+    p.C = await writeFeedRow({ connection, burner, row: JSON.stringify(row), owner: wallet.publicKey, onProgress });
     saveProgress(slug, p);
+    void notifyNftFeedRow(connection, p.C, row, burnerPk);
   }
 
   // 4. Metadata inscription M: the canonical JSON from the backend, verbatim.

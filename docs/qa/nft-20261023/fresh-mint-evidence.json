@@ -1,0 +1,95 @@
+{
+  "genesis": "5hf83V2do34mmEUsW7qBQWUaouZ3zMwmZcF9i2HQEDF2",
+  "slug": "fresh-notify-mvl9shte",
+  "owner": "9sR8D7zMetEUXiwGe2cUuHC9ZcHXUkDZfuPEiqEGNvce",
+  "burner": "4AnhiUQaKNmMTHCkFpkEaVwsFd7jjzoYmRdPiG2rao1U",
+  "index": 1,
+  "name": "Local cache NFT #1",
+  "C": "X4h4Yzqqmm2xj3EHqCuacAtnnpbXdtHaohMLixKuCWYNeZDu8oTtWkHCkzJv8mkmUwrbZNAnzHeMPWQnj45pdj4",
+  "M": "2SwFnkybBx162bWU3gHoKjj2j5ztG8E1kSTjFDejMviWiYgEYLyiRCren69MmpMfZVDa8p7oSf7jyGhXGhWA7sXF",
+  "asset": "Cq52Xn793WNDsSo13koybJgDZV4diYDBvQ6NkEwA4TLe",
+  "mintSig": "3peQACQ3T54nzXkPAq91f7V7iVqq4xbddDMGM17s71xesCtH885AAjoSXeSHnZGgiBQDsErPZNjya1qnGDK2rEtt",
+  "deploy": {
+    "slug": "fresh-notify-mvl9shte",
+    "collection": "J8CZA2XguM17xZk9wdHAJTiJNfHemN8kHHonQLRJ6hGd",
+    "registry": "DJ4xCK3b8WSNHcT2yDY4xY71d9ciPBZeQyTdQM4EDWBw",
+    "deploySig": "3mGkFJbohMsRu3wJ3kknb5etXM8zUX651CJavdvyS29zDnSSSiYwbPNZxEL5vvbKxnmU4dea7dBV2ovMoabx3MXm",
+    "itemCount": 2
+  },
+  "verification": {
+    "index": 1,
+    "name": "Local cache NFT #1",
+    "asset": "Cq52Xn793WNDsSo13koybJgDZV4diYDBvQ6NkEwA4TLe",
+    "owner": "9sR8D7zMetEUXiwGe2cUuHC9ZcHXUkDZfuPEiqEGNvce",
+    "inscriptionSig": "X4h4Yzqqmm2xj3EHqCuacAtnnpbXdtHaohMLixKuCWYNeZDu8oTtWkHCkzJv8mkmUwrbZNAnzHeMPWQnj45pdj4",
+    "metaSig": "2SwFnkybBx162bWU3gHoKjj2j5ztG8E1kSTjFDejMviWiYgEYLyiRCren69MmpMfZVDa8p7oSf7jyGhXGhWA7sXF",
+    "manifestHash": "f921f856c65a80e38037432ef7ca155444bee027dca4f4d6a3f98d3eba060b25",
+    "inscribedHash": "f921f856c65a80e38037432ef7ca155444bee027dca4f4d6a3f98d3eba060b25",
+    "metadataMatches": true,
+    "matches": true
+  },
+  "signatures": [
+    {
+      "confirmationStatus": "confirmed",
+      "confirmations": 6,
+      "err": null,
+      "slot": 58458,
+      "status": {
+        "Ok": null
+      }
+    },
+    {
+      "confirmationStatus": "confirmed",
+      "confirmations": 3,
+      "err": null,
+      "slot": 58461,
+      "status": {
+        "Ok": null
+      }
+    },
+    {
+      "confirmationStatus": "confirmed",
+      "confirmations": 2,
+      "err": null,
+      "slot": 58462,
+      "status": {
+        "Ok": null
+      }
+    }
+  ],
+  "notifications": [
+    {
+      "table": "/table/3p1BeC2h2YeR51n4yGp4shv21P6QQ6q6phev2JDN54gA/notify",
+      "signature": "X4h4Yzqqmm2xj3EHqCuacAtnnpbXdtHaohMLixKuCWYNeZDu8oTtWkHCkzJv8mkmUwrbZNAnzHeMPWQnj45pdj4",
+      "signer": "9sR8D7zMetEUXiwGe2cUuHC9ZcHXUkDZfuPEiqEGNvce",
+      "rowSigner": "4AnhiUQaKNmMTHCkFpkEaVwsFd7jjzoYmRdPiG2rao1U",
+      "rowKind": "image"
+    }
+  ],
+  "warmFeedExtraRpc": 0,
+  "finalBurnerBalance": 0,
+  "scope": "Local validator only. Real source deploy/mint/notify/table routes. Staging upload/compression simulated; QA-only local genesis/gateway mapping. No productrouting override or live Tensor.",
+  "warmAssetReads": {
+    "image": {
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 78,
+      "sha256": "f921f856c65a80e38037432ef7ca155444bee027dca4f4d6a3f98d3eba060b25",
+      "threeWarmReadsExtraRpc": 0
+    },
+    "metadata": {
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 902,
+      "sha256": "7e4a3b52ad1407830aa46c98e1aab954388d0c7bdf084f8cd67db2d54a148ff6",
+      "threeWarmReadsExtraRpc": 0
+    }
+  },
+  "qaClockScope": {
+    "scope": "QA host clock aligned to retained local validator only; deposit age validation unchanged",
+    "slot": 58408,
+    "chainUnixSeconds": 1792618288,
+    "hostUnixSeconds": 1792778093,
+    "offsetMs": -159805184
+  }
+}
