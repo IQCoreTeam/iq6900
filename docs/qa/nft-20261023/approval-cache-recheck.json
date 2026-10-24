@@ -1,0 +1,7 @@
+{
+  "reads": 9,
+  "warmupAndBackgroundRefreshRpc": 1,
+  "extraRpcCalls": 0,
+  "pass": true,
+  "scope": "Warm GET reads after cache promotion/background refresh settles; feed can revalidate at most once per 30 seconds per key. No writes or new mint"
+}

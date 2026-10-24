@@ -274,18 +274,18 @@
     #nftl pre.meta{margin:12px 0 0;padding:10px;max-height:180px;overflow:auto;font:500 9px/1.5 'Kode Mono',monospace;color:#bfe8cf;background:rgba(0,0,0,.35);border:1px solid rgba(232,228,214,.25);border-radius:5px;white-space:pre-wrap;word-break:break-all}
     #nftl .steps{font:500 9.5px/1.9 'Kode Mono',monospace;opacity:.7;margin-top:6px}
     /* viewer as a fixed overlay popup (design: nft.exe floats over the current view, not a page) */
-    #nftl #nftl_viewer{position:fixed;inset:0;z-index:35;background:rgba(4,6,4,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:24px;overflow:auto}
+    #nftl #nftl_viewer{position:fixed;inset:0;z-index:35;background:rgba(4,6,4,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:24px;overflow:auto}
     #nftl #nftl_viewer.open{display:flex}
-    #nftl #nftl_vwinbox{width:760px;max-width:100%;background:rgba(20,19,16,.97)}
+    #nftl #nftl_vwinbox{width:760px;max-width:100%;margin-block:auto;background:rgba(20,19,16,.97)}
     #nftl .wh .xclose{margin-left:auto;cursor:pointer;opacity:.7;font:500 10px 'Kode Mono',monospace;letter-spacing:.14em;transition:opacity .3s}
     #nftl .wh .xclose:hover{opacity:1}
     /* clickable C / M value rows -> raw tx on solscan */
     #nftl a.kvv.kvlink{cursor:pointer;text-decoration:none;border-bottom:1px dotted rgba(43,213,45,.5);transition:color .3s,border-color .3s}
     #nftl a.kvv.kvlink:hover{color:#7dff7f;border-color:#7dff7f}
     /* metadata json popup (nested over the viewer) */
-    #nftl #nftl_metapop{position:fixed;inset:0;z-index:40;background:rgba(4,6,4,.8);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:24px;overflow:auto}
+    #nftl #nftl_metapop{position:fixed;inset:0;z-index:40;background:rgba(4,6,4,.8);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:24px;overflow:auto}
     #nftl #nftl_metapop.open{display:flex}
-    #nftl #nftl_metabox{width:640px;max-width:100%;background:rgba(20,19,16,.98)}
+    #nftl #nftl_metabox{width:640px;max-width:100%;margin-block:auto;background:rgba(20,19,16,.98)}
     /* sealed tile (design: the locked cell): a dark box with a bold "?", the art
        itself is never loaded */
     #nftl .q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#141310;font:700 30px 'Kode Mono',monospace;color:rgba(232,228,214,.75);text-shadow:0 2px 0 #000,0 0 10px rgba(0,0,0,.8)}
@@ -293,7 +293,7 @@
     @media (max-width:1100px){#nftl #nftl_nav_mid{display:none}}
     @media (max-width:980px){#nftl #nftl_desk{flex-direction:column}#nftl #nftl_mw{flex:none}#nftl .colscroll{max-height:none}#nftl .feed{max-height:none}#nftl #nftl_colpage,#nftl #nftl_vgrid,#nftl #nftl_sgrid{grid-template-columns:1fr}#nftl .cleft,#nftl .vleft{border-right:none;border-bottom:1px solid rgba(232,228,214,.2)}#nftl .vcL{border-right:none;border-bottom:1px solid rgba(232,228,214,.18)}#nftl .vcR{border-left:none;border-top:1px solid rgba(232,228,214,.18)}#nftl .itemgrid{grid-template-columns:repeat(4,1fr)}}
     @media (max-width:720px){#nftl .colgrid{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:560px){#nftl .colgrid{grid-template-columns:1fr}#nftl .itemgrid{grid-template-columns:repeat(3,1fr)}#nftl .nav .logo{display:none}}
+    @media (max-width:560px){#nftl .colgrid{grid-template-columns:1fr}#nftl .itemgrid{grid-template-columns:repeat(3,1fr)}#nftl .nav .logo{display:none}#nftl .nav,#nftl #nftl_view>.win>.wh{flex-wrap:wrap}#nftl .chead{flex-direction:column}#nftl .chead>div:last-child{width:100%}}
   </style>
 
   <!-- nav: same bar as the design's sticky header -->

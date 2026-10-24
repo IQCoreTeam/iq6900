@@ -11,7 +11,7 @@ export async function notifyGateways(urls, payload) {
         body, signal: ctrl.signal, redirect: "error",
       });
       if (response.ok) return true;
-    } catch (e) {} finally { clearTimeout(timer); }
+    } catch {} finally { clearTimeout(timer); }
   }
   return false;
 }

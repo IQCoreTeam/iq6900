@@ -26,5 +26,5 @@ export async function notifyNftFeedRow(connection, signature, row, burner) {
       row: { ...row, __signer: burner },
       signer: row.who, // invalidate the original wallet's inventory reference
     });
-  } catch (e) { return false; }
+  } catch { return false; }
 }
