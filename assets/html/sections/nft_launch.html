@@ -64,10 +64,10 @@
     #nftl #nftl_desk{display:flex;gap:14px;align-items:stretch}
     #nftl #nftl_lp{flex:3;min-height:0}#nftl #nftl_mw{flex:1;min-height:0}
     #nftl .lpbody{min-height:0;overflow:hidden;padding:20px 22px 22px;flex:1;display:flex;flex-direction:column}
-    #nftl .colscroll{flex:1;min-height:0;max-height:calc(100vh - 340px);overflow-y:auto;padding-right:6px;margin-right:-6px;scrollbar-width:thin;scrollbar-color:rgba(232,228,214,.35) transparent}
+    #nftl .colscroll{flex:1;min-height:0;max-height:calc(100vh - 340px);overflow-y:auto;padding:12px 6px 0 2px;margin:-12px -6px 0 -2px;scrollbar-width:thin;scrollbar-color:rgba(232,228,214,.35) transparent}
     #nftl .colgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:start}
-    #nftl .card{display:flex;flex-direction:column;padding:14px;border:1px solid rgba(232,228,214,.28);border-radius:3px;background:rgba(232,228,214,.025);overflow:hidden;cursor:pointer;transition:background .35s,border-color .35s,transform .35s;color:inherit;min-width:0}
-    #nftl .card:hover{background:rgba(232,228,214,.05);border-color:rgba(232,228,214,.45);transform:translateY(-2px);color:inherit}
+    #nftl .card{position:relative;z-index:1;display:flex;flex-direction:column;padding:14px;border:1px solid rgba(232,228,214,.28);border-radius:3px;background:rgba(232,228,214,.025);overflow:hidden;cursor:pointer;transition:background .35s,border-color .35s,transform .35s;color:inherit;min-width:0}
+    #nftl .card:hover{background:rgba(232,228,214,.05);border-color:rgba(232,228,214,.45);transform:translateY(-2px);color:inherit;z-index:5}
     #nftl .card.dim{border-color:rgba(232,228,214,.15);opacity:.6}
     #nftl .card .cov{position:relative;height:120px;overflow:hidden;background:#0a0a09;flex:0 0 auto;border:1px solid rgba(232,228,214,.22)}
     #nftl .card .cov img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.9);transition:transform .7s cubic-bezier(.2,.7,.2,1)}
