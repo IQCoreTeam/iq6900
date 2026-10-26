@@ -172,6 +172,10 @@ window.iqCodein = {
   solscanUrl: (sig) => `https://solscan.io/tx/${sig}${CLUSTER === "devnet" ? "?cluster=devnet" : ""}`,
   cluster: CLUSTER,
   toAscii, // shared image -> ASCII port of the art generator (ascii.js)
+  // Shrink a decoded image (canvas ImageData) to WebP via the SAME compressor the
+  // NFT creator uses (image_compress.js: @jsquash resize + webp). Lazy-imported so
+  // the wasm only loads when a user actually compresses. Returns {bytes, mime}.
+  compressImage: async (imageData, opts) => (await import("./image_compress.js?v=1")).compressImage(imageData, opts),
   // Best-effort after a confirmed write: tells the gateway to cache the new tx
   // and inject the row, so the board shows it before the next re-index. Never
   // block or fail the inscription on this (the write is already on chain).

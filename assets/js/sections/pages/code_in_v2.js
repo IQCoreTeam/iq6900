@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=67";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=68";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -146,6 +146,7 @@
       $("#ci2_ascii_file").on("change", onAsciiFile);
       $("#ci2_ascii_size, #ci2_ascii_dist").on("input", reAscii);
       $("#ci2_image_file").on("change", onImageFile);
+      $("#ci2_image_compress").on("change", () => onImageFile()); // re-process the current image when toggled
       $("#ci2_file_file").on("change", onFileFile);
       $("#ci2_view_close, #ci2_view_dot").on("click", () => $("#ci2_view_modal").addClass("hide"));
       $("#ci2_view_x").on("click", shareToX);
@@ -716,9 +717,42 @@
       r.onload = () => { uploadBody = withName(r.result, file.name); done(); refreshCost(); };
       r.readAsDataURL(file);
     }
+    // Auto-shrink an uploaded image to WebP so a big photo becomes a few-KB
+    // inscription. Decode to pixels here (DOM work), then hand them to
+    // window.iqCodein.compressImage - the SAME @jsquash compressor the NFT
+    // creator uses, so both paths share one engine. maxEdge 1280 keeps Code In
+    // uploads legible (the NFT uses 512 for small art tiles); shared module
+    // defaults to quality 80. GIFs (animation) and any failure fall back to the
+    // raw file, and the smaller of the two always wins so "compress" never grows.
+    const kB = (n) => (n / 1024).toFixed(1) + " KB";
+    async function compressToWebp(file, maxEdge = 1280, quality = 80) {
+      const bmp = await createImageBitmap(file);
+      const cv = document.createElement("canvas"); cv.width = bmp.width; cv.height = bmp.height;
+      const ctx = cv.getContext("2d"); ctx.drawImage(bmp, 0, 0);
+      const imageData = ctx.getImageData(0, 0, bmp.width, bmp.height);
+      if (bmp.close) bmp.close();
+      const { bytes, mime } = await window.iqCodein.compressImage(imageData, { maxEdge, quality });
+      const blob = new Blob([bytes], { type: mime });
+      const dataUrl = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
+      return { dataUrl, name: file.name.replace(/\.[^.]+$/, "") + ".webp", outSize: blob.size };
+    }
+    let lastImageFile = null;
     function onImageFile() {
-      const f = this.files[0]; if (!f) return;
-      readUpload(f, () => $("#ci2_image_prev").html($("<img>").attr("src", uploadBody)));
+      const f = this && this.files ? this.files[0] : lastImageFile;
+      if (!f) return;
+      lastImageFile = f;
+      const prev = () => $("#ci2_image_prev").html($("<img>").attr("src", uploadBody));
+      const raw = () => readUpload(f, () => { prev(); $("#ci2_image_size").html(kB(f.size)); });
+      const wantCompress = $("#ci2_image_compress").prop("checked") && f.type.indexOf("image/") === 0 && f.type !== "image/gif";
+      if (!wantCompress) { raw(); return; }
+      compressToWebp(f).then(({ dataUrl, name, outSize }) => {
+        if (outSize >= f.size) { raw(); return; } // never grow a file
+        uploadBody = withName(dataUrl, name);
+        prev();
+        const saved = Math.round((1 - outSize / f.size) * 100);
+        $("#ci2_image_size").html(kB(f.size) + " &rarr; <b>" + kB(outSize) + "</b> (-" + saved + "%)");
+        refreshCost();
+      }).catch(raw); // any decode/encode failure keeps the original
     }
     function onFileFile() {
       const f = this.files[0]; if (!f) return;
