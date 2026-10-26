@@ -6,7 +6,7 @@
 // real: trait files are composited on a canvas (generate), or decoded from the
 // creator's files (hand-craft / upload). Nothing here is mocked.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_studio.html?ver=2";
+  const TEMPLATE = "./html/sections/nft_studio.html?ver=4";
   const COMPOSITE = 512; // deploy images are built at this edge; compressImage downscales to <=512 anyway
   const STAGE_TEXT = {
     compress: "compressing images...",
@@ -69,7 +69,7 @@
           itemsMode: "gen",
           layers: [], selLayer: 0, roll: [], supply: 10,
           handItems: [], selHand: 0,
-          uploadItems: [],
+          uploadItems: [], upImgs: {}, upJsons: {},
           priceSol: "0.01", depositSol: "0", royaltyPct: "5", assignment: "random",
           items: null, // produced items for deploy
           connected: null, deploying: false,
@@ -109,12 +109,21 @@
       $(".stepbody").addClass("hidden");
       $(".stepbody[data-step=" + step + "]").removeClass("hidden");
       $("#nfts_prev").prop("disabled", step === 1);
-      $("#nfts_next").text(step === 4 ? "review ↑" : "continue →").toggle(step !== 4);
+      this.updateNext();
       this.renderSteps();
       this.err("");
       if (step === 2) this.renderNets();
       if (step === 3) this.renderItemsTab();
       if (step === 4) this.renderSummary();
+    },
+    // The single primary button. Step 4 hides it (the summary has its own deploy).
+    // Step 3 generate tab: "make items" with no items yet, "continue →" + a
+    // "regenerate" button once items exist. Everywhere else: "continue →".
+    updateNext: function () {
+      const s = this.state;
+      const genEmpty = s.step === 3 && s.itemsMode === "gen" && !(s.items && s.items.length);
+      $("#nfts_next").text(s.step === 4 ? "review ↑" : genEmpty ? "make items" : "continue →").toggle(s.step !== 4);
+      $("#nfts_regen").toggle(s.step === 3 && s.itemsMode === "gen" && !!(s.items && s.items.length));
     },
     goto: function (step) {
       // Validate forward moves; backward is always allowed.
@@ -135,7 +144,14 @@
       const s = this.state;
       $("#nfts_logclear").on("click", () => $("#nfts_log").empty());
       $("#nfts_prev").on("click", () => this.show(Math.max(1, s.step - 1)));
-      $("#nfts_next").on("click", () => this.goto(Math.min(4, s.step + 1)));
+      // One primary button on step 3: "make items" when none exist (generates),
+      // "continue →" once they do (with "regenerate" alongside). No separate
+      // generate button. Other steps: plain continue.
+      $("#nfts_next").on("click", () => {
+        if (s.step === 3 && s.itemsMode === "gen" && !(s.items && s.items.length)) { this.generate(); return; }
+        this.goto(Math.min(4, s.step + 1));
+      });
+      $("#nfts_regen").on("click", () => this.generate());
 
       // step 1
       $("#nfts_name").on("input", (e) => { s.name = e.target.value; });
@@ -162,7 +178,6 @@
       $("#nfts_file_trait").on("change", (e) => this.onTraitFiles(e.target.files));
       $("#nfts_reroll").on("click", () => { s.roll = rollOne(s.layers); this.renderPreview(); this.renderLegend(); });
       $("#nfts_supply").on("input", (e) => { s.supply = parseInt(e.target.value || "0", 10) || 0; this.renderCombos(); });
-      $("#nfts_generate").on("click", () => this.generate());
 
       // hand-craft
       $("#nfts_file_hand").on("change", (e) => this.onHandFiles(e.target.files));
@@ -171,13 +186,19 @@
       $("#nfts_handname").on("input", (e) => { const it = s.handItems[s.selHand]; if (it) { it.name = e.target.value; this.renderHandGrid(); } });
       $("#nfts_handaddtrait").on("click", () => this.addHandTrait());
 
-      // upload
-      $("#nfts_drop").on("click", () => $("#nfts_file_folder").val("").trigger("click"));
-      $("#nfts_file_folder").on("change", (e) => this.onFolder(e.target.files));
-      const drop = document.getElementById("nfts_drop");
-      ["dragover", "dragenter"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("hot"); }));
-      ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("hot"); }));
-      drop.addEventListener("drop", (e) => { if (e.dataTransfer && e.dataTransfer.files) this.onFolder(e.dataTransfer.files); });
+      // upload: two equip slots. Clicking a slot opens its picker; drag/drop onto
+      // either routes files by extension. Images (slot 1) required, json (slot 2)
+      // is the optional metadata, paired by name.
+      $("#nfts_slot_img").on("click", () => $("#nfts_up_imgfiles").val("").trigger("click"));
+      $("#nfts_slot_json").on("click", () => $("#nfts_up_jsonfiles").val("").trigger("click"));
+      $("#nfts_up_imgfiles").on("change", (e) => this.addUploadFiles(e.target.files));
+      $("#nfts_up_jsonfiles").on("change", (e) => this.addUploadFiles(e.target.files));
+      ["nfts_slot_img", "nfts_slot_json"].forEach((id) => {
+        const el = document.getElementById(id); if (!el) return;
+        ["dragover", "dragenter"].forEach((ev) => el.addEventListener(ev, (e) => { e.preventDefault(); el.classList.add("hot"); }));
+        el.addEventListener("dragleave", () => el.classList.remove("hot"));
+        el.addEventListener("drop", (e) => { e.preventDefault(); el.classList.remove("hot"); if (e.dataTransfer && e.dataTransfer.files) this.addUploadFiles(e.dataTransfer.files); });
+      });
 
       // step 4
       $("#nfts_price").on("input", (e) => { s.priceSol = e.target.value; this.renderSummary(); });
@@ -192,7 +213,7 @@
     refreshSlug: async function () {
       const clean = (this.state.slug || "").toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
       this.slugClean = clean;
-      $("#nfts_sluglink").text("→ iqlabs.dev/c/" + (clean || "your-handle"));
+      $("#nfts_sluglink").text("→ iqlabs.dev/collection/" + (clean || "your-handle"));
       const $tag = $("#nfts_slugtag");
       if (!clean) { this.slugOk = false; $tag.attr("class", "muted").text("pick a handle"); return; }
       if (clean.length < 3 || clean.length > 32) { this.slugOk = false; $tag.attr("class", "tag-bad").text("3..32 characters"); return; }
@@ -251,6 +272,7 @@
       if (m === "gen") this.renderGen();
       if (m === "hand") this.renderHand();
       if (m === "upload") this.renderUpload();
+      this.updateNext();
     },
 
     // generate
@@ -319,8 +341,8 @@
     },
     renderPreview: function () {
       const s = this.state;
-      if (!s.layers.length || !s.layers.some((l) => l.traits.length)) { $("#nfts_preview").removeAttr("src"); return; }
-      try { $("#nfts_preview").attr("src", compositeDataUrl(s.layers, s.roll, 256)); } catch (e) { this.dbg("preview failed: " + e.message, "e"); }
+      if (!s.layers.length || !s.layers.some((l) => l.traits.length)) { $("#nfts_preview").hide().removeAttr("src"); $("#nfts_preview_ph").show(); return; }
+      try { $("#nfts_preview").attr("src", compositeDataUrl(s.layers, s.roll, 256)).show(); $("#nfts_preview_ph").hide(); } catch (e) { this.dbg("preview failed: " + e.message, "e"); }
     },
     renderLegend: function () {
       const s = this.state; const $lg = $("#nfts_legend").empty();
@@ -365,6 +387,7 @@
       for (let i = 0; i < show; i++) grid.append($("<div class='card'>").append($("<img>").attr("src", compositeDataUrl(snapshot, dnas[i], 96))));
       $("#nfts_gencount").text(s.items.length + " items generated (preview of first " + show + ")");
       $("#nfts_genresult").removeClass("hidden");
+      this.updateNext(); // flip "make items" -> "continue →" + show "regenerate"
       this.err("");
     },
 
@@ -412,32 +435,49 @@
     },
 
     // upload folder
-    renderUpload: function () { $("#nfts_uploadreport").toggleClass("hidden", !this.state.uploadItems.length); if (this.state.uploadItems.length) this.renderUploadReport(); },
-    onFolder: async function (fileList) {
-      const s = this.state; const files = Array.from(fileList || []);
-      const imgs = {}, metas = {}; let mediaN = 0, jsonN = 0;
-      for (const f of files) {
+    renderUpload: function () {
+      const s = this.state;
+      const ni = Object.keys(s.upImgs || {}).length, nj = Object.keys(s.upJsons || {}).length;
+      $("#nfts_slot_img").toggleClass("filled", ni > 0);
+      $("#nfts_slot_img_state").text(ni ? (ni + " image" + (ni > 1 ? "s" : "") + " equipped ✓") : "drop images, or click");
+      $("#nfts_slot_json").toggleClass("filled", nj > 0);
+      $("#nfts_slot_json_state").text(nj ? (nj + " json equipped ✓") : "drop json, or click");
+      $("#nfts_uploadreport").toggleClass("hidden", !s.uploadItems.length);
+      if (s.uploadItems.length) this.renderUploadReport();
+    },
+    // Accumulate dropped/picked files into the two slots (sorted by extension, so
+    // a drop on either slot still routes right), then re-pair. Same name overwrites.
+    addUploadFiles: async function (fileList) {
+      const s = this.state;
+      for (const f of Array.from(fileList || [])) {
         const base = stripExt(f.name.split("/").pop());
-        if (/\.json$/i.test(f.name)) { try { metas[base] = JSON.parse(await f.text()); jsonN++; } catch (e) { this.dbg("bad json " + f.name, "e"); } }
-        else if (f.type.indexOf("image/") === 0 || /\.(png|jpe?g|gif|webp)$/i.test(f.name)) { imgs[base] = f; mediaN++; }
+        if (/\.json$/i.test(f.name)) { try { s.upJsons[base] = JSON.parse(await f.text()); } catch (e) { this.dbg("bad json " + f.name, "e"); } }
+        else if (f.type.indexOf("image/") === 0 || /\.(png|jpe?g|gif|webp)$/i.test(f.name)) { s.upImgs[base] = f; }
       }
-      const keys = Object.keys(imgs).sort((a, b) => (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0) || a.localeCompare(b));
+      await this.repairUpload();
+    },
+    // Pair each equipped image with its same-name json into an item.
+    repairUpload: async function () {
+      const s = this.state;
+      const keys = Object.keys(s.upImgs).sort((a, b) => (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0) || a.localeCompare(b));
       const items = []; let errs = 0;
       for (const k of keys) {
         try {
-          const d = await decodeFile(imgs[k]);
-          const meta = metas[k] || {};
-          const idx = (parseInt(k, 10)); const index = isNaN(idx) ? items.length + 1 : idx + (keys[0] === "0" ? 1 : 0); // normalize 0-based to 1-based
+          const d = await decodeFile(s.upImgs[k]);
+          const meta = s.upJsons[k] || {};
+          const idx = parseInt(k, 10); const index = isNaN(idx) ? items.length + 1 : idx + (keys[0] === "0" ? 1 : 0); // normalize 0-based to 1-based
           const name = (typeof meta.name === "string" && meta.name) ? meta.name : ((s.name.trim() || "Item") + " #" + (items.length + 1));
           const attributes = Array.isArray(meta.attributes) ? meta.attributes.filter((a) => a && a.trait_type != null).map((a) => ({ trait_type: String(a.trait_type), value: a.value })) : [];
           items.push({ index, name, bitmap: d.bitmap, url: d.url, template: { description: meta.description, attributes } });
         } catch (e) { errs++; this.dbg("item " + k + " failed: " + e.message, "e"); }
       }
-      s.uploadItems = items; s._up = { mediaN, jsonN, errs };
+      s.uploadItems = items;
+      s._up = { mediaN: Object.keys(s.upImgs).length, jsonN: Object.keys(s.upJsons).length, errs };
       s.items = items.length ? items.map((it) => ({ index: it.index, name: it.name, template: it.template, imageData: () => bitmapToImageData(it.bitmap, COMPOSITE) })) : null;
       this.renderUpload();
-      this.dbg("folder parsed: " + items.length + " items, " + mediaN + " media, " + jsonN + " json, " + errs + " errors");
-      if (!items.length) this.err("no usable images found in that selection");
+      this.updateNext();
+      this.dbg("upload: " + items.length + " items, " + s._up.mediaN + " media, " + s._up.jsonN + " json, " + errs + " errors");
+      this.err(items.length || !s._up.mediaN ? "" : "could not decode those images");
     },
     renderUploadReport: function () {
       const s = this.state; const u = s._up || {};
@@ -477,7 +517,7 @@
       $("#nfts_deployfee").text("deploy fee: ~" + fee.toFixed(4) + " SOL (" + n + " items)");
       // reflect connection state on the button
       const addr = (window.iqNft && window.iqNft.connected && window.iqNft.connected()) || this.state.connected;
-      $("#nfts_deploy").text(s.deploying ? "deploying..." : addr ? "DEPLOY · 1 SIGNATURE" : "CONNECT WALLET").prop("disabled", !!s.deploying);
+      $("#nfts_deploy").text(s.deploying ? "deploying..." : s.deployed ? "DEPLOYED ✓" : addr ? "DEPLOY · 1 SIGNATURE" : "CONNECT WALLET").prop("disabled", !!s.deploying || !!s.deployed);
     },
     onDeployBtn: async function () {
       const s = this.state;
@@ -511,6 +551,8 @@
             if (st === "compress" && x) this.setBar(2 + (x.done / Math.max(1, total)) * 60);
             if (st === "stage") this.setBar(66);
             if (st === "manifest") this.setBar(74);
+            if (st === "logo") this.setBar(77);
+            if (st === "banner") this.setBar(80);
             if (st === "collection") this.setBar(82);
             if (st === "deploy") this.setBar(90);
             if (st === "finalize") this.setBar(96);
@@ -526,6 +568,7 @@
       } finally { s.deploying = false; this.renderSummary(); }
     },
     showResult: function (res) {
+      this.state.deployed = true; // lock the deploy button: the collection now exists
       this.status(STAGE_TEXT.done);
       $("#nfts_rescol").text(res.collection);
       const L = $("#nfts_reslinks").empty();

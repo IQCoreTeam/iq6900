@@ -57,6 +57,7 @@
     #nfts .gtile .gx { position:absolute; top:0; right:3px; cursor:pointer; font-size:.8rem; color:#fff; }
     #nfts .gadd { flex:0 0 92px; width:92px; height:92px; border:1px dashed var(--line); border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:.6rem; color:var(--dim); text-align:center; }
     #nfts .preview { width:220px; height:220px; border:1px solid var(--line); border-radius:8px; background:#0d0c0a; object-fit:contain; display:block; }
+    #nfts .preview-ph { display:flex; align-items:center; justify-content:center; text-align:center; opacity:.4; font:500 11px/1.6 'Kode Mono',monospace; letter-spacing:.06em; color:var(--fg); box-sizing:border-box; padding:16px; }
     #nfts .legend { font-size:.68rem; }
     #nfts .legend .lg { display:flex; gap:8px; padding:3px 0; }
     #nfts .legend .lg .lk { width:90px; color:var(--dim); }
@@ -70,6 +71,18 @@
     #nfts .chip .cx { opacity:.5; cursor:pointer; }
     #nfts .drop { border:1px dashed var(--line); border-radius:7px; padding:30px; text-align:center; cursor:pointer; }
     #nfts .drop.hot { border-color:var(--green); background:rgba(143,255,176,.05); }
+    #nfts .eqrow { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+    #nfts .eqslot { position:relative; display:flex; flex-direction:column; align-items:center; gap:3px; border:1px dashed var(--line); border-radius:10px; padding:22px 14px 18px; text-align:center; cursor:pointer; background:rgba(0,0,0,.22); transition:border-color .2s, background .2s, box-shadow .2s; }
+    #nfts .eqslot:hover { border-color:var(--fg); }
+    #nfts .eqslot.hot { border-color:var(--green); background:rgba(143,255,176,.05); }
+    #nfts .eqslot.filled { border-style:solid; border-color:var(--green); box-shadow:0 0 0 1px var(--green), 0 0 16px rgba(143,255,176,.14); }
+    #nfts .eqnum { position:absolute; top:8px; left:11px; font:700 11px 'Kode Mono',monospace; opacity:.35; }
+    #nfts .eqslot.filled .eqnum { opacity:1; color:var(--green); }
+    #nfts .eqtitle { font:700 13px 'Kode Mono',monospace; letter-spacing:.14em; }
+    #nfts .eqsub { font:500 9px 'Kode Mono',monospace; opacity:.5; }
+    #nfts .eqstate { font:600 11px 'Kode Mono',monospace; margin-top:10px; opacity:.7; }
+    #nfts .eqslot.filled .eqstate { color:var(--green); opacity:1; }
+    #nfts .eqslot input { display:none; }
     #nfts .kv { display:flex; justify-content:space-between; gap:12px; padding:7px 12px; border-bottom:1px solid var(--line); font-size:.7rem; }
     #nfts .kv:last-child { border-bottom:none; }
     #nfts .kv .kk { color:var(--dim); }
@@ -166,7 +179,7 @@
               <div class="fl" id="nfts_galtitle">layer images</div>
               <div class="gallery" id="nfts_gallery"></div>
               <div style="display:grid; grid-template-columns:230px minmax(0,1fr); gap:16px; align-items:start; margin-top:12px" id="nfts_pw">
-                <div><img class="preview" id="nfts_preview" alt="preview"><div style="margin-top:6px"><button class="btn2" id="nfts_reroll" type="button">re-roll preview</button></div></div>
+                <div><img class="preview" id="nfts_preview" alt="preview" style="display:none"><div class="preview preview-ph" id="nfts_preview_ph">add an image<br>to see preview</div><div style="margin-top:6px"><button class="btn2" id="nfts_reroll" type="button">re-roll preview</button></div></div>
                 <div>
                   <div class="fl">layer stack (front → back)</div>
                   <div class="legend" id="nfts_legend"></div>
@@ -174,7 +187,6 @@
                     <div class="fl">how many to generate</div>
                     <div style="display:flex; align-items:center; gap:8px"><input class="inp" id="nfts_supply" style="width:110px" value="10"><span class="muted" id="nfts_combos">of ? possible</span></div>
                     <div class="note" id="nfts_dup"></div>
-                    <button class="btn solid" id="nfts_generate" type="button" style="margin-top:10px">GENERATE ITEMS</button>
                   </div>
                 </div>
               </div>
@@ -206,14 +218,23 @@
 
         <!-- UPLOAD FOLDER -->
         <div id="nfts_upload" class="hidden">
-          <div class="panel" style="padding:12px 14px; margin-top:12px">
-            <div class="fl">expected folder format</div>
-            <div class="note" style="margin:4px 0 0">images named by token id: 0.png, 1.png, 2.png (or 1.png …). matching metadata json with the same names (0.json …) is optional; missing metadata is auto-generated. json is the OpenSea shape: name, description, attributes[]. the image field is ignored (we inscribe and point it on-chain).</div>
+          <div class="note" style="margin-top:12px">equip both slots to build your collection. drop your <b>images</b> on slot 1 and optional <b>metadata .json</b> on slot 2 - they pair by name (<b>1.png &harr; 1.json</b>). no json? names and traits are auto-filled. the json's image field is ignored (the image is inscribed on-chain).</div>
+          <div class="eqrow">
+            <div class="eqslot" id="nfts_slot_img">
+              <span class="eqnum">1</span>
+              <span class="eqtitle">IMAGES</span>
+              <span class="eqsub">required · png / jpg / gif / webp</span>
+              <span class="eqstate" id="nfts_slot_img_state">drop images, or click</span>
+            </div>
+            <div class="eqslot" id="nfts_slot_json">
+              <span class="eqnum">2</span>
+              <span class="eqtitle">METADATA</span>
+              <span class="eqsub">optional · .json (OpenSea shape)</span>
+              <span class="eqstate" id="nfts_slot_json_state">drop json, or click</span>
+            </div>
           </div>
-          <div class="drop" id="nfts_drop" style="margin-top:12px">
-            <div class="fl" style="font-size:.8rem">drop a folder here, or click to choose files</div>
-            <div class="note" style="margin:6px 0 0">images + optional json are parsed and paired by name.</div>
-          </div>
+          <input type="file" id="nfts_up_imgfiles" accept="image/*" multiple class="hidden">
+          <input type="file" id="nfts_up_jsonfiles" accept=".json,application/json" multiple class="hidden">
           <div id="nfts_uploadreport" class="hidden" style="margin-top:12px">
             <div class="panel"><div class="kv"><span class="kk">media files</span><span id="nfts_up_media">-</span></div>
               <div class="kv"><span class="kk">metadata json</span><span id="nfts_up_json">-</span></div>
@@ -263,6 +284,7 @@
 
       <div class="navrow">
         <button class="btn2" id="nfts_prev" type="button">back</button>
+        <button class="btn2" id="nfts_regen" type="button" style="display:none">regenerate</button>
         <button class="btn" id="nfts_next" type="button">continue →</button>
       </div>
 

@@ -4,7 +4,7 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=21";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=22";
   const PER_PAGE = 6; // design: 6 collections per registry page
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet",
@@ -63,6 +63,7 @@
         this.dbg("page init" + (single ? ", single=" + single : asset ? ", asset=" + asset : slug ? ", slug=" + slug : ", home"));
         bridge(() => {
           this.wireNav();
+          this.devnetNotice();
           // browser back and the [ x ] button both close the viewer overlay through history
           window.addEventListener("popstate", () => { if ($("#nftl_viewer").hasClass("open")) this.hideViewer(); });
           let route;
@@ -79,6 +80,19 @@
       });
     },
 
+    // First-entry notice: the launchpad is on devnet while testing. Once per page load.
+    devnetNotice: function () {
+      if (window.__nftlDevnetSeen) return;
+      window.__nftlDevnetSeen = true;
+      const $ov = $("<div>").css({ position: "fixed", inset: "0", zIndex: "300", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(4,6,4,.8)", backdropFilter: "blur(3px)", webkitBackdropFilter: "blur(3px)" });
+      const $box = $("<div>").css({ maxWidth: "380px", margin: "20px", padding: "22px 24px", background: "rgba(20,19,16,.98)", border: "1px solid #e8e4d6", borderRadius: "8px", textAlign: "center", color: "#e8e4d6" });
+      $box.append($("<div>").css({ font: "700 14px 'Archivo',sans-serif", letterSpacing: ".04em", marginBottom: "10px", color: "#2BD52D" }).text("TESTING IN PROGRESS"));
+      $box.append($("<div>").css({ font: "500 12px/1.7 'Kode Mono',monospace", opacity: ".8" }).text("The IQ NFT launchpad is on Solana devnet for now. Please connect a devnet wallet to try it out."));
+      const $ok = $("<button>").css({ marginTop: "18px", padding: "9px 26px", background: "#e8e4d6", color: "#141310", border: "none", borderRadius: "5px", font: "700 12px 'Kode Mono',monospace", letterSpacing: ".1em", cursor: "pointer" }).text("OK");
+      $ok.on("click", () => $ov.remove());
+      $box.append($ok);
+      $ov.append($box).appendTo("body");
+    },
     // ── nav: wallet pill shared by every view ───────────────────────────────
     wireNav: function () {
       $("#nftl_hconnect").on("click", async () => {
@@ -308,7 +322,7 @@
         // sale row carries its own on-chain sale price (lamports, from Tensor)
         const mintPrice = Number(c.maxSupply) ? solNum(c.priceLamports) + " SOL" : "free";
         try {
-          (await window.iqNft.getRecent(c.slug, 8)).forEach((x) => {
+          (await window.iqNft.getRecent(c.slug, 100)).forEach((x) => {
             const sale = x.kind === "sale";
             rows.push({ ...x, colName: c.name || c.slug, slug: c.slug, sale: sale,
               ev: sale ? "SALE" : "MINT",
@@ -319,7 +333,7 @@
       }
       rows.sort((a, b) => (Number(b.registeredAt) || 0) - (Number(a.registeredAt) || 0) || b.index - a.index);
       if (!rows.length) { $r.append($("<div class='cm' style='padding:16px 14px'>").text("// no mints yet")); return; }
-      rows.slice(0, 16).forEach((x) => {
+      rows.slice(0, 300).forEach((x) => {
         const $row = $("<div class='fr flickrow'>").on("click", () => this.openViewer(x.asset, x.slug));
         const $th = x.img ? $("<img class='fth' alt=''>").attr("src", x.img).on("error", function () { $(this).replaceWith($("<span class='ph fth'>").text("#" + x.index)); }) : $("<span class='ph fth'>").text("#" + x.index);
         $row.append($("<div class='fn'>").append($th)

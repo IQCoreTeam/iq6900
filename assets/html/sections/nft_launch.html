@@ -172,7 +172,7 @@
     #nftl .ccov img{width:100%;height:100%;object-fit:cover;display:block}
     #nftl .ccov .none{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 9.5px 'Kode Mono',monospace;color:#2BD52D;background:repeating-linear-gradient(135deg,rgba(232,228,214,.07) 0 6px,rgba(0,0,0,.25) 6px 12px)}
     #nftl .ctitle{font:400 24px 'Zen Dots',monospace;min-width:0;word-break:break-word}
-    #nftl .itemgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px}
+    #nftl .itemgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px;max-height:calc(100vh - 430px);min-height:220px;overflow-y:auto;padding:2px 6px 2px 2px;scrollbar-width:thin;scrollbar-color:rgba(232,228,214,.35) transparent}
     #nftl .legend{display:flex;gap:12px;margin-top:10px;font:600 8.5px 'Kode Mono',monospace;letter-spacing:.12em;opacity:.8;flex-wrap:wrap}
     #nftl .c-common{color:rgba(232,228,214,.55)}#nftl .c-rare{color:#5aa9ff}#nftl .c-epic{color:#c77dff}#nftl .c-legendary{color:#ffb347}
     @keyframes nftl_legend{0%,100%{box-shadow:0 0 0 1px rgba(255,179,71,.45),0 0 14px rgba(255,179,71,.3)}50%{box-shadow:0 0 0 1px rgba(255,179,71,.85),0 0 26px rgba(255,179,71,.55),0 0 50px rgba(255,179,71,.2)}}
