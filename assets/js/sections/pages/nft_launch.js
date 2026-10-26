@@ -361,7 +361,7 @@
       $("#nftl_chip").attr("class", "chip " + st.cls).text(st.label);
       $("#nftl_meta").text(["by " + short(col.creator), num(col.maxSupply) + " items", col.sequential ? "sequential" : "random", col.symbol ? "$" + col.symbol : ""].filter(Boolean).join(" · "));
       $("#nftl_desc").text(col.description || "").toggle(!!col.description);
-      const dev = window.iqNft.getRpc().indexOf("devnet") >= 0 ? "?cluster=devnet" : "";
+      const dev = window.iqNft.explorerCluster();
       $("#nftl_clinks").empty()
         .append(link("COLLECTION ON CHAIN", "https://solscan.io/account/" + col.collection + dev))
         .append(link("REGISTRY", "https://solscan.io/account/" + col.registry + dev))
@@ -459,7 +459,7 @@
         $s.append($("<div class='kvbox'>")
           .append($("<div class='kv'>").append($("<span class='kvk'>").text("image inscription C")).append($("<span class='kvv nftl-g'>").text(short(r.C))))
           .append($("<div class='kv'>").append($("<span class='kvk'>").text("metadata inscription M")).append($("<span class='kvv nftl-g'>").text(short(r.M))))
-          .append($("<div class='kv'>").append($("<span class='kvk'>").text("uri")).append($("<span class='kvv'>").text("gateway.iqlabs.dev/token-meta/" + short(r.M)))));
+          .append($("<div class='kv'>").append($("<span class='kvk'>").text("uri")).append($("<span class='kvv'>").text(window.iqNft.gatewayHost() + "/token-meta/" + short(r.M)))));
         $s.append($("<div class='acts lab'>")
           .append($("<a class='btng'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(r.slug) + "&asset=" + r.asset).text("VIEW NFT →").on("click", (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.which === 2) return; e.preventDefault(); this.openViewer(r.asset, r.slug); }))
           .append(r.mintSig ? link("SOLSCAN", window.iqNft.solscanTx(r.mintSig)).css("padding", "9px 16px") : null)
@@ -593,7 +593,7 @@
       }
       // RIGHT column: on-chain account rows + action buttons
       this.renderAssetRows(a);
-      const dev = window.iqNft.getRpc().indexOf("devnet") >= 0 ? "?cluster=devnet" : "";
+      const dev = window.iqNft.explorerCluster();
       const L = $("#nftl_vlinks").empty();
       L.append($("<button class='btng' type='button' id='nftl_recover'>").text("DECODE").on("click", () => this.recoverAsset(addr)));
       L.append($("<button class='btn2' type='button'>").text("METADATA").on("click", () => this.openMeta()));

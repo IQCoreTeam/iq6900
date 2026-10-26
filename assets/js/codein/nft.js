@@ -17,12 +17,13 @@ import { writer } from "@iqlabs-official/solana-sdk";
 import { notifyNftFeedRow } from "./nft_notify.js?v=1";
 import { writeFeedRow, topUp, sweep, confirmOrCheck } from "./inscribe.js?v=8";
 import { estimateCost, getAccountRent } from "./cost.js?v=6";
+import { preset } from "./nft_net.js?v=1";
 
-// The backend service. Separate from the gateway (which only serves reads).
-// A localStorage override lets a dev point at a local devnet backend.
-const NFT_API_DEFAULT = "https://nft.iqlabs.dev";
+// The backend service. Separate from the gateway (which only serves reads). The
+// per-network default lives in nft_net.js; a localStorage override lets a dev
+// point at a local backend on the same network.
 const API_KEY = "iq6900_nft_api";
-export function nftApi() { try { return localStorage.getItem(API_KEY) || NFT_API_DEFAULT; } catch (e) { return NFT_API_DEFAULT; } }
+export function nftApi() { try { return localStorage.getItem(API_KEY) || preset().api; } catch (e) { return preset().api; } }
 export function setNftApi(url) { try { url ? localStorage.setItem(API_KEY, url) : localStorage.removeItem(API_KEY); } catch (e) {} }
 
 export async function api(path, method = "GET", body) {

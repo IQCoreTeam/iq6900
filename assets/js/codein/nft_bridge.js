@@ -10,17 +10,19 @@ import * as nft from "./nft.js?v=6";
 import { deploy, pendingDeploy } from "./nft_create.js?v=4";
 import { compressImage } from "./image_compress.js?v=1";
 import { readAsset, readInscription, viewAssetViaGateway, gatewayMetadata } from "./nft_asset.js?v=4";
+import { preset, net, setNet } from "./nft_net.js?v=1";
 
-// The NFT program + backend currently run on DEVNET while the rest of the site
-// is mainnet, so the NFT page keeps its own RPC under its own localStorage key.
-// Flip RPC_DEFAULT (and the backend) to mainnet at go-live.
-const RPC_DEFAULT = "https://api.devnet.solana.com";
+// The NFT program + backend run on their own network (see nft_net.js), which may
+// differ from the rest of the site, so the NFT page keeps its own RPC under its
+// own localStorage key. To switch networks, flip NET_DEFAULT in nft_net.js; the
+// RPC, backend, gateway and explorer all move together.
 const RPC_KEY = "iq6900_nft_rpc";
-function rpc() { try { return localStorage.getItem(RPC_KEY) || RPC_DEFAULT; } catch (e) { return RPC_DEFAULT; } }
+function rpc() { try { return localStorage.getItem(RPC_KEY) || preset().rpc; } catch (e) { return preset().rpc; } }
 function connection() { return new Connection(rpc(), "confirmed"); }
 // The gateway that serves /img and /token-meta for this cluster (matches the
-// backend's config.gatewayBase); used when the client builds a single NFT's M.
-function gatewayBase() { return rpc().indexOf("devnet") >= 0 ? "https://dev-gateway.iqlabs.dev" : "https://gateway.iqlabs.dev"; }
+// backend's config.gatewayBase). From the preset, so it can never desync from
+// the cluster even if a same-network custom RPC is set.
+function gatewayBase() { return preset().gateway; }
 
 function phantom() {
   const p = (window.phantom && window.phantom.solana) || window.solana || null;
@@ -50,7 +52,13 @@ window.iqNft = Object.assign({}, nft, {
   getRpc: rpc,
   setRpc: (u) => { try { u ? localStorage.setItem(RPC_KEY, u) : localStorage.removeItem(RPC_KEY); } catch (e) {} },
   health: async () => { try { return await (await fetch(nft.nftApi() + "/health")).json(); } catch (e) { return { ok: false, error: String(e) }; } },
-  solscanTx: (sig) => `https://solscan.io/tx/${sig}${rpc().indexOf("devnet") >= 0 ? "?cluster=devnet" : ""}`,
+  solscanTx: (sig) => `https://solscan.io/tx/${sig}${preset().explorerCluster}`,
+  // cluster suffix + gateway host, so the page (nft_launch.js) builds explorer
+  // links and host labels from the same single source instead of re-sniffing.
+  explorerCluster: () => preset().explorerCluster,
+  gatewayHost: () => preset().gateway.replace(/^https?:\/\//, ""),
+  net,
+  setNet,
   // the gateway's own hosted viewer page for an inscription (renders the content
   // from chain); cluster-matched so devnet sigs resolve on the devnet gateway
   viewUrl: (sig) => gatewayBase() + "/view/" + sig,
