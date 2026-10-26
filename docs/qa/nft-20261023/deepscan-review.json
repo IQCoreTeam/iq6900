@@ -1,0 +1,26 @@
+{
+  "scope": "Proposed NFT frontend/backend diffs only; not a new audit of every IQ repository or a production certification",
+  "rules": {
+    "noPassThroughWrappers": "Pass: browser adapter constructs domain endpoint/payload; shared helper performs bounded transport; NFT helper selects cluster and verifies confirmation",
+    "reuse": "Pass: searches confirmed existing writers/readers/gateway routes reused; Solana HTTP notifier extracted instead of copied",
+    "typesAndNames": "No new production type aliases; unused catch variables removed; new frontend tests formatted for readability",
+    "parameters": "New helper parameters are used to select connection/signature/row/burner or transport endpoints/payload",
+    "responsibilities": "Confirmation/cluster policy, HTTP transport, mint orchestration, backend sales synchronization and UI CSS remain separate"
+  },
+  "checks": {
+    "frontend": 126,
+    "portableBackend": 6,
+    "gatewayIntegration": "pass",
+    "backendBuild": "pass",
+    "diffCheck": "pass",
+    "realLocalMintReceipt": "fresh-mint-evidence.json",
+    "mobileBrowserReceipt": "final-responsive-browser.json"
+  },
+  "notProven": [
+    "Live Irys staging upload",
+    "Live Tensor ingestion",
+    "Physical mobile wallet",
+    "Deployed end-to-end acceptance"
+  ],
+  "remoteChanges": false
+}

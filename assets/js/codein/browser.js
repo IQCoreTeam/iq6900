@@ -10,6 +10,7 @@ import { estimateCost } from "./cost.js?v=6";
 import { inscribe, inscribeMeta, sweep } from "./inscribe.js?v=8";
 import { feedTablePda, programId } from "./feed.js";
 import { toAscii } from "./ascii.js?v=1";
+import { notifyGateways } from "./gateway_notify.js?v=1";
 import { marketRows } from "./market.js?v=1";
 
 // Live default write RPC. NOTE: api.mainnet-beta.solana.com 403s every browser
@@ -175,20 +176,10 @@ window.iqCodein = {
   // Best-effort after a confirmed write: tells the gateway to cache the new tx
   // and inject the row, so the board shows it before the next re-index. Never
   // block or fail the inscription on this (the write is already on chain).
-  notify: async (sig, row) => {
-    const body = JSON.stringify({ txSignature: sig, row });
-    for (const gw of gateways()) {
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 4000);
-      try {
-        const res = await fetch(`${gw}/table/${feedTable}/notify`, {
-          method: "POST", headers: { "Content-Type": "application/json" }, body, signal: ctrl.signal,
-        });
-        if (res.ok) return true;
-      } catch (e) {} finally { clearTimeout(t); }
-    }
-    return false;
-  },
+  notify: (sig, row) => notifyGateways(
+    gateways().map(gw => `${gw}/table/${feedTable}/notify`),
+    { txSignature: sig, row },
+  ),
 };
 // Chain registry: the page module swaps window.iqCodein between adapters when
 // the route moves between ?menu=codein (this file) and ?menu=hoodin (evm.js).

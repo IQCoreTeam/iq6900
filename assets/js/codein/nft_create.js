@@ -13,9 +13,10 @@
 //   creator inscribes manifestJson -> manifestSig, collectionJson -> metaSig
 //   deploy   -> a co-built tx (burner payer + new collection keypair sign), fee incl.
 //   finalize -> the DB rows, once the registry is on chain.
+import { notifyNftFeedRow } from "./nft_notify.js?v=1";
 import { Keypair, Transaction } from "@solana/web3.js";
 import { writer } from "@iqlabs-official/solana-sdk";
-import { api, bytesToBase64, base64ToBytes } from "./nft.js?v=5";
+import { api, bytesToBase64, base64ToBytes } from "./nft.js?v=6";
 import { topUp, sweep, confirmOrCheck, writeFeedRow } from "./inscribe.js?v=8";
 import { estimateCost, getAccountRent } from "./cost.js?v=6";
 import { compressImage } from "./image_compress.js?v=1";
@@ -115,8 +116,10 @@ export async function deploy({ connection, wallet, burner, spec, items, onStage 
   const resolve = async (x) => (typeof x === "function" ? await x() : x);
   const inscribeImage = async (imageData, maxEdge) => {
     const { bytes, mime } = await compressImage(imageData, { maxEdge });
-    const row = JSON.stringify({ kind: "image", body: `data:${mime};base64,${bytesToBase64(bytes)}`, who });
-    return writeFeedRow({ connection, burner, row, owner: wallet.publicKey });
+    const row = { kind: "image", body: `data:${mime};base64,${bytesToBase64(bytes)}`, who };
+    const signature = await writeFeedRow({ connection, burner, row: JSON.stringify(row), owner: wallet.publicKey });
+    void notifyNftFeedRow(connection, signature, row, burnerPk);
+    return signature;
   };
   if (spec.logo && !p.logoSig) { stage("logo"); p.logoSig = await inscribeImage(await resolve(spec.logo), 512); saveProgress(slug, p); }
   if (spec.banner && !p.bannerSig) { stage("banner"); p.bannerSig = await inscribeImage(await resolve(spec.banner), 1024); saveProgress(slug, p); }
