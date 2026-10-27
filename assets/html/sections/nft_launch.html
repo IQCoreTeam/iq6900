@@ -293,7 +293,8 @@
     @media (max-width:1100px){#nftl #nftl_nav_mid{display:none}}
     @media (max-width:980px){#nftl #nftl_desk{flex-direction:column}#nftl #nftl_mw{flex:none}#nftl .colscroll{max-height:none}#nftl .feed{max-height:none}#nftl #nftl_colpage,#nftl #nftl_vgrid,#nftl #nftl_sgrid{grid-template-columns:1fr}#nftl .cleft,#nftl .vleft{border-right:none;border-bottom:1px solid rgba(232,228,214,.2)}#nftl .vcL{border-right:none;border-bottom:1px solid rgba(232,228,214,.18)}#nftl .vcR{border-left:none;border-top:1px solid rgba(232,228,214,.18)}#nftl .itemgrid{grid-template-columns:repeat(4,1fr)}}
     @media (max-width:720px){#nftl .colgrid{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:560px){#nftl .colgrid{grid-template-columns:1fr}#nftl .itemgrid{grid-template-columns:repeat(3,1fr)}#nftl .nav .logo{display:none}#nftl .nav,#nftl #nftl_view>.win>.wh{flex-wrap:wrap}#nftl .chead{flex-direction:column}#nftl .chead>div:last-child{width:100%}}
+    #nftl #nftl_chains .lshort{display:none}
+    @media (max-width:560px){#nftl .colgrid{grid-template-columns:1fr}#nftl .itemgrid{grid-template-columns:repeat(3,1fr)}#nftl .nav .logo{display:none}#nftl .nav,#nftl #nftl_view>.win>.wh{flex-wrap:wrap}#nftl .chead{flex-direction:column}#nftl .chead>div:last-child{width:100%}#nftl #nftl_mw{display:none}#nftl #nftl_chains .lfull{display:none}#nftl #nftl_chains .lshort{display:inline}}
   </style>
 
   <!-- nav: same bar as the design's sticky header -->
@@ -319,7 +320,7 @@
           <span style="margin-left:6px;opacity:.8">launchpad.exe</span>
           <span style="margin-left:auto;opacity:.5;font-size:9px">inscription nft &middot; gateway.iqlabs.dev</span></div>
         <div class="lpbody">
-          <div class="seg lab" id="nftl_chains"><div class="on" data-chain="all">ALL CHAINS</div><div data-chain="solana">&#9678; SOLANA</div><div class="soon" title="coming soon">&#9650; ROBINHOOD<small>COMING SOON</small></div></div>
+          <div class="seg lab" id="nftl_chains"><div class="on" data-chain="all"><span class="lfull">ALL CHAINS</span><span class="lshort">ALL</span></div><div data-chain="solana">&#9678; <span class="lfull">SOLANA</span><span class="lshort">SOL</span></div><div class="soon" title="coming soon">&#9650; <span class="lfull">ROBINHOOD</span><span class="lshort">RH</span><small><span class="lfull">COMING SOON</span><span class="lshort">SOON</span></small></div></div>
           <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
             <div style="display:flex;gap:8px" class="lab" id="nftl_tabs"><div class="tab on" data-tab="cols">COLLECTIONS</div><div class="tab" data-tab="market">MARKET</div><div class="tab" data-tab="mine">MY NFTS</div></div>
             <a href="?menu=nft-create" class="btn">+ LAUNCH A COLLECTION</a>

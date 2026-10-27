@@ -4,7 +4,7 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=23";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=24";
   const PER_PAGE = 6; // design: 6 collections per registry page
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet",
@@ -145,7 +145,7 @@
       // no caption on MY NFTS (the gallery header carries the context)
       $("#nftl_desk_cap").css("display", tab === "mine" ? "none" : "block").text(tab === "cols"
         ? "// collections launched from this board. each one = a core collection + N inscriptions. pick one, mint one."
-        : tab === "market" ? "// secondary market for everything minted here. not built yet: minted items trade on magic eden and tensor for now."
+        : tab === "market" ? "// secondary trading. every item is a standard on-chain asset, so it trades on the open marketplaces."
         : "");
       if (tab === "market") this.renderMarket();
       if (tab === "mine") this.renderMine();
@@ -242,10 +242,31 @@
       return $card.append($cov).append($("<div class='cn'>").text(c.name || c.slug)).append($segwrap)
         .append($("<p class='cdesc'>").text(desc)).append($stats).append($chain).append($band);
     },
+    // Every item is a standard on-chain asset, so secondary trading happens on
+    // the open marketplaces, not a native program. External markets are mainnet
+    // only, so the links are disabled while the launchpad runs on devnet.
     renderMarket: function () {
-      $("#nftl_market").empty().append($("<div class='empty'>")
-        .append($("<div class='zen'>").text("MARKET.EXE NOT BUILT YET."))
-        .append($("<div class='cm' style='opacity:.55'>").html("listing and buying through our own marketplace program is on the roadmap.<br>until then every minted item is a normal core asset: it trades on magic eden and tensor like any other nft.")));
+      const devnet = !!(window.iqNft.net && window.iqNft.net() === "devnet");
+      const chain = this.chain || "all";
+      const markets = [];
+      if (chain === "all" || chain === "solana") {
+        markets.push({ name: "Tensor", url: "https://www.tensor.trade" });
+        markets.push({ name: "Magic Eden", url: "https://magiceden.io" });
+      }
+      if (chain === "all" || chain === "robinhood") markets.push({ name: "OpenSea", url: "https://opensea.io" });
+      const $m = $("#nftl_market").empty();
+      $m.append($("<p class='cm' style='opacity:.6;margin:0 0 16px'>").text(
+        devnet
+          ? "// every item is a standard on-chain asset, so it trades on the open marketplaces. these open at mainnet launch."
+          : "// every item is a standard on-chain asset, so it trades on the open marketplaces below."));
+      const $row = $("<div style='display:flex;gap:10px;flex-wrap:wrap'>");
+      markets.forEach((mk) => {
+        const label = "TRADE ON " + mk.name.toUpperCase();
+        if (devnet) $row.append($("<div class='btn' style='opacity:.4;cursor:not-allowed' title='available at mainnet'>").text(label));
+        else $row.append($("<a class='btn' target='_blank' rel='noopener'>").attr("href", mk.url).text(label + " ↗"));
+      });
+      $m.append($row);
+      if (devnet) $m.append($("<div class='cm' style='opacity:.4;margin-top:12px'>").text("// disabled on devnet · enabled at mainnet"));
     },
     // MY NFTS: the public devnet RPC does not serve DAS getAssetsByOwner, so we
     // aggregate across every collection's items (the registry mirror carries the
