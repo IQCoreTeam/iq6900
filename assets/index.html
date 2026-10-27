@@ -40,6 +40,8 @@
 
 
     <script src="https://bundle.run/buffer@6.0.3"></script>
+    <!-- web3.js v1 (SystemProgram, bigint layouts) references a bare global Buffer; expose the polyfill as one. -->
+    <script>window.Buffer = window.Buffer || (window.buffer && window.buffer.Buffer);</script>
 
     <!--My js-->
     <script type="module" src="js/codein/browser.js?ver=37"></script>
