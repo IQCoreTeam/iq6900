@@ -6,7 +6,7 @@
 // real: trait files are composited on a canvas (generate), or decoded from the
 // creator's files (hand-craft / upload). Nothing here is mocked.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_studio.html?ver=5";
+  const TEMPLATE = "./html/sections/nft_studio.html?ver=6";
   const COMPOSITE = 512; // deploy images are built at this edge; compressImage downscales to <=512 anyway
   const STAGE_TEXT = {
     compress: "compressing images...",

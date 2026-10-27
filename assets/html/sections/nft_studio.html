@@ -14,6 +14,7 @@
     #nfts .body { padding:16px; }
     #nfts h2 { font-family:"Zen Dots",monospace; font-size:1.1rem; margin:0 0 4px; }
     #nfts .sub { color:var(--dim); font-size:.78rem; margin-bottom:10px; line-height:1.6; }
+    #nfts #nfts_back { display:inline-block; margin-bottom:14px; }
     #nfts .steps { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
     #nfts .steps .st { flex:1; min-width:96px; text-align:center; border:1px solid var(--line); border-radius:5px; padding:8px 0; font-size:.66rem; letter-spacing:.1em; cursor:pointer; color:var(--dim); }
     #nfts .steps .st.on { border-color:var(--cream); color:var(--cream); }
@@ -116,6 +117,7 @@
       #nfts .slugbox span { font-size:12px; }
       #nfts .btn, #nfts .btn2 { font-size:14px; min-height:44px; }
       #nfts #nfts_back, #nfts #nfts_result, #nfts #nfts_error { font-size:12px !important; }
+      #nfts .steps { display:none; } /* step indicator is nice-to-have; next/back buttons drive nav on mobile */
       #nfts .steps .st { box-sizing:border-box; min-height:44px; }
       #nfts #nfts_pw { grid-template-columns:minmax(0,1fr) !important; }
       #nfts .gw > div { min-width:0; }
