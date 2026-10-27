@@ -101,6 +101,28 @@
     #nfts .log .t { color:var(--dim); }
     #nfts .log .e { color:var(--red); }
     #nfts .hidden { display:none; }
+    /* The site's viewport-sized rem makes this form unreadable on phones. */
+    @media (max-width:600px) {
+      #nfts { box-sizing:border-box; width:100%; min-width:0; }
+      #nfts .bar { flex-wrap:wrap; }
+      #nfts .ttl { font-size:12px; overflow-wrap:anywhere; }
+      #nfts .bar .r, #nfts .env { font-size:11px; }
+      #nfts h2 { font-size:18px; }
+      #nfts .sub, #nfts .tile, #nfts .lrow .ln, #nfts .status { font-size:14px; }
+      #nfts .fl, #nfts .steps .st, #nfts .slughint, #nfts .tile .t2, #nfts .seg,
+      #nfts .note, #nfts .lrow .lc, #nfts .legend, #nfts .chip, #nfts .kv,
+      #nfts .log .lh, #nfts .log pre, #nfts .gadd, #nfts .card.add { font-size:12px; }
+      #nfts .inp, #nfts .slugbox input { font-size:16px; min-height:44px; }
+      #nfts .slugbox span { font-size:12px; }
+      #nfts .btn, #nfts .btn2 { font-size:14px; min-height:44px; }
+      #nfts #nfts_back, #nfts #nfts_result, #nfts #nfts_error { font-size:12px !important; }
+      #nfts .steps .st { box-sizing:border-box; min-height:44px; }
+      #nfts #nfts_pw { grid-template-columns:minmax(0,1fr) !important; }
+      #nfts .gw > div { min-width:0; }
+      #nfts .preview { max-width:100%; box-sizing:border-box; }
+      #nfts #nfts_combos, #nfts #nfts_deployfee, #nfts .gtile .gn, #nfts .card .cn,
+      #nfts .gtile .gx, #nfts .arw, #nfts .log .lh button { font-size:12px; }
+    }
   </style>
 
   <div class="exe">

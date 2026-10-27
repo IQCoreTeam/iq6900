@@ -118,6 +118,12 @@ async function engine({
     { context },
   );
   await mod.link((name) => {
+    if (name === "./nft_net.js?v=1") {
+      return new vm.SourceTextModule(
+        fs.readFileSync(path.join(__dirname, "../assets/js/codein/nft_net.js"), "utf8"),
+        { context },
+      );
+    }
     const values = imports[name];
     assert.ok(values, "unexpected " + name);
     return new vm.SyntheticModule(

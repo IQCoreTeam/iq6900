@@ -2,6 +2,7 @@
     font-family: Montserrat, serif;
     scrollbar-width: none; /* Firefox */
     font-size: 1.2dvw;
+    --lp-topbar-height: 2.8rem;
     -webkit-text-size-adjust: none; /* Ã­ÂÂ¬Ã«Â¡Â¬, Ã¬â€šÂ¬Ã­Å’Å’Ã«Â¦Â¬, Ã¬ËœÂ¤Ã­Å½ËœÃ«ÂÂ¼ Ã¬â€¹Â Ã«Â²â€žÃ¬Â â€ž */
     -ms-text-size-adjust: none; /* IE */
     -moz-text-size-adjust: none; /* Ã­Å’Å’Ã¬ÂÂ´Ã¬â€“Â´Ã­ÂÂ­Ã¬Å Â¤ */
@@ -3408,13 +3409,18 @@ width: auto;
     width: 100%;
     z-index: 100;
     padding: 0 1.5rem;
-    height: 2.8rem;
+    height: var(--lp-topbar-height);
     background: rgba(0, 0, 0, 0.8);
     border-bottom: rgba(43, 213, 45, 0.1) solid 0.06rem;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     box-sizing: border-box;
     margin: 0;
+}
+
+/* NFT screens reserve the same space as the fixed header at every breakpoint. */
+.full_div:has(> #main_section > :is(#nftl, #nfts)) {
+    padding-top: var(--lp-topbar-height);
 }
 
 .lp_top_bar .main_title {
@@ -4041,8 +4047,10 @@ width: auto;
     /* ── Top Bar (re-enabled on mobile: logo + social icons) ── */
     .pc_menu { display: flex; }
 
+    :root { --lp-topbar-height: 8rem; }
+
     .lp_top_bar {
-        height: 8rem;
+        height: var(--lp-topbar-height);
         padding: 0 4rem;
     }
 
