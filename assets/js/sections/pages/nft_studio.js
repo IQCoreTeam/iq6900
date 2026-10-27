@@ -465,7 +465,8 @@
         try {
           const d = await decodeFile(s.upImgs[k]);
           const meta = s.upJsons[k] || {};
-          const idx = parseInt(k, 10); const index = isNaN(idx) ? items.length + 1 : idx + (keys[0] === "0" ? 1 : 0); // normalize 0-based to 1-based
+          // Filenames pair metadata; the allocator requires contiguous 1..N indices.
+          const index = items.length + 1;
           const name = (typeof meta.name === "string" && meta.name) ? meta.name : ((s.name.trim() || "Item") + " #" + (items.length + 1));
           const attributes = Array.isArray(meta.attributes) ? meta.attributes.filter((a) => a && a.trait_type != null).map((a) => ({ trait_type: String(a.trait_type), value: a.value })) : [];
           items.push({ index, name, bitmap: d.bitmap, url: d.url, template: { description: meta.description, attributes } });
@@ -537,6 +538,7 @@
       const spec = this.specFromState();
       if (!s.items || !s.items.length) { this.err("no items to deploy"); return; }
       if (spec.deposit > spec.price) { this.err("deposit cannot exceed price"); return; }
+      this.status("");
       s.deploying = true; this.renderSummary();
       $("#nfts_progwrap").removeClass("hidden"); this.setBar(2);
       $("#nfts_result").addClass("hidden");
