@@ -19,7 +19,14 @@
     const w3 = window.solanaWeb3;
     const step = opts.onStep || function () {};
     const provider = opts.provider;
-    const owner = provider.publicKey;
+    // The wallet may have locked or disconnected since the inscription step, so
+    // publicKey can be null here. Reconnect before touching it, and fail with a
+    // clear message instead of a cryptic "undefined.toBase58()".
+    let owner = provider && provider.publicKey;
+    if (!owner && provider && provider.connect) {
+      try { const r = await provider.connect(); owner = (r && r.publicKey) || provider.publicKey; } catch (e) {}
+    }
+    if (!owner) throw new Error("connect your Solana wallet before launching the token");
 
     step("building the create transaction");
     const mintKp = w3.Keypair.generate();
