@@ -6,8 +6,8 @@
 import { Connection } from "@solana/web3.js";
 import { setRpcUrl } from "@iqlabs-official/solana-sdk";
 import { deriveBurner } from "./burner.js";
-import * as nft from "./nft.js?v=6";
-import { deploy, pendingDeploy } from "./nft_create.js?v=4";
+import * as nft from "./nft.js?v=7";
+import { deploy, pendingDeploy } from "./nft_create.js?v=5";
 import { compressImage } from "./image_compress.js?v=1";
 import { readAsset, readInscription, viewAssetViaGateway, gatewayMetadata } from "./nft_asset.js?v=4";
 import { preset, net, setNet } from "./nft_net.js?v=1";

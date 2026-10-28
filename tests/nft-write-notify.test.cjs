@@ -92,7 +92,7 @@ async function engine({
         return !notifyOffline;
       },
     },
-    "./inscribe.js?v=8": {
+    "./inscribe.js?v=9": {
       writeFeedRow: async () => {
         calls.push("C-write");
         if (failWrite) throw Error("failed write");
@@ -231,7 +231,7 @@ test("creator notifies logo/banner feed writes but not manifest, collection meta
         },
       },
     },
-    "./nft.js?v=6": {
+    "./nft.js?v=7": {
       api: async (path) => ({
         status: 200,
         json:
@@ -246,7 +246,7 @@ test("creator notifies logo/banner feed writes but not manifest, collection meta
       bytesToBase64: () => "AQID",
       base64ToBytes: () => new Uint8Array([0]),
     },
-    "./inscribe.js?v=8": {
+    "./inscribe.js?v=9": {
       topUp: async () => {
         throw Error("unexpected funding");
       },

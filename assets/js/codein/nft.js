@@ -15,7 +15,7 @@
 import { Keypair, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { writer } from "@iqlabs-official/solana-sdk";
 import { notifyNftFeedRow } from "./nft_notify.js?v=1";
-import { writeFeedRow, topUp, sweep, confirmOrCheck } from "./inscribe.js?v=8";
+import { writeFeedRow, topUp, sweep, confirmOrCheck } from "./inscribe.js?v=9";
 import { estimateCost, getAccountRent } from "./cost.js?v=6";
 import { preset } from "./nft_net.js?v=1";
 

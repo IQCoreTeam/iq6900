@@ -98,7 +98,10 @@ export async function topUp(connection, wallet, burnerPubkey, target) {
   // An expired tx can never land after lastValidBlockHeight, so re-sending
   // with a fresh blockhash cannot double-spend; and the shortfall is
   // recomputed, so a transfer that did land makes the retry a no-op.
-  // Each attempt asks the wallet to sign again.
+  // Each attempt asks the wallet to sign again. The blockhash can also expire
+  // BEFORE the send, while the wallet approval popup sits open: preflight then
+  // reports "Blockhash not found", which is the same harmless expiry.
+  const expiredTwice = () => new Error("funding transfer expired twice (slow wallet approval or congested RPC). nothing was spent; retry, or add your own RPC.");
   for (let attempt = 0; ; attempt++) {
     const shortfall = target - (await connection.getBalance(burnerPubkey));
     if (shortfall <= 0) return;
@@ -107,12 +110,17 @@ export async function topUp(connection, wallet, burnerPubkey, target) {
       SystemProgram.transfer({ fromPubkey: wallet.publicKey, toPubkey: burnerPubkey, lamports: shortfall }),
     );
     const signed = await wallet.signTransaction(tx);
-    const sig = await sendRaw(connection, signed);
+    let sig;
+    try { sig = await sendRaw(connection, signed); }
+    catch (e) {
+      if (!/blockhash not found/i.test(String(e && e.message))) throw e;
+      if (attempt >= 1) throw expiredTwice();
+      console.warn("[code-in] funding transfer blockhash expired before send, retrying with a fresh blockhash");
+      continue;
+    }
     const landed = await confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight);
     if (landed || (await connection.getBalance(burnerPubkey)) >= target) return;
-    if (attempt >= 1) {
-      throw new Error("funding transfer expired twice (congested RPC). nothing was spent; retry, or add your own RPC.");
-    }
+    if (attempt >= 1) throw expiredTwice();
     console.warn("[code-in] funding transfer expired, retrying with a fresh blockhash");
   }
 }
