@@ -4,7 +4,7 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=25";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=26";
   const PER_PAGE = 6; // design: 6 collections per registry page
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet",
@@ -490,7 +490,7 @@
         $s.append($("<div style='text-align:center;padding:6px 0 2px'>")
           .append($("<div class='done'>").text("MINTED."))
           .append($("<div class='cm' style='margin-top:10px;opacity:.65'>").text((this.col.name || this.col.slug) + " #" + r.index + " · asset " + short(r.asset) + " · owner " + short(this.wallet))));
-        if (r.image) $s.append($("<div class='vimg' style='height:140px;border-color:rgba(43,213,45,.6)'>").append($("<img alt=''>").attr("src", r.image)));
+        if (r.image) $s.append($("<div class='vimg fit' style='border-color:rgba(43,213,45,.6)'>").append($("<img alt=''>").attr("src", r.image)));
         $s.append($("<div class='kvbox'>")
           .append($("<div class='kv'>").append($("<span class='kvk'>").text("image inscription C")).append($("<span class='kvv nftl-g'>").text(short(r.C))))
           .append($("<div class='kv'>").append($("<span class='kvk'>").text("metadata inscription M")).append($("<span class='kvv nftl-g'>").text(short(r.M))))

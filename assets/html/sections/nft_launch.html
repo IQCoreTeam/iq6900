@@ -268,6 +268,9 @@
     #nftl .win.r-legendary{border-color:#ffb347;animation:nftl_legend 2.6s ease-in-out infinite}
     #nftl .rchip{border:1px solid currentColor;border-radius:3px;padding:1px 7px;font:700 9px 'Kode Mono',monospace;letter-spacing:.14em;text-transform:uppercase;margin-left:10px}
     #nftl .vimg img{width:100%;height:auto;max-height:70vh;object-fit:contain;display:block}
+    /* mint-done frame: fixed height, the whole image always visible, the frame shrinks to the image's aspect ratio */
+    #nftl .vimg.fit{height:auto;min-height:0;width:fit-content;max-width:100%;margin:0 auto;display:flex;align-items:center;justify-content:center}
+    #nftl .vimg.fit img{width:auto;height:auto;max-width:100%;max-height:200px;object-fit:contain}
     #nftl .vimg .wait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 11px 'Kode Mono',monospace;color:#2BD52D;background:repeating-linear-gradient(135deg,rgba(232,228,214,.07) 0 6px,rgba(0,0,0,.25) 6px 12px);text-align:center;padding:0 16px}
     #nftl .vimg .cap{position:absolute;left:0;right:0;bottom:0;padding:6px 10px;font:500 8.5px/1.5 'Kode Mono',monospace;background:rgba(20,19,16,.85);color:#2BD52D}
     #nftl .vimg pre{position:absolute;inset:0;margin:0;padding:10px;overflow:auto;font:500 9px/1.5 'Kode Mono',monospace;color:#bfe8cf;background:rgba(0,0,0,.6);white-space:pre-wrap;word-break:break-all;text-align:left}
