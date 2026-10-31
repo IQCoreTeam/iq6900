@@ -1,0 +1,121 @@
+/* Local material pass. One shared sealed face before/after confirmation.
+   Unchanged 1035×1520 texture, visible alpha bounds x97..938 / y90..1429.
+   Cropping through background-size removes only transparent margins. */
+#nftp .iq-confirmed-seal {
+  width: min(78cqw, 260px);
+  aspect-ratio: 842 / 1340;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  rotate: -3deg;
+  filter: drop-shadow(7px 17px 13px rgb(0 0 0 / .5));
+}
+
+#nftp .iq-confirmed-seal .rco-pack-wrap {
+  inset: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background-image:
+    var(--iq-pack-cover, none),
+    url('/img/trait-pack-foil.png');
+  background-position: center 40%, center;
+  background-size: 72% auto, 122.9216% 113.4328%;
+  background-repeat: no-repeat;
+}
+
+/* A bounded label area preserves the real logo's aspect ratio. */
+#nftp .iq-confirmed-seal .rco-pack-wrap::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  inset: 11% 14% auto;
+  height: 7%;
+  margin: 0;
+  padding: 0;
+  background: var(--iq-pack-logo, none) center / contain no-repeat;
+  border: 0;
+  pointer-events: none;
+}
+
+/* A light reflection layer lets the printed cover sit on the same foil.
+   The source image and collection artwork remain unchanged. */
+#nftp .iq-confirmed-seal .rco-pack-wrap::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: url('/img/trait-pack-foil.png') center / 122.9216% 113.4328% no-repeat;
+  mix-blend-mode: screen;
+  opacity: .22;
+  pointer-events: none;
+}
+
+#nftp .iq-confirmed-seal::before {
+  content: var(--iq-pack-title, 'TRAIT BOOSTER');
+  position: absolute;
+  z-index: 3;
+  inset: auto 15% 18%;
+  margin: 0;
+  padding: 0;
+  color: #e8e4d6;
+  font: 400 22px / 1.05 'Zen Dots', sans-serif;
+  letter-spacing: -.02em;
+  text-align: left;
+  text-transform: uppercase;
+  text-wrap: balance;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
+#nftp .iq-confirmed-seal::after {
+  content: var(--iq-pack-subtitle, '') '\A' var(--iq-pack-series, 'COSMETIC SERIES');
+  position: absolute;
+  z-index: 3;
+  inset: auto 15% 7.5%;
+  margin: 0;
+  padding: 0;
+  color: #bdc9b0;
+  color: color-mix(in srgb, var(--iq-pack-accent, #00ef00) 18%, #e8e4d6);
+  font: 500 10px / 1.7 'Kode Mono', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  letter-spacing: .035em;
+  text-align: left;
+  text-wrap: balance;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
+#nftp .iq-confirmed-seal:focus-visible {
+  outline: 2px solid var(--iq-pack-accent, #00ef00);
+  outline-offset: 8px;
+}
+
+#nftp .iq-confirmed-seal svg {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  #nftp .iq-confirmed-seal {
+    width: min(78cqw, 232px);
+    aspect-ratio: 842 / 1340;
+  }
+
+  #nftp .iq-confirmed-seal::before {
+    font-size: 19px;
+  }
+
+  #nftp .iq-confirmed-seal::after {
+    font-size: 9px;
+    line-height: 1.65;
+  }
+}
+
+/* The library's default emblem is an HTML pixel glyph, not an SVG. */
+#nftp .iq-confirmed-seal .rco-pack-wrap > .rco-glyph {
+  display: none;
+}

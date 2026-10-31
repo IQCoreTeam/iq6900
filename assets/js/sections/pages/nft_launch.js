@@ -41,6 +41,11 @@
   };
   const esc = (s) => $("<i>").text(s == null ? "" : String(s)).html();
   const link = (text, href, cls) => $("<a>").addClass(cls || "btn2").css("padding", "6px 12px").attr({ href, target: /^https?:/.test(href) ? "_blank" : null }).text(text);
+  // Only the matching backend's finalized capability enables discovery links.
+  const packHref = (collection, asset) => {
+    if (!window.iqPackCreatorConfig || collection?.traitPacks !== true || (collection.chain || 'solana') !== 'solana' || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(collection.collection || '')) return null;
+    return '?menu=packs&collection=' + encodeURIComponent(collection.collection) + (asset ? '&asset=' + encodeURIComponent(asset) : '');
+  };
   // The sealed tile: unminted art is never shown, the design's bold "?" stands in.
   const sealed = (size) => $("<div class='q'>").addClass(size || "").text("?");
   // Cover image into a dark box: the on-chain cover (newest minted item, via the
@@ -239,8 +244,17 @@
         .append($("<div class='btext'>")
           .append($("<span class='bprice'>").text(price))
           .append($("<span class='bcta'>").append(document.createTextNode(cta + " ")).append($("<span class='barr'>").text("→"))));
-      return $card.append($cov).append($("<div class='cn'>").text(c.name || c.slug)).append($segwrap)
+      $card.append($cov).append($("<div class='cn'>").text(c.name || c.slug)).append($segwrap)
         .append($("<p class='cdesc'>").text(desc)).append($stats).append($chain).append($band);
+      const packs = packHref(c);
+      if (!packs) return $card;
+      // Separate links share one visual card; never nest an action inside its anchor.
+      const $entry = $("<div>").attr('class', $card.attr('class'));
+      $band.detach();
+      $card.attr('class', 'card-main').css({ display: 'flex', 'flex-direction': 'column', color: 'inherit', 'min-width': 0 });
+      $band.find('.bcta').replaceWith(link(cta + ' →', $card.attr('href'), 'bcta').css('padding', '0'));
+      $band.find('.btext').css('flex-wrap', 'wrap').append(link('TRAIT PACKS', packs, 'bcta').css({ padding: '0', 'margin-left': '0' }));
+      return $entry.append($card).append($band);
     },
     // Every item is a standard on-chain asset, so secondary trading happens on
     // the open marketplaces, not a native program. External markets are mainnet
@@ -298,10 +312,16 @@
       for (const c of cols) {
         if (token !== this.mineToken) return; // a newer render (tab switch / reconnect) took over
         try {
-          const data = await window.iqNft.getItems(c.slug, 0, 300);
-          ((data && data.items) || []).forEach((it) => {
-            if (it.minted && it.asset && it.owner === addr) mine.push({ it: it, slug: c.slug, colName: c.name || c.slug });
-          });
+          // Follow the existing API's 200-item pages so later editions are reachable.
+          for (let offset = 0; offset < 10000; offset += 200) {
+            const data = await window.iqNft.getItems(c.slug, offset, 200);
+            if (token !== this.mineToken) return;
+            const items = data?.items || [];
+            items.forEach((it) => {
+              if (it.minted && it.asset && it.owner === addr) mine.push({ it, slug: c.slug, colName: c.name || c.slug, collection: c });
+            });
+            if (items.length < 200 || offset + items.length >= Number(data.total)) break;
+          }
         } catch (e) {}
       }
       if (token !== this.mineToken) return;
@@ -318,7 +338,7 @@
         return;
       }
       const $grid = $("<div class='minegrid'>");
-      mine.forEach(({ it, slug, colName }) => {
+      mine.forEach(({ it, slug, colName, collection }) => {
         const tier = (it.rarity && it.rarity.tier) || "common";
         const $cell = $("<a class='mc'>").addClass("r-" + tier).attr("href", "?menu=nft&asset=" + it.asset)
           .on("click", (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.which === 2) return; e.preventDefault(); this.openViewer(it.asset, slug); });
@@ -329,7 +349,8 @@
           .append($("<div class='mnm'>").text(it.name || (colName + " #" + it.index)))
           .append($("<div class='msub'>").text(colName))
           .append($("<div class='mfoot'>").append($("<span>").text("VIEW")).append($("<span class='lst'>").text("LIST →")));
-        $grid.append($cell);
+        const packs = packHref(collection, it.asset);
+        $grid.append(packs ? $("<div style='min-width:0'>").append($cell).append(link('MANAGE OUTFIT', packs).css('margin-top','8px')) : $cell);
       });
       $m.append($grid);
     },
@@ -401,6 +422,8 @@
         .append(link("COLLECTION ON CHAIN", "https://solscan.io/account/" + col.collection + dev))
         .append(link("REGISTRY", "https://solscan.io/account/" + col.registry + dev))
         .append(link("CREATOR", "https://solscan.io/account/" + col.creator + dev));
+      const packs = packHref(col);
+      if (packs) $("#nftl_clinks").append(link('TRAIT PACKS', packs));
       $("#nftl_price").text(solNum(col.priceLamports));
       $("#nftl_fee").text([Number(col.depositLamports) > 0 ? "+ " + solNum(col.depositLamports) + " deposit at reserve" : "", "+ platform fee", "+ inscription rent", "leftover returns"].filter(Boolean).join(" · "));
       $("#nftl_items_lab").text("// ITEMS · " + (col.sequential ? "sequential (#1, #2, #3 …)" : "random (shuffled at launch)"));

@@ -25,6 +25,17 @@ $(document).ready(function() {
             $.code_in_v2.init(post);
         }else if(menu == "nft"){
             $.nft_launch.init(post); // inscription NFT launchpad (?nft=<slug>)
+        }else if(menu == "packs"){
+            if (!document.getElementById("nft_packs_style")) {
+                const style = document.createElement("link");
+                style.id = "nft_packs_style";
+                style.rel = "stylesheet";
+                style.href = "css/nft_packs.css?ver=1";
+                document.head.appendChild(style);
+            }
+            import("./sections/pages/nft_packs.js?ver=1")
+                .then(({ mountPacks }) => mountPacks())
+                .catch(() => $("#main_section").text("Packs are unavailable. Refresh to try again."));
         }else if(menu == "nft-create"){
             $.nft_studio.init(); // creator wizard: launch a collection
         }else if(menu == "hoodin"){

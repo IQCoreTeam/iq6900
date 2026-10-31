@@ -1,0 +1,18 @@
+/* The detail view is a native modal, outside the launchpad's rem-sized shell. */
+.iq-card-detail{box-sizing:border-box;width:min(960px,calc(100vw - 40px));max-height:calc(100dvh - 40px);padding:0;border:1px solid #77796c;border-radius:8px;background:#141310;color:#e8e4d6;font:14px/1.6 'Kode Mono',monospace;overflow:auto;overscroll-behavior:contain}
+.iq-card-detail::backdrop{background:rgba(0,0,0,.78)}
+.iq-card-detail *{box-sizing:border-box}
+.iq-card-detail>header{position:sticky;top:0;z-index:1;background:#141310;display:flex;justify-content:flex-end;align-items:center;padding:10px 14px;border-bottom:1px solid #414238}
+.iq-card-detail__close{min-height:44px;min-width:70px;padding:8px 14px;border:1px solid #77796c;border-radius:4px;background:transparent;color:#e8e4d6;font:500 14px 'Kode Mono',monospace;cursor:pointer}
+.iq-card-detail__close:hover{border-color:#00ef00;color:#00ef00}
+.iq-card-detail__close:focus-visible{outline:2px solid #00ef00;outline-offset:3px}
+.iq-card-detail__content{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,280px);gap:28px;align-items:center;padding:24px}
+.iq-card-detail__art{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;padding:16px;background:#b9c3aa;border-radius:4px}
+.iq-card-detail__art img{display:block;width:100%;height:auto;max-height:calc(100dvh - 190px);object-fit:contain}
+.iq-card-detail__copy{min-width:0}
+.iq-card-detail__copy h2{margin:0 0 18px;font:400 clamp(20px,2.4vw,30px)/1.3 'Zen Dots','Kode Mono',sans-serif;overflow-wrap:anywhere}
+.iq-card-detail__category{margin:0 0 12px;color:#c2c7b7;font-size:14px;overflow-wrap:anywhere}
+.iq-card-detail__rarity{margin:0;font-size:14px;text-transform:capitalize}
+.iq-card-detail [hidden]{display:none!important}
+@media(max-width:640px){.iq-card-detail{width:calc(100vw - 24px);max-height:calc(100dvh - 24px)}.iq-card-detail__content{grid-template-columns:minmax(0,1fr);gap:20px;padding:18px}.iq-card-detail__art{padding:12px}.iq-card-detail__art img{max-height:52dvh}.iq-card-detail__copy h2{font-size:20px;margin-bottom:10px}}
+@media(prefers-reduced-motion:reduce){.iq-card-detail{scroll-behavior:auto}}
