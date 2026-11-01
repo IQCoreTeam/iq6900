@@ -4,7 +4,7 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=27";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=28-nft-label-20261101";
   const PER_PAGE = 6; // design: 6 collections per registry page
   const ITEMS_PAGE = 500; // items per request on a collection page (the backend caps at 500)
   const STAGE_TEXT = {
@@ -740,11 +740,11 @@
       }
     },
 
-    // ── single NFT "make it a token" (?menu=nft&single=<C>) ──────────────
+    // ── single NFT "make it an NFT" (?menu=nft&single=<C>) ──────────────
     loadSingle: async function (C) {
       $("#nftl_loading").hide();
       $("#nftl_single").show();
-      this.navMid("// MAKE IT A TOKEN");
+      this.navMid("// MAKE IT AN NFT");
       this.navBack("ALL COLLECTIONS", "?menu=nft");
       $("#nftl_sc").text(C);
       this.singleC = C;
@@ -773,7 +773,7 @@
       if (state === "idle") {
         if (!this.wallet) $s.append($("<button class='btn2 wide' type='button'>").text("CONNECT WALLET").on("click", () => $("#nftl_hconnect").trigger("click")));
         else if (owner && owner !== this.wallet) $s.append($("<div class='nftl-e' style='font:500 10.5px/1.7 \"Kode Mono\",monospace'>").text("only the owner of this inscription (" + short(owner) + ") can tokenize it. connected: " + short(this.wallet)));
-        else $s.append($("<button class='btn wide' type='button'>").text("MAKE IT A TOKEN · SIGN IN WALLET").on("click", () => this.mintSingle()));
+        else $s.append($("<button class='btn wide' type='button'>").text("MAKE IT AN NFT · SIGN IN WALLET").on("click", () => this.mintSingle()));
       } else if (state === "working") {
         $s.append($("<div class='approve'>").text(x.toUpperCase() + "…"));
       } else if (state === "done") {
