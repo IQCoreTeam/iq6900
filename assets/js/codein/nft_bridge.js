@@ -3,6 +3,7 @@
 // (?menu=nft) is classic jQuery and drives everything through this surface.
 // Wallet + burner material stays in this module; the page only sees pubkeys.
 // SDK + web3 resolve through index.html's importmap, same as browser.js.
+import {solanaMarketUrl} from "../../nft-market-links.mjs";
 import { Connection } from "@solana/web3.js";
 import { setRpcUrl } from "@iqlabs-official/solana-sdk";
 import {createPackBootstrap,createPackPendingStorage,assertPackRuntime} from "./pack_bootstrap.mjs";
@@ -76,6 +77,7 @@ window.iqNft = Object.assign({}, nft, {
   explorerCluster: () => preset().explorerCluster,
   gatewayHost: () => preset().gateway.replace(/^https?:\/\//, ""),
   net,
+  marketUrl: asset => solanaMarketUrl(asset, "solana:" + net()),
   setNet,
   // the gateway's own hosted viewer page for an inscription (renders the content
   // from chain); cluster-matched so devnet sigs resolve on the devnet gateway

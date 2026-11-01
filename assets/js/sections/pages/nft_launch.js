@@ -138,13 +138,21 @@
       const cols = await window.iqNft.getCollections();
       this.dbg("home: " + cols.length + " collection(s)");
       this.cols = cols;
+      if (cols.some(c => packHref(c)) && !$("#nftl_tabs [data-tab='packs']").length)
+        $("<div class='tab' data-tab='packs'>").text("PACKS").on("click", () => this.homeTab("packs")).insertAfter("#nftl_tabs [data-tab='cols']");
       this.renderCols();
       this.renderMintedFeed(cols); // async, fills the right window as it goes
+      if (param("view") === "packs" && cols.some(c => packHref(c))) this.homeTab("packs");
     },
     homeTab: function (tab) {
+      this.collectionNote ||= $("#nftl_cols > .cm").text();
+      $("#nftl_cols > .cm").text(tab === 'packs' ? 'Each collection has its own packs, price and available traits.' : this.collectionNote);
       this.tab = tab;
+      $("#nftl_desk").css('grid-template-columns', tab === 'packs' ? 'minmax(0,1fr)' : '');
+      $("#nftl_mw").css('display', tab === 'packs' ? 'none' : '');
+      $("#nftl_colgrid").css('grid-template-columns', tab === 'packs' ? 'repeat(auto-fit,minmax(min(260px,100%),1fr))' : '');
       $("#nftl_tabs .tab").removeClass("on").filter("[data-tab='" + tab + "']").addClass("on");
-      $("#nftl_cols").css("display", tab === "cols" ? "flex" : "none");
+      $("#nftl_cols").css("display", (tab === "cols" || tab === "packs") ? "flex" : "none");
       $("#nftl_market").css("display", tab === "market" ? "flex" : "none");
       $("#nftl_mine").css("display", tab === "mine" ? "flex" : "none");
       // no caption on MY NFTS (the gallery header carries the context)
@@ -152,6 +160,8 @@
         ? "// collections launched from this board. each one = a core collection + N inscriptions. pick one, mint one."
         : tab === "market" ? "// secondary trading. every item is a standard on-chain asset, so it trades on the open marketplaces."
         : "");
+      if (tab === "cols" || tab === "packs") { this.page = 1; this.renderCols(); }
+      if (tab === "packs") $("#nftl_desk_cap").text("Choose a collection to open its trait packs.");
       if (tab === "market") this.renderMarket();
       if (tab === "mine") this.renderMine();
     },
@@ -177,7 +187,7 @@
       $("#nftl_pager").empty().append($("<span>").text("// reading the registry…"));
     },
     visibleCols: function () {
-      return (this.cols || []).filter((c) => this.chain === "all" || (c.chain || "solana") === this.chain); // backend order = latest mint first
+      return (this.cols || []).filter((c) => (this.tab !== "packs" || packHref(c)) && (this.chain === "all" || (c.chain || "solana") === this.chain)); // backend order = latest mint first
     },
     loadMore: function () {
       const total = this.visibleCols().length;
@@ -193,7 +203,29 @@
         $("#nftl_pager").empty();
         return;
       }
-      shown.forEach((c) => $g.append(this.card(c)));
+      shown.forEach((c) => {
+        if (this.tab !== 'packs') { $g.append(this.card(c)); return; }
+        const entry = $("<a class='card'>").attr('href', packHref(c));
+        const cover = $("<div class='cov'>");
+        coverInto(cover, c.coverSig ? window.iqNft.imgUrl(c.coverSig) : '/img/green_logo.webp', c.banner);
+        entry.append(cover).append($("<div class='cn'>").text(c.name || c.slug))
+          .append($("<div class='cdesc'>").text('Four traits per pack. See price and availability.'))
+          .append($("<div class='band'>").append($("<div class='btext'>").text('OPEN PACKS →')));
+        $g.append(entry);
+        const cfg = window.iqPackCreatorConfig || window.iqPackConfig;
+        const program = cfg?.deployment?.program || cfg?.program;
+        if (cfg && program) {
+          this.packPreviews ||= new Map();
+          const key = [cfg.chain, cfg.apiBase, program, c.collection].join(':');
+          if (!this.packPreviews.has(key)) this.packPreviews.set(key, import(new URL('./js/sections/pages/pack-transport.mjs', document.baseURI).href).then(({createPackPageTransport}) => {
+            const transport = createPackPageTransport({...cfg, program, collection:c.collection}, location.href);
+            return transport.read().then(data => ({cover:transport.media(data.appearance?.cover)}));
+          }).catch(() => null));
+          this.packPreviews.get(key).then(preview => {
+            if (preview?.cover && entry[0].isConnected) { cover.empty(); coverInto(cover, preview.cover); }
+          });
+        }
+      });
       // fill the gauges: a reflow commits the dim state as the transition start,
       // then setting each on-segment to its color animates it (staggered via the
       // per-segment transition-delay) regardless of frame timing
@@ -274,6 +306,7 @@
           ? "// every item is a standard on-chain asset, so it trades on the open marketplaces. these open at mainnet launch."
           : "// every item is a standard on-chain asset, so it trades on the open marketplaces below."));
       const $row = $("<div style='display:flex;gap:10px;flex-wrap:wrap'>");
+      if ((this.cols || []).some(c => packHref(c))) $row.append(link('OPEN TRAIT PACKS →', '?menu=nft&view=packs'));
       markets.forEach((mk) => {
         const label = "TRADE ON " + mk.name.toUpperCase();
         if (devnet) $row.append($("<div class='btn' style='opacity:.4;cursor:not-allowed' title='available at mainnet'>").text(label));
@@ -348,9 +381,15 @@
         $cell.append($im)
           .append($("<div class='mnm'>").text(it.name || (colName + " #" + it.index)))
           .append($("<div class='msub'>").text(colName))
-          .append($("<div class='mfoot'>").append($("<span>").text("VIEW")).append($("<span class='lst'>").text("LIST →")));
+          .append($("<div class='mfoot'>").append($("<span>").text("VIEW")).append($("<span class='lst'>").text("→")));
         const packs = packHref(collection, it.asset);
-        $grid.append(packs ? $("<div style='min-width:0'>").append($cell).append(link('MANAGE OUTFIT', packs).css('margin-top','8px')) : $cell);
+        const market = window.iqNft.marketUrl?.(it.asset);
+        if (packs || market) {
+          const $entry = $("<div style='min-width:0'>").append($cell);
+          if (packs) $entry.append(link('MANAGE OUTFIT', packs).css('margin-top','8px'));
+          if (market) $entry.append(link('TRADE NFT ↗', market).attr('rel','noopener noreferrer').css('margin-top','8px'));
+          $grid.append($entry);
+        } else $grid.append($cell);
       });
       $m.append($grid);
     },

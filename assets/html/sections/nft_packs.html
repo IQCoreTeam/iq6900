@@ -3,11 +3,11 @@
 <link rel="stylesheet" href="/css/nft_packs_material.css">
 <section id="nftp" aria-labelledby="nftp-title" data-pack-title="Trait Booster" data-pack-subtitle="새로운 모습" data-pack-series="IQ" data-pack-cover="" data-pack-logo="/img/text_logo.webp">
   <nav class="packs-nav" aria-label="NFT navigation">
-    <a class="quiet-button" href="?menu=nft">← ALL COLLECTIONS</a>
+    <a class="quiet-button" href="?menu=nft&view=packs">← PACKS</a>
     <span class="preview-note">LOADING NETWORK</span>
   </nav>
   <div class="packs-title-row">
-    <div><h1 id="nftp-title">A little surprise.<br>A new look.</h1><p>Open a pack. Find four cosmetic traits. Make them yours.</p></div>
+    <div><h1 id="nftp-title">Trait packs</h1><p>Four traits in every pack.</p></div><div class="purchase-heading"><div id="nftp-checkout"></div><div class="primary-actions"><button id="nftp-primary" class="primary-button" disabled>Loading…</button><button id="nftp-reveal-all" class="quiet-button" hidden>Reveal all four</button></div></div>
   </div>
   <div class="packs-layout">
     <section class="packs-window opening-window" aria-labelledby="nftp-window-title">
@@ -25,22 +25,24 @@
         <div class="pack-meta"><span id="nftp-pack-state">Reading confirmed state…</span><span>4 TRAITS / PACK</span></div>
         <p id="nftp-status" class="pack-status" role="status" aria-live="polite">Loading your packs.</p>
         <p id="nftp-error" class="pack-error" role="alert" hidden></p>
-        <div class="primary-actions"><button id="nftp-primary" class="primary-button" disabled>Loading…</button><button id="nftp-reveal-all" class="quiet-button" hidden>Reveal all four</button></div>
-        <div class="pack-tools"><label id="nftp-selector-label" hidden>Your packs <select id="nftp-pack-selector" aria-label="Choose a pack"></select></label><button id="nftp-history-latest" class="text-button" hidden>Latest activity</button><button id="nftp-history-older" class="text-button" hidden>Older activity</button><button id="nftp-refresh" class="text-button">Refresh state</button></div><p id="nftp-history-note" class="note" hidden></p>
-      </div>
-      <section class="pool-supply" aria-label="Initial trait supply"><h3>Initial pool</h3><ul id="nftp-pool-supply"></ul><p>Creator tiers. Initial shares per draw; remaining stock changes as packs open. Four draws per pack, without replacement.</p></section>
-      <footer class="receipt-line" id="nftp-receipt">Results appear only after chain confirmation.</footer>
+
+        </div>
+      <details class="pack-details contents-details"><summary>Pack contents &amp; odds</summary>
+        <section class="pool-supply" aria-label="Initial trait supply"><div class="supply-columns"><span>Trait</span><span>Initial share</span></div><ul id="nftp-pool-supply"></ul><p>Initial chance per draw. Four traits are drawn without replacement; chances change as stock is used.</p></section>
+      </details>
+      <details class="pack-details history-details"><summary>Your openings</summary>
+        <div id="nftp-selector-label" hidden><div id="nftp-pack-selector" class="opening-history" aria-label="Your openings"></div></div>
+        <div class="pack-tools"><button id="nftp-history-latest" class="text-button" hidden>Latest openings</button><button id="nftp-history-older" class="text-button" hidden>Earlier openings</button><button id="nftp-refresh" class="text-button">Refresh</button></div><p id="nftp-history-note" class="note" hidden></p>
+        <footer class="receipt-line" id="nftp-receipt"></footer>
+      </details>
     </section>
     <aside class="packs-window inventory-window" aria-labelledby="nftp-inventory-title">
-      <header class="window-bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span id="nftp-inventory-title">your_traits.exe</span><span class="window-right" id="nftp-count">0</span></header>
-      <div class="inventory-heading"><h2>Your finds</h2><p id="nftp-owner">Open a pack to start your collection.</p></div>
+      <div class="inventory-heading"><h2 id="nftp-inventory-title">Your traits <span id="nftp-count">0</span></h2><p id="nftp-owner">Open a pack to start your collection.</p></div>
       <figure id="nftp-avatar-preview" class="avatar-preview" hidden><img id="nftp-avatar-image" alt="Your NFT with its equipped traits"><figcaption>Equipped look · original image preserved</figcaption></figure>
       <a id="nftp-mint-base" class="quiet-button outfit-action" hidden>Mint a collection NFT</a>
       <div id="nftp-outfit-approval" class="outfit-action" hidden><p>Outfits need creator and holder approval. Remove all traits before burning; restoring the original image keeps this safeguard.</p><button id="nftp-enable-outfits" class="quiet-button" type="button">Enable outfits</button></div>
       <button id="nftp-restore-original" class="quiet-button outfit-action" type="button" hidden>Restore original metadata</button>
       <div id="nftp-inventory" class="trait-inventory"><p class="inventory-empty">Your traits will appear here.</p></div>
-      <footer class="inventory-footer">Your wallet signs purchases and outfit changes.</footer>
     </aside>
   </div>
-  <p class="packs-footnote">Four traits per pack. Ownership and settlement are verified on-chain.</p>
 </section>

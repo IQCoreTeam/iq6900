@@ -2,6 +2,7 @@
 // confirmed-state API; the isolated legacy preview remains a separate branch.
 // Cards reveal only after all four settled trait accounts are returned.
 import { normalizePackAppearance, applyPackAppearance } from '/packs-appearance.mjs';
+import { solanaMarketUrl } from '/nft-market-links.mjs';
 import { TIER_COLORS, initialPoolShares } from '/packs-rarity.mjs';
 const categories = ['Hair', 'Clothing', 'Background'];
 
@@ -31,27 +32,33 @@ export async function mountPacks() {
   const ui = Object.fromEntries([...root.querySelectorAll('[id^="nftp-"]')].map(node => [node.id.slice(5), node]));
   let state, selectedId = null, busy = false, rewardsKey = '', pageBefore=null;
   const revealed=new Map();
+  function restoreSettledRewards() {
+    for (const pack of state?.packs ?? []) if (pack.status === 'settled')
+      revealed.set(pack.address, new Set(packRewards(state, pack).map(trait => trait.address)));
+  }
   const liveConfig=window.iqPackConfig;
   const transport=(await import('./pack-transport.mjs')).createPackPageTransport(liveConfig,location.href);
   if(!root.isConnected)return;
   let liveWallet=null,liveAccount=null,liveClient=null,walletDispose=null,disposed=false,openingView=null,readyForNextPack=false,walletRevision=0;
   const owner=()=>liveAccount?.address??null;
-  const stop=()=>{if(disposed)return;disposed=true;walletDispose?.();openingView?.dispose();pageObserver.disconnect();};
+  let settlementTimer=null,settlementKey=null,settlementReads=0,settlementStarted=0;
+  const stop=()=>{if(disposed)return;disposed=true;window.clearTimeout(settlementTimer);walletDispose?.();openingView?.dispose();pageObserver.disconnect();};
   const pageObserver=new MutationObserver(()=>{if(!root.isConnected)stop();});
   pageObserver.observe(main,{childList:true});
   root.classList.add('packs-live');
-    ui['pack-selector'].setAttribute('aria-label','Choose a pack');
-    root.querySelector('.preview-note').textContent=liveConfig.chain==='solana:localnet'?'LOCAL SURFPOOL · GENERATED QA WALLET · NO REAL SOL':liveConfig.chain==='solana:devnet'?'SOLANA DEVNET · TEST SOL':'SOLANA MAINNET';
-    root.querySelector('.inventory-footer').textContent='Your wallet signs purchases and outfit changes. Ownership comes from confirmed chain state.';
+    ui['pack-selector'].setAttribute('aria-label','Your openings');
+    root.querySelector('.preview-note').textContent=liveConfig.chain==='solana:localnet'?'LOCAL · TEST SOL':liveConfig.chain==='solana:devnet'?'SOLANA DEVNET · TEST SOL':'SOLANA MAINNET';
     ui.owner.textContent='Connect a wallet to see your packs and traits.';
-    const walletRoot=document.createElement('section');walletRoot.id='nftp-wallet-controls';walletRoot.className='pack-wallet-controls';walletRoot.setAttribute('aria-label','Pack wallet');root.querySelector('.packs-title-row').after(walletRoot);
-    walletRoot.addEventListener('iqpacks:wallet',async event=>{const revision=++walletRevision;pageBefore=null;liveWallet=event.detail.wallet;liveAccount=event.detail.account;selectedId=null;readyForNextPack=false;revealed.clear();ui.error.hidden=true;if(state){state={...state,packs:[],traits:[],receipts:[],avatar:{exists:null,owner:null,definitions:[]}};render();}ui.owner.textContent=liveAccount?'Loading your confirmed packs and traits…':'Connect a wallet to see your packs and traits.';try{await request();if(revision!==walletRevision)return;choosePack();render();say(selectedPack()?.status==='settled'?'Your confirmed finds are ready.':liveAccount?'Ready for another pack.':'Connect a wallet to see your packs and traits.');}catch(error){fail(error);}});
-    walletRoot.addEventListener('iqpacks:purchase',async event=>{const revision=walletRevision;try{pageBefore=null;const previous=new Set(state?.packs.map(pack=>pack.address)??[]);await request({afterSignature:event.detail.signature});if(revision!==walletRevision)return;const added=state.packs.find(pack=>!previous.has(pack.address)&&pack.owner===owner());selectedId=added?.id??null;readyForNextPack=false;choosePack();render();say('Purchase confirmed. The operator is preparing your four traits.');}catch(error){fail(error);}});
+    const walletRoot=document.createElement('section');walletRoot.id='nftp-wallet-controls';walletRoot.className='pack-wallet-controls';walletRoot.setAttribute('aria-label','Pack wallet');root.querySelector('.packs-nav').append(walletRoot);
+    walletRoot.addEventListener('iqpacks:wallet',async event=>{const revision=++walletRevision;pageBefore=null;liveWallet=event.detail.wallet;liveAccount=event.detail.account;selectedId=null;readyForNextPack=false;revealed.clear();ui.error.hidden=true;if(state){state={...state,packs:[],traits:[],receipts:[],avatar:{exists:null,owner:null,definitions:[]}};render();}ui.owner.textContent=liveAccount?'Loading your confirmed packs and traits…':'Connect a wallet to see your packs and traits.';try{await request();if(revision!==walletRevision)return;restoreSettledRewards();choosePack();readyForNextPack=selectedPack()?.status==='settled';render();say(selectedPack()?.status==='settled'?'Your confirmed finds are ready.':liveAccount?'Ready for another pack.':'Connect a wallet to see your packs and traits.');}catch(error){fail(error);}});
+    walletRoot.addEventListener('iqpacks:purchase',async event=>{const revision=walletRevision;try{pageBefore=null;const previous=new Set(state?.packs.map(pack=>pack.address)??[]);await request({afterSignature:event.detail.signature});if(revision!==walletRevision)return;const added=state.packs.find(pack=>!previous.has(pack.address)&&pack.owner===owner());selectedId=added?.id??null;readyForNextPack=false;choosePack();render();say('Preparing your pack. This can take a moment.');}catch(error){fail(error);}});
     const moduleURL=new URL(liveConfig.clientModule??'/pack-client.js',location.href);if(moduleURL.origin!==location.origin)throw Error('Pack client must use this site');
     const clientModule=await import(moduleURL.href);
     if(!root.isConnected||disposed)return;
     liveClient=clientModule.createPackClient({connection:liveConfig.connection??new clientModule.Connection(liveConfig.rpc,'confirmed'),program:liveConfig.program,collection:liveConfig.collection,chain:liveConfig.chain,localGenesis:liveConfig.localGenesis,pendingPurchases:liveConfig.pendingPurchases});
-    walletDispose=clientModule.mountPackWalletUI(walletRoot,{registry:liveConfig.registry,client:liveClient,chain:liveConfig.chain,requestWindow:liveConfig.windowRequests?((wallet,account)=>clientModule.requestPackWindow({wallet,account,chain:liveConfig.chain,program:liveConfig.program,collection:liveConfig.collection,endpoint:transport.windowEndpoint})):null});
+    walletDispose=clientModule.mountPackWalletUI(walletRoot,{registry:liveConfig.registry,client:liveClient,chain:liveConfig.chain,purchaseRoot:ui.checkout,requestWindow:liveConfig.windowRequests?((wallet,account)=>clientModule.requestPackWindow({wallet,account,chain:liveConfig.chain,program:liveConfig.program,collection:liveConfig.collection,endpoint:transport.windowEndpoint})):null});
+    const refreshPrice=ui.checkout.querySelector('.text-button');
+    if(refreshPrice)refreshPrice.hidden=true;
 
 
   const category = trait => (state?.slotLabels || categories)[trait.slot] || 'Trait';
@@ -156,12 +163,12 @@ export async function mountPacks() {
       if(state.stock.every(definition=>Number.isInteger(definition.initialSupply))){
         const shares = new Map(initialPoolShares(state.stock).map(row=>[row.id,row]));
         for(const definition of state.stock){
-          const row=document.createElement('li'),name=document.createElement('span'),tier=document.createElement('span'),count=document.createElement('span');
+          const row=document.createElement('li'),info=document.createElement('div'),name=document.createElement('span'),tier=document.createElement('small'),share=document.createElement('span');
           name.textContent=definition.name;
           const known=Object.hasOwn(TIER_COLORS,definition.creatorTier);
-          tier.textContent=known?definition.creatorTier:'Unspecified'; if(known)tier.style.color=TIER_COLORS[definition.creatorTier];
-          count.textContent=definition.initialSupply+' copies · '+(shares.get(definition.id).perDrawShare*100).toLocaleString(undefined,{maximumFractionDigits:2})+'% initially';
-          row.append(name,tier,count);supply.append(row);
+          tier.textContent=(known?definition.creatorTier:'Unspecified')+' · '+definition.initialSupply+' copies'; if(known)tier.style.color=TIER_COLORS[definition.creatorTier];
+          share.textContent=(shares.get(definition.id).perDrawShare*100).toLocaleString(undefined,{maximumFractionDigits:2})+'%';
+          info.append(name,tier);row.append(info,share);supply.append(row);
         }
       }
     }
@@ -186,6 +193,22 @@ export async function mountPacks() {
     if(ui['enable-outfits']){ui['outfit-approval'].hidden=state.avatar.exists===false||state.avatar.outfitsEnabled!==false||!ownsAvatar;ui['enable-outfits'].disabled=busy;}
     if(ui['mint-base']){ui['mint-base'].hidden=state.avatar.exists!==false;ui['mint-base'].href='?menu=nft&nft='+encodeURIComponent(state.collectionSlug??'');}
     ui.owner.textContent = !owner()?'Connect a wallet to see your packs and traits.':state.avatar.exists===null?'Loading your confirmed packs and traits…':state.avatar.exists===false ? 'Mint a compatible collection NFT to equip your traits.' : state.avatar.outfitsEnabled===false&&ownsAvatar ? 'Enable outfits before equipping traits on this NFT.' : ownsAvatar ? 'Equip a trait to your NFT.' : 'This NFT is held by ' + holder + '. Connect its current holder to change outfits.';
+    let tradeSlot = root.querySelector('#nftp-trade-nft');
+    if (!tradeSlot) {
+      tradeSlot = document.createElement('div'); tradeSlot.id = 'nftp-trade-nft';
+      ui.owner.after(tradeSlot);
+    }
+    tradeSlot.hidden = !ownsAvatar;
+    tradeSlot.replaceChildren();
+    if (ownsAvatar) {
+      const market = solanaMarketUrl(state.avatar.address, liveConfig.chain);
+      const trade = document.createElement(market ? 'a' : 'button'); trade.className = 'text-button';
+      trade.textContent = 'Trade NFT ↗';
+      if (market) { trade.href = market; trade.target = '_blank'; trade.rel = 'noopener noreferrer'; }
+      else { trade.type = 'button'; trade.disabled = true; trade.title = 'Trading opens on mainnet'; }
+      tradeSlot.append(trade);
+    }
+    if (outfit) root.querySelector('.avatar-preview figcaption').textContent = 'Equipped traits travel with this NFT.';
     ui.inventory.replaceChildren();
     if (!traits.length) {
       const empty = document.createElement('p'); empty.className = 'inventory-empty'; empty.textContent = 'Your finds will appear here. Every opening adds four.'; ui.inventory.append(empty);
@@ -216,33 +239,69 @@ export async function mountPacks() {
       button.disabled ||= mystery;if(mystery)button.textContent='Reveal first';
       if(mystery)detail.textContent='Reveal the card to discover it';
       const image=mystery?document.createElement('img'):makeImage(trait);if(mystery){image.src='/img/green_logo.webp';image.alt='Unrevealed trait';}
-      button.addEventListener('click', () => changeEquipment(trait)); row.append(image, copy, button); ui.inventory.append(row);
+      button.addEventListener('click', () => changeEquipment(trait));
+      if (!mystery && !trait.avatar) {
+        const market = solanaMarketUrl(trait.address, liveConfig.chain);
+        const trade = document.createElement(market ? 'a' : 'button'); trade.className = 'text-button'; trade.textContent = 'Trade trait ↗';
+        if (market) { trade.href = market; trade.target = '_blank'; trade.rel = 'noopener noreferrer'; }
+        else { trade.type = 'button'; trade.disabled = true; trade.title = 'Trading opens on mainnet'; }
+        copy.append(trade);
+      } else if (trait.avatar && !mystery) {
+        const note = document.createElement('span'); note.textContent = 'Unequip to trade separately.'; copy.append(note);
+      }
+      row.append(image, copy, button); ui.inventory.append(row);
     }
+  }
+  function followSettlement(pack) {
+    const key=pack&&pack.status!=='settled'?walletRevision+':'+pack.address:null;
+    if(key!==settlementKey){window.clearTimeout(settlementTimer);settlementTimer=null;settlementKey=key;settlementReads=0;settlementStarted=Date.now();}
+    if(!key||settlementTimer!==null||settlementReads>=24||Date.now()-settlementStarted>=120000)return;
+    settlementTimer=window.setTimeout(async()=>{
+      settlementTimer=null;
+      if(disposed||settlementKey!==key)return;
+      if(!document.hidden&&!busy){
+        settlementReads++;
+        try{
+          await request();
+          if(settlementKey!==key)return;
+          if(selectedPack()?.status==='settled')say('Your pack is ready. Click the pack to open it.');
+        }catch(error){
+          if(error.staleWalletRead)return;
+          settlementReads=24;fail(error);
+        }
+      }
+      if(settlementKey===key)render();
+    },5000);
   }
   function render() {
     try{applyPackAppearance(root,normalizePackAppearance(state.appearance??(new URL(location.href).searchParams.has('collection')?null:{title:root.dataset.packTitle,subtitle:root.dataset.packSubtitle,collectionName:root.dataset.packSeries,cover:root.dataset.packCover,logo:root.dataset.packLogo}),location.origin));}catch{applyPackAppearance(root,normalizePackAppearance(null,location.origin));}
     if (!state || !root.isConnected) return;
+    if(state.appearance?.collectionName)ui.title.textContent=state.appearance.collectionName;
     choosePack();
     const pack = readyForNextPack ? null : selectedPack(), owned = state.packs.filter(item => item.owner === owner());
     const stock = state.stock.reduce((sum, item) => sum + item.remaining, 0);
     const reserved = state.packs.filter(item => item.status !== 'settled').length * 4;
     const available = Number.isSafeInteger(state.availablePacks) ? state.availablePacks : Math.max(0, Math.floor((stock - reserved) / 4));
-    root.querySelector('.packs-footnote').textContent='Four draws use remaining stock without replacement. Creator tiers are labels, not resale guarantees.';
     ui.workspace.setAttribute('aria-busy', String(busy)); ui.refresh.disabled = busy;
     if(ui['history-older']){ui['history-older'].hidden=state.pagination?.nextBefore==null;ui['history-older'].disabled=busy;}
     if(ui['history-latest']){ui['history-latest'].hidden=pageBefore==null;ui['history-latest'].disabled=busy;}
     if(ui['history-note']){ui['history-note'].hidden=pageBefore==null&&state.pagination?.nextBefore==null;ui['history-note'].textContent=pageBefore==null?'Use Older activity to find earlier packs and traits.':'Viewing earlier activity. Equipped traits remain available.';}
     const labels = { sealed: 'UNOPENED', requested: 'OPENING REQUESTED', fulfilled: 'READY TO SETTLE', settled: 'OPENED' };
-    ui['pack-state'].textContent = pack ? labels[pack.status] : available + ' PACKS AVAILABLE';
+    ui['pack-state'].textContent = pack ? (pack.status==='settled'&&revealed.get(pack.address)?.size!==4?'READY TO OPEN':labels[pack.status]) : available + ' PACKS AVAILABLE';
     ui['pack-label'].textContent = pack ? 'PACK ' + String(pack.id + 1).padStart(3, '0') : 'COSMETIC PACK';
-    ui.primary.textContent=busy?'Please wait…':'Check opening';
+    followSettlement(pack);
+    const waiting=!!pack&&pack.status!=='settled';
+    const autoWaiting=waiting&&settlementReads<24&&Date.now()-settlementStarted<120000;
+    ui.primary.textContent=busy?'Checking…':autoWaiting?'Preparing randomness…':'Check status';
+    ui.checkout.hidden=Boolean(pack);
     ui.primary.hidden=!pack||pack.status==='settled';
-    ui.primary.disabled=busy;
-    ui['selector-label'].hidden = owned.length < 1; ui['pack-selector'].disabled = busy;
+    ui.primary.disabled=busy||autoWaiting;
+    ui['selector-label'].hidden = owned.length < 1;
     ui['pack-selector'].replaceChildren(...owned.map(item => {
-      const option = document.createElement('option'); option.value = item.id; option.textContent = 'Pack ' + (item.id + 1) + ' · ' + labels[item.status].toLowerCase(); option.selected = !readyForNextPack && item.id === selectedId; return option;
+      const button = document.createElement('button'); button.type='button'; button.dataset.packId=String(item.id); button.className='opening-row'; button.disabled=busy;
+      button.setAttribute('aria-pressed',String(!readyForNextPack&&item.id===selectedId));
+      const name=document.createElement('span'),status=document.createElement('span');name.textContent='Pack '+(item.id+1);status.textContent=labels[item.status];button.append(name,status);return button;
     }));
-    if(owned.length){const fresh=document.createElement('option');fresh.value='';fresh.textContent='New pack';fresh.selected=readyForNextPack;ui['pack-selector'].prepend(fresh);}
     try { renderRewards(pack); }
     catch (error) {
       fail(error); ui.rewards.hidden = true; ui.pack.hidden = false;
@@ -251,7 +310,7 @@ export async function mountPacks() {
     }
     renderInventory();
     const receipt = state.receipts.at(-1);
-    ui.receipt.textContent = receipt ? 'CONFIRMED RECEIPT · ' + receipt.signature.slice(0, 13) + '…' + receipt.signature.slice(-10) : 'Results appear only after chain confirmation.';
+    ui.receipt.textContent = receipt ? 'CONFIRMED RECEIPT · ' + receipt.signature.slice(0, 13) + '…' + receipt.signature.slice(-10) : '';
   }
   async function recover(error) {
     if(error.staleWalletRead)return;
@@ -264,7 +323,7 @@ export async function mountPacks() {
     try{
       await request();canContinue();choosePack();const current=selectedPack();
       if(current?.status==='settled'){revealed.set(current.address,new Set());readyForNextPack=false;say('Confirmed. Tap the pack to reveal your four traits.');}
-      else say('The operator is preparing your traits. Check again after settlement.');
+      else {settlementReads=0;settlementStarted=Date.now();say('Preparing randomness…');}
     }catch(error){await recover(error);}finally{busy=false;render();}
   }
   async function changeEquipment(trait) {
@@ -289,16 +348,19 @@ export async function mountPacks() {
     catch(error){fail(error);}finally{busy=false;render();}
   });
   ui.primary.addEventListener('click',primaryAction);
-  ui['pack-selector'].addEventListener('change', () => {readyForNextPack=ui['pack-selector'].value==='';if(!readyForNextPack)selectedId=Number(ui['pack-selector'].value);render();say(readyForNextPack?'Ready for another pack.':'Showing your selected pack.');});
+  ui['pack-selector'].addEventListener('click', event => {
+    const button=event.target.closest('button[data-pack-id]');if(!button||busy)return;
+    selectedId=Number(button.dataset.packId);readyForNextPack=false;render();say('Showing your selected pack.');
+  });
   ui['reveal-all'].addEventListener('click', () => { for (const button of ui.rewards.children) revealCard(button, button.dataset.address); ui.rewards.firstElementChild?.focus(); });
   ui.refresh.addEventListener('click', async () => {
     if (busy) return; busy = true; ui.error.hidden = true;
     if (state) render();
-    try { await request(); choosePack(); say('Confirmed state refreshed.'); }
+    try { await request(); choosePack(); walletRoot.dispatchEvent(new CustomEvent('iqpacks:refresh-sale')); say('Confirmed state refreshed.'); }
     catch (error) { if(!error.staleWalletRead){fail(error); say('Could not refresh confirmed state. Try again.');} }
     finally { busy = false; render(); }
   });
-  try { await request(); for(const pack of state.packs)if(pack.status==='settled')revealed.set(pack.address,new Set(packRewards(state,pack).map(trait=>trait.address))); choosePack(); readyForNextPack=selectedPack()?.status==='settled'; render(); if (ui.error.hidden) say(selectedPack()?.status === 'settled' ? 'Your confirmed finds are ready.' : 'A sealed pack is waiting to happen.'); }
+  try { await request(); restoreSettledRewards(); choosePack(); readyForNextPack=selectedPack()?.status==='settled'; render(); if (ui.error.hidden) say(selectedPack()?.status === 'settled' ? 'Your confirmed finds are ready.' : 'A sealed pack is waiting to happen.'); }
   catch (error) { if(!error.staleWalletRead){fail(error); say('Confirmed pack state is unavailable. Refresh to try again.');ui.primary.textContent='Unavailable';} }
   if(state&&root.isConnected){
     try{
@@ -308,7 +370,7 @@ export async function mountPacks() {
       openingView=createPackOpening(host,address=>{
         const pack=selectedPack();if(!pack||!packRewards(state,pack).some(trait=>trait.address===address))return false;
         revealed.get(pack.address).add(address);say(revealed.get(pack.address).size===4?'All four traits revealed. Equip them or open another pack.':'Choose another card to reveal.');render();return true;
-      },()=>{readyForNextPack=true;say('Ready for another pack. Your traits are in Your finds.');render();});
+      },()=>{readyForNextPack=true;walletRoot.dispatchEvent(new Event('iqpacks:refresh-sale'));say('Your traits are below.');render();});
       render();
     }catch{say('Use the standard pack controls. Your confirmed traits remain available.');}
   }

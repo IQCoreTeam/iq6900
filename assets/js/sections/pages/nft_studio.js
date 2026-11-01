@@ -80,7 +80,9 @@
         const studioRoot = document.getElementById("nfts");
         new Promise(resolve=>bridge(resolve)).then(()=>window.iqPackBootstrap).then(()=>{
           if(!window.iqPackCreatorConfig||document.getElementById("nfts")!==studioRoot)return null;
-          studioRoot.querySelector('.pack-setup-panel').hidden=false;
+          const packPanel=studioRoot.querySelector('.pack-setup-panel');
+          packPanel.hidden=false;
+          studioRoot.querySelector('#nfts_tab_gen').parentElement.before(packPanel);
           return import(new URL("./js/sections/pages/nft_pack_creator.js", document.baseURI).href);
         }).then(module => {
           if(!module)return;
