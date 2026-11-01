@@ -18,7 +18,7 @@ test('single inscription action identifies the NFT flow and retains wallet guard
   $.get = (url, done) => { requestedTemplate = url; done(template); };
   const reads = [];
   window.iqNftReady = true;
-  window.iqNft = { readRow: async (C) => { reads.push(C); return { who: 'owner-wallet', kind: 'text', body: 'inscribed content' }; } };
+  window.iqNft = { nftApi: () => 'https://nft.iqlabs.dev', api: async () => ({status:200,json:{ok:true}}), readRow: async (C) => { reads.push(C); return { who: 'owner-wallet', kind: 'text', body: 'inscribed content' }; } };
   window.eval(script);
   const page = $.nft_launch;
   page.wireNav = () => {};
@@ -42,9 +42,9 @@ test('single inscription action identifies the NFT flow and retains wallet guard
   page.singleState('idle');
   assert.equal($('#nftl_sstate button').length, 0, 'non-owner cannot mint');
   assert.match($('#nftl_sstate').text(), /only the owner/);
-  assert.match(requestedTemplate, /nft_launch\.html\?ver=28-nft-label-20261101$/);
+  assert.match(requestedTemplate, /nft_launch\.html\?ver=28-nft-sharing-20261101$/);
   const index = fs.readFileSync(path.join(root, 'assets/index.html'), 'utf8');
-  assert.match(index, /nft_launch\.js\?ver=41-nft-label-20261101/);
+  assert.match(index, /nft_launch\.js\?ver=41-nft-sharing-20261101/);
   dom.window.close();
   console.log('PASS single NFT deep-link labels, signed-out/owner/non-owner states, mint handler, and cache versions');
 });

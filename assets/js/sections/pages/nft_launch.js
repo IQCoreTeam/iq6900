@@ -4,7 +4,8 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=28-nft-label-20261101";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=28-nft-sharing-20261101";
+  let shareCapability, shareCapabilityBase; // One memoized backend capability read per page module.
   const PER_PAGE = 6; // design: 6 collections per registry page
   const ITEMS_PAGE = 500; // items per request on a collection page (the backend caps at 500)
   const STAGE_TEXT = {
@@ -66,6 +67,7 @@
         this.dbg("page init" + (single ? ", single=" + single : asset ? ", asset=" + asset : slug ? ", slug=" + slug : ", home"));
         bridge(() => {
           this.wireNav();
+          this.wireShares();
           if (window.iqNft.net && window.iqNft.net() === "devnet") this.devnetNotice();
           // browser back and the [ x ] button both close the viewer overlay through history
           window.addEventListener("popstate", () => { if ($("#nftl_viewer").hasClass("open")) this.hideViewer(); });
@@ -156,6 +158,60 @@
     navMid: (t) => $("#nftl_nav_mid").text(t),
     // the nav's back button goes up one level: item -> its collection, collection -> the list, home -> code in
     navBack: (text, href) => $("#nftl_navback").attr("href", href).html("&larr; " + $("<i>").text(text).html()),
+
+    // Share only dedicated HTML cards advertised by the current backend.
+    wireShares: function () {
+      this.shareReady = false;
+      $("#nftl").off("click.nftshare", ".nftl-share").on("click.nftshare", ".nftl-share", (e) => this.shareCurrent(e.currentTarget));
+      if (!shareCapability) {
+        shareCapabilityBase = window.iqNft.nftApi();
+        shareCapability = Promise.resolve().then(() => window.iqNft.api("/health")).then((r) => r.status === 200 && r.json?.shareCards === true).catch(() => false);
+      }
+      return shareCapability.then((ready) => { this.shareReady = ready; this.updateShareControls(); });
+    },
+    shareUrl: function () {
+      if (!this.shareReady || param("single") || window.iqNft.nftApi() !== shareCapabilityBase) return null;
+      const asset = param("asset"), slug = param("nft");
+      if (asset && this.shareAsset !== asset) return null; // unmirrored chain-only assets have no cached card
+      const suffix = asset ? "/asset/" + encodeURIComponent(asset) : slug ? "/c/" + encodeURIComponent(slug) : "";
+      const base = new URL(window.iqNft.nftApi());
+      if (!/^https?:$/.test(base.protocol) || base.username || base.password) return null;
+      base.pathname = base.pathname.replace(/\/$/, "") + "/share" + suffix;
+      base.search = ""; base.hash = "";
+      return base.href;
+    },
+    updateShareControls: function () {
+      let ready = false;
+      try { ready = !!this.shareUrl(); } catch (e) {}
+      $("#nftl .nftl-share-link").remove();
+      $("#nftl_share_actions").css("display", ready ? "flex" : "none");
+      $("#nftl_vlinks .nftl-share").toggle(ready);
+    },
+    shareCurrent: async function (button) {
+      const $button = $(button);
+      try {
+        const url = this.shareUrl();
+        if (!url) return;
+        if (navigator.share) {
+          try { await navigator.share({ url }); return; }
+          catch (e) { if (e && e.name === "AbortError") return; }
+        }
+        if (navigator.clipboard?.writeText) {
+          try {
+            await navigator.clipboard.writeText(url);
+            $button.siblings(".nftl-share-link").remove();
+            $button.text("Link copied");
+            setTimeout(() => $button.text("Share"), 2000);
+            return;
+          } catch (e) {} // manual copy below when clipboard permission is unavailable
+        }
+        let $input = $button.siblings(".nftl-share-link");
+        if (!$input.length) $input = $("<input class='inp nftl-share-link' type='text' readonly aria-label='Share link' style='flex:1 1 100%;min-width:0;grid-column:1 / -1'>")
+          .on("focus click", function () { this.select(); }).appendTo($button.parent());
+        $input.val(url).trigger("focus");
+        $input[0].select();
+      } catch (e) {} // invalid capability/configuration never prompts for a wallet
+    },
 
     // ── home ──────────────────────────────────────────────────────────────
     loadHome: async function () {
@@ -615,12 +671,13 @@
       if (window.history.state && window.history.state.nftv) { try { history.back(); return; } catch (e) {} }
       this.hideViewer();
     },
-    hideViewer: function () { this.closeMeta(); $("#nftl_viewer").removeClass("open"); $(document).off("keydown.nftv"); this.asset = null; },
+    hideViewer: function () { this.closeMeta(); $("#nftl_viewer").removeClass("open"); $(document).off("keydown.nftv"); this.asset = null; this.shareAsset = null; this.updateShareControls(); },
 
     // ── on-chain viewer (?menu=nft&asset=<addr>) ─────────────────────────
     // Reads the asset from the chain only (no backend): recovered image +
     // metadata, proving the "recover without us" claim. Floats over the base view.
     loadAsset: async function (addr, slug) {
+      this.shareAsset = null;
       $("#nftl_loading").hide();
       $("#nftl_viewer").addClass("open").scrollTop(0);
       $("#nftl_vclose").off("click").on("click", () => this.closeViewer());
@@ -640,6 +697,7 @@
       try {
         const m = await window.iqNft.getAsset(addr);
         if (!m || m.error) throw new Error(m && m.error);
+        this.shareAsset = addr;
         slug = slug || m.slug;
         rarity = m.rarity;
         a = { asset: addr, name: m.name, owner: m.owner, collection: m.collection, uri: window.iqNft.metaUrl(m.metaSig), attributes: { index: String(m.index) }, M: m.metaSig, C: m.inscriptionSig, source: "registry mirror" };
@@ -686,6 +744,8 @@
       if (a.M) L.append(link("RAW TX M", window.iqNft.viewUrl(a.M)));
       L.append(link("SOLSCAN", "https://solscan.io/account/" + addr + dev));
       L.append(link("MAGIC EDEN", "https://magiceden.io/item-details/" + addr));
+      if (this.shareAsset === addr) L.append($("<button class='btn2 nftl-share' type='button' style='display:none' aria-live='polite'>").text("Share"));
+      this.updateShareControls();
       $("#nftl_vmeta").text(JSON.stringify(a.metadata, null, 2));
     },
     // metadata json popup (nested over the viewer, so the panel stays compact)
@@ -740,7 +800,7 @@
       }
     },
 
-    // ── single NFT "make it an NFT" (?menu=nft&single=<C>) ──────────────
+    // ── single NFT "make it a token" (?menu=nft&single=<C>) ──────────────
     loadSingle: async function (C) {
       $("#nftl_loading").hide();
       $("#nftl_single").show();
