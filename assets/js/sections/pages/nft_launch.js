@@ -42,6 +42,8 @@
   };
   const esc = (s) => $("<i>").text(s == null ? "" : String(s)).html();
   const link = (text, href, cls) => $("<a>").addClass(cls || "btn2").css("padding", "6px 12px").attr({ href, target: /^https?:/.test(href) ? "_blank" : null }).text(text);
+  // Wallet Standard icons are data: image URIs; anything else is not rendered.
+  const walletIcon = (icon) => (typeof icon === "string" && /^data:image\/(svg\+xml|png|webp|gif);base64,/.test(icon) ? icon : null);
   // The sealed tile: unminted art is never shown, the design's bold "?" stands in.
   const sealed = (size) => $("<div class='q'>").addClass(size || "").text("?");
   // Cover image into a dark box: the on-chain cover (newest minted item, via the
@@ -96,12 +98,51 @@
     },
     // ── nav: wallet pill shared by every view ───────────────────────────────
     wireNav: function () {
-      $("#nftl_hconnect").on("click", async () => {
-        try { this.setWallet(await window.iqNft.connect()); }
-        catch (e) { this.dbg("connect failed: " + (e && e.message), "e"); }
+      $("#nftl_hconnect").on("click", () => this.connectFlow(false));
+      // the address pill doubles as a wallet switcher (Jupiter <-> Phantom ...)
+      $("#nftl_who").css("cursor", "pointer").attr("title", "switch wallet").on("click", () => this.connectFlow(true));
+      // silently reconnect a wallet that approved this site before; never prompts
+      window.iqNft.restore().then((addr) => { if (addr) this.setWallet(addr, true); }).catch(() => {});
+    },
+    // A plain connect auto-picks the saved or only wallet and opens the picker
+    // only when the choice is ambiguous (2+ wallets, none saved); forcePicker
+    // (the pill) always opens it so a connected user can switch wallets.
+    connectFlow: async function (forcePicker) {
+      let walletId;
+      if (forcePicker) { walletId = await this.pickWallet(); if (!walletId) return; }
+      try { this.setWallet(await window.iqNft.connect(walletId)); return; }
+      catch (e) {
+        const msg = String((e && e.message) || e);
+        if (walletId || !/choose a solana wallet/i.test(msg)) { this.dbg("connect failed: " + msg, "e"); alert(msg); return; }
+      }
+      walletId = await this.pickWallet();
+      if (!walletId) return;
+      try { this.setWallet(await window.iqNft.connect(walletId)); }
+      catch (e) { const m = String((e && e.message) || e); this.dbg("connect failed: " + m, "e"); alert(m); }
+    },
+    // Overlay listing every discovered Solana wallet; resolves to the chosen id
+    // or null (cancel). Same idiom as devnetNotice so it matches the page.
+    pickWallet: function () {
+      return new Promise((resolve) => {
+        const wallets = window.iqNft.wallets();
+        const $ov = $("<div>").css({ position: "fixed", inset: "0", zIndex: "320", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(4,6,4,.8)", backdropFilter: "blur(3px)", webkitBackdropFilter: "blur(3px)" });
+        const done = (id) => { $ov.remove(); resolve(id || null); };
+        $ov.on("click", (e) => { if (e.target === $ov[0]) done(null); });
+        const $box = $("<div>").css({ width: "340px", maxWidth: "calc(100% - 40px)", padding: "22px 24px", background: "rgba(20,19,16,.98)", border: "1px solid #e8e4d6", borderRadius: "8px", color: "#e8e4d6" });
+        $box.append($("<div>").css({ font: "700 13px 'Archivo',sans-serif", letterSpacing: ".06em", marginBottom: "16px", color: "#2BD52D" }).text("CONNECT A WALLET"));
+        if (!wallets.length) {
+          $box.append($("<div>").css({ font: "500 12px/1.7 'Kode Mono',monospace", opacity: ".8" }).text("No Solana wallet found. Install Phantom, Jupiter, Backpack or Solflare, then reload."));
+        } else for (const w of wallets) {
+          const $b = $("<button type='button'>").css({ display: "flex", alignItems: "center", gap: "10px", width: "100%", minHeight: "46px", marginBottom: "8px", padding: "10px 14px", textAlign: "left", background: "transparent", color: "#e8e4d6", border: "1px solid rgba(232,228,214,.3)", borderRadius: "6px", font: "600 12px 'Kode Mono',monospace", cursor: "pointer" });
+          const icon = walletIcon(w.icon);
+          if (icon) $b.append($("<img alt=''>").attr("src", icon).css({ width: "18px", height: "18px", borderRadius: "4px" }));
+          $b.append(document.createTextNode(w.name + (w.selected && this.wallet ? "  · connected" : "")));
+          $b.on("click", () => done(w.id));
+          $box.append($b);
+        }
+        $box.append($("<button type='button'>").css({ marginTop: "8px", width: "100%", padding: "8px", background: "transparent", color: "#e8e4d6", opacity: ".55", border: "none", font: "600 11px 'Kode Mono',monospace", letterSpacing: ".1em", cursor: "pointer" }).text("CANCEL").on("click", () => done(null)));
+        $ov.append($box).appendTo("body");
       });
-      const addr = window.iqNft.connected();
-      if (addr) this.setWallet(addr, true);
     },
     setWallet: function (addr, silent) {
       this.wallet = addr;
