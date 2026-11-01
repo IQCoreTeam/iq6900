@@ -4,8 +4,9 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=26";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=packs-refresh-20261101";
   const PER_PAGE = 6; // design: 6 collections per registry page
+  const ITEMS_PAGE = 500; // items per request on a collection page (the backend caps at 500)
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet",
     deposit: "paying the deposit",
@@ -46,6 +47,8 @@
     if (!window.iqPackCreatorConfig || collection?.traitPacks !== true || (collection.chain || 'solana') !== 'solana' || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(collection.collection || '')) return null;
     return '?menu=packs&collection=' + encodeURIComponent(collection.collection) + (asset ? '&asset=' + encodeURIComponent(asset) : '');
   };
+  // Wallet Standard icons are data: image URIs; anything else is not rendered.
+  const walletIcon = (icon) => (typeof icon === "string" && /^data:image\/(svg\+xml|png|webp|gif);base64,/.test(icon) ? icon : null);
   // The sealed tile: unminted art is never shown, the design's bold "?" stands in.
   const sealed = (size) => $("<div class='q'>").addClass(size || "").text("?");
   // Cover image into a dark box: the on-chain cover (newest minted item, via the
@@ -100,12 +103,51 @@
     },
     // ── nav: wallet pill shared by every view ───────────────────────────────
     wireNav: function () {
-      $("#nftl_hconnect").on("click", async () => {
-        try { this.setWallet(await window.iqNft.connect()); }
-        catch (e) { this.dbg("connect failed: " + (e && e.message), "e"); }
+      $("#nftl_hconnect").on("click", () => this.connectFlow(false));
+      // the address pill doubles as a wallet switcher (Jupiter <-> Phantom ...)
+      $("#nftl_who").css("cursor", "pointer").attr("title", "switch wallet").on("click", () => this.connectFlow(true));
+      // silently reconnect a wallet that approved this site before; never prompts
+      window.iqNft.restore().then((addr) => { if (addr) this.setWallet(addr, true); }).catch(() => {});
+    },
+    // A plain connect auto-picks the saved or only wallet and opens the picker
+    // only when the choice is ambiguous (2+ wallets, none saved); forcePicker
+    // (the pill) always opens it so a connected user can switch wallets.
+    connectFlow: async function (forcePicker) {
+      let walletId;
+      if (forcePicker) { walletId = await this.pickWallet(); if (!walletId) return; }
+      try { this.setWallet(await window.iqNft.connect(walletId)); return; }
+      catch (e) {
+        const msg = String((e && e.message) || e);
+        if (walletId || !/choose a solana wallet/i.test(msg)) { this.dbg("connect failed: " + msg, "e"); alert(msg); return; }
+      }
+      walletId = await this.pickWallet();
+      if (!walletId) return;
+      try { this.setWallet(await window.iqNft.connect(walletId)); }
+      catch (e) { const m = String((e && e.message) || e); this.dbg("connect failed: " + m, "e"); alert(m); }
+    },
+    // Overlay listing every discovered Solana wallet; resolves to the chosen id
+    // or null (cancel). Same idiom as devnetNotice so it matches the page.
+    pickWallet: function () {
+      return new Promise((resolve) => {
+        const wallets = window.iqNft.wallets();
+        const $ov = $("<div>").css({ position: "fixed", inset: "0", zIndex: "320", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(4,6,4,.8)", backdropFilter: "blur(3px)", webkitBackdropFilter: "blur(3px)" });
+        const done = (id) => { $ov.remove(); resolve(id || null); };
+        $ov.on("click", (e) => { if (e.target === $ov[0]) done(null); });
+        const $box = $("<div>").css({ width: "340px", maxWidth: "calc(100% - 40px)", padding: "22px 24px", background: "rgba(20,19,16,.98)", border: "1px solid #e8e4d6", borderRadius: "8px", color: "#e8e4d6" });
+        $box.append($("<div>").css({ font: "700 13px 'Archivo',sans-serif", letterSpacing: ".06em", marginBottom: "16px", color: "#2BD52D" }).text("CONNECT A WALLET"));
+        if (!wallets.length) {
+          $box.append($("<div>").css({ font: "500 12px/1.7 'Kode Mono',monospace", opacity: ".8" }).text("No Solana wallet found. Install Phantom, Jupiter, Backpack or Solflare, then reload."));
+        } else for (const w of wallets) {
+          const $b = $("<button type='button'>").css({ display: "flex", alignItems: "center", gap: "10px", width: "100%", minHeight: "46px", marginBottom: "8px", padding: "10px 14px", textAlign: "left", background: "transparent", color: "#e8e4d6", border: "1px solid rgba(232,228,214,.3)", borderRadius: "6px", font: "600 12px 'Kode Mono',monospace", cursor: "pointer" });
+          const icon = walletIcon(w.icon);
+          if (icon) $b.append($("<img alt=''>").attr("src", icon).css({ width: "18px", height: "18px", borderRadius: "4px" }));
+          $b.append(document.createTextNode(w.name + (w.selected && this.wallet ? "  · connected" : "")));
+          $b.on("click", () => done(w.id));
+          $box.append($b);
+        }
+        $box.append($("<button type='button'>").css({ marginTop: "8px", width: "100%", padding: "8px", background: "transparent", color: "#e8e4d6", opacity: ".55", border: "none", font: "600 11px 'Kode Mono',monospace", letterSpacing: ".1em", cursor: "pointer" }).text("CANCEL").on("click", () => done(null)));
+        $ov.append($box).appendTo("body");
       });
-      const addr = window.iqNft.connected();
-      if (addr) this.setWallet(addr, true);
     },
     setWallet: function (addr, silent) {
       this.wallet = addr;
@@ -315,11 +357,11 @@
       $m.append($row);
       if (devnet) $m.append($("<div class='cm' style='opacity:.4;margin-top:12px'>").text("// disabled on devnet · enabled at mainnet"));
     },
-    // MY NFTS: the public devnet RPC does not serve DAS getAssetsByOwner, so we
-    // aggregate across every collection's items (the registry mirror carries the
-    // holder per minted index) and keep the ones this wallet holds. Each cell
-    // opens the on-chain viewer. Single-mint registries are not item-indexed, so
-    // they are not listed here yet.
+    // MY NFTS: the public RPC does not serve DAS getAssetsByOwner, so the backend
+    // answers from its registry mirror (/owner/{wallet}: every minted item this
+    // wallet holds, across collections, in one call). Each cell opens the
+    // on-chain viewer. Single-mint registries are not item-indexed, so they are
+    // not listed here yet.
     renderMine: async function () {
       const addr = window.iqNft.connected();
       const $m = $("#nftl_mine").empty();
@@ -331,7 +373,7 @@
         return;
       }
       const token = (this.mineToken = (this.mineToken || 0) + 1);
-      // loading skeleton (same mc shape) while we read every collection
+      // loading skeleton (same mc shape) while we read the owner holdings
       const skbar = (w, h) => $("<span class='sk'>").css({ width: w, height: h });
       const $sk = $("<div class='minegrid'>");
       for (let i = 0; i < 8; i++) $sk.append($("<div class='mc skel'>")
@@ -340,24 +382,14 @@
         .append($("<div class='msub'>").append(skbar("50%", "9px")))
         .append($("<div class='mfoot'>").append(skbar("30%", "9px"))));
       $m.append($sk);
-      const cols = (this.cols && this.cols.length) ? this.cols : await window.iqNft.getCollections().catch(() => []);
-      const mine = [];
-      for (const c of cols) {
-        if (token !== this.mineToken) return; // a newer render (tab switch / reconnect) took over
-        try {
-          // Follow the existing API's 200-item pages so later editions are reachable.
-          for (let offset = 0; offset < 10000; offset += 200) {
-            const data = await window.iqNft.getItems(c.slug, offset, 200);
-            if (token !== this.mineToken) return;
-            const items = data?.items || [];
-            items.forEach((it) => {
-              if (it.minted && it.asset && it.owner === addr) mine.push({ it, slug: c.slug, colName: c.name || c.slug, collection: c });
-            });
-            if (items.length < 200 || offset + items.length >= Number(data.total)) break;
-          }
-        } catch (e) {}
-      }
+      const held = await window.iqNft.getHeld(addr).catch(() => []);
       if (token !== this.mineToken) return;
+      // Finalized collection capabilities come from the existing cached list.
+      // Holdings always use /owner; never rescan every collection's items.
+      const cols = window.iqPackCreatorConfig ? (this.cols || await window.iqNft.getCollections().catch(() => [])) : [];
+      if (token !== this.mineToken) return;
+      const collections = new Map(cols.map((c) => [c.slug, c]));
+      const mine = held.map((h) => ({ it: { index: h.index, name: h.name, asset: h.asset, inscriptionSig: h.inscriptionSig, rarity: h.rarity, owner: addr, minted: true }, slug: h.slug, colName: h.collectionName || h.slug, collection: collections.get(h.slug) }));
       const tierOf = (x) => (x.it.rarity && x.it.rarity.tier) || "common";
       const counts = ["legendary", "epic", "rare", "common"].map((t) => [t, mine.filter((x) => tierOf(x) === t).length]).filter((e) => e[1]);
       $m.empty().append($("<div class='minehead'>")
@@ -501,15 +533,32 @@
       const $kv = $("#nftl_kv").empty();
       rows.forEach(([k, v, cls, dim]) => $kv.append($("<div class='kv'>").append($("<span class='kvk'>").text(k)).append($("<span class='kvv'>").addClass(cls || "").css("opacity", dim ? .5 : 1).text(v))));
     },
+    // Every item of the collection, in pages of ITEMS_PAGE painted as they
+    // arrive, so a 2,000-item drop shows all of its minted cells (a capped first
+    // page hid most mints and disagreed with the progress bar). A token drops
+    // pages that belong to a collection the user has already left.
     renderGrid: async function (slug, col) {
       const $g = $("#nftl_grid").empty();
       if (!col.maxSupply) { $g.append($("<div class='cm' style='grid-column:1/-1'>").text("// single-mint registry: no numbered items")); return; }
-      try {
-        const data = await window.iqNft.getItems(slug, 0, 120);
-        this.items = data.items || [];
-        this.hasRarity = !!data.hasRarity;
-      } catch (e) { this.items = []; $g.append($("<div class='cm' style='grid-column:1/-1'>").text("// items unavailable")); return; }
-      this.paintGrid();
+      const token = (this.gridToken = (this.gridToken || 0) + 1);
+      this.items = [];
+      let total = Number(col.maxSupply) || 0, offset = 0;
+      while (offset < total) {
+        let data;
+        try { data = await window.iqNft.getItems(slug, offset, ITEMS_PAGE); }
+        catch (e) { data = null; }
+        if (token !== this.gridToken) return;
+        const page = (data && data.items) || [];
+        if (!page.length) {
+          if (!this.items.length) $g.append($("<div class='cm' style='grid-column:1/-1'>").text("// items unavailable"));
+          return;
+        }
+        if (offset === 0) this.hasRarity = !!data.hasRarity;
+        if (data.total) total = Number(data.total);
+        this.items = this.items.concat(page);
+        this.paintGrid();
+        offset += page.length; // by what came back, so a backend page cap below ITEMS_PAGE still walks to the end
+      }
     },
     paintGrid: function () {
       const $g = $("#nftl_grid").empty(), col = this.col, f = this.filter || "all";

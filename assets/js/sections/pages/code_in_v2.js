@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=68";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=69";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -115,9 +115,8 @@
     }
 
     function wire() {
-      // Phantom first (its window.solana shim also claims the generic slot),
-      // then Backpack's own provider, then whatever claimed window.solana.
-      provider = window.phantom?.solana || window.backpack || window.solana || null;
+      // The Solana provider is set by connect()/restoreWallet() from the wallet
+      // the user picked (window.iqCodein discovers every Solana wallet).
       $("#ci2_connect").on("click", () => connect());        // auto: picker only when ambiguous
       $("#ci2_change_wallet").on("click", () => connect(true)); // explicit switch
       $("#ci2_wallet_close").on("click", () => document.getElementById("ci2_wallet_dialog").close(""));
@@ -250,25 +249,24 @@
       });
     }
 
+    // Wallet Standard icons are data: image URIs; anything else is not rendered.
+    const walletIcon = (icon) => (typeof icon === "string" && /^data:image\/(svg\+xml|png|webp|gif);base64,/.test(icon) ? icon : null);
     function renderWalletOptions() {
       $("#ci2_wallet_disconnect").toggleClass("hide", !who);
       const options = window.iqCodein.getWallets();
+      $("#ci2_wallet_dialog .body > p").first().text(isEvm() ? "Choose your wallet for Robinhood Chain." : "Choose your Solana wallet.");
+      $("#ci2_wallet_empty").text(isEvm()
+        ? "No EVM wallet detected. Open this page in your wallet browser or enable your wallet extension."
+        : "No Solana wallet detected. Install Phantom, Jupiter, Backpack or Solflare, or open this page in your wallet's browser.");
       const box = $("#ci2_wallet_options").empty();
       $("#ci2_wallet_empty").toggleClass("hide", options.length > 0);
-      for (const wallet of options) box.append($("<button>").attr("type", "button").addClass("btn ghost")
-        .text(wallet.name + (wallet.selected && who ? " · Connected" : ""))
-        .on("click", () => document.getElementById("ci2_wallet_dialog").close(wallet.id)));
-    }
-
-    // Resolve a Solana wallet at click time. Prefer Phantom/Backpack's own
-    // handles (Brave never creates window.phantom, so window.phantom.solana is
-    // always the real Phantom) over whoever claimed the generic window.solana,
-    // and wait briefly for a late injection (Brave delays it).
-    async function resolveSolanaProvider() {
-      const pick = () => window.phantom?.solana || window.backpack || window.solana || null;
-      let p = pick();
-      for (let i = 0; !p && i < 20; i++) { await new Promise((r) => setTimeout(r, 100)); p = pick(); }
-      return p;
+      for (const wallet of options) {
+        const $b = $("<button>").attr("type", "button").addClass("btn ghost")
+          .on("click", () => document.getElementById("ci2_wallet_dialog").close(wallet.id));
+        const icon = walletIcon(wallet.icon);
+        if (icon) $b.append($("<img alt='' class='wicon'>").attr("src", icon));
+        box.append($b.append(document.createTextNode(wallet.name + (wallet.selected && who ? " · Connected" : ""))));
+      }
     }
 
     // Open the wallet picker dialog; resolves to the chosen wallet id ("" = cancelled).
@@ -284,40 +282,32 @@
     }
 
     // forcePicker (CHANGE WALLET) always opens the picker. A plain CONNECT
-    // auto-connects the saved or only EVM wallet: connectWallet() picks a
-    // single/saved wallet itself and throws "Choose an EVM wallet first" only
+    // auto-connects the saved or only wallet: connectWallet() picks a
+    // single/saved wallet itself and throws "Choose a ... wallet first" only
     // when ambiguous (2+ wallets, none saved), so the picker opens only then.
-    // Solana resolves its provider lazily below (Brave aware).
+    // One flow for Solana and EVM; the adapter behind window.iqCodein differs.
     async function connect(forcePicker) {
       let walletId;
-      if (isEvm() && forcePicker) { walletId = await pickWallet(); if (!walletId) return; }
+      if (forcePicker) { walletId = await pickWallet(); if (!walletId) return; }
       const generation = ++walletGeneration; // Ignore a late silent reconnect after an explicit choice.
       removeWalletListeners();
       showWallet(null);
+      const ambiguous = (e) => /choose an? (evm|solana) wallet/i.test(String((e && e.message) || e));
       let address;
-      if (isEvm()) {
+      try { address = await window.iqCodein.connectWallet({ walletId }); }
+      catch (e) {
+        if (walletId || forcePicker || !ambiguous(e)) { alert(String((e && e.message) || e)); return; }
+        // auto attempt and the choice is ambiguous: open the picker once and retry
+        walletId = await pickWallet();
+        if (!walletId || generation !== walletGeneration) return;
         try { address = await window.iqCodein.connectWallet({ walletId }); }
-        catch (e) {
-          // auto attempt and the choice is ambiguous: open the picker once and retry
-          if (!walletId && !forcePicker && /choose an evm wallet/i.test(String((e && e.message) || e))) {
-            walletId = await pickWallet();
-            if (!walletId || generation !== walletGeneration) return;
-            try { address = await window.iqCodein.connectWallet({ walletId }); }
-            catch (e2) { alert(String((e2 && e2.message) || e2)); return; }
-          } else { alert(String((e && e.message) || e)); return; }
-        }
-        if (generation !== walletGeneration) return;
-        bindWalletListeners();
-        if (!await walletRpcHealthy()) return;
-      } else {
-        provider = await resolveSolanaProvider();
-        if (!provider) { alert("No Solana wallet found. Install Phantom or Backpack.\n\nBrave users: open brave://settings/wallet and set Default cryptocurrency wallet to \"Extensions (no fallback)\" so your extension wallet is detected."); return; }
-        const res = await provider.connect();
-        address = (res?.publicKey || provider.publicKey).toString();
+        catch (e2) { alert(String((e2 && e2.message) || e2)); return; }
       }
-      if (generation !== walletGeneration) return;
+      if (generation !== walletGeneration || !address) return;
+      if (!isEvm()) provider = window.iqCodein.getWalletProvider();
+      bindWalletListeners();
+      if (isEvm() && !await walletRpcHealthy()) return;
       showWallet(address);
-      if (!isEvm()) bindWalletListeners();
     }
 
     async function walletRpcHealthy() {
@@ -334,11 +324,13 @@
     function showWallet(address) {
       if (who !== address) burner = null;
       who = address;
-      if (isEvm() && address) {
-        const selected = window.iqCodein.getWallets().find(wallet => wallet.selected);
+      const wallets = window.iqCodein.getWallets();
+      if (address) {
+        const selected = wallets.find(wallet => wallet.selected);
         $("#ci2_change_wallet").text(selected ? selected.name + " · CHANGE WALLET" : "CHANGE WALLET");
       }
-      $("#ci2_change_wallet").toggleClass("hide", !isEvm() || !who);
+      // switching only makes sense when there is something to switch to
+      $("#ci2_change_wallet").toggleClass("hide", !who || wallets.length < 2);
       $("#ci2_who").text(who ? who.slice(0, 4) + "..." + who.slice(-4) : "").toggleClass("hide", !who);
       $("#ci2_connect").toggleClass("hide", !!who);
       $("#ci2_new").toggleClass("hide", !who);
@@ -367,13 +359,17 @@
     }
     async function restoreWallet() {
       const generation = walletGeneration;
-      if (!isEvm()) { provider = await resolveSolanaProvider(); if (generation !== walletGeneration) return; bindWalletListeners(); }
       try {
-        const address = isEvm()
-          ? await window.iqCodein.connectWallet({ onlyIfTrusted: true })
-          : (await provider?.connect({ onlyIfTrusted: true }))?.publicKey?.toString();
+        const address = await window.iqCodein.connectWallet({
+          onlyIfTrusted: true,
+          // Solana: listen on the candidate before its silent connect resolves,
+          // so an account change during the wait outranks the late response.
+          onProvider: isEvm() ? undefined : (p) => { if (generation === walletGeneration) { provider = p; bindWalletListeners(); } },
+        });
         if (generation !== walletGeneration || !address) return;
-        if (isEvm()) { bindWalletListeners(); if (!await walletRpcHealthy()) return; }
+        if (!isEvm()) provider = window.iqCodein.getWalletProvider();
+        bindWalletListeners();
+        if (isEvm() && !await walletRpcHealthy()) return;
         if (generation === walletGeneration) showWallet(address);
       } catch (_) { /* Locked or unapproved wallet: keep the connect button. */ }
     }

@@ -16,7 +16,7 @@
 import { notifyNftFeedRow } from "./nft_notify.js?v=1";
 import { Keypair, Transaction } from "@solana/web3.js";
 import { writer } from "@iqlabs-official/solana-sdk";
-import { api, bytesToBase64, base64ToBytes } from "./nft.js?v=packs-mainnet-2";
+import { api, bytesToBase64, base64ToBytes } from "./nft.js?v=packs-refresh-20261101";
 import { topUp, sweep, confirmOrCheck, writeFeedRow } from "./inscribe.js?v=9";
 import { estimateCost, getAccountRent } from "./cost.js?v=6";
 import { compressImage } from "./image_compress.js?v=1";
@@ -31,14 +31,23 @@ function saveProgress(slug, p) { try { localStorage.setItem(RKEY(slug), JSON.str
 function clearProgress(slug) { try { localStorage.removeItem(RKEY(slug)); } catch (e) {} }
 export function pendingDeploy(slug) { return loadProgress(slug); }
 
-// The /creator/stage body: spec fields + the creator wallet + the compressed items.
-function stageBody(spec, creator, items) {
+// The collection spec fields + the creator wallet, sent to /creator/stage/begin.
+function specBody(spec, creator) {
   return {
     slug: spec.slug, creator, name: spec.name, symbol: spec.symbol,
     description: spec.description || "", price: spec.price || 0, deposit: spec.deposit || 0,
-    royaltyBps: spec.royaltyBps || 0, sequential: !!spec.sequential, items,
+    royaltyBps: spec.royaltyBps || 0, sequential: !!spec.sequential,
   };
 }
+
+// Images are compressed and uploaded this many at a time. Small enough that one
+// request is a couple of MB (never the whole collection) and the server's Arweave
+// upload for the batch finishes in seconds, well under any proxy timeout.
+const STAGE_BATCH = 40;
+// Hand control back to the browser so it can paint the progress bar and stay
+// responsive; the squoosh wasm encode otherwise pegs the main thread for the
+// whole run (thousands of images -> "page unresponsive").
+const tick = () => new Promise((r) => setTimeout(r, 0));
 
 // One funding transfer covers: manifest inscription (first write carries the
 // burner's user-init rent), collection.json inscription, and the deploy tx
@@ -67,31 +76,49 @@ export async function deploy({ connection, wallet, burner, spec, items, onStage 
   if (p && (p.wallet !== who || p.burner !== burnerPk)) p = null;
   p = p || { wallet: who, burner: burnerPk };
 
-  // 1. Compress each image (squoosh) and stage: Arweave upload + manifest, with
-  //    the shuffle seed generated and kept server-side.
+  // 1. Compress each image (squoosh) and stage it: the images go up in small
+  //    batches (begin -> batch* -> finish), each uploaded to Arweave server-side
+  //    with the shuffle seed kept there. Batching keeps every request small and
+  //    fast (a whole 2000+ image collection in one request times the proxy out),
+  //    and the per-image yield keeps the browser responsive with a live bar.
   if (!p.stagingId) {
-    const staged = [];
+    const begin = await api("/creator/stage/begin", "POST", specBody(spec, who));
+    if (begin.status === 409) throw new Error(`the handle "${slug}" is taken; pick another`);
+    if (begin.status !== 200) throw new Error(begin.json?.error || `stage failed (${begin.status})`);
+    const stagingId = begin.json.stagingId;
+
+    let batch = [], uploaded = 0;
+    const flush = async () => {
+      if (!batch.length) return;
+      const r = await api("/creator/stage/batch", "POST", { stagingId, items: batch });
+      if (r.status !== 200) throw new Error(r.json?.error || `upload failed (${r.status})`);
+      uploaded += batch.length;
+      batch = [];
+      stage("stage", { done: uploaded, total: items.length });
+      await tick();
+    };
     for (let i = 0; i < items.length; i++) {
       stage("compress", { done: i, total: items.length });
       // imageData may be a thunk (generative sets build one composite at a time,
       // so thousands of raw bitmaps never sit in memory at once).
-      // Reviewed pack-kit bases must retain their exact content hash. The
-      // finalizer compares these bytes against the validated recipe. Ordinary
-      // collections keep the existing compression path unchanged.
-      const imageData=items[i].sourceBytes?null:(typeof items[i].imageData==='function'?await items[i].imageData():items[i].imageData);
-      const {bytes,mime}=items[i].sourceBytes?await items[i].sourceBytes():await compressImage(imageData,spec.compress);
-      if(!(bytes instanceof Uint8Array)||!['image/png','image/webp'].includes(mime)||bytes.length>20000000)throw Error('Unsupported reviewed NFT image');
-      staged.push({ index: items[i].index ?? i + 1, name: items[i].name, mime, imageBase64: bytesToBase64(bytes), template: items[i].template || {} });
+      // Reviewed pack-kit bytes retain their validated hash; ordinary images
+      // keep compression. Both paths feed the same bounded upload batches.
+      const imageData = items[i].sourceBytes ? null : (typeof items[i].imageData === "function" ? await items[i].imageData() : items[i].imageData);
+      const { bytes, mime } = items[i].sourceBytes ? await items[i].sourceBytes() : await compressImage(imageData, spec.compress);
+      if (!(bytes instanceof Uint8Array) || !['image/png', 'image/webp'].includes(mime) || bytes.length > 20000000) throw Error('Unsupported reviewed NFT image');
+      batch.push({ index: items[i].index ?? i + 1, name: items[i].name, mime, imageBase64: bytesToBase64(bytes), template: items[i].template || {} });
+      await tick(); // paint the bar + stay responsive between images
+      if (batch.length >= STAGE_BATCH) await flush();
     }
-    stage("stage", { total: items.length });
-    const r = await api("/creator/stage", "POST", stageBody(spec, who, staged));
-    if (r.status === 409) throw new Error(`the handle "${slug}" is taken; pick another`);
-    if (r.status !== 200) throw new Error(r.json?.error || `stage failed (${r.status})`);
-    p.stagingId = r.json.stagingId;
-    p.manifestJson = r.json.manifestJson;
-    p.collectionJson = r.json.collectionJson;
-    p.itemCount = r.json.itemCount;
-    p.deployFeeLamports = r.json.deployFeeLamports;
+    await flush();
+
+    const fin = await api("/creator/stage/finish", "POST", { stagingId });
+    if (fin.status !== 200) throw new Error(fin.json?.error || `stage finish failed (${fin.status})`);
+    p.stagingId = stagingId;
+    p.manifestJson = fin.json.manifestJson;
+    p.collectionJson = fin.json.collectionJson;
+    p.itemCount = fin.json.itemCount;
+    p.deployFeeLamports = fin.json.deployFeeLamports;
     saveProgress(slug, p);
   }
 

@@ -4,18 +4,19 @@
 // Wallet + burner material stays in this module; the page only sees pubkeys.
 // SDK + web3 resolve through index.html's importmap, same as browser.js.
 import {solanaMarketUrl} from "../../nft-market-links.mjs";
-import { Connection } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import { setRpcUrl } from "@iqlabs-official/solana-sdk";
 import {createPackBootstrap,createPackPendingStorage,assertPackRuntime} from "./pack_bootstrap.mjs";
 import {guardPackCreator} from "./pack_wallet.mjs";
 import { deriveBurner } from "./burner.js";
 import {topUp,sweep} from './inscribe.js?v=9';
 import {estimateCost,getAccountRent} from './cost.js?v=6';
-import * as nft from "./nft.js?v=packs-mainnet-2";
-import { deploy, pendingDeploy } from "./nft_create.js?v=packs-mainnet-2";
+import { listWallets, connectWallet, getWalletProvider, disconnectWallet } from "./wallets.js?v=1";
+import * as nft from "./nft.js?v=packs-refresh-20261101";
+import { deploy, pendingDeploy } from "./nft_create.js?v=packs-refresh-20261101";
 import { compressImage } from "./image_compress.js?v=1";
 import { readAsset, readInscription, viewAssetViaGateway, gatewayMetadata } from "./nft_asset.js?v=4";
-import { preset, net, setNet } from "./nft_net.js?v=packs-mainnet-2";
+import { preset, net, setNet } from "./nft_net.js?v=packs-refresh-20261101";
 
 // The NFT program + backend run on their own network (see nft_net.js), which may
 // differ from the rest of the site, so the NFT page keeps its own RPC under its
@@ -29,23 +30,34 @@ function connection() { return new Connection(rpc(), "confirmed"); }
 // the cluster even if a same-network custom RPC is set.
 function gatewayBase() { return preset().gateway; }
 
-function phantom() {
-  const p = (window.phantom && window.phantom.solana) || window.solana || null;
-  if (!p) throw new Error("No Solana wallet found. Install Phantom and reload.");
-  return p;
+// Wallet: any Solana wallet the site discovers (wallets.js: Wallet Standard
+// wallets such as Jupiter or MetaMask, plus Phantom/Backpack), connected on
+// the NFT cluster. Nothing prompts on entry: restore() only reconnects a
+// wallet that approved this site before, connect() runs from the button.
+function active() { return getWalletProvider(); }
+async function ensureConnected(walletId) {
+  const p = active();
+  if (p && p.publicKey) return p;
+  await connectWallet({ walletId, cluster: net() });
+  return getWalletProvider();
 }
-async function ensureConnected() {
-  const p = phantom();
-  if (!p.publicKey) await p.connect();
-  return p;
-}
+// The burner is derived from one wallet signature, so deriving it is a wallet
+// popup. It happens only when the user acts (mint, deploy); never on page entry.
+// Its public key is remembered per wallet (public data), so a returning user's
+// cost estimate can read the burner's account rent without any popup.
+const BURNER_KEY = (wallet) => "iq6900_nft_burner_" + wallet;
 async function burnerFor(provider) {
   // Same derivation as the code-in page: one signMessage, raw signature bytes out.
   const signMessage = async (msg) => {
     const out = await provider.signMessage(msg instanceof Uint8Array ? msg : new TextEncoder().encode(msg), "utf8");
     return out.signature || out;
   };
-  return deriveBurner(signMessage);
+  const burner = await deriveBurner(signMessage);
+  try { localStorage.setItem(BURNER_KEY(provider.publicKey.toBase58()), burner.publicKey.toBase58()); } catch (e) {}
+  return burner;
+}
+function knownBurner(provider) {
+  try { const b = localStorage.getItem(BURNER_KEY(provider.publicKey.toBase58())); return b ? { publicKey: new PublicKey(b) } : null; } catch (e) { return null; }
 }
 
 // The page calls nft.js's reads/helpers under their real names across the
@@ -85,10 +97,17 @@ window.iqNft = Object.assign({}, nft, {
   imgUrl: (sig) => gatewayBase() + "/img/" + sig + ".png", // the gateway render of an image inscription
   metaUrl: (M) => gatewayBase() + "/token-meta/" + M, // the asset uri we register
   gatewayMeta: (M) => gatewayMetadata(gatewayBase(), M),
-  connect: async () => (await ensureConnected()).publicKey.toBase58(),
-  connected: () => { try { return phantom().publicKey ? phantom().publicKey.toBase58() : null; } catch (e) { return null; } },
+  // {id, name, icon, selected} per discovered wallet; connect(id) picks one,
+  // connect() takes the saved or only wallet and throws "Choose a Solana wallet
+  // first." when it is ambiguous (the page then shows its picker).
+  wallets: () => listWallets(net()).map(({ id, name, icon, provider }) => ({ id, name, icon, selected: provider === getWalletProvider() })),
+  connect: async (walletId) => (await ensureConnected(walletId)).publicKey.toBase58(),
+  restore: () => connectWallet({ onlyIfTrusted: true, cluster: net() }),
+  disconnect: disconnectWallet,
+  connected: () => { const p = active(); return p && p.publicKey ? p.publicKey.toBase58() : null; },
+  // Silent: uses the remembered burner key when there is one, never signs.
   estimateMintCost: async (col) => {
-    try { const p = phantom(); return p.publicKey ? nft.estimateMintCost(col, connection(), await burnerFor(p)) : nft.estimateMintCost(col); }
+    try { const p = active(), b = p && p.publicKey && knownBurner(p); return b ? nft.estimateMintCost(col, connection(), b) : nft.estimateMintCost(col); }
     catch (e) { return nft.estimateMintCost(col); }
   },
   mint: async ({ slug, collection, onStage, onProgress }) => {

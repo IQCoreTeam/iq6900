@@ -6,6 +6,7 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import { setRpcUrl, reader, contract } from "@iqlabs-official/solana-sdk";
 import { deriveBurner } from "./burner.js";
+import { listWallets, connectWallet, getWalletProvider, disconnectWallet } from "./wallets.js?v=1";
 import { estimateCost } from "./cost.js?v=6";
 import { inscribe, inscribeMeta, sweep } from "./inscribe.js?v=9";
 import { feedTablePda, programId } from "./feed.js";
@@ -70,6 +71,13 @@ window.iqCodein = {
   hasOwnRpc: () => activeRpc !== DEFAULT_RPC,
   setGateway: (url) => { try { url ? localStorage.setItem(GATEWAY_KEY, url) : localStorage.removeItem(GATEWAY_KEY); } catch (e) {} },
   deriveBurner,
+  // Solana wallets: every Wallet Standard wallet (Jupiter, MetaMask, Solflare,
+  // ...) plus Phantom/Backpack, behind the same contract as evm.js so the page
+  // runs one connect flow for both chains.
+  getWallets: () => listWallets().map(({ id, name, icon, provider }) => ({ id, name, icon, selected: provider === getWalletProvider() })),
+  getWalletProvider,
+  disconnectWallet,
+  connectWallet: (opts) => connectWallet(opts),
   estimateCost,
   inscribe,
   sweep,

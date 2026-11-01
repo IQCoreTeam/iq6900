@@ -90,6 +90,7 @@
 #ci2 #ci2_wallet_options{display:grid;gap:10px}
 #ci2 #ci2_wallet_options .btn{width:100%;min-height:48px;text-align:left;padding:12px 16px}
 #ci2 #ci2_wallet_options .btn:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+#ci2 #ci2_wallet_options .wicon{width:18px;height:18px;vertical-align:-4px;margin-right:10px;border-radius:4px}
 #ci2 .muted{opacity:.55;font-size:10px}
 /* top padding clears the fixed site nav so the modal title bar is never cut */
 #ci2 .modal{position:fixed;inset:0;z-index:60;background:rgba(4,6,4,.72);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:96px 16px 30px;overflow:auto}
@@ -233,7 +234,7 @@
   <!-- inscribe modal -->
   <dialog id="ci2_wallet_dialog" class="panel" aria-labelledby="ci2_wallet_title">
     <div class="bar"><span id="ci2_wallet_title">connect_wallet.exe</span><button id="ci2_wallet_close" class="btn ghost" type="button" aria-label="Close wallet picker">×</button></div>
-    <div class="body"><p>Choose your wallet for Robinhood Chain.</p><div id="ci2_wallet_options"></div><button id="ci2_wallet_disconnect" class="btn ghost hide" type="button" style="margin-top:20px;width:100%">DISCONNECT WALLET</button><p id="ci2_wallet_empty" class="hide">No EVM wallet detected. Open this page in your wallet browser or enable your wallet extension.</p></div>
+    <div class="body"><p>Choose your wallet.</p><div id="ci2_wallet_options"></div><button id="ci2_wallet_disconnect" class="btn ghost hide" type="button" style="margin-top:20px;width:100%">DISCONNECT WALLET</button><p id="ci2_wallet_empty" class="hide">No EVM wallet detected. Open this page in your wallet browser or enable your wallet extension.</p></div>
   </dialog>
   <div id="ci2_modal" class="modal hide">
     <div class="panel" style="width:640px;max-width:100%">

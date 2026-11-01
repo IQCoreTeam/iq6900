@@ -17,7 +17,7 @@ import { writer } from "@iqlabs-official/solana-sdk";
 import { notifyNftFeedRow } from "./nft_notify.js?v=1";
 import { writeFeedRow, topUp, sweep, confirmOrCheck } from "./inscribe.js?v=9";
 import { estimateCost, getAccountRent } from "./cost.js?v=6";
-import { preset } from "./nft_net.js?v=packs-mainnet-2";
+import { preset } from "./nft_net.js?v=packs-refresh-20261101";
 
 // The backend service. Separate from the gateway (which only serves reads). The
 // per-network default lives in nft_net.js; a localStorage override lets a dev
@@ -45,6 +45,7 @@ export async function getItems(slug, offset = 0, limit = 60) { return (await api
 export async function getItem(slug, index) { return (await api(`/c/${slug}/item/${index}`)).json; }
 export async function getAsset(address) { return (await api(`/asset/${address}`)).json; }
 export async function getRecent(slug, limit = 20) { return (await api(`/c/${slug}/recent?limit=${limit}`)).json?.recent ?? []; }
+export async function getHeld(wallet) { return (await api(`/owner/${wallet}`)).json?.items ?? []; } // every minted item a wallet holds, across collections
 
 // ── Funding budget ─────────────────────────────────────────────────────────
 // One popup funds the whole mint, so the budget is generous and the remainder
@@ -137,6 +138,19 @@ async function sendRegister(connection, co, burner, asset) {
   const sig = await connection.sendRawTransaction(tx.serialize());
   if (!(await confirmOrCheck(connection, sig, tx.recentBlockhash, co.lastValidBlockHeight))) throw new Error("register tx was not confirmed");
   return sig;
+}
+
+// Tell the backend the register tx landed, so it confirms the reservation and
+// mirrors the slot now: the grid lights the cell, My NFTs lists it and the
+// wallet's open-reservation count drops, instead of waiting for the next
+// reconcile. 202 = the bit is not visible yet, ask again. Best-effort: a miss
+// is covered by the reconciler, so it never fails a mint that already landed.
+async function reportLanded(slug, reservationId) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const r = await api(`/c/${slug}/mint/landed`, "POST", { reservationId }).catch(() => null);
+    if (!r || r.status !== 202) return;
+    await new Promise((res) => setTimeout(res, 1500));
+  }
 }
 
 // ── mint ────────────────────────────────────────────────────────────────
@@ -238,7 +252,8 @@ export async function mint({ connection, wallet, burner, slug, collection, onSta
     }
   }
 
-  // 6. Sweep the remainder back, clear the checkpoint, report.
+  // 6. Report the landing, sweep the remainder back, clear the checkpoint, report.
+  if (p.reservationId) await reportLanded(slug, p.reservationId);
   await sweep(connection, burner, wallet.publicKey).catch(() => {});
   clearProgress(slug);
   const result = { slug, index: p.index, name: p.name, C: p.C, M: p.M, asset: asset.publicKey.toBase58(), mintSig };

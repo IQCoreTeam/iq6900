@@ -609,8 +609,8 @@
           onStage: (st, x) => {
             this.status(st === "stage" && window.iqNft.localOnly === true ? "staging your images locally..." : STAGE_TEXT[st] || st);
             if (x) this.dbg("stage:" + st + " " + JSON.stringify(x));
-            if (st === "compress" && x) this.setBar(2 + (x.done / Math.max(1, total)) * 60);
-            if (st === "stage") this.setBar(66);
+            if (st === "compress" && x) this.setBar(2 + (x.done / Math.max(1, total)) * 58);
+            if (st === "stage") this.setBar(x ? 60 + (x.done / Math.max(1, total)) * 12 : 60);
             if (st === "manifest") this.setBar(74);
             if (st === "logo") this.setBar(77);
             if (st === "banner") this.setBar(80);
