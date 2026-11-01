@@ -19,6 +19,52 @@ export function packRewards(snapshot, pack) {
   });
 }
 
+function renderRandomnessProof(panel, result) {
+  const document = panel.ownerDocument;
+  const heading = document.createElement("strong");
+  heading.textContent =
+    "Pack " +
+    (result.epochId * 32 + result.ticket + 1) +
+    " · " +
+    (result.simulation ? "local simulation: " : "") +
+    "all four draws match";
+  const note = document.createElement("p");
+  note.textContent = result.simulation
+    ? "Uses simulated oracle fulfillment on the local test chain. This is not a live VRF proof."
+    : "The fulfilled ORAO account matches the recorded entropy, and the contract’s draw algorithm produces these four traits. This checks on-chain records from the configured RPC, not the oracle quorum signatures independently.";
+  const draws = document.createElement("p");
+  draws.textContent = result.draws.map((draw) => draw.name).join(" · ");
+  const details = document.createElement("details"),
+    summary = document.createElement("summary");
+  summary.textContent = "Proof records";
+  details.append(summary);
+  for (const [label, value] of [
+    ["Oracle request", result.request],
+    ["Epoch", result.epoch],
+    ["Result hash", result.resultHash],
+    ["Confirmed slot", String(result.slot)],
+  ]) {
+    const line = document.createElement("p");
+    line.textContent = label + ": ";
+    if (
+      !result.simulation &&
+      (label === "Oracle request" || label === "Epoch")
+    ) {
+      const link = document.createElement("a");
+      link.href =
+        "https://explorer.solana.com/address/" +
+        encodeURIComponent(value) +
+        (result.chain === "solana:devnet" ? "?cluster=devnet" : "");
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = value;
+      line.append(link);
+    } else line.append(document.createTextNode(value));
+    details.append(line);
+  }
+  panel.replaceChildren(heading, note, draws, details);
+}
+
 export async function mountPacks() {
   if(window.iqPackBootstrap)await window.iqPackBootstrap;
   if(!window.iqPackConfig)throw Error('Packs are not configured for this network.');
@@ -255,29 +301,49 @@ export async function mountPacks() {
     }
   }
   function followSettlement(pack) {
-    const key=pack&&pack.status!=='settled'?walletRevision+':'+pack.address:null;
-    if(key!==settlementKey){window.clearTimeout(settlementTimer);settlementTimer=null;settlementKey=key;settlementReads=0;settlementStarted=Date.now();}
-    if(!key||settlementTimer!==null||settlementReads>=24||Date.now()-settlementStarted>=120000)return;
-    settlementTimer=window.setTimeout(async()=>{
-      settlementTimer=null;
-      if(disposed||settlementKey!==key)return;
-      if(!document.hidden&&!busy){
-        settlementReads++;
-        try{
+    const key =
+      pack && pack.status !== "settled"
+        ? walletRevision + ":" + pack.address
+        : null;
+    if (key !== settlementKey) {
+      window.clearTimeout(settlementTimer);
+      settlementTimer = null;
+      settlementKey = key;
+      settlementReads = 0;
+      settlementStarted = Date.now();
+    }
+    if (
+      !key ||
+      settlementTimer !== null ||
+      settlementReads >= 24 ||
+      Date.now() - settlementStarted >= 120000
+    )
+      return;
+    settlementTimer = window.setTimeout(async () => {
+      if (disposed || settlementKey !== key) return;
+      try {
+        if (!document.hidden && !busy) {
+          settlementReads++;
           await request();
-          if(settlementKey!==key)return;
-          if(selectedPack()?.status==='settled')say('Your pack is ready. Click the pack to open it.');
-        }catch(error){
-          if(error.staleWalletRead)return;
-          settlementReads=24;fail(error);
+          if (settlementKey === key && selectedPack()?.status === "settled")
+            say("Your pack is ready. Click the pack to open it.");
+        }
+      } catch (error) {
+        if (!error.staleWalletRead) {
+          settlementReads = 24;
+          fail(error);
+        }
+      } finally {
+        if (settlementKey === key) {
+          settlementTimer = null;
+          render();
         }
       }
-      if(settlementKey===key)render();
-    },5000);
+    }, 5000);
   }
   function render() {
-    try{applyPackAppearance(root,normalizePackAppearance(state.appearance??(new URL(location.href).searchParams.has('collection')?null:{title:root.dataset.packTitle,subtitle:root.dataset.packSubtitle,collectionName:root.dataset.packSeries,cover:root.dataset.packCover,logo:root.dataset.packLogo}),location.origin));}catch{applyPackAppearance(root,normalizePackAppearance(null,location.origin));}
     if (!state || !root.isConnected) return;
+    try{applyPackAppearance(root,normalizePackAppearance(state.appearance??(new URL(location.href).searchParams.has('collection')?null:{title:root.dataset.packTitle,subtitle:root.dataset.packSubtitle,collectionName:root.dataset.packSeries,cover:root.dataset.packCover,logo:root.dataset.packLogo}),location.origin));}catch{applyPackAppearance(root,normalizePackAppearance(null,location.origin));}
     if(state.appearance?.collectionName)ui.title.textContent=state.appearance.collectionName;
     choosePack();
     const pack = readyForNextPack ? null : selectedPack(), owned = state.packs.filter(item => item.owner === owner());
@@ -363,16 +429,7 @@ export async function mountPacks() {
       try{
         const result=await verifyRandomness({connection:proofConnection,program:liveConfig.program,collection:liveConfig.collection,chain:liveConfig.chain,localGenesis:liveConfig.localGenesis,epochId:pack.epoch,ticket:pack.sequence});
         if(disposed||requestId!==proofRequest||revision!==walletRevision)return;
-        const heading=document.createElement('strong');heading.textContent='Pack '+(pack.id+1)+' · '+(result.simulation?'local simulation: ':'')+'all four draws match';
-        const note=document.createElement('p');note.textContent=result.simulation?'Uses simulated oracle fulfillment on the local test chain. This is not a live VRF proof.':'The fulfilled ORAO account matches the recorded entropy, and the contract’s draw algorithm produces these four traits. This checks on-chain records from the configured RPC, not the oracle quorum signatures independently.';
-        const draws=document.createElement('p');draws.textContent=result.draws.map(draw=>draw.name).join(' · ');
-        const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Proof records';details.append(summary);
-        for(const [label,value] of [['Oracle request',result.request],['Epoch',result.epoch],['Result hash',result.resultHash],['Confirmed slot',String(result.slot)]]){
-          const line=document.createElement('p');line.textContent=label+': ';
-          if(!result.simulation&&(label==='Oracle request'||label==='Epoch')){const link=document.createElement('a');link.href='https://explorer.solana.com/address/'+encodeURIComponent(value)+(result.chain==='solana:devnet'?'?cluster=devnet':'');link.target='_blank';link.rel='noopener noreferrer';link.textContent=value;line.append(link);}else line.append(document.createTextNode(value));
-          details.append(line);
-        }
-        panel.replaceChildren(heading,note,draws,details);
+        renderRandomnessProof(panel,result);
       }catch(error){if(requestId===proofRequest&&revision===walletRevision&&!disposed)panel.textContent='Could not verify this opening: '+error.message;}
       finally{proofButton.disabled=false;}
       return;
