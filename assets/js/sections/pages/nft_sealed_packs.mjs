@@ -18,6 +18,7 @@ export async function mountSealedPackPage(root, config) {
     timer = null,
     openingView = null,
     generation = 0,
+    operationGeneration = null,
     openingCards = [],
     openingPackId = null;
   const revealed = new Set();
@@ -122,16 +123,23 @@ export async function mountSealedPackPage(root, config) {
         ...options,
       }),
       value = await response.json();
+    if (!value || typeof value !== "object" || Array.isArray(value))
+      throw Error("The server returned an invalid sealed-pack response.");
     if (!response.ok)
       throw Error(value.error ?? "Confirmed sealed state unavailable");
     return value;
   }
   async function notify(assets) {
-    return json(new URL(endpoint.href + "/notify"), {
+    const result = await json(new URL(endpoint.href + "/notify"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ assets }),
     });
+    if (result.accepted !== new Set(assets).size)
+      throw Error(
+        "The confirmed asset was not accepted by the index. Refresh to retry indexing.",
+      );
+    return result;
   }
   const buyer = client.createSealedPackClient({
     connection,
@@ -165,6 +173,7 @@ export async function mountSealedPackPage(root, config) {
     wallet = event.detail.wallet;
     account = event.detail.account;
     generation++;
+    pageBefore = null;
     proofPanel.hidden = true;
     opening = null;
     window.clearTimeout(timer);
@@ -181,6 +190,7 @@ export async function mountSealedPackPage(root, config) {
     }
   });
   walletRoot.addEventListener("iqpacks:purchase", async () => {
+    pageBefore = null;
     status.textContent =
       "Your pack NFT is sealed. Keep it, list it, or open it.";
     try {
@@ -200,6 +210,12 @@ export async function mountSealedPackPage(root, config) {
       value.chain !== config.chain
     )
       throw Error("Sealed state differs from the configured deployment");
+    if (
+      !Array.isArray(value.packs) ||
+      value.packs.length > 24 ||
+      new Set(value.packs.map((pack) => pack.asset)).size !== value.packs.length
+    )
+      throw Error("Sealed page exceeds its verified asset bound");
     const listings = await client.readTensorListings(
       connection,
       value.packs.filter((p) => !p.opened).map((p) => p.asset),
@@ -229,15 +245,17 @@ export async function mountSealedPackPage(root, config) {
     )
       return;
     busy = true;
+    operationGeneration = generation;
     error.textContent = "";
     render();
     try {
       await operation();
       await read();
     } catch (e) {
-      error.textContent = e.message;
+      if (operationGeneration === generation) error.textContent = e.message;
     } finally {
       busy = false;
+      operationGeneration = null;
       if (!disposed) render();
     }
   }
@@ -420,6 +438,8 @@ export async function mountSealedPackPage(root, config) {
   }
   async function financial(instructions, asset) {
     if (!wallet || !account) throw Error("Connect a wallet");
+    if (operationGeneration !== generation)
+      throw Error("Wallet changed before the action. Review and try again.");
     const key = client.packPurchaseKey(
       config.chain,
       config.program,
@@ -429,6 +449,8 @@ export async function mountSealedPackPage(root, config) {
     const pending = await config.pendingPurchases.load(key);
     if (pending)
       throw Error("Reconcile the previous transaction before another action");
+    if (operationGeneration !== generation)
+      throw Error("Wallet changed before the action. Review and try again.");
     const signature = await client.sendWalletTransaction({
       connection,
       wallet,
@@ -441,20 +463,21 @@ export async function mountSealedPackPage(root, config) {
     });
     await notify([asset]);
     await config.pendingPurchases.clear(key, signature);
-    status.textContent = "Confirmed on chain.";
+    if (operationGeneration === generation)
+      status.textContent = "Confirmed on chain.";
   }
   async function showOpening(pack) {
-    const current = await transport.read(
-        account.address,
-        undefined,
-        pack.epoch + 1,
-      ),
+    const revision = generation,
+      holder = account?.address;
+    if (!holder) return;
+    const current = await transport.read(holder, undefined, pack.epoch + 1),
       ticket = current.packs.find(
         (x) =>
           x.epoch === pack.epoch &&
           x.sequence === pack.ticket &&
-          x.owner === account.address,
+          x.owner === holder,
       );
+    if (disposed || revision !== generation) return;
     if (!ticket || ticket.status !== "settled") {
       status.textContent = ticket?.void
         ? "Opening timed out. Check the original-price refund."
@@ -464,6 +487,7 @@ export async function mountSealedPackPage(root, config) {
     }
     const { packRewards } = await import("./nft_packs.js"),
       rewards = packRewards(current, ticket);
+    if (disposed || revision !== generation) return;
     openingPackId = ticket.address;
     revealed.clear();
     openingCards = rewards.map((trait) => ({
