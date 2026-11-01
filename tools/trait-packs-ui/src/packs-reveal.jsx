@@ -74,7 +74,7 @@ export function createPackOpening(element,onReveal,onProceed) {
       if(canInspect&&card&&currentOpened.has(id))detail.open(card,trigger);
     }} inert={!confirmed||!interactive} data-awaiting={!confirmed?'':undefined}><CardPack key={(confirmed?'confirmed:':'sealed:')+(packId??'new')} cards={confirmed?stableCards:unknownCards} opened={seen} theme={theme} rarities={tiers}
       className="iq-confirmed-pack" classNames={{sealed:'iq-confirmed-seal'}}
-      labels={{tear:confirmed&&interactive?'Reveal confirmed pack':confirmed?'Preparing confirmed reveal':'Pack opens after confirmation',flip:'Reveal confirmed trait',done:'Proceed',replay:'',hint:({stage,left})=>!confirmed?'Four cosmetic traits. Sealed until the transaction confirms.':stage==='sealed'?'Confirmed. Tap the pack to reveal.':left?`${left} ${left===1?'trait':'traits'} to reveal`:'Your four traits.'}}
+      labels={{tear:confirmed&&interactive?'Open pack':confirmed?'Preparing reveal':'Buy a pack first',flip:'Reveal trait',done:'Done',replay:'',hint:({stage,left})=>!confirmed?'Buy a pack to open it.':stage==='sealed'?'Tap to open your pack.':left?`${left} ${left===1?'trait':'traits'} to reveal`:'Your four traits.'}}
       onOpen={id=>{if(confirmed&&interactive&&allowed.has(id))onReveal(id);}}
       onDone={onProceed}
       renderFace={card=><span className="iq-reveal-face" data-trait-id={card.id} aria-hidden={!seen.includes(card.id)}><img src={card.image} alt={seen.includes(card.id)?card.name:''}/></span>}
