@@ -40,7 +40,7 @@ export function createPackBootstrap({target,getPreset,getNetwork,getRpc,getApi,g
     if(chain()!==selectedChain)throw Error('NFT network changed; reload before using packs');
     const deployment=Object.fromEntries(['program','nftProgram','provider','providerTreasury'].map(field=>[field,new client.PublicKey(configured[field]).toBase58()]));
     registry??=client.getWallets();
-    const common={...deployment,chain:selectedChain,rpc,gateway,apiBase,apiOrigins:[...apiOrigins],mediaOrigins:[gateway],registry,clientModule:'/pack-client.js',deployment,windowRequests:configured.windowRequests};
+    const common={...deployment,chain:selectedChain,rpc,gateway,apiBase,apiOrigins:[...apiOrigins],mediaOrigins:[gateway],registry,sealedPacks:configured.sealedPacks===true,clientModule:'/pack-client.js',deployment,windowRequests:configured.windowRequests};
     nativeCreator={...common,apiPath:'/creator/packs'};target.iqPackCreatorConfig=nativeCreator;
     const collection=new URL(target.location.href).searchParams.get('collection');
     if(collection){

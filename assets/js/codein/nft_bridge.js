@@ -121,13 +121,13 @@ window.iqNft = Object.assign({}, nft, {
     const headers=await creatorAccess.auth.headers();session.check();if(provider.publicKey.toBase58()!==owner)throw Error('Creator wallet changed; reconnect');
     return headers;
   },
-  async publishPackSetup({setup,collection,operationsReserveLamports}) {
+  async publishPackSetup({setup,collection,operationsReserveLamports,sealedRelease}) {
     const session=packSession(),config=session.config,provider=guardPackCreator(await ensureConnected()),owner=provider.publicKey.toBase58();session.check();
     const wallet=config.registry.get().find(value=>value.accounts.some(account=>account.address===owner));
     const selected=wallet?.accounts.find(account=>account.address===owner);
     if(!selected)throw Error('Connect the creator through the configured Wallet Standard registry');
     const {publishPackSetup}=await import('/pack-client.js');session.check();if(provider.publicKey.toBase58()!==owner)throw Error('Creator wallet changed; reconnect before continuing');
-    return publishPackSetup({connection:session.connection,wallet,account:selected,chain:config.chain,localGenesis:config.localGenesis,setup,expectedCollection:collection,deployment:config.deployment,operationsReserveLamports,pendingTransactions:createPackPendingStorage(()=>localStorage)});
+    return publishPackSetup({connection:session.connection,wallet,account:selected,chain:config.chain,localGenesis:config.localGenesis,setup,expectedCollection:collection,deployment:config.deployment,sealedRelease:config.sealedPacks?sealedRelease:undefined,operationsReserveLamports,pendingTransactions:createPackPendingStorage(()=>localStorage)});
   },
   async quotePackMedia({kit}) {
     const session=packSession(),provider=guardPackCreator(await ensureConnected()),burner=await burnerFor(provider);session.check();

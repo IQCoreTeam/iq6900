@@ -19,7 +19,7 @@ export function packRewards(snapshot, pack) {
   });
 }
 
-function renderRandomnessProof(panel, result) {
+export function renderRandomnessProof(panel, result) {
   const document = panel.ownerDocument;
   const heading = document.createElement("strong");
   heading.textContent =
@@ -445,7 +445,7 @@ export async function mountPacks() {
     catch (error) { if(!error.staleWalletRead){fail(error); say('Could not refresh confirmed state. Try again.');} }
     finally { busy = false; render(); }
   });
-  try { await request(); restoreSettledRewards(); choosePack(); readyForNextPack=selectedPack()?.status==='settled'; render(); if (ui.error.hidden) say(selectedPack()?.status === 'settled' ? 'Your confirmed finds are ready.' : 'A sealed pack is waiting to happen.'); }
+  try { await request(); if(state.sealedPacks&&liveConfig.sealedPacks===true){stop();root.querySelector('#nftp-wallet-controls')?.remove();const {mountSealedPackPage}=await import('./nft_sealed_packs.mjs');await mountSealedPackPage(root,liveConfig);return;} restoreSettledRewards(); choosePack(); readyForNextPack=selectedPack()?.status==='settled'; render(); if (ui.error.hidden) say(selectedPack()?.status === 'settled' ? 'Your confirmed finds are ready.' : 'A sealed pack is waiting to happen.'); }
   catch (error) { if(!error.staleWalletRead){fail(error); say('Confirmed pack state is unavailable. Refresh to try again.');ui.primary.textContent='Unavailable';} }
   if(state&&root.isConnected){
     try{

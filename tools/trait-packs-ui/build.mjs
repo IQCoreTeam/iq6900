@@ -17,3 +17,5 @@ const canonical=path.join(client,'dist/browser.js'),output=path.join(assets,'pac
 const hash=async file=>createHash('sha256').update(await readFile(file)).digest('hex');
 if(await hash(canonical)!==await hash(output))throw Error('Copied pack client differs from the canonical companion build');
 console.log('Built reveal assets and copied the canonical tested pack client. No deployment performed.');
+
+const sealedCanonical=path.join(client,'dist/sealed.js'),sealedOutput=path.join(assets,'sealed-client.js');await copyFile(sealedCanonical,sealedOutput);if(await hash(sealedCanonical)!==await hash(sealedOutput))throw Error('Sealed client differs from its canonical build');
