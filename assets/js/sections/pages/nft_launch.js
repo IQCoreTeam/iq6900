@@ -68,7 +68,7 @@
         this.dbg("page init" + (single ? ", single=" + single : asset ? ", asset=" + asset : slug ? ", slug=" + slug : ", home"));
         bridge(() => {
           this.wireNav();
-          this.devnetNotice();
+          if (window.iqNft.net && window.iqNft.net() === "devnet") this.devnetNotice();
           // browser back and the [ x ] button both close the viewer overlay through history
           window.addEventListener("popstate", () => { if ($("#nftl_viewer").hasClass("open")) this.hideViewer(); });
           let route;
