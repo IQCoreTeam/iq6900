@@ -13,22 +13,22 @@
 const PRESETS = {
   devnet: {
     rpc: "https://api.devnet.solana.com",
-    api: "https://nft.iqlabs.dev", // the inscription-NFT backend
+    api: "https://nft.iqlabs.dev", // same host; only serves devnet when the backend runs CLUSTER=devnet
     gateway: "https://dev-gateway.iqlabs.dev", // serves /img, /token-meta, /view
     packs: null, // optional reviewed deployment; disabled until explicitly configured
     explorerCluster: "?cluster=devnet", // solscan needs it on devnet or links 404
   },
   mainnet: {
     rpc: "https://solana-rpc.publicnode.com", // CORS-open, browser-usable mainnet
-    api: "https://nft.iqlabs.dev", // TODO: mainnet backend host at go-live
+    api: "https://nft.iqlabs.dev", // the inscription-NFT backend (CLUSTER=mainnet since launch)
     gateway: "https://gateway.iqlabs.dev",
     packs: null, // no implicit pack program deployment on mainnet
     explorerCluster: "",
   },
 };
 
-// Flip this to "mainnet" at go-live. A localStorage override wins for dev testing.
-const NET_DEFAULT = "devnet";
+// Mainnet since the 2026-11-01 launch. A localStorage override (iq6900_nft_net=devnet) wins for dev testing.
+const NET_DEFAULT = "mainnet";
 const NET_KEY = "iq6900_nft_net";
 
 export function net() {

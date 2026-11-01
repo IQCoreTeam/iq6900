@@ -11,11 +11,11 @@ import {guardPackCreator} from "./pack_wallet.mjs";
 import { deriveBurner } from "./burner.js";
 import {topUp,sweep} from './inscribe.js?v=9';
 import {estimateCost,getAccountRent} from './cost.js?v=6';
-import * as nft from "./nft.js?v=packs-1";
-import { deploy, pendingDeploy } from "./nft_create.js?v=packs-1";
+import * as nft from "./nft.js?v=packs-mainnet-2";
+import { deploy, pendingDeploy } from "./nft_create.js?v=packs-mainnet-2";
 import { compressImage } from "./image_compress.js?v=1";
 import { readAsset, readInscription, viewAssetViaGateway, gatewayMetadata } from "./nft_asset.js?v=4";
-import { preset, net, setNet } from "./nft_net.js?v=packs-1";
+import { preset, net, setNet } from "./nft_net.js?v=packs-mainnet-2";
 
 // The NFT program + backend run on their own network (see nft_net.js), which may
 // differ from the rest of the site, so the NFT page keeps its own RPC under its
