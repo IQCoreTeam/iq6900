@@ -165,3 +165,12 @@ html:has(#nftp),body:has(#nftp){scroll-behavior:auto}
 @media(max-width:600px){#nftp .trait-inventory{grid-template-columns:1fr}#nftp .packs-nav{gap:10px}#nftp .preview-note{display:none}#nftp .checkout-main{gap:16px}#nftp .checkout-price{font-size:18px}#nftp .primary-button{min-width:140px}}
 
 #nftp .purchase-heading{width:min(430px,100%)}#nftp .pack-checkout{margin:0}#nftp .checkout-fees{margin-bottom:0}#nftp .inventory-heading h2 span{font:400 14px 'Kode Mono',monospace;color:#bdbbad;margin-left:8px}
+
+#nftp .opening-entry{display:flex;gap:18px;align-items:center;border-bottom:1px solid var(--edge)}
+#nftp .opening-entry .opening-row{flex:1;border-bottom:0;min-width:0}
+#nftp .opening-entry>.text-button{font-size:11px;flex-shrink:0}
+#nftp .randomness-proof{padding:18px 0;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
+#nftp .randomness-proof strong{color:var(--green)}
+#nftp .randomness-proof p{margin:10px 0}
+#nftp .randomness-proof summary{cursor:pointer}
+@media(max-width:420px){#nftp .opening-entry{flex-wrap:wrap;gap:0;padding-bottom:10px}#nftp .opening-entry .opening-row{flex-basis:100%}}

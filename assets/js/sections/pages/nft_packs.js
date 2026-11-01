@@ -39,6 +39,7 @@ export async function mountPacks() {
   const liveConfig=window.iqPackConfig;
   const transport=(await import('./pack-transport.mjs')).createPackPageTransport(liveConfig,location.href);
   if(!root.isConnected)return;
+  let proofConnection=null,verifyRandomness=null,proofRequest=0;
   let liveWallet=null,liveAccount=null,liveClient=null,walletDispose=null,disposed=false,openingView=null,readyForNextPack=false,walletRevision=0;
   const owner=()=>liveAccount?.address??null;
   let settlementTimer=null,settlementKey=null,settlementReads=0,settlementStarted=0;
@@ -50,12 +51,13 @@ export async function mountPacks() {
     root.querySelector('.preview-note').textContent=liveConfig.chain==='solana:localnet'?'LOCAL · TEST SOL':liveConfig.chain==='solana:devnet'?'SOLANA DEVNET · TEST SOL':'SOLANA MAINNET';
     ui.owner.textContent='Connect a wallet to see your packs and traits.';
     const walletRoot=document.createElement('section');walletRoot.id='nftp-wallet-controls';walletRoot.className='pack-wallet-controls';walletRoot.setAttribute('aria-label','Pack wallet');root.querySelector('.packs-nav').append(walletRoot);
-    walletRoot.addEventListener('iqpacks:wallet',async event=>{const revision=++walletRevision;pageBefore=null;liveWallet=event.detail.wallet;liveAccount=event.detail.account;selectedId=null;readyForNextPack=false;revealed.clear();ui.error.hidden=true;if(state){state={...state,packs:[],traits:[],receipts:[],avatar:{exists:null,owner:null,definitions:[]}};render();}ui.owner.textContent=liveAccount?'Loading your confirmed packs and traits…':'Connect a wallet to see your packs and traits.';try{await request();if(revision!==walletRevision)return;restoreSettledRewards();choosePack();readyForNextPack=selectedPack()?.status==='settled';render();say(selectedPack()?.status==='settled'?'Your confirmed finds are ready.':liveAccount?'Ready for another pack.':'Connect a wallet to see your packs and traits.');}catch(error){fail(error);}});
+    walletRoot.addEventListener('iqpacks:wallet',async event=>{const revision=++walletRevision;pageBefore=null;proofRequest++;ui['randomness-proof'].hidden=true;liveWallet=event.detail.wallet;liveAccount=event.detail.account;selectedId=null;readyForNextPack=false;revealed.clear();ui.error.hidden=true;if(state){state={...state,packs:[],traits:[],receipts:[],avatar:{exists:null,owner:null,definitions:[]}};render();}ui.owner.textContent=liveAccount?'Loading your confirmed packs and traits…':'Connect a wallet to see your packs and traits.';try{await request();if(revision!==walletRevision)return;restoreSettledRewards();choosePack();readyForNextPack=selectedPack()?.status==='settled';render();say(selectedPack()?.status==='settled'?'Your confirmed finds are ready.':liveAccount?'Ready for another pack.':'Connect a wallet to see your packs and traits.');}catch(error){fail(error);}});
     walletRoot.addEventListener('iqpacks:purchase',async event=>{const revision=walletRevision;try{pageBefore=null;const previous=new Set(state?.packs.map(pack=>pack.address)??[]);await request({afterSignature:event.detail.signature});if(revision!==walletRevision)return;const added=state.packs.find(pack=>!previous.has(pack.address)&&pack.owner===owner());selectedId=added?.id??null;readyForNextPack=false;choosePack();render();say('Preparing your pack. This can take a moment.');}catch(error){fail(error);}});
     const moduleURL=new URL(liveConfig.clientModule??'/pack-client.js',location.href);if(moduleURL.origin!==location.origin)throw Error('Pack client must use this site');
     const clientModule=await import(moduleURL.href);
     if(!root.isConnected||disposed)return;
-    liveClient=clientModule.createPackClient({connection:liveConfig.connection??new clientModule.Connection(liveConfig.rpc,'confirmed'),program:liveConfig.program,collection:liveConfig.collection,chain:liveConfig.chain,localGenesis:liveConfig.localGenesis,pendingPurchases:liveConfig.pendingPurchases});
+    proofConnection=liveConfig.connection??new clientModule.Connection(liveConfig.rpc,'confirmed');verifyRandomness=clientModule.verifyPackRandomness;
+    liveClient=clientModule.createPackClient({connection:proofConnection,program:liveConfig.program,collection:liveConfig.collection,chain:liveConfig.chain,localGenesis:liveConfig.localGenesis,pendingPurchases:liveConfig.pendingPurchases});
     walletDispose=clientModule.mountPackWalletUI(walletRoot,{registry:liveConfig.registry,client:liveClient,chain:liveConfig.chain,purchaseRoot:ui.checkout,requestWindow:liveConfig.windowRequests?((wallet,account)=>clientModule.requestPackWindow({wallet,account,chain:liveConfig.chain,program:liveConfig.program,collection:liveConfig.collection,endpoint:transport.windowEndpoint})):null});
     const refreshPrice=ui.checkout.querySelector('.text-button');
     if(refreshPrice)refreshPrice.hidden=true;
@@ -300,7 +302,10 @@ export async function mountPacks() {
     ui['pack-selector'].replaceChildren(...owned.map(item => {
       const button = document.createElement('button'); button.type='button'; button.dataset.packId=String(item.id); button.className='opening-row'; button.disabled=busy;
       button.setAttribute('aria-pressed',String(!readyForNextPack&&item.id===selectedId));
-      const name=document.createElement('span'),status=document.createElement('span');name.textContent='Pack '+(item.id+1);status.textContent=labels[item.status];button.append(name,status);return button;
+      const name=document.createElement('span'),status=document.createElement('span');name.textContent='Pack '+(item.id+1);status.textContent=labels[item.status];button.append(name,status);
+      const row=document.createElement('div');row.className='opening-entry';row.append(button);
+      if(item.status==='settled'&&verifyRandomness){const proof=document.createElement('button');proof.type='button';proof.className='text-button';proof.dataset.proofId=String(item.id);proof.textContent='Verify randomness';row.append(proof);}
+      return row;
     }));
     try { renderRewards(pack); }
     catch (error) {
@@ -348,7 +353,30 @@ export async function mountPacks() {
     catch(error){fail(error);}finally{busy=false;render();}
   });
   ui.primary.addEventListener('click',primaryAction);
-  ui['pack-selector'].addEventListener('click', event => {
+  ui['pack-selector'].addEventListener('click', async event => {
+    const proofButton=event.target.closest('button[data-proof-id]');
+    if(proofButton){
+      const pack=state.packs.find(item=>item.id===Number(proofButton.dataset.proofId)&&item.owner===owner());
+      if(!pack||pack.status!=='settled'||proofButton.disabled)return;
+      const requestId=++proofRequest,revision=walletRevision,panel=ui['randomness-proof'];
+      proofButton.disabled=true;panel.hidden=false;panel.textContent='Checking the oracle result and replaying the draws…';
+      try{
+        const result=await verifyRandomness({connection:proofConnection,program:liveConfig.program,collection:liveConfig.collection,chain:liveConfig.chain,localGenesis:liveConfig.localGenesis,epochId:pack.epoch,ticket:pack.sequence});
+        if(disposed||requestId!==proofRequest||revision!==walletRevision)return;
+        const heading=document.createElement('strong');heading.textContent='Pack '+(pack.id+1)+' · '+(result.simulation?'local simulation: ':'')+'all four draws match';
+        const note=document.createElement('p');note.textContent=result.simulation?'Uses simulated oracle fulfillment on the local test chain. This is not a live VRF proof.':'The fulfilled ORAO account matches the recorded entropy, and the contract’s draw algorithm produces these four traits. This checks on-chain records from the configured RPC, not the oracle quorum signatures independently.';
+        const draws=document.createElement('p');draws.textContent=result.draws.map(draw=>draw.name).join(' · ');
+        const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Proof records';details.append(summary);
+        for(const [label,value] of [['Oracle request',result.request],['Epoch',result.epoch],['Result hash',result.resultHash],['Confirmed slot',String(result.slot)]]){
+          const line=document.createElement('p');line.textContent=label+': ';
+          if(!result.simulation&&(label==='Oracle request'||label==='Epoch')){const link=document.createElement('a');link.href='https://explorer.solana.com/address/'+encodeURIComponent(value)+(result.chain==='solana:devnet'?'?cluster=devnet':'');link.target='_blank';link.rel='noopener noreferrer';link.textContent=value;line.append(link);}else line.append(document.createTextNode(value));
+          details.append(line);
+        }
+        panel.replaceChildren(heading,note,draws,details);
+      }catch(error){if(requestId===proofRequest&&revision===walletRevision&&!disposed)panel.textContent='Could not verify this opening: '+error.message;}
+      finally{proofButton.disabled=false;}
+      return;
+    }
     const button=event.target.closest('button[data-pack-id]');if(!button||busy)return;
     selectedId=Number(button.dataset.packId);readyForNextPack=false;render();say('Showing your selected pack.');
   });
