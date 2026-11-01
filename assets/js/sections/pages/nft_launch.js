@@ -4,8 +4,9 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=26";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=27";
   const PER_PAGE = 6; // design: 6 collections per registry page
+  const ITEMS_PAGE = 500; // items per request on a collection page (the backend caps at 500)
   const STAGE_TEXT = {
     funding: "approve the funding transfer in your wallet",
     deposit: "paying the deposit",
@@ -268,11 +269,11 @@
       $m.append($row);
       if (devnet) $m.append($("<div class='cm' style='opacity:.4;margin-top:12px'>").text("// disabled on devnet · enabled at mainnet"));
     },
-    // MY NFTS: the public devnet RPC does not serve DAS getAssetsByOwner, so we
-    // aggregate across every collection's items (the registry mirror carries the
-    // holder per minted index) and keep the ones this wallet holds. Each cell
-    // opens the on-chain viewer. Single-mint registries are not item-indexed, so
-    // they are not listed here yet.
+    // MY NFTS: the public RPC does not serve DAS getAssetsByOwner, so the backend
+    // answers from its registry mirror (/owner/{wallet}: every minted item this
+    // wallet holds, across collections, in one call). Each cell opens the
+    // on-chain viewer. Single-mint registries are not item-indexed, so they are
+    // not listed here yet.
     renderMine: async function () {
       const addr = window.iqNft.connected();
       const $m = $("#nftl_mine").empty();
@@ -293,18 +294,9 @@
         .append($("<div class='msub'>").append(skbar("50%", "9px")))
         .append($("<div class='mfoot'>").append(skbar("30%", "9px"))));
       $m.append($sk);
-      const cols = (this.cols && this.cols.length) ? this.cols : await window.iqNft.getCollections().catch(() => []);
-      const mine = [];
-      for (const c of cols) {
-        if (token !== this.mineToken) return; // a newer render (tab switch / reconnect) took over
-        try {
-          const data = await window.iqNft.getItems(c.slug, 0, 300);
-          ((data && data.items) || []).forEach((it) => {
-            if (it.minted && it.asset && it.owner === addr) mine.push({ it: it, slug: c.slug, colName: c.name || c.slug });
-          });
-        } catch (e) {}
-      }
-      if (token !== this.mineToken) return;
+      const held = await window.iqNft.getHeld(addr).catch(() => []);
+      if (token !== this.mineToken) return; // a newer render (tab switch / reconnect) took over
+      const mine = held.map((h) => ({ it: { index: h.index, name: h.name, asset: h.asset, inscriptionSig: h.inscriptionSig, rarity: h.rarity, owner: addr, minted: true }, slug: h.slug, colName: h.collectionName || h.slug }));
       const tierOf = (x) => (x.it.rarity && x.it.rarity.tier) || "common";
       const counts = ["legendary", "epic", "rare", "common"].map((t) => [t, mine.filter((x) => tierOf(x) === t).length]).filter((e) => e[1]);
       $m.empty().append($("<div class='minehead'>")
@@ -439,15 +431,32 @@
       const $kv = $("#nftl_kv").empty();
       rows.forEach(([k, v, cls, dim]) => $kv.append($("<div class='kv'>").append($("<span class='kvk'>").text(k)).append($("<span class='kvv'>").addClass(cls || "").css("opacity", dim ? .5 : 1).text(v))));
     },
+    // Every item of the collection, in pages of ITEMS_PAGE painted as they
+    // arrive, so a 2,000-item drop shows all of its minted cells (a capped first
+    // page hid most mints and disagreed with the progress bar). A token drops
+    // pages that belong to a collection the user has already left.
     renderGrid: async function (slug, col) {
       const $g = $("#nftl_grid").empty();
       if (!col.maxSupply) { $g.append($("<div class='cm' style='grid-column:1/-1'>").text("// single-mint registry: no numbered items")); return; }
-      try {
-        const data = await window.iqNft.getItems(slug, 0, 120);
-        this.items = data.items || [];
-        this.hasRarity = !!data.hasRarity;
-      } catch (e) { this.items = []; $g.append($("<div class='cm' style='grid-column:1/-1'>").text("// items unavailable")); return; }
-      this.paintGrid();
+      const token = (this.gridToken = (this.gridToken || 0) + 1);
+      this.items = [];
+      let total = Number(col.maxSupply) || 0, offset = 0;
+      while (offset < total) {
+        let data;
+        try { data = await window.iqNft.getItems(slug, offset, ITEMS_PAGE); }
+        catch (e) { data = null; }
+        if (token !== this.gridToken) return;
+        const page = (data && data.items) || [];
+        if (!page.length) {
+          if (!this.items.length) $g.append($("<div class='cm' style='grid-column:1/-1'>").text("// items unavailable"));
+          return;
+        }
+        if (offset === 0) this.hasRarity = !!data.hasRarity;
+        if (data.total) total = Number(data.total);
+        this.items = this.items.concat(page);
+        this.paintGrid();
+        offset += page.length; // by what came back, so a backend page cap below ITEMS_PAGE still walks to the end
+      }
     },
     paintGrid: function () {
       const $g = $("#nftl_grid").empty(), col = this.col, f = this.filter || "all";

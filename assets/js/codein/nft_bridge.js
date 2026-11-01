@@ -3,11 +3,11 @@
 // (?menu=nft) is classic jQuery and drives everything through this surface.
 // Wallet + burner material stays in this module; the page only sees pubkeys.
 // SDK + web3 resolve through index.html's importmap, same as browser.js.
-import { Connection } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import { setRpcUrl } from "@iqlabs-official/solana-sdk";
 import { deriveBurner } from "./burner.js";
-import * as nft from "./nft.js?v=8";
-import { deploy, pendingDeploy } from "./nft_create.js?v=7";
+import * as nft from "./nft.js?v=9";
+import { deploy, pendingDeploy } from "./nft_create.js?v=8";
 import { compressImage } from "./image_compress.js?v=1";
 import { readAsset, readInscription, viewAssetViaGateway, gatewayMetadata } from "./nft_asset.js?v=4";
 import { preset, net, setNet } from "./nft_net.js?v=2";
@@ -34,13 +34,23 @@ async function ensureConnected() {
   if (!p.publicKey) await p.connect();
   return p;
 }
+// The burner is derived from one wallet signature, so deriving it is a wallet
+// popup. It happens only when the user acts (mint, deploy); never on page entry.
+// Its public key is remembered per wallet (public data), so a returning user's
+// cost estimate can read the burner's account rent without any popup.
+const BURNER_KEY = (wallet) => "iq6900_nft_burner_" + wallet;
 async function burnerFor(provider) {
   // Same derivation as the code-in page: one signMessage, raw signature bytes out.
   const signMessage = async (msg) => {
     const out = await provider.signMessage(msg instanceof Uint8Array ? msg : new TextEncoder().encode(msg), "utf8");
     return out.signature || out;
   };
-  return deriveBurner(signMessage);
+  const burner = await deriveBurner(signMessage);
+  try { localStorage.setItem(BURNER_KEY(provider.publicKey.toBase58()), burner.publicKey.toBase58()); } catch (e) {}
+  return burner;
+}
+function knownBurner(provider) {
+  try { const b = localStorage.getItem(BURNER_KEY(provider.publicKey.toBase58())); return b ? { publicKey: new PublicKey(b) } : null; } catch (e) { return null; }
 }
 
 // The page calls nft.js's reads/helpers under their real names across the
@@ -67,8 +77,9 @@ window.iqNft = Object.assign({}, nft, {
   gatewayMeta: (M) => gatewayMetadata(gatewayBase(), M),
   connect: async () => (await ensureConnected()).publicKey.toBase58(),
   connected: () => { try { return phantom().publicKey ? phantom().publicKey.toBase58() : null; } catch (e) { return null; } },
+  // Silent: uses the remembered burner key when there is one, never signs.
   estimateMintCost: async (col) => {
-    try { const p = phantom(); return p.publicKey ? nft.estimateMintCost(col, connection(), await burnerFor(p)) : nft.estimateMintCost(col); }
+    try { const p = phantom(), b = p.publicKey && knownBurner(p); return b ? nft.estimateMintCost(col, connection(), b) : nft.estimateMintCost(col); }
     catch (e) { return nft.estimateMintCost(col); }
   },
   mint: async ({ slug, collection, onStage, onProgress }) => {

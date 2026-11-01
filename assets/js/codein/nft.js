@@ -45,6 +45,7 @@ export async function getItems(slug, offset = 0, limit = 60) { return (await api
 export async function getItem(slug, index) { return (await api(`/c/${slug}/item/${index}`)).json; }
 export async function getAsset(address) { return (await api(`/asset/${address}`)).json; }
 export async function getRecent(slug, limit = 20) { return (await api(`/c/${slug}/recent?limit=${limit}`)).json?.recent ?? []; }
+export async function getHeld(wallet) { return (await api(`/owner/${wallet}`)).json?.items ?? []; } // every minted item a wallet holds, across collections
 
 // ── Funding budget ─────────────────────────────────────────────────────────
 // One popup funds the whole mint, so the budget is generous and the remainder
@@ -137,6 +138,19 @@ async function sendRegister(connection, co, burner, asset) {
   const sig = await connection.sendRawTransaction(tx.serialize());
   if (!(await confirmOrCheck(connection, sig, tx.recentBlockhash, co.lastValidBlockHeight))) throw new Error("register tx was not confirmed");
   return sig;
+}
+
+// Tell the backend the register tx landed, so it confirms the reservation and
+// mirrors the slot now: the grid lights the cell, My NFTs lists it and the
+// wallet's open-reservation count drops, instead of waiting for the next
+// reconcile. 202 = the bit is not visible yet, ask again. Best-effort: a miss
+// is covered by the reconciler, so it never fails a mint that already landed.
+async function reportLanded(slug, reservationId) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const r = await api(`/c/${slug}/mint/landed`, "POST", { reservationId }).catch(() => null);
+    if (!r || r.status !== 202) return;
+    await new Promise((res) => setTimeout(res, 1500));
+  }
 }
 
 // ── mint ────────────────────────────────────────────────────────────────
@@ -238,7 +252,8 @@ export async function mint({ connection, wallet, burner, slug, collection, onSta
     }
   }
 
-  // 6. Sweep the remainder back, clear the checkpoint, report.
+  // 6. Report the landing, sweep the remainder back, clear the checkpoint, report.
+  if (p.reservationId) await reportLanded(slug, p.reservationId);
   await sweep(connection, burner, wallet.publicKey).catch(() => {});
   clearProgress(slug);
   const result = { slug, index: p.index, name: p.name, C: p.C, M: p.M, asset: asset.publicKey.toBase58(), mintSig };

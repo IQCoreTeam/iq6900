@@ -231,7 +231,7 @@ test("creator notifies logo/banner feed writes but not manifest, collection meta
         },
       },
     },
-    "./nft.js?v=8": {
+    "./nft.js?v=9": {
       api: async (path) => ({
         status: 200,
         json:
