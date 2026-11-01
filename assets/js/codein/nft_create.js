@@ -31,14 +31,23 @@ function saveProgress(slug, p) { try { localStorage.setItem(RKEY(slug), JSON.str
 function clearProgress(slug) { try { localStorage.removeItem(RKEY(slug)); } catch (e) {} }
 export function pendingDeploy(slug) { return loadProgress(slug); }
 
-// The /creator/stage body: spec fields + the creator wallet + the compressed items.
-function stageBody(spec, creator, items) {
+// The collection spec fields + the creator wallet, sent to /creator/stage/begin.
+function specBody(spec, creator) {
   return {
     slug: spec.slug, creator, name: spec.name, symbol: spec.symbol,
     description: spec.description || "", price: spec.price || 0, deposit: spec.deposit || 0,
-    royaltyBps: spec.royaltyBps || 0, sequential: !!spec.sequential, items,
+    royaltyBps: spec.royaltyBps || 0, sequential: !!spec.sequential,
   };
 }
+
+// Images are compressed and uploaded this many at a time. Small enough that one
+// request is a couple of MB (never the whole collection) and the server's Arweave
+// upload for the batch finishes in seconds, well under any proxy timeout.
+const STAGE_BATCH = 40;
+// Hand control back to the browser so it can paint the progress bar and stay
+// responsive; the squoosh wasm encode otherwise pegs the main thread for the
+// whole run (thousands of images -> "page unresponsive").
+const tick = () => new Promise((r) => setTimeout(r, 0));
 
 // One funding transfer covers: manifest inscription (first write carries the
 // burner's user-init rent), collection.json inscription, and the deploy tx
@@ -67,10 +76,27 @@ export async function deploy({ connection, wallet, burner, spec, items, onStage 
   if (p && (p.wallet !== who || p.burner !== burnerPk)) p = null;
   p = p || { wallet: who, burner: burnerPk };
 
-  // 1. Compress each image (squoosh) and stage: Arweave upload + manifest, with
-  //    the shuffle seed generated and kept server-side.
+  // 1. Compress each image (squoosh) and stage it: the images go up in small
+  //    batches (begin -> batch* -> finish), each uploaded to Arweave server-side
+  //    with the shuffle seed kept there. Batching keeps every request small and
+  //    fast (a whole 2000+ image collection in one request times the proxy out),
+  //    and the per-image yield keeps the browser responsive with a live bar.
   if (!p.stagingId) {
-    const staged = [];
+    const begin = await api("/creator/stage/begin", "POST", specBody(spec, who));
+    if (begin.status === 409) throw new Error(`the handle "${slug}" is taken; pick another`);
+    if (begin.status !== 200) throw new Error(begin.json?.error || `stage failed (${begin.status})`);
+    const stagingId = begin.json.stagingId;
+
+    let batch = [], uploaded = 0;
+    const flush = async () => {
+      if (!batch.length) return;
+      const r = await api("/creator/stage/batch", "POST", { stagingId, items: batch });
+      if (r.status !== 200) throw new Error(r.json?.error || `upload failed (${r.status})`);
+      uploaded += batch.length;
+      batch = [];
+      stage("stage", { done: uploaded, total: items.length });
+      await tick();
+    };
     for (let i = 0; i < items.length; i++) {
       stage("compress", { done: i, total: items.length });
       // imageData may be a thunk (generative sets build one composite at a time,
@@ -78,17 +104,19 @@ export async function deploy({ connection, wallet, burner, spec, items, onStage 
       const src = items[i].imageData;
       const imageData = typeof src === "function" ? await src() : src;
       const { bytes, mime } = await compressImage(imageData, spec.compress);
-      staged.push({ index: items[i].index ?? i + 1, name: items[i].name, mime, imageBase64: bytesToBase64(bytes), template: items[i].template || {} });
+      batch.push({ index: items[i].index ?? i + 1, name: items[i].name, mime, imageBase64: bytesToBase64(bytes), template: items[i].template || {} });
+      await tick(); // paint the bar + stay responsive between images
+      if (batch.length >= STAGE_BATCH) await flush();
     }
-    stage("stage", { total: items.length });
-    const r = await api("/creator/stage", "POST", stageBody(spec, who, staged));
-    if (r.status === 409) throw new Error(`the handle "${slug}" is taken; pick another`);
-    if (r.status !== 200) throw new Error(r.json?.error || `stage failed (${r.status})`);
-    p.stagingId = r.json.stagingId;
-    p.manifestJson = r.json.manifestJson;
-    p.collectionJson = r.json.collectionJson;
-    p.itemCount = r.json.itemCount;
-    p.deployFeeLamports = r.json.deployFeeLamports;
+    await flush();
+
+    const fin = await api("/creator/stage/finish", "POST", { stagingId });
+    if (fin.status !== 200) throw new Error(fin.json?.error || `stage finish failed (${fin.status})`);
+    p.stagingId = stagingId;
+    p.manifestJson = fin.json.manifestJson;
+    p.collectionJson = fin.json.collectionJson;
+    p.itemCount = fin.json.itemCount;
+    p.deployFeeLamports = fin.json.deployFeeLamports;
     saveProgress(slug, p);
   }
 
