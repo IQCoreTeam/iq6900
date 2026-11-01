@@ -184,4 +184,5 @@ html:has(#nftp),body:has(#nftp){scroll-behavior:auto}
 #nftp .opening-window>h2{font-size:20px;margin:24px 20px 0}
 @media(max-width:640px){#nftp .sealed-grid{grid-template-columns:1fr}}
 
-#nftp .sealed-preview-foil{margin:30px auto;pointer-events:none}
+
+#nftp .pack-error:empty,#nftp .pack-status:empty{display:none}

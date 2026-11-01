@@ -17,12 +17,12 @@ export async function mountSealedPackPage(root, config) {
     opening = null,
     timer = null,
     openingView = null,
-    generation = 0;
+    generation = 0,
+    openingCards = [],
+    openingPackId = null;
+  const revealed = new Set();
   root.querySelector(".packs-title-row p").textContent =
     "Keep it sealed, trade it, or open it for four traits.";
-  const sealedFoil = root.querySelector(".pack-object").cloneNode(true);
-  sealedFoil.removeAttribute("id");
-  sealedFoil.classList.add("sealed-preview-foil");
   root.querySelector(".opening-window").replaceChildren();
   root.querySelector(".inventory-window").remove();
   const area = root.querySelector(".opening-window"),
@@ -58,12 +58,11 @@ export async function mountSealedPackPage(root, config) {
   older.className = "text-button";
   older.textContent = "Latest packs";
   older.hidden = true;
-  const heading = text("h2", "Your sealed packs"),
+  const heading = text("h2", "Your packs"),
     marketHeading = text("h2", "Listed packs"),
     openHost = document.createElement("div");
-  openHost.className = "pack-workspace library-opening";
+  openHost.className = "pack-workspace";
   area.append(
-    sealedFoil,
     totals,
     status,
     error,
@@ -77,6 +76,37 @@ export async function mountSealedPackPage(root, config) {
     refresh,
     proofPanel,
   );
+  const openingStage = document.createElement("div");
+  openingStage.className = "library-opening";
+  openHost.append(openingStage);
+  const { createPackOpening } = await import("/packs-reveal.js");
+  const { normalizePackAppearance, applyPackAppearance } =
+    await import("/packs-appearance.mjs");
+  openingView = createPackOpening(
+    openingStage,
+    (id) => {
+      if (!openingCards.some((card) => card.id === id)) return false;
+      revealed.add(id);
+      renderOpening();
+      return true;
+    },
+    () => {
+      openingCards = [];
+      openingPackId = null;
+      revealed.clear();
+      renderOpening();
+      status.textContent = "Your four traits remain in your wallet.";
+    },
+  );
+  function renderOpening() {
+    openingView.update({
+      cards: openingCards,
+      opened: [...revealed],
+      packId: openingPackId,
+      interactive: openingCards.length === 4,
+    });
+  }
+  renderOpening();
   root.querySelector(".primary-actions").hidden = true;
   function text(tag, value) {
     const el = document.createElement(tag);
@@ -129,6 +159,8 @@ export async function mountSealedPackPage(root, config) {
     chain: config.chain,
     purchaseRoot: root.querySelector("#nftp-checkout"),
   });
+  const priceRefresh = root.querySelector("#nftp-checkout .text-button");
+  if (priceRefresh) priceRefresh.hidden = true;
   walletRoot.addEventListener("iqpacks:wallet", async (event) => {
     wallet = event.detail.wallet;
     account = event.detail.account;
@@ -136,10 +168,10 @@ export async function mountSealedPackPage(root, config) {
     proofPanel.hidden = true;
     opening = null;
     window.clearTimeout(timer);
-    openingView?.dispose();
-    openingView = null;
-    openHost.replaceChildren();
-    sealedFoil.hidden = false;
+    openingCards = [];
+    openingPackId = null;
+    revealed.clear();
+    renderOpening();
     grid.replaceChildren();
     listingGrid.replaceChildren();
     try {
@@ -174,6 +206,19 @@ export async function mountSealedPackPage(root, config) {
     );
     if (disposed || revision !== generation) return;
     data = { ...value, listings };
+    applyPackAppearance(
+      root,
+      normalizePackAppearance(
+        {
+          title: root.dataset.packTitle,
+          subtitle: root.dataset.packSubtitle,
+          collectionName: data.name,
+          logo: root.dataset.packLogo,
+          cover: root.dataset.packCover,
+        },
+        location.origin,
+      ),
+    );
     render();
   }
   async function run(operation) {
@@ -316,34 +361,48 @@ export async function mountSealedPackPage(root, config) {
             );
           }),
         );
-        row.append(
-          action("Verify randomness", async () => {
-            const revision = generation;
-            const result = await client.verifyPackRandomness({
-              connection,
-              program: config.program,
-              collection: config.collection,
-              chain: config.chain,
-              localGenesis: config.localGenesis,
-              epochId: pack.epoch,
-              ticket: pack.ticket,
-            });
-            if (disposed || revision !== generation) return;
-            const { renderRandomnessProof } = await import("./nft_packs.js");
-            proofPanel.hidden = false;
-            renderRandomnessProof(proofPanel, result);
-          }),
-        );
         grid.append(row);
       } else if (account && pack.opened && pack.opener === account.address) {
         const row = card(pack);
-        row.append(
-          action("Show opening", async () => {
-            if (disposed || revision !== generation) return;
-            opening = pack.asset;
-            await showOpening(pack);
-          }),
-        );
+        if (pack.status === "ready")
+          row.append(
+            action("Show opening", async () => {
+              opening = pack.asset;
+              await showOpening(pack);
+            }),
+          );
+        if (pack.status === "ready")
+          row.append(
+            action("Verify randomness", async () => {
+              const revision = generation;
+              const result = await client.verifyPackRandomness({
+                connection,
+                program: config.program,
+                collection: config.collection,
+                chain: config.chain,
+                localGenesis: config.localGenesis,
+                epochId: pack.epoch,
+                ticket: pack.ticket,
+              });
+              if (disposed || revision !== generation) return;
+              const { renderRandomnessProof } = await import("./nft_packs.js");
+              proofPanel.hidden = false;
+              renderRandomnessProof(
+                proofPanel,
+                result,
+                "Pack #" + (pack.serial + 1),
+              );
+            }),
+          );
+        if (pack.status !== "ready")
+          row.append(
+            text(
+              "p",
+              pack.status === "refunded"
+                ? "Original prepaid price refunded."
+                : "Preparing randomness…",
+            ),
+          );
         grid.append(row);
       }
     }
@@ -404,44 +463,19 @@ export async function mountSealedPackPage(root, config) {
       return;
     }
     const { packRewards } = await import("./nft_packs.js"),
-      rewards = packRewards(current, ticket),
-      { createPackOpening } = await import("/packs-reveal.js");
-    openingView?.dispose();
-    openHost.replaceChildren();
-    const revealed = new Set();
-    sealedFoil.hidden = true;
-    openingView = createPackOpening(
-      openHost,
-      (id) => {
-        if (!rewards.some((trait) => trait.address === id)) return false;
-        revealed.add(id);
-        update();
-        return true;
-      },
-      () => {
-        openingView?.dispose();
-        openingView = null;
-        openHost.replaceChildren();
-        sealedFoil.hidden = false;
-        status.textContent = "Your four traits remain in your wallet.";
-      },
-    );
-    function update() {
-      openingView.update({
-        packId: ticket.address,
-        interactive: true,
-        opened: [...revealed],
-        cards: rewards.map((trait) => ({
-          id: trait.address,
-          name: trait.name,
-          image: transport.media(trait.image),
-          category: "Trait",
-          creatorTier: current.stock.find((row) => row.id === trait.definition)
-            ?.creatorTier,
-        })),
-      });
-    }
-    update();
+      rewards = packRewards(current, ticket);
+    openingPackId = ticket.address;
+    revealed.clear();
+    openingCards = rewards.map((trait) => ({
+      id: trait.address,
+      name: trait.name,
+      image: transport.media(trait.image),
+      category: "Trait",
+      creatorTier: current.stock.find((row) => row.id === trait.definition)
+        ?.creatorTier,
+    }));
+    renderOpening();
+    openHost.scrollIntoView({ block: "center" });
     status.textContent = "Pack ready. Click the pack to reveal your traits.";
   }
   function follow() {

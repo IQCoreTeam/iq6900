@@ -19,12 +19,11 @@ export function packRewards(snapshot, pack) {
   });
 }
 
-export function renderRandomnessProof(panel, result) {
+export function renderRandomnessProof(panel, result, openingLabel) {
   const document = panel.ownerDocument;
   const heading = document.createElement("strong");
   heading.textContent =
-    "Pack " +
-    (result.epochId * 32 + result.ticket + 1) +
+    openingLabel +
     " · " +
     (result.simulation ? "local simulation: " : "") +
     "all four draws match";
@@ -429,7 +428,7 @@ export async function mountPacks() {
       try{
         const result=await verifyRandomness({connection:proofConnection,program:liveConfig.program,collection:liveConfig.collection,chain:liveConfig.chain,localGenesis:liveConfig.localGenesis,epochId:pack.epoch,ticket:pack.sequence});
         if(disposed||requestId!==proofRequest||revision!==walletRevision)return;
-        renderRandomnessProof(panel,result);
+        renderRandomnessProof(panel,result,"Pack "+(pack.id+1));
       }catch(error){if(requestId===proofRequest&&revision===walletRevision&&!disposed)panel.textContent='Could not verify this opening: '+error.message;}
       finally{proofButton.disabled=false;}
       return;

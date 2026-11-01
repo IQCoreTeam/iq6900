@@ -106,6 +106,15 @@ test("actual sealed page preserves separate checkout, holder actions and wallet-
     Buffer.from(
       "const client=globalThis.__sealedTestSDK;export const Connection=client.Connection,createSealedPackClient=client.createSealedPackClient,mountPackWalletUI=client.mountPackWalletUI,readTensorListings=client.readTensorListings;",
     ).toString("base64");
+  const reveal =
+    "data:text/javascript;base64," +
+    Buffer.from(
+      "export const createPackOpening=()=>({update(){},dispose(){}});",
+    ).toString("base64");
+  const appearance = new URL(
+    "../../../assets/packs-appearance.mjs",
+    import.meta.url,
+  ).href;
   const transport = new URL(
     "../../../assets/js/sections/pages/pack-transport.mjs",
     import.meta.url,
@@ -120,6 +129,9 @@ test("actual sealed page preserves separate checkout, holder actions and wallet-
   source = source
     .replace('"/sealed-client.js"', JSON.stringify(sdk))
     .replace('"./pack-transport.mjs"', JSON.stringify(transport));
+  source = source
+    .replace('"/packs-reveal.js"', JSON.stringify(reveal))
+    .replace('"/packs-appearance.mjs"', JSON.stringify(appearance));
   await writeFile(path.join(folder, "page.mjs"), source);
   const { mountSealedPackPage } = await import(
     pathToFileURL(path.join(folder, "page.mjs")).href
@@ -133,12 +145,17 @@ test("actual sealed page preserves separate checkout, holder actions and wallet-
     w.document.querySelector(".opening-window").textContent,
     /Connect your wallet/,
   );
+  assert.ok(
+    w.document.querySelector(".pack-workspace > .library-opening"),
+    "reveal keeps the incumbent full-width inner stage",
+  );
   const button = (name) =>
     [...w.document.querySelectorAll("button")].find(
       (x) => x.textContent === name,
     );
   button("Connect wallet").click();
   await until(() => button("Open pack"));
+  assert.equal(button("Verify randomness"), undefined);
   button("Open pack").click();
   button("Open pack").click();
   await until(() => opened === 1);
@@ -146,13 +163,11 @@ test("actual sealed page preserves separate checkout, holder actions and wallet-
     w.document.querySelector(".pack-wallet-controls").hasAttribute("inert"),
     true,
   );
-  w.document
-    .querySelector(".pack-wallet-controls")
-    .dispatchEvent(
-      new w.CustomEvent("iqpacks:wallet", {
-        detail: { wallet: null, account: null },
-      }),
-    );
+  w.document.querySelector(".pack-wallet-controls").dispatchEvent(
+    new w.CustomEvent("iqpacks:wallet", {
+      detail: { wallet: null, account: null },
+    }),
+  );
   await until(() => !button("Open pack"));
   release();
   await new Promise(setImmediate);
@@ -160,4 +175,24 @@ test("actual sealed page preserves separate checkout, holder actions and wallet-
     w.document.querySelector(".pack-status").textContent,
     /Preparing randomness/,
   );
+  data.packs[0] = {
+    ...data.packs[0],
+    opened: true,
+    opener: address,
+    status: "preparing",
+    epoch: 0,
+    ticket: 0,
+  };
+  button("Connect wallet").click();
+  await until(
+    () =>
+      w.document.querySelector(".sealed-card p")?.textContent ===
+      "Consumed on opening",
+  );
+  assert.equal(button("Verify randomness"), undefined);
+  data.packs[0].status = "ready";
+  button("Refresh").click();
+  await until(() => button("Verify randomness"));
+  assert.ok(button("Show opening"));
+  await until(()=>!w.document.querySelector('.pack-wallet-controls').hasAttribute('inert'));await new Promise(setImmediate);
 });
