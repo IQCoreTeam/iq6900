@@ -417,7 +417,7 @@
         $cell.append($im)
           .append($("<div class='mnm'>").text(it.name || (colName + " #" + it.index)))
           .append($("<div class='msub'>").text(colName))
-          .append($("<div class='mfoot'>").append($("<span>").text("VIEW")).append($("<span class='lst'>").text("LIST →")));
+          .append($("<div class='mfoot'>").append($("<span>").text("NFT")).append($("<span class='lst'>").text("VIEW →")));
         $grid.append($cell);
       });
       $m.append($grid);

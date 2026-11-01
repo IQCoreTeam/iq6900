@@ -122,3 +122,17 @@ test('NFT share links follow cached capability and native/manual copy flows', as
   geometry.close();
   console.log('PASS exact home/collection/asset URLs; actual viewer + delegated action; memoized capability; old/offline backend; native/canceled share; clipboard/manual copy; unknown/single suppression; mobile geometry source');
 });
+
+test('held NFT card labels its viewer action accurately without creating a listing', async () => {
+  const f = await fixture('?menu=nft');
+  f.window.iqNft.connected = () => 'holder-wallet';
+  f.window.iqNft.getHeld = async (address) => { assert.equal(address, 'holder-wallet'); return [{asset:'KnownAddress',slug:'known',name:'Known NFT',index:1,inscriptionSig:'C'}]; };
+  let opened;
+  f.page.openViewer = (...args) => { opened = args; };
+  await f.page.renderMine();
+  assert.equal(f.$('#nftl_mine .lst').text(), 'VIEW →');
+  assert.equal(f.$('#nftl_mine').text().includes('LIST →'), false);
+  f.$('#nftl_mine .mc').first().trigger('click');
+  assert.deepEqual(opened, ['KnownAddress','known']);
+  f.close();
+});
