@@ -6,9 +6,9 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import { setRpcUrl, reader, contract } from "@iqlabs-official/solana-sdk";
 import { deriveBurner } from "./burner.js";
-import { listWallets, connectWallet, getWalletProvider, disconnectWallet } from "./wallets.js?v=1";
+import { listWallets, connectWallet, getWalletProvider, disconnectWallet, solflareBrowseUrl } from "./wallets.js?v=2";
 import { estimateCost } from "./cost.js?v=6";
-import { inscribe, inscribeMeta, sweep } from "./inscribe.js?v=9";
+import { inscribe, inscribeMeta, sweep } from "./inscribe.js?v=10";
 import { feedTablePda, programId } from "./feed.js";
 import { toAscii } from "./ascii.js?v=1";
 import { notifyGateways } from "./gateway_notify.js?v=1";
@@ -76,6 +76,7 @@ window.iqCodein = {
   // runs one connect flow for both chains.
   getWallets: () => listWallets().map(({ id, name, icon, provider }) => ({ id, name, icon, selected: provider === getWalletProvider() })),
   getWalletProvider,
+  solflareBrowseUrl,
   disconnectWallet,
   connectWallet: (opts) => connectWallet(opts),
   estimateCost,

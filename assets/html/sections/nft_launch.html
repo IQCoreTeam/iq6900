@@ -1,6 +1,7 @@
 <section id="nftl">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;500;600;700&family=Archivo:wght@400;500;800&family=Zen+Dots&display=swap');
+#nftl_wallet_dialog::backdrop{background:rgba(4,6,4,.8);backdrop-filter:blur(3px)}
     /* Ported 1:1 from the live design (NFT Launchpad Flow.dc.html, claude.ai):
        same tokens, window chrome, card/feed/collection/mint-panel geometry,
        scoped under #nftl. The site already draws the animated background
@@ -18,8 +19,6 @@
     #nftl .win{border:1px solid #e8e4d6;border-radius:8px;background:rgba(20,19,16,.9);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);overflow:hidden;display:flex;flex-direction:column;min-width:0}
     #nftl .wh{display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(232,228,214,.35);padding:11px 16px;font:500 10px 'Kode Mono',monospace;letter-spacing:.14em}
     #nftl .dr{width:9px;height:9px;border-radius:50%;background:#e0554e}#nftl .da{width:9px;height:9px;border-radius:50%;background:#e0a84e}#nftl .dg{width:9px;height:9px;border-radius:50%;background:#2BD52D}
-    #nftl .whback{margin-left:auto;cursor:pointer;opacity:.7;border:1px solid rgba(232,228,214,.4);border-radius:3px;padding:0 8px;white-space:nowrap;transition:all .3s}
-    #nftl .whback:hover{opacity:1;background:rgba(232,228,214,.1)}
     #nftl .lab{font:600 10px 'Kode Mono',monospace;letter-spacing:.14em}
     #nftl .cm{font:500 9.5px/1.8 'Kode Mono',monospace;opacity:.5}
     #nftl .btn{font:700 10px 'Kode Mono',monospace;letter-spacing:.12em;background:#e8e4d6;color:#1b1a17;border:none;border-radius:4px;padding:9px 16px;cursor:pointer;transition:all .35s cubic-bezier(.2,.7,.2,1);text-align:center;white-space:nowrap;display:inline-block}
@@ -59,6 +58,7 @@
     #nftl .nav a:focus,#nftl .nav a:focus-visible,#nftl .nav button:focus,#nftl .nav button:focus-visible{outline:none}
     #nftl a:focus:not(:focus-visible),#nftl button:focus:not(:focus-visible){outline:none}
     #nftl .pill{display:flex;align-items:center;gap:8px;letter-spacing:.1em;border:1px solid rgba(43,213,45,.5);border-radius:4px;padding:7px 12px;color:#2BD52D;white-space:nowrap}
+    #nftl .nav #nftl_who:focus-visible{outline:2px solid #2BD52D;outline-offset:3px}
     #nftl .pill i{width:7px;height:7px;border-radius:50%;background:#2BD52D;display:block}
     /* desk: launchpad.exe + minted.exe (inner areas scroll, like the design's 100vh page) */
     #nftl #nftl_desk{display:flex;gap:14px;align-items:stretch}
@@ -298,6 +298,11 @@
     @media (max-width:720px){#nftl .colgrid{grid-template-columns:repeat(2,1fr)}}
     #nftl #nftl_chains .lshort{display:none}
     @media (max-width:560px){#nftl .colgrid{grid-template-columns:1fr}#nftl .itemgrid{grid-template-columns:repeat(3,1fr)}#nftl .nav .logo{display:none}#nftl .nav,#nftl #nftl_view>.win>.wh{flex-wrap:wrap}#nftl .chead{flex-direction:column}#nftl .chead>div:last-child{width:100%}#nftl #nftl_mw{display:none}#nftl #nftl_chains .lfull{display:none}#nftl #nftl_chains .lshort{display:inline}#nftl #nftl_tabs [data-tab="market"]{display:none}}
+    #nftl #nftl_tabs .tab{appearance:none;font:inherit;min-height:44px}
+    #nftl #nftl_tabs .tab:not(.on){background:transparent;color:inherit}
+    #nftl .wh>div{min-width:0;overflow-wrap:anywhere}
+    #nftl #nftl_refund .btn2{min-height:44px;margin:8px 8px 0 0}
+    #nftl #nftl_tabs button:focus-visible{outline:2px solid #2BD52D;outline-offset:3px}
   </style>
 
   <!-- nav: same bar as the design's sticky header -->
@@ -308,13 +313,14 @@
     </div>
     <div id="nftl_nav_mid" class="lab" style="white-space:nowrap;letter-spacing:.22em;opacity:.45"></div>
     <div style="display:flex;align-items:center;gap:8px">
-      <div id="nftl_who" class="lab pill" style="display:none"><i></i><span></span></div>
+      <button id="nftl_who" type="button" class="lab pill" aria-label="Change wallet" style="display:none;background:transparent;min-height:44px"><i></i><span></span></button>
       <button id="nftl_hconnect" class="btn" type="button" style="padding:8px 14px">CONNECT WALLET</button>
     </div>
   </div>
 
   <div id="nftl_share_actions" style="display:none;flex-wrap:wrap;justify-content:flex-end;gap:8px;padding:8px 0;min-width:0"><button class="btn2 nftl-share" type="button" style="padding:8px 12px" aria-live="polite">Share</button></div>
 
+  <div id="nftl_refund" class="cm" style="display:none;padding:16px;border:1px solid rgba(232,228,214,.3);margin-bottom:16px"></div>
   <div id="nftl_loading" class="cm" style="padding:40px;text-align:center">loading...</div>
 
   <!-- ===== HOME: launchpad.exe + minted.exe ===== -->
@@ -327,7 +333,7 @@
         <div class="lpbody">
           <div class="seg lab" id="nftl_chains"><div class="on" data-chain="all"><span class="lfull">ALL CHAINS</span><span class="lshort">ALL</span></div><div data-chain="solana">&#9678; <span class="lfull">SOLANA</span><span class="lshort">SOL</span></div><div class="soon" title="coming soon">&#9650; <span class="lfull">ROBINHOOD</span><span class="lshort">RH</span><small><span class="lfull">COMING SOON</span><span class="lshort">SOON</span></small></div></div>
           <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-            <div style="display:flex;gap:8px" class="lab" id="nftl_tabs"><div class="tab on" data-tab="cols">COLLECTIONS</div><div class="tab" data-tab="market">MARKET</div><div class="tab" data-tab="mine">MY NFTS</div></div>
+            <div style="display:flex;gap:8px" class="lab" id="nftl_tabs"><button type="button" class="tab on" data-tab="cols">COLLECTIONS</button><button type="button" class="tab" data-tab="market">MARKET</button><button type="button" class="tab" data-tab="mine">MY NFTS</button></div>
             <a href="?menu=nft-create" class="btn">+ LAUNCH A COLLECTION</a>
           </div>
           <p class="cm" id="nftl_desk_cap" style="margin:12px 0 14px">// collections launched from this board. each one = a core collection + N inscriptions. pick one, mint one.</p>
@@ -360,7 +366,7 @@
     <div class="win">
       <div class="wh"><span class="dr"></span><span class="da"></span><span class="dg"></span>
         <span style="margin-left:6px;opacity:.8">collection.exe // <span id="nftl_cslug"></span></span>
-        <a href="?menu=nft" class="whback">&larr; all collections</a></div>
+        </div>
       <div id="nftl_cbanner" class="cbanner" style="display:none"><img alt=""></div>
       <div id="nftl_colpage">
         <div class="cleft">
@@ -464,7 +470,7 @@
     <div class="win">
       <div class="wh"><span class="dr"></span><span class="da"></span><span class="dg"></span>
         <span style="margin-left:6px;opacity:.8">make_it_an_nft.exe</span>
-        <a href="?menu=nft" class="whback">&larr; all collections</a></div>
+        </div>
       <div id="nftl_sgrid">
         <div class="vleft">
           <div class="vimg" id="nftl_sph"><img id="nftl_simg" alt="" style="display:none"><pre id="nftl_stext" style="display:none"></pre><div class="wait" id="nftl_sphtxt">reading your inscription&hellip;</div><div class="cap" id="nftl_scap" style="display:none"></div></div>

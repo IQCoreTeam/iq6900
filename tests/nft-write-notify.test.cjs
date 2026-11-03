@@ -92,7 +92,7 @@ async function engine({
         return !notifyOffline;
       },
     },
-    "./inscribe.js?v=9": {
+    "./inscribe.js?v=10": {
       writeFeedRow: async () => {
         calls.push("C-write");
         if (failWrite) throw Error("failed write");
@@ -118,6 +118,7 @@ async function engine({
     { context },
   );
   await mod.link((name) => {
+    if (name === "./nft_refund.js?v=1") return new vm.SourceTextModule(fs.readFileSync(path.join(__dirname, "../assets/js/codein/nft_refund.js"), "utf8"), { context });
     if (name === "./nft_net.js?v=2") {
       return new vm.SourceTextModule(
         fs.readFileSync(path.join(__dirname, "../assets/js/codein/nft_net.js"), "utf8"),
@@ -231,7 +232,7 @@ test("creator notifies logo/banner feed writes but not manifest, collection meta
         },
       },
     },
-    "./nft.js?v=9": {
+    "./nft.js?v=10": {
       api: async (path) => ({
         status: 200,
         json:
@@ -246,7 +247,7 @@ test("creator notifies logo/banner feed writes but not manifest, collection meta
       bytesToBase64: () => "AQID",
       base64ToBytes: () => new Uint8Array([0]),
     },
-    "./inscribe.js?v=9": {
+    "./inscribe.js?v=10": {
       topUp: async () => {
         throw Error("unexpected funding");
       },

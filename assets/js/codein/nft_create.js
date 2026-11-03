@@ -16,8 +16,8 @@
 import { notifyNftFeedRow } from "./nft_notify.js?v=1";
 import { Keypair, Transaction } from "@solana/web3.js";
 import { writer } from "@iqlabs-official/solana-sdk";
-import { api, bytesToBase64, base64ToBytes } from "./nft.js?v=9";
-import { topUp, sweep, confirmOrCheck, writeFeedRow } from "./inscribe.js?v=9";
+import { api, bytesToBase64, base64ToBytes } from "./nft.js?v=10";
+import { topUp, sweep, confirmOrCheck, writeFeedRow } from "./inscribe.js?v=10";
 import { estimateCost, getAccountRent } from "./cost.js?v=6";
 import { compressImage } from "./image_compress.js?v=1";
 

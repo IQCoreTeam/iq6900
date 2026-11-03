@@ -42,9 +42,9 @@ test('single inscription action identifies the NFT flow and retains wallet guard
   page.singleState('idle');
   assert.equal($('#nftl_sstate button').length, 0, 'non-owner cannot mint');
   assert.match($('#nftl_sstate').text(), /only the owner/);
-  assert.match(requestedTemplate, /nft_launch\.html\?ver=28-nft-sharing-20261101$/);
+  assert.match(requestedTemplate, /nft_launch\.html\?ver=nft-fixes-review-20261102$/);
   const index = fs.readFileSync(path.join(root, 'assets/index.html'), 'utf8');
-  assert.match(index, /nft_launch\.js\?ver=41-nft-sharing-20261101/);
+  assert.match(index, /nft_launch\.js\?ver=nft-fixes-review-20261102/);
   dom.window.close();
   console.log('PASS single NFT deep-link labels, signed-out/owner/non-owner states, mint handler, and cache versions');
 });

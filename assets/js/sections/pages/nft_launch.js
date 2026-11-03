@@ -4,8 +4,10 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=28-nft-sharing-20261101";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=nft-fixes-review-20261102";
   let shareCapability, shareCapabilityBase; // One memoized backend capability read per page module.
+  const RARITY_COLORS = { common: "#e8e4d6", rare: "#5aa9ff", epic: "#c77dff", legendary: "#ffb347" };
+  const rarityTier = rarity => Object.hasOwn(RARITY_COLORS, rarity?.tier) ? rarity.tier : null;
   const PER_PAGE = 6; // design: 6 collections per registry page
   const ITEMS_PAGE = 500; // items per request on a collection page (the backend caps at 500)
   const STAGE_TEXT = {
@@ -103,39 +105,85 @@
       $("#nftl_hconnect").on("click", () => this.connectFlow(false));
       // the address pill doubles as a wallet switcher (Jupiter <-> Phantom ...)
       $("#nftl_who").css("cursor", "pointer").attr("title", "switch wallet").on("click", () => this.connectFlow(true));
-      // silently reconnect a wallet that approved this site before; never prompts
-      window.iqNft.restore().then((addr) => { if (addr) this.setWallet(addr, true); }).catch(() => {});
+      this.unwatchWallet?.();
+      this.walletProvider = null;
+      const generation = this.walletGeneration = (this.walletGeneration || 0) + 1;
+      // A late restore must not replace a subsequent selection or account event.
+      window.iqNft.restore().then((addr) => { if (addr && generation === this.walletGeneration) this.setWallet(addr, true); }).catch(() => {});
     },
     // A plain connect auto-picks the saved or only wallet and opens the picker
     // only when the choice is ambiguous (2+ wallets, none saved); forcePicker
     // (the pill) always opens it so a connected user can switch wallets.
     connectFlow: async function (forcePicker) {
-      let walletId;
+      this.walletGeneration = (this.walletGeneration || 0) + 1;
+      let walletId, address;
       if (forcePicker) { walletId = await this.pickWallet(); if (!walletId) return; }
-      try { this.setWallet(await window.iqNft.connect(walletId)); return; }
-      catch (e) {
-        const msg = String((e && e.message) || e);
-        if (walletId || !/choose a solana wallet/i.test(msg)) { this.dbg("connect failed: " + msg, "e"); alert(msg); return; }
+      const generation = ++this.walletGeneration;
+      // Events from the previous wallet must not cancel its explicit replacement.
+      this.unwatchWallet?.();
+      this.walletProvider = null;
+      try {
+        try { address = await window.iqNft.connect(walletId); }
+        catch (e) {
+          const msg = String((e && e.message) || e);
+          if (walletId || !/choose a solana wallet|no solana wallet found/i.test(msg)) { this.dbg("connect failed: " + msg, "e"); alert(msg); return; }
+          walletId = await this.pickWallet();
+          if (!walletId || generation !== this.walletGeneration) return;
+          try { address = await window.iqNft.connect(walletId); }
+          catch (e2) { const msg2 = String((e2 && e2.message) || e2); this.dbg("connect failed: " + msg2, "e"); alert(msg2); return; }
+        }
+        if (address && generation === this.walletGeneration) this.setWallet(address);
+      } finally {
+        if (generation === this.walletGeneration) {
+          if (!address && window.iqNft.connected) this.setWallet(window.iqNft.connected(), true);
+          else this.watchWallet();
+        }
       }
-      walletId = await this.pickWallet();
-      if (!walletId) return;
-      try { this.setWallet(await window.iqNft.connect(walletId)); }
-      catch (e) { const m = String((e && e.message) || e); this.dbg("connect failed: " + m, "e"); alert(m); }
     },
-    // Overlay listing every discovered Solana wallet; resolves to the chosen id
-    // or null (cancel). Same idiom as devnetNotice so it matches the page.
+    watchWallet: function () {
+      const provider = window.iqNft.getWalletProvider?.();
+      if (provider === this.walletProvider) return;
+      this.unwatchWallet?.();
+      this.walletProvider = provider;
+      if (!provider?.on) return;
+      const changed = (publicKey) => {
+        if (provider !== window.iqNft.getWalletProvider()) return;
+        this.walletGeneration = (this.walletGeneration || 0) + 1;
+        const address = publicKey?.toBase58?.() || null;
+        if (!address) { this.unwatchWallet?.(); this.walletProvider = null; window.iqNft.disconnect(); }
+        this.setWallet(address, true);
+      };
+      const disconnected = () => changed(null);
+      provider.on("accountChanged", changed);
+      provider.on("disconnect", disconnected);
+      this.unwatchWallet = () => {
+        provider.removeListener?.("accountChanged", changed);
+        provider.removeListener?.("disconnect", disconnected);
+        this.unwatchWallet = null;
+      };
+    },
+    // Native dialog, matching Code In: bounded on phones, with Escape,
+    // focus containment and restoration handled by the browser.
     pickWallet: function () {
       return new Promise((resolve) => {
+        if (document.getElementById("nftl_wallet_dialog")) { resolve(null); return; }
         const wallets = window.iqNft.wallets();
-        const $ov = $("<div>").css({ position: "fixed", inset: "0", zIndex: "320", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(4,6,4,.8)", backdropFilter: "blur(3px)", webkitBackdropFilter: "blur(3px)" });
-        const done = (id) => { $ov.remove(); resolve(id || null); };
-        $ov.on("click", (e) => { if (e.target === $ov[0]) done(null); });
-        const $box = $("<div>").css({ width: "340px", maxWidth: "calc(100% - 40px)", padding: "22px 24px", background: "rgba(20,19,16,.98)", border: "1px solid #e8e4d6", borderRadius: "8px", color: "#e8e4d6" });
+        const $ov = $("<dialog id='nftl_wallet_dialog' aria-label='Connect a wallet'>").css({ padding: "0", margin: "auto", maxWidth: "calc(100% - 32px)", maxHeight: "calc(100dvh - 32px)", overflowY: "auto", border: "0", background: "transparent" });
+        const done = (id) => $ov[0].close(id || "");
+        $ov.on("close", () => { const id = $ov[0].returnValue; $ov.remove(); resolve(id || null); });
+        $ov.on("click", (e) => {
+          if (e.target !== $ov[0]) return;
+          const r = $ov[0].getBoundingClientRect();
+          if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) done(null);
+        });
+        const $box = $("<div>").css({ width: "340px", maxWidth: "100%", boxSizing: "border-box", padding: "22px 24px", background: "rgba(20,19,16,.98)", border: "1px solid #e8e4d6", borderRadius: "8px", color: "#e8e4d6" });
         $box.append($("<div>").css({ font: "700 13px 'Archivo',sans-serif", letterSpacing: ".06em", marginBottom: "16px", color: "#2BD52D" }).text("CONNECT A WALLET"));
         if (!wallets.length) {
-          $box.append($("<div>").css({ font: "500 12px/1.7 'Kode Mono',monospace", opacity: ".8" }).text("No Solana wallet found. Install Phantom, Jupiter, Backpack or Solflare, then reload."));
+          $box.append($("<div>").css({ font: "500 12px/1.7 'Kode Mono',monospace", opacity: ".8" }).text("No Solana wallet found. On mobile, open this page in your wallet app’s browser and tap Connect. On desktop, unlock your wallet extension and try again."));
+          const browse = window.iqNft.solflareBrowseUrl?.();
+          if (browse) $box.append($("<a>").attr("href", browse).addClass("btn2").css({ display: "block", marginTop: "12px", padding: "12px" }).text("OPEN IN SOLFLARE"));
         } else for (const w of wallets) {
-          const $b = $("<button type='button'>").css({ display: "flex", alignItems: "center", gap: "10px", width: "100%", minHeight: "46px", marginBottom: "8px", padding: "10px 14px", textAlign: "left", background: "transparent", color: "#e8e4d6", border: "1px solid rgba(232,228,214,.3)", borderRadius: "6px", font: "600 12px 'Kode Mono',monospace", cursor: "pointer" });
+          const $b = $("<button type='button'>").css({ display: "flex", alignItems: "center", gap: "10px", width: "100%", minHeight: "46px", marginBottom: "8px", padding: "10px 14px", textAlign: "left", overflowWrap: "anywhere", whiteSpace: "normal", background: "transparent", color: "#e8e4d6", border: "1px solid rgba(232,228,214,.3)", borderRadius: "6px", font: "600 12px 'Kode Mono',monospace", cursor: "pointer" });
           const icon = walletIcon(w.icon);
           if (icon) $b.append($("<img alt=''>").attr("src", icon).css({ width: "18px", height: "18px", borderRadius: "4px" }));
           $b.append(document.createTextNode(w.name + (w.selected && this.wallet ? "  · connected" : "")));
@@ -144,16 +192,32 @@
         }
         $box.append($("<button type='button'>").css({ marginTop: "8px", width: "100%", padding: "8px", background: "transparent", color: "#e8e4d6", opacity: ".55", border: "none", font: "600 11px 'Kode Mono',monospace", letterSpacing: ".1em", cursor: "pointer" }).text("CANCEL").on("click", () => done(null)));
         $ov.append($box).appendTo("body");
+        $ov[0].showModal();
       });
     },
     setWallet: function (addr, silent) {
       this.wallet = addr;
-      $("#nftl_hconnect").hide();
-      $("#nftl_who").css("display", "flex").find("span").text(short(addr));
+      this.watchWallet();
+      $("#nftl_hconnect").toggle(!addr);
+      $("#nftl_who").css("display", addr ? "flex" : "none").find("span").text(short(addr));
       if (!silent) this.dbg("wallet connected: " + addr);
+      this.renderRefund();
       if (this.col) this.onConnected(addr);
       if (this.singleRow) this.onSingleConnected(addr);
       if (this.tab === "mine") this.renderMine();
+    },
+    renderRefund: function () {
+      const $notice = $("#nftl_refund").empty().hide();
+      const refund = window.iqNft.pendingRefund?.();
+      if (!refund) return;
+      $notice.show().append($("<p>").text("Your NFT is minted. Returning leftover funds is still pending."));
+      if (refund.signature) $notice.append(link("View return transaction", window.iqNft.solscanTx(refund.signature)));
+      const $retry = $("<button class='btn2' type='button'>").text("Check and return funds").on("click", async () => {
+        $retry.prop("disabled", true).text("Checking…");
+        try { await window.iqNft.retryRefund(); this.renderRefund(); }
+        catch(e) { $notice.find("p").text(e.message || String(e)); $retry.prop("disabled", false).text("Check and return funds"); }
+      });
+      $notice.append($retry);
     },
     navMid: (t) => $("#nftl_nav_mid").text(t),
     // the nav's back button goes up one level: item -> its collection, collection -> the list, home -> code in
@@ -372,6 +436,7 @@
     // on-chain viewer. Single-mint registries are not item-indexed, so they are
     // not listed here yet.
     renderMine: async function () {
+      const token = (this.mineToken = (this.mineToken || 0) + 1);
       const addr = window.iqNft.connected();
       const $m = $("#nftl_mine").empty();
       if (!addr) {
@@ -381,7 +446,6 @@
           .append($("<button class='btn' type='button' style='padding:10px 18px'>").text("CONNECT WALLET").on("click", () => $("#nftl_hconnect").trigger("click"))));
         return;
       }
-      const token = (this.mineToken = (this.mineToken || 0) + 1);
       // loading skeleton (same mc shape) while we read every collection
       const skbar = (w, h) => $("<span class='sk'>").css({ width: w, height: h });
       const $sk = $("<div class='minegrid'>");
@@ -391,11 +455,18 @@
         .append($("<div class='msub'>").append(skbar("50%", "9px")))
         .append($("<div class='mfoot'>").append(skbar("30%", "9px"))));
       $m.append($sk);
-      const held = await window.iqNft.getHeld(addr).catch(() => []);
+      let held;
+      try { held = await window.iqNft.getHeld(addr); }
+      catch (e) {
+        if (token !== this.mineToken) return;
+        $m.empty().append($("<div class='empty'>")
+          .append($("<p class='cm'>").text("Could not load your NFTs. Your wallet has not changed."))
+          .append($("<button class='btn2' type='button'>").text("Retry").on("click", () => this.renderMine())));
+        return;
+      }
       if (token !== this.mineToken) return; // a newer render (tab switch / reconnect) took over
       const mine = held.map((h) => ({ it: { index: h.index, name: h.name, asset: h.asset, inscriptionSig: h.inscriptionSig, rarity: h.rarity, owner: addr, minted: true }, slug: h.slug, colName: h.collectionName || h.slug }));
-      const tierOf = (x) => (x.it.rarity && x.it.rarity.tier) || "common";
-      const counts = ["legendary", "epic", "rare", "common"].map((t) => [t, mine.filter((x) => tierOf(x) === t).length]).filter((e) => e[1]);
+      const counts = ["legendary", "epic", "rare", "common"].map((t) => [t, mine.filter((x) => rarityTier(x.it.rarity) === t).length]).filter((e) => e[1]);
       $m.empty().append($("<div class='minehead'>")
         .append($("<div class='ml'>")
           .append($("<span class='mcount'>").text(mine.length + (mine.length === 1 ? " NFT" : " NFTS")))
@@ -408,12 +479,12 @@
       }
       const $grid = $("<div class='minegrid'>");
       mine.forEach(({ it, slug, colName }) => {
-        const tier = (it.rarity && it.rarity.tier) || "common";
-        const $cell = $("<a class='mc'>").addClass("r-" + tier).attr("href", "?menu=nft&asset=" + it.asset)
+        const tier = rarityTier(it.rarity);
+        const $cell = $("<a class='mc'>").addClass(tier ? "r-" + tier : "").attr("href", "?menu=nft&asset=" + it.asset)
           .on("click", (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.which === 2) return; e.preventDefault(); this.openViewer(it.asset, slug); });
         const $im = $("<div class='mim'>");
         if (it.inscriptionSig) $("<img alt='' loading='lazy'>").attr("src", window.iqNft.imgUrl(it.inscriptionSig)).on("error", function () { $(this).remove(); }).appendTo($im);
-        $im.append($("<span class='mtag'>").text(tier.toUpperCase()));
+        if (tier) $im.append($("<span class='mtag'>").text(tier.toUpperCase()));
         $cell.append($im)
           .append($("<div class='mnm'>").text(it.name || (colName + " #" + it.index)))
           .append($("<div class='msub'>").text(colName))
@@ -561,7 +632,7 @@
       const items = (this.items || []).filter((it) => f === "all" || (f === "avail" && !it.minted) || (f === "minted" && it.minted));
       if (!items.length) { $g.append($("<div class='cm' style='grid-column:1/-1'>").text("// nothing here")); return; }
       items.forEach((it) => {
-        const fresh = it.index === this.freshIndex, rev = !!(it.minted && it.asset), tier = it.rarity && it.rarity.tier;
+        const fresh = it.index === this.freshIndex, rev = !!(it.minted && it.asset), tier = rarityTier(it.rarity);
         // revealed (minted) cells light up and open the on-chain viewer; sealed
         // ones stay dim and inactive, a CRT "?" standing in for the art
         const $cell = rev ? $("<a class='it rev'>").attr("href", "?menu=nft&nft=" + encodeURIComponent(col.slug) + "&asset=" + it.asset).on("click", (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.which === 2) return; e.preventDefault(); this.openViewer(it.asset, col.slug); }) : $("<div class='it'>");
@@ -615,7 +686,9 @@
       this.wallet = addr;
       this.renderKv();
       this.mintState("idle");
+      const generation = this.walletGeneration;
       window.iqNft.estimateMintCost(this.col).then((lamports) => {
+        if (generation !== this.walletGeneration) return;
         this.estimate = lamports;
         this.renderKv();
         this.dbg("funding estimate ~" + sol(lamports));
@@ -648,6 +721,7 @@
           },
         });
         this.dbg("MINT ok: " + JSON.stringify({ index: res.index, asset: res.asset, C: res.C, M: res.M, mintSig: res.mintSig }));
+        this.renderRefund();
         this.freshIndex = res.index;
         this.mintState("done", { ...res, image: window.iqNft.imgUrl(res.C) });
         window.iqNft.getCollection(res.slug).then((c) => { if (c && !c.error) { this.col = c; this.renderProgress(); this.renderKv(); this.renderGrid(res.slug, c); } }).catch(() => {});
@@ -671,12 +745,15 @@
       if (window.history.state && window.history.state.nftv) { try { history.back(); return; } catch (e) {} }
       this.hideViewer();
     },
-    hideViewer: function () { this.closeMeta(); $("#nftl_viewer").removeClass("open"); $(document).off("keydown.nftv"); this.asset = null; this.shareAsset = null; this.updateShareControls(); },
+    hideViewer: function () { this.closeMeta(); $("#nftl_viewer").removeClass("open"); $(document).off("keydown.nftv"); this.viewerGeneration = (this.viewerGeneration || 0) + 1; this.asset = null; this.shareAsset = null; this.updateShareControls(); },
 
     // ── on-chain viewer (?menu=nft&asset=<addr>) ─────────────────────────
     // Reads the asset from the chain only (no backend): recovered image +
     // metadata, proving the "recover without us" claim. Floats over the base view.
     loadAsset: async function (addr, slug) {
+      const generation = this.viewerGeneration = (this.viewerGeneration || 0) + 1;
+      this.asset = null;
+      $("#nftl_vlinks").empty();
       this.shareAsset = null;
       $("#nftl_loading").hide();
       $("#nftl_viewer").addClass("open").scrollTop(0);
@@ -710,21 +787,21 @@
         a.source = "asset account";
         if (slug && a.attributes.index) { try { const it = await window.iqNft.getItem(slug, a.attributes.index); rarity = it && it.rarity ? it.rarity : null; } catch (e2) {} }
       }
+      if (generation !== this.viewerGeneration || !$("#nftl_viewer").hasClass("open")) return;
       this.asset = a;
       this.dbg("viewer: via " + a.source + " C=" + short(a.C) + " M=" + short(a.M));
       $("#nftl_vwin").text(a.name || short(addr));
-      const tier = (rarity && rarity.tier) || "common", lit = tier !== "common";
-      const RC = { common: "#e8e4d6", rare: "#5aa9ff", epic: "#c77dff", legendary: "#ffb347" };
+      const tier = rarityTier(rarity), lit = !!tier && tier !== "common";
       $("#nftl_vrchip").attr("class", "rchip c-" + tier).text(lit ? tier : "").toggle(lit);
       $("#nftl_vph").attr("class", "vimg" + (lit ? " r-" + tier : ""));
       $("#nftl_vwinbox").attr("class", "win" + (lit ? " r-" + tier : ""));
       // LEFT column: identity / rarity / holder / status
       $("#nftl_vname").text(a.name || short(addr));
       $("#nftl_vcol").text(a.collection ? "collection " + short(a.collection) : "");
-      $("#nftl_vrarity").text(tier).css("color", RC[tier]);
+      $("#nftl_vrarity").text(tier || "").css("color", RARITY_COLORS[tier]).parent().toggle(!!tier);
       const lvl = { common: 1, rare: 2, epic: 3, legendary: 4 }[tier];
       const $pips = $("#nftl_vpips").empty();
-      for (let i = 0; i < 4; i++) $pips.append($("<span>").css("background", i < lvl ? RC[tier] : "rgba(232,228,214,.15)"));
+      for (let i = 0; i < 4; i++) $pips.append($("<span>").css("background", i < lvl ? RARITY_COLORS[tier] : "rgba(232,228,214,.15)"));
       $("#nftl_vholder").text(a.owner ? short(a.owner) : "-");
       $("#nftl_vstd").text(a.attributes.std || "iqnft-0.1");
       // CENTER: image
@@ -864,6 +941,7 @@
           onStage: (s, x) => { this.singleState("working", STAGE_TEXT[s] || s); if (x) this.dbg("stage:" + s + " " + JSON.stringify(x)); },
         });
         this.dbg("SINGLE mint ok: " + JSON.stringify({ asset: res.asset, M: res.M, mintSig: res.mintSig }));
+        this.renderRefund();
         this.singleState("done", res);
       } catch (e) {
         const msg = (e && e.message) || String(e);

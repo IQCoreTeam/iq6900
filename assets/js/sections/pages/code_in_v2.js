@@ -260,6 +260,8 @@
         : "No Solana wallet detected. Install Phantom, Jupiter, Backpack or Solflare, or open this page in your wallet's browser.");
       const box = $("#ci2_wallet_options").empty();
       $("#ci2_wallet_empty").toggleClass("hide", options.length > 0);
+      const browse = !isEvm() && !options.length && window.iqCodein.solflareBrowseUrl?.();
+      if (browse) $("#ci2_wallet_empty").append($("<a>").attr("href", browse).addClass("btn ghost").css({ display: "block", marginTop: "12px" }).text("Open in Solflare"));
       for (const wallet of options) {
         const $b = $("<button>").attr("type", "button").addClass("btn ghost")
           .on("click", () => document.getElementById("ci2_wallet_dialog").close(wallet.id));
@@ -292,7 +294,7 @@
       const generation = ++walletGeneration; // Ignore a late silent reconnect after an explicit choice.
       removeWalletListeners();
       showWallet(null);
-      const ambiguous = (e) => /choose an? (evm|solana) wallet/i.test(String((e && e.message) || e));
+      const ambiguous = (e) => /choose an? (evm|solana) wallet|no solana wallet found/i.test(String((e && e.message) || e));
       let address;
       try { address = await window.iqCodein.connectWallet({ walletId }); }
       catch (e) {

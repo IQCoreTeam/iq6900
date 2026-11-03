@@ -10,80 +10,106 @@
 // existing user's burner was derived through); a wallet that is both injected
 // and registered is listed once.
 import { PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js";
+import { getWallets, registerMwa, createDefaultAuthorizationCache, Solflare, bs58 } from "./wallet-transports.js?v=1";
 
 const LAST_KEY = "iq6900_solana_wallet"; // the wallet id the user connected last, or "disconnected"
-const standard = new Map(); // name -> Wallet Standard wallet object
-
-// Discovery handshake: a wallet that loaded before us answers our app-ready
-// event; one that loads later dispatches register-wallet with a callback that
-// takes our api. Both end in api.register(wallet).
-const api = Object.freeze({
-  register: (...wallets) => {
-    for (const w of wallets) if (w && w.name && w.features && w.features["standard:connect"]) standard.set(w.name, w);
-  },
-});
-try { window.addEventListener("wallet-standard:register-wallet", (ev) => { try { ev.detail(api); } catch (e) {} }); } catch (e) {}
-try { window.dispatchEvent(new CustomEvent("wallet-standard:app-ready", { detail: api })); } catch (e) {}
-
-const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-function base58(bytes) {
-  const digits = [0];
-  for (const b of bytes) {
-    let carry = b;
-    for (let i = 0; i < digits.length; i++) { carry += digits[i] << 8; digits[i] = carry % 58; carry = (carry / 58) | 0; }
-    while (carry) { digits.push(carry % 58); carry = (carry / 58) | 0; }
+const registry = getWallets();
+// Use the official transport's permission, authorization-cache and app-association flow.
+// No remote relay is configured. In-wallet browsers keep their own injected wallet.
+if (typeof window !== "undefined" && window.isSecureContext &&
+    /Android/i.test(navigator.userAgent) && /Chrome\//i.test(navigator.userAgent) &&
+    !/EdgA|OPR|SamsungBrowser|Firefox/i.test(navigator.userAgent)) {
+  const cache = createDefaultAuthorizationCache();
+  // MWA signs using its authorized chain. Keep instances chain-bound and do
+  // not restore a cached authorization belonging to the other network.
+  for (const chain of ["solana:mainnet", "solana:devnet"]) {
+    registerMwa({
+      appIdentity: { name: "IQ Labs", uri: window.location.origin, icon: "/img/coinlogo.webp" },
+      chains: [chain],
+      authorizationCache: {
+        ...cache,
+        get: async () => {
+          const authorization = await cache.get();
+          return authorization?.chain === chain ? authorization : undefined;
+        },
+      },
+    });
   }
-  let out = "";
-  for (const b of bytes) { if (b) break; out += "1"; }
-  for (let i = digits.length - 1; i >= 0; i--) out += B58[digits[i]];
-  return out;
 }
-
-const chainOf = (cluster) => (cluster === "devnet" ? "solana:devnet" : "solana:mainnet");
+const solflareAdapters = new Map();
+const chainOf = (cluster) => {
+  if (cluster === "devnet") return "solana:devnet";
+  if (cluster === "mainnet") return "solana:mainnet";
+  throw new Error("Unsupported Solana network: " + cluster);
+};
 
 // Wrap a Wallet Standard wallet as a legacy-shaped provider. One adapter per
 // wallet and cluster, so the connected account survives repeated listing.
 const adapters = new Map();
 function adapt(wallet, cluster) {
-  const key = wallet.name + "|" + cluster;
-  if (adapters.has(key)) return adapters.get(key);
+  let byCluster = adapters.get(wallet);
+  if (!byCluster) { byCluster = new Map(); adapters.set(wallet, byCluster); }
+  if (byCluster.has(cluster)) return byCluster.get(cluster);
   const chain = chainOf(cluster);
-  const feature = (name) => wallet.features[name];
-  const onChain = (wallet.chains || []).includes(chain);
+  const feature = (name) => {
+    const value = wallet.features[name];
+    if (!value) throw new Error(wallet.name + " does not support " + name);
+    return value;
+  };
+
   let account = null;
+  let connectGeneration = 0;
+  let accountRevision = 0;
   const listeners = new Map();
   const emit = (ev, ...args) => { for (const f of listeners.get(ev) || []) { try { f(...args); } catch (e) {} } };
-  const pick = (accounts) => (accounts || []).find((a) => !a.chains || a.chains.includes(chain)) || (accounts || [])[0] || null;
+  const pick = (accounts) => (accounts || []).find((a) => a.chains?.includes(chain)) || null;
   const serialize = (tx) => (tx instanceof VersionedTransaction ? tx.serialize() : tx.serialize({ requireAllSignatures: false, verifySignatures: false }));
-  const input = (tx) => Object.assign({ account, transaction: serialize(tx) }, onChain ? { chain } : {});
+  const input = (tx) => {
+    if (!account || !account.chains.includes(chain)) throw new Error("Reconnect your wallet on " + chain);
+    return { account, transaction: serialize(tx), chain };
+  };
   const provider = {
     name: wallet.name,
     icon: wallet.icon || null,
     get publicKey() { return account ? new PublicKey(account.publicKey) : null; },
     connect: async (opts) => {
+      const generation = ++connectGeneration, revision = accountRevision, attempt = connectionAttempt;
       const out = await feature("standard:connect").connect(opts && opts.onlyIfTrusted ? { silent: true } : undefined);
-      account = pick(out && out.accounts) || pick(wallet.accounts);
-      if (!account) throw new Error(wallet.name + " did not return an account");
+      const next = pick(out && out.accounts) || pick(wallet.accounts);
+      if (generation !== connectGeneration || attempt !== connectionAttempt) throw new Error("Wallet connection changed; try again");
+      if (revision !== accountRevision && (!account || !next || next.address !== account.address)) throw new Error("Wallet account changed; try again");
+      if (!next) throw new Error(wallet.name + " did not return an account for " + chain);
+      if (revision === accountRevision) account = next;
       return { publicKey: provider.publicKey };
     },
     disconnect: async () => {
+      connectGeneration++;
+      accountRevision++;
       account = null;
-      const d = feature("standard:disconnect");
+      const d = wallet.features["standard:disconnect"];
       if (d) await d.disconnect();
     },
     signMessage: async (message) => {
+      if (!account || !account.features.includes("solana:signMessage")) throw new Error("This wallet account cannot sign messages");
+      const signingAccount = account;
       const [out] = await feature("solana:signMessage").signMessage({ account, message });
+      if (account?.address !== signingAccount.address) throw new Error("Wallet account changed; try again");
       return { signature: out.signature, publicKey: provider.publicKey };
     },
     signTransaction: async (tx) => {
-      const [out] = await feature("solana:signTransaction").signTransaction(input(tx));
+      const request = input(tx);
+      if (!account.features.includes("solana:signTransaction")) throw new Error("This wallet account cannot sign transactions");
+      const [out] = await feature("solana:signTransaction").signTransaction(request);
+      if (account?.address !== request.account.address) throw new Error("Wallet account changed; try again");
       return tx instanceof VersionedTransaction ? VersionedTransaction.deserialize(out.signedTransaction) : Transaction.from(out.signedTransaction);
     },
     signAndSendTransaction: async (tx) => {
-      const f = feature("solana:signAndSendTransaction");
+      const f = wallet.features["solana:signAndSendTransaction"];
       if (!f) throw new Error(wallet.name + " cannot send transactions from this page");
-      const [out] = await f.signAndSendTransaction(input(tx));
-      return { signature: base58(out.signature) };
+      const request = input(tx);
+      if (!account.features.includes("solana:signAndSendTransaction")) throw new Error("This wallet account cannot send transactions");
+      const [out] = await f.signAndSendTransaction(request);
+      return { signature: bs58.encode(out.signature) };
     },
     on: (ev, f) => { if (!listeners.has(ev)) listeners.set(ev, new Set()); listeners.get(ev).add(f); },
     removeListener: (ev, f) => { const s = listeners.get(ev); if (s) s.delete(f); },
@@ -91,15 +117,17 @@ function adapt(wallet, cluster) {
   // The standard's single "change" event becomes the accountChanged /
   // disconnect pair the page already listens for on Phantom.
   try {
-    const events = feature("standard:events");
+    const events = wallet.features["standard:events"];
     if (events) events.on("change", (props) => {
       if (!props || !("accounts" in props)) return;
+      accountRevision++;
       const next = pick(props.accounts), before = account && account.address;
       if (!next) { if (before) { account = null; emit("disconnect"); } return; }
-      if (next.address !== before) { account = next; emit("accountChanged", provider.publicKey); }
+      account = next;
+      if (next.address !== before) emit("accountChanged", provider.publicKey);
     });
   } catch (e) {}
-  adapters.set(key, provider);
+  byCluster.set(cluster, provider);
   return provider;
 }
 
@@ -107,23 +135,39 @@ function adapt(wallet, cluster) {
 // first (its window.solana shim also claims the generic slot; Brave never
 // creates window.phantom, so window.phantom.solana is always the real one),
 // then Backpack's own handle.
-function injected() {
+function injected(cluster, standard) {
   const out = [];
   const phantom = window.phantom && window.phantom.solana;
   if (phantom) out.push({ id: "Phantom", name: "Phantom", icon: null, provider: phantom });
   if (window.backpack) out.push({ id: "Backpack", name: "Backpack", icon: null, provider: window.backpack });
+  // Solflare's documented injected provider can exist without window.solana.
+  // Prefer its Wallet Standard registration when one is available.
+  const solflare = window.solflare;
+  if (!standard.some((w) => w.name === "Solflare") && solflare?.isSolflare &&
+      typeof solflare.connect === "function" && typeof solflare.signTransaction === "function") {
+    out.push({ id: "Solflare", name: "Solflare", icon: null, provider: solflare });
+  }
+  if (!standard.some((w) => w.name === "Solflare") && !out.some((w) => w.id === "Solflare") && window.SolflareApp) {
+    // The mobile app bridge is not a legacy window.solana provider. Let its SDK handle it.
+    if (!solflareAdapters.has(cluster)) solflareAdapters.set(cluster, new Solflare({ network: cluster === "devnet" ? "devnet" : "mainnet-beta" }));
+    out.push({ id: "Solflare", name: "Solflare", icon: null, provider: solflareAdapters.get(cluster) });
+  }
   return out;
 }
 
 // Every usable wallet right now: injected first, then standard-registered ones
 // not already listed by name, then the bare window.solana as a last resort.
 export function listWallets(cluster = "mainnet") {
-  const out = injected();
+  const chain = chainOf(cluster);
+  const standard = registry.get().filter((w) => w.features["standard:connect"] && w.chains.includes(chain));
+  const out = injected(cluster, standard);
+  // Keep legacy signing providers, but reuse their registered display metadata.
+  for (const entry of out) entry.icon = standard.find((wallet) => wallet.name === entry.name)?.icon || entry.icon;
   const seen = new Set(out.map((w) => w.name));
-  for (const w of standard.values()) {
+  for (const w of standard) {
     if (seen.has(w.name)) continue;
     seen.add(w.name);
-    out.push({ id: w.name, name: w.name, icon: w.icon || null, provider: adapt(w, cluster) });
+    out.push({ id: w.name, name: w.name === "Mobile Wallet Adapter" ? "Use installed wallet" : w.name, icon: w.icon || null, provider: adapt(w, cluster) });
   }
   const bare = window.solana;
   if (!out.length && bare) out.push({ id: "window.solana", name: "Solana wallet", icon: null, provider: bare });
@@ -142,9 +186,11 @@ async function waitForWallets(cluster, ms) {
 }
 
 let active = null; // the provider the page is connected through
+let connectionAttempt = 0;
 let disconnected = false;
 export function getWalletProvider() { return active; }
 export function disconnectWallet() {
+  connectionAttempt++;
   const p = active;
   active = null;
   disconnected = true;
@@ -152,7 +198,7 @@ export function disconnectWallet() {
   if (p && p.disconnect) Promise.resolve(p.disconnect()).catch(() => {});
 }
 
-export const NO_WALLET = "No Solana wallet found. Install Phantom, Jupiter, Backpack or Solflare.\n\nBrave users: open brave://settings/wallet and set Default cryptocurrency wallet to \"Extensions (no fallback)\" so your extension wallet is detected.";
+export const NO_WALLET = "No Solana wallet found. On mobile, open this page in your wallet app's browser, then tap Connect. On desktop, unlock your wallet extension and try again.\n\nBrave users: open brave://settings/wallet and set Default cryptocurrency wallet to \"Extensions (no fallback)\" so your extension wallet is detected.";
 export const CHOOSE_WALLET = "Choose a Solana wallet first.";
 
 // Same contract as evm.js connectWallet: the saved or only wallet connects by
@@ -162,6 +208,7 @@ export const CHOOSE_WALLET = "Choose a Solana wallet first.";
 // provider before its connect is awaited, so the page can bind account-change
 // listeners that outrank a late silent reconnect.
 export async function connectWallet({ onlyIfTrusted = false, walletId, cluster = "mainnet", onProvider } = {}) {
+  const attempt = onlyIfTrusted ? connectionAttempt : ++connectionAttempt;
   const options = await waitForWallets(cluster, onlyIfTrusted ? 300 : 2000);
   let saved;
   try { saved = localStorage.getItem(LAST_KEY); } catch (e) {}
@@ -173,8 +220,15 @@ export async function connectWallet({ onlyIfTrusted = false, walletId, cluster =
     throw new Error(options.length ? CHOOSE_WALLET : NO_WALLET);
   }
   const p = choice.provider;
+  if (attempt !== connectionAttempt) {
+    if (onlyIfTrusted) return null;
+    throw new Error("Wallet connection changed; try again");
+  }
   if (onProvider) onProvider(p);
   if (onlyIfTrusted) {
+    // Do not assume every legacy provider supports Phantom's silent-connect
+    // option. A disconnected Solflare must be connected by an explicit click.
+    if ((p === window.solflare || p instanceof Solflare) && !p.publicKey) return null;
     if (!p.publicKey) {
       try { await p.connect({ onlyIfTrusted: true }); } catch (e) { return null; }
     }
@@ -183,8 +237,22 @@ export async function connectWallet({ onlyIfTrusted = false, walletId, cluster =
     await p.connect();
     if (!p.publicKey) throw new Error(choice.name + " did not connect");
   }
+  if (attempt !== connectionAttempt) {
+    if (onlyIfTrusted) return null;
+    throw new Error("Wallet connection changed; try again");
+  }
   active = p;
   disconnected = false;
   try { localStorage.setItem(LAST_KEY, choice.id); } catch (e) {}
   return p.publicKey.toBase58();
+}
+
+// Solflare's documented user-clicked browse link handles iOS, where MWA is unavailable.
+export function solflareBrowseUrl() {
+  const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const page = new URL(window.location.href);
+  if (!mobile || page.protocol !== "https:" || page.username || page.password ||
+      ["localhost", "127.0.0.1", "[::1]"].includes(page.hostname)) return null;
+  return "https://solflare.com/ul/v1/browse/" + encodeURIComponent(page.href) + "?ref=" + encodeURIComponent(page.origin);
 }

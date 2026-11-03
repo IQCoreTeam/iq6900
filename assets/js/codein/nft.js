@@ -15,9 +15,11 @@
 import { Keypair, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { writer } from "@iqlabs-official/solana-sdk";
 import { notifyNftFeedRow } from "./nft_notify.js?v=1";
-import { writeFeedRow, topUp, sweep, confirmOrCheck } from "./inscribe.js?v=9";
+import { writeFeedRow, topUp, confirmOrCheck } from "./inscribe.js?v=10";
 import { estimateCost, getAccountRent } from "./cost.js?v=6";
 import { preset } from "./nft_net.js?v=2";
+import {pendingRefund,returnMintFunds} from "./nft_refund.js?v=1";
+export {pendingRefund,returnMintFunds} from "./nft_refund.js?v=1";
 
 // The backend service. Separate from the gateway (which only serves reads). The
 // per-network default lives in nft_net.js; a localStorage override lets a dev
@@ -39,13 +41,25 @@ export async function api(path, method = "GET", body) {
 }
 
 // ── Reads (consumed by the launchpad pages) ───────────────────────────────
-export async function getCollections() { return (await api("/c")).json?.collections ?? []; }
+export async function getCollections() {
+  const response = await api("/c");
+  if (response.status !== 200 || !Array.isArray(response.json?.collections)) throw new Error("Could not load collections. Try again.");
+  return response.json.collections;
+}
 export async function getCollection(slug) { return (await api(`/c/${slug}`)).json; }
 export async function getItems(slug, offset = 0, limit = 60) { return (await api(`/c/${slug}/items?offset=${offset}&limit=${limit}`)).json; }
 export async function getItem(slug, index) { return (await api(`/c/${slug}/item/${index}`)).json; }
 export async function getAsset(address) { return (await api(`/asset/${address}`)).json; }
-export async function getRecent(slug, limit = 20) { return (await api(`/c/${slug}/recent?limit=${limit}`)).json?.recent ?? []; }
-export async function getHeld(wallet) { return (await api(`/owner/${wallet}`)).json?.items ?? []; } // every minted item a wallet holds, across collections
+export async function getRecent(slug, limit = 20) {
+  const response = await api(`/c/${slug}/recent?limit=${limit}`);
+  if (response.status !== 200 || !Array.isArray(response.json?.recent)) throw new Error("Could not load activity. Try again.");
+  return response.json.recent;
+}
+export async function getHeld(wallet) {
+  const response = await api(`/owner/${encodeURIComponent(wallet)}`);
+  if (response.status !== 200 || !Array.isArray(response.json?.items)) throw new Error("Could not load your NFTs. Try again.");
+  return response.json.items;
+} // every minted item a wallet holds, across collections
 
 // ── Funding budget ─────────────────────────────────────────────────────────
 // One popup funds the whole mint, so the budget is generous and the remainder
@@ -158,6 +172,7 @@ async function reportLanded(slug, reservationId) {
 // register, confirming, done. onProgress drives the chunk progress bar for C.
 export async function mint({ connection, wallet, burner, slug, collection, onStage, onProgress }) {
   const who = wallet.publicKey.toBase58();
+  if (pendingRefund(who)) throw new Error("Return the leftover funds from your previous mint before minting again.");
   const burnerPk = burner.publicKey.toBase58();
   const stage = (s, x) => { try { onStage && onStage(s, x); } catch (e) {} };
   const col = collection || (await getCollection(slug));
@@ -254,9 +269,9 @@ export async function mint({ connection, wallet, burner, slug, collection, onSta
 
   // 6. Report the landing, sweep the remainder back, clear the checkpoint, report.
   if (p.reservationId) await reportLanded(slug, p.reservationId);
-  await sweep(connection, burner, wallet.publicKey).catch(() => {});
+  const refund = await returnMintFunds(connection, burner, wallet.publicKey);
   clearProgress(slug);
-  const result = { slug, index: p.index, name: p.name, C: p.C, M: p.M, asset: asset.publicKey.toBase58(), mintSig };
+  const result = { slug, index: p.index, name: p.name, C: p.C, M: p.M, asset: asset.publicKey.toBase58(), mintSig, refundPending: refund.pending };
   stage("done", result);
   return result;
 }
@@ -270,6 +285,7 @@ export async function mint({ connection, wallet, burner, slug, collection, onSta
 // checkpoint functions (collection slugs cannot contain ':', so no collision).
 export async function mintSingle({ connection, wallet, burner, gatewayBase, C, name, kind, onStage }) {
   const who = wallet.publicKey.toBase58();
+  if (pendingRefund(who)) throw new Error("Return the leftover funds from your previous mint before minting again.");
   const burnerPk = burner.publicKey.toBase58();
   const stage = (s, x) => { try { onStage && onStage(s, x); } catch (e) {} };
   const key = "single:" + C;
@@ -317,9 +333,9 @@ export async function mintSingle({ connection, wallet, burner, gatewayBase, C, n
 
   stage("confirming");
   const mintSig = await sendRegister(connection, r.json, burner, asset);
-  await sweep(connection, burner, wallet.publicKey).catch(() => {});
+  const refund = await returnMintFunds(connection, burner, wallet.publicKey);
   clearProgress(key);
-  const result = { C, M: p.M, asset: asset.publicKey.toBase58(), mintSig, name };
+  const result = { C, M: p.M, asset: asset.publicKey.toBase58(), mintSig, name, refundPending: refund.pending };
   stage("done", result);
   return result;
 }

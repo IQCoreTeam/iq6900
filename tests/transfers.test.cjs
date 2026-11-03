@@ -12,6 +12,7 @@ async function loadTransfers(writer) {
     serialize() { return new Uint8Array([1]); }
   }
   const imports = {
+    'bs58': {default: {encode: () => 'synthetic-transfer'}},
     '@iqlabs-official/solana-sdk': { contract: { getUserInventoryPda: () => 'inventory' }, writer },
     '@solana/web3.js': { SystemProgram: { transfer: (args) => args }, Transaction },
     './feed.js': { dbRootSeed: 'synthetic-root', feedSeed: 'synthetic-feed', programId: 'synthetic-program' },
@@ -46,7 +47,7 @@ for (const mode of ['normal-error', 'polled-error', 'never-confirmed', 'success'
       getSignatureStatuses: async () => ({ value: [mode === 'polled-error' ? { confirmationStatus: 'confirmed', err: executionError } : null] }),
     };
     if (mode === 'success') assert.equal(await sweep(connection, { publicKey: 'burner' }, 'owner'), 995000);
-    else await assert.rejects(sweep(connection, { publicKey: 'burner' }, 'owner'), mode === 'never-confirmed' ? /not confirmed/ : /InsufficientFunds/);
+    else await assert.rejects(sweep(connection, { publicKey: 'burner' }, 'owner'), mode === 'never-confirmed' ? /confirmation is pending/ : /InsufficientFunds/);
   });
 }
 
