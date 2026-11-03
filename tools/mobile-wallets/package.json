@@ -1,0 +1,22 @@
+{
+  "name": "iq-mobile-wallet-local-review",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --experimental-vm-modules --test test/*.test.mjs",
+    "pretest": "node build.mjs"
+  },
+  "dependencies": {
+    "@solana-mobile/wallet-standard-mobile": "0.7.0",
+    "@solflare-wallet/sdk": "1.4.2",
+    "@wallet-standard/app": "1.1.1",
+    "bs58": "5.0.0"
+  },
+  "devDependencies": {
+    "@solana/web3.js": "1.99.0",
+    "esbuild": "0.25.12",
+    "jsdom": "26.1.0",
+    "tweetnacl": "1.0.3"
+  }
+}

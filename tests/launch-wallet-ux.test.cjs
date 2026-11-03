@@ -16,6 +16,11 @@ async function mount(t, connect, boardRows = [], evm) {
  const row={kind:'image',body:'data:image/png;base64,AA==',who:'test-wallet',__txSignature:'2'.repeat(88)};
  w.iqCodein={hasOwnRpc:()=>false,estimateCost:()=>({chunks:1,total:1}),readBoard:async()=>({rows:boardRows}),readMine:async()=>({rows:[row]}),viewUrl:s=>'https://iqlabs.dev/?menu=codein&post='+s,metaUrl:s=>'https://gateway.iqlabs.dev/token-meta/'+s,connect:()=>({}),deriveBurner:async()=>({}),inscribeMeta:async()=>{metadata++;return {sig:'meta'};},inscribe:async()=>{registrations++;return {sig:'registry'};},notify:async()=>{},imgUrl:s=>'https://gateway.iqlabs.dev/img/'+s,renderUrl:s=>'https://gateway.iqlabs.dev/render/'+s,market:{enrich:async()=>[],embedUrl:()=>'',siteUrl:()=>'',tradeUrl:()=>'',tradeLabel:'Pump',siteLabel:'DEX',attribution:'test'},getSpeed:()=> 'light'};
  w.iqTokenLaunch={GATEWAY:'https://gateway.iqlabs.dev',FEE_SOL:.069,launch:async()=>{launches++;return {mint:'mint',sig:'create'};}};
+ Object.assign(w.iqCodein,{
+  getWallets:()=>[{id:'fixture-solana',name:'Fixture Solana',selected:true}],
+  getWalletProvider:()=>w.phantom.solana,disconnectWallet:()=>{},
+  connectWallet:async({onProvider,...options}={})=>{onProvider?.(w.phantom.solana);const result=await w.phantom.solana.connect(options);return result?.publicKey?.toString()||null;}
+ });
  if (evm) w.iqCodeinChains={evm:{...w.iqCodein,meta:{boardTitle:'HOOD IN',connLabel:'Robinhood RPC',scanLabel:'EXPLORER',maxSigs:25},getWallets:()=>[],getWalletProvider:()=>null,...evm}};
  w.$.ajax=({success})=>success(fs.readFileSync(path.resolve(__dirname, '../assets/html/sections/code_in_v2.html'),'utf8'));
  w.eval(fs.readFileSync(path.resolve(__dirname, '../assets/js/sections/pages/code_in_v2.js'),'utf8'));w.$.code_in_v2.init(null,evm?'evm':'solana');await tick();
@@ -226,4 +231,9 @@ test('album-art notification keeps the submitting author after disconnect',async
  assert.equal(typeof finish,'function');v.listeners.get('disconnect')();finish({sig:'album-image'});await tick();await tick();
  const art=notifications.find(n=>n.sig==='album-image');assert.ok(art);assert.equal(art.row.who,'test-wallet');assert.equal(art.row.kind,'image');
  assert.equal(art.row.body,'data:image/png;base64,iVBORw0KGgo=');
+});
+
+test('Solana no-wallet connection opens the existing dialog with the mobile browser fallback',async t=>{
+ const v=await mount(t,async()=>{throw Error('No Solana wallet found.');});v.w.alert=()=>assert.fail('wallet fallback should be visible');v.w.iqCodein.getWallets=()=>[];v.w.iqCodein.solflareBrowseUrl=()=> 'https://solflare.com/ul/v1/browse/https%3A%2F%2Fiqlabs.dev%2F?ref=https%3A%2F%2Fiqlabs.dev';
+ v.w.$('#ci2_connect').trigger('click');await tick();assert.equal(v.w.document.getElementById('ci2_wallet_dialog').open,true);assert.equal(v.w.$('#ci2_wallet_empty a').text(),'Open in Solflare');v.w.document.getElementById('ci2_wallet_dialog').close('');
 });

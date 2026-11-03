@@ -1,0 +1,7 @@
+node_modules/
+.test-build/
+dist/
+audit.json
+*.tgz
+*-package-name.txt
+*.review.mjs

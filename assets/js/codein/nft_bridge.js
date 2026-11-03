@@ -6,8 +6,8 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import { setRpcUrl } from "@iqlabs-official/solana-sdk";
 import { deriveBurner } from "./burner.js";
-import { listWallets, connectWallet, getWalletProvider, disconnectWallet } from "./wallets.js?v=1";
-import * as nft from "./nft.js?v=9";
+import { listWallets, connectWallet, getWalletProvider, disconnectWallet, solflareBrowseUrl } from "./wallets.js?v=2";
+import * as nft from "./nft.js?v=10";
 import { deploy, pendingDeploy } from "./nft_create.js?v=8";
 import { compressImage } from "./image_compress.js?v=1";
 import { readAsset, readInscription, viewAssetViaGateway, gatewayMetadata } from "./nft_asset.js?v=4";
@@ -29,11 +29,10 @@ function gatewayBase() { return preset().gateway; }
 // wallets such as Jupiter or MetaMask, plus Phantom/Backpack), connected on
 // the NFT cluster. Nothing prompts on entry: restore() only reconnects a
 // wallet that approved this site before, connect() runs from the button.
-function active() { return getWalletProvider(); }
-async function ensureConnected(walletId) {
-  const p = active();
+async function ensureConnected() {
+  const p = getWalletProvider();
   if (p && p.publicKey) return p;
-  await connectWallet({ walletId, cluster: net() });
+  await connectWallet({ cluster: net() });
   return getWalletProvider();
 }
 // The burner is derived from one wallet signature, so deriving it is a wallet
@@ -42,13 +41,16 @@ async function ensureConnected(walletId) {
 // cost estimate can read the burner's account rent without any popup.
 const BURNER_KEY = (wallet) => "iq6900_nft_burner_" + wallet;
 async function burnerFor(provider) {
+  const owner = provider.publicKey.toBase58();
   // Same derivation as the code-in page: one signMessage, raw signature bytes out.
   const signMessage = async (msg) => {
     const out = await provider.signMessage(msg instanceof Uint8Array ? msg : new TextEncoder().encode(msg), "utf8");
+    if (getWalletProvider() !== provider || provider.publicKey?.toBase58() !== owner) throw new Error("Wallet changed while signing; reconnect and try again");
     return out.signature || out;
   };
   const burner = await deriveBurner(signMessage);
-  try { localStorage.setItem(BURNER_KEY(provider.publicKey.toBase58()), burner.publicKey.toBase58()); } catch (e) {}
+  if (getWalletProvider() !== provider || provider.publicKey?.toBase58() !== owner) throw new Error("Wallet changed while signing; reconnect and try again");
+  try { localStorage.setItem(BURNER_KEY(owner), burner.publicKey.toBase58()); } catch (e) {}
   return burner;
 }
 function knownBurner(provider) {
@@ -61,6 +63,7 @@ function knownBurner(provider) {
 // or the backend host are defined here; `mint` and `estimateMintCost` override
 // the engine's pure versions by supplying the browser's connection/wallet/burner.
 window.iqNft = Object.assign({}, nft, {
+  solflareBrowseUrl,
   getRpc: rpc,
   setRpc: (u) => { try { u ? localStorage.setItem(RPC_KEY, u) : localStorage.removeItem(RPC_KEY); } catch (e) {} },
   health: async () => { try { return await (await fetch(nft.nftApi() + "/health")).json(); } catch (e) { return { ok: false, error: String(e) }; } },
@@ -81,13 +84,14 @@ window.iqNft = Object.assign({}, nft, {
   // connect() takes the saved or only wallet and throws "Choose a Solana wallet
   // first." when it is ambiguous (the page then shows its picker).
   wallets: () => listWallets(net()).map(({ id, name, icon, provider }) => ({ id, name, icon, selected: provider === getWalletProvider() })),
-  connect: async (walletId) => (await ensureConnected(walletId)).publicKey.toBase58(),
+  getWalletProvider,
+  connect: (walletId) => connectWallet({ walletId, cluster: net() }),
   restore: () => connectWallet({ onlyIfTrusted: true, cluster: net() }),
   disconnect: disconnectWallet,
-  connected: () => { const p = active(); return p && p.publicKey ? p.publicKey.toBase58() : null; },
+  connected: () => { const p = getWalletProvider(); return p && p.publicKey ? p.publicKey.toBase58() : null; },
   // Silent: uses the remembered burner key when there is one, never signs.
   estimateMintCost: async (col) => {
-    try { const p = active(), b = p && p.publicKey && knownBurner(p); return b ? nft.estimateMintCost(col, connection(), b) : nft.estimateMintCost(col); }
+    try { const p = getWalletProvider(), b = p && p.publicKey && knownBurner(p); return b ? nft.estimateMintCost(col, connection(), b) : nft.estimateMintCost(col); }
     catch (e) { return nft.estimateMintCost(col); }
   },
   mint: async ({ slug, collection, onStage, onProgress }) => {
@@ -101,6 +105,11 @@ window.iqNft = Object.assign({}, nft, {
     const provider = await ensureConnected();
     setRpcUrl(rpc());
     return deploy({ connection: connection(), wallet: provider, burner: await burnerFor(provider), spec, items, onStage });
+  },
+  pendingRefund: () => nft.pendingRefund(getWalletProvider()?.publicKey?.toBase58()),
+  retryRefund: async () => {
+    const provider = await ensureConnected();
+    return nft.returnMintFunds(connection(), await burnerFor(provider), provider.publicKey);
   },
   pendingDeploy,
   compressImage,

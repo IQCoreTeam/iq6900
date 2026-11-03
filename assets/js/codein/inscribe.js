@@ -6,6 +6,7 @@
 // Leftover is swept back to the user.
 import { contract, writer } from "@iqlabs-official/solana-sdk";
 import { SystemProgram, Transaction } from "@solana/web3.js";
+import bs58 from "bs58";
 import { dbRootSeed, feedSeed, programId } from "./feed.js";
 import { estimateCost, getAccountRent } from "./cost.js?v=6";
 
@@ -162,7 +163,7 @@ async function sendRaw(connection, signed) {
 
 // Exported so the UI can also refund the burner to the wallet after a write
 // ultimately gives up. Returns the lamports sent back (0 when nothing to send).
-export async function sweep(connection, burner, to) {
+export async function sweep(connection, burner, to, onSigned) {
   const balance = await connection.getBalance(burner.publicKey);
   if (balance <= TX_FEE) return 0;
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
@@ -170,9 +171,17 @@ export async function sweep(connection, burner, to) {
     SystemProgram.transfer({ fromPubkey: burner.publicKey, toPubkey: to, lamports: balance - TX_FEE }),
   );
   tx.sign(burner);
-  const sig = await sendRaw(connection, tx);
-  if (!(await confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight))) {
-    throw new Error("refund transfer " + sig + " was not confirmed; check its status before retrying");
+  const signature = bs58.encode(tx.signature);
+  // Save the public receipt before broadcasting, so a retry checks this exact
+  // transfer rather than signing another transfer after an ambiguous response.
+  await onSigned?.({ signature, blockhash, lastValidBlockHeight });
+  try {
+    const sig = await sendRaw(connection, tx);
+    if (sig !== signature || !(await confirmOrCheck(connection, sig, blockhash, lastValidBlockHeight))) {
+      throw new Error("Refund confirmation is pending. Check its receipt before retrying.");
+    }
+  } catch (error) {
+    throw Object.assign(error, { signature, blockhash, lastValidBlockHeight });
   }
   return balance - TX_FEE;
 }
