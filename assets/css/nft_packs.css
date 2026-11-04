@@ -186,3 +186,27 @@ html:has(#nftp),body:has(#nftp){scroll-behavior:auto}
 
 
 #nftp .pack-error:empty,#nftp .pack-status:empty{display:none}
+
+/* One owned stack; individual receipts stay in opening history. */
+#nftp .owned-pack{display:flex;flex-direction:column;align-items:center;padding:24px 20px 18px;gap:14px;text-align:center}
+#nftp .owned-pack-label{margin:0;font-size:14px;color:var(--cream)}
+#nftp .owned-pack-picture{position:relative;width:min(240px,70vw);padding:10px}
+#nftp .owned-pack-art{position:relative;display:block;width:100%;cursor:pointer}
+#nftp .owned-pack-art:not(:disabled):focus-visible{outline:2px solid var(--green);outline-offset:8px}
+#nftp .owned-pack-art:disabled{cursor:wait;opacity:.65}
+#nftp .owned-pack-count{position:absolute;right:0;bottom:20px;z-index:4;padding:7px 12px;border-radius:999px;background:var(--cream);color:var(--ink);font-size:16px;font-weight:700}
+#nftp .owned-pack-hint{margin:0;font-size:12px;color:#bdbbad}
+#nftp .sealed-history{border-top:1px solid var(--edge);margin:8px 20px 0;padding:16px 0;font-size:12px}
+#nftp .sealed-history>summary{cursor:pointer;min-height:28px;color:#bdbbad}
+#nftp .sealed-history .sealed-card{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 0}
+#nftp .sealed-history .sealed-card h3{font:inherit;margin:0 auto 0 0}
+#nftp .sealed-history .sealed-card p{display:none}
+#nftp .sealed-history .sealed-card button{font-size:11px;padding:8px 10px;margin:0}
+#nftp .sealed-history .sealed-totals{padding:14px 0;font-size:11px}
+#nftp .sealed-history>.text-button{font-size:11px}
+
+#nftp .pack-history-items{flex:0 0 100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:12px 0}
+#nftp .pack-history-items figure{margin:0;min-width:0}
+#nftp .pack-history-items img{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:var(--ink)}
+#nftp .pack-history-items figcaption{font-size:11px;line-height:1.5;margin-top:7px;overflow-wrap:anywhere}
+@media(max-width:600px){#nftp .pack-history-items{grid-template-columns:repeat(2,minmax(0,1fr))}}

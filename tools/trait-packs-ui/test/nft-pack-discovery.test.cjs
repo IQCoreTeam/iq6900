@@ -12,7 +12,18 @@ test('My NFTs uses owner holdings and links the supported asset without item-pag
  const {solanaMarketUrl}=await import('../../../assets/nft-market-links.mjs');w.iqNft.marketUrl=asset=>solanaMarketUrl(asset,'solana:mainnet');await launch.renderMine();assert.equal(w.$('#nftl_mine a[href^="https://magiceden.io/item-details/"]').length,2);assert.equal(w.$('#nftl_mine a a').length,0);
 });
 
-test('standard branch keeps packs absent and finds an owned NFT after page one',async t=>{if(!process.env.IQ_STANDARD_ROOT){t.skip('Set IQ_STANDARD_ROOT for the separate standard-branch comparison');return;}const{w,launch,col}=fixture(t,process.env.IQ_STANDARD_ROOT);w.iqPackCreatorConfig={};assert.equal(launch.card(col).find('a[href*="menu=packs"]').length,0);await launch.load(col.slug);assert.equal(w.$('#nftl_clinks a[href*="menu=packs"]').length,0);launch.cols=[col];const calls=[];w.iqNft.getItems=async(slug,offset,limit)=>{calls.push(offset);return{total:201,items:Array.from({length:Math.min(200,201-offset)},(_,i)=>({minted:offset+i===200,owner:w.iqNft.connected(),asset:'33333333333333333333333333333333'}))};};await launch.renderMine();assert.deepEqual(calls,[0,200]);assert.equal(w.$('#nftl_mine a.mc').length,1);assert.equal(w.$('#nftl_mine a[href*="menu=packs"]').length,0);});
+test('standard branch keeps packs absent and reads held NFTs without scanning collection pages',async t=>{
+ if(!process.env.IQ_STANDARD_ROOT){t.skip('Set IQ_STANDARD_ROOT for the separate standard-branch comparison');return;}
+ const{w,launch,col}=fixture(t,process.env.IQ_STANDARD_ROOT);w.iqPackCreatorConfig={};
+ assert.equal(launch.card(col).find('a[href="?menu=packs"]').length,0);
+ await launch.load(col.slug);assert.equal(w.$('#nftl_clinks a[href*="menu=packs"]').length,0);
+ launch.cols=[col];const calls=[],owner=w.iqNft.connected();
+ w.iqNft.getItems=async()=>{throw Error('Owner holdings must not scan collection item pages');};
+ w.iqNft.getHeld=async wallet=>{calls.push(wallet);return[{slug:col.slug,collectionName:col.name,index:201,asset:'33333333333333333333333333333333',name:'Edition 201'}];};
+ await launch.renderMine();assert.deepEqual(calls,[owner]);assert.equal(w.$('#nftl_mine a.mc').length,1);
+ assert.equal(w.$('#nftl_mine').text().includes('Edition 201'),true);
+ assert.equal(w.$('#nftl_mine a[href*="menu=packs"]').length,0);
+});
 
 test('Packs browse separates confirmed collections and does not reuse NFT mint prices',async t=>{
  const{w,launch,col}=fixture(t);w.iqPackCreatorConfig={};

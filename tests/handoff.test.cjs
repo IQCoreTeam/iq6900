@@ -83,7 +83,22 @@ async function mount(t, opts = {}) {
     if (result) w.FileReader = class { readAsDataURL() { this.result = result; this.onload(); } };
     const input = w.document.querySelector('#ci2_file_file');
     Object.defineProperty(input, 'files', { configurable: true, value: [new w.File([new Uint8Array([1, 2, 3])], name, { type })] });
-    w.$(input).trigger('change'); await pause(20);
+    const originalReader = w.FileReader;
+    let loaded;
+    const completed = new Promise(resolve => { loaded = resolve; });
+    w.FileReader = class extends originalReader {
+      readAsDataURL(file) {
+        const onload = this.onload;
+        this.onload = (...args) => { try { onload?.apply(this, args); } finally { loaded(); } };
+        super.readAsDataURL(file);
+      }
+    };
+    try {
+      w.$(input).trigger('change');
+      await completed;
+    } finally {
+      w.FileReader = originalReader;
+    }
   }
   async function upload() { w.$('#ci2_go').trigger('click'); await pause(20); }
   return { w, sent, alerts, writes, connects, notifications, notificationRows, listeners, boards, adapters, pickFile, upload };

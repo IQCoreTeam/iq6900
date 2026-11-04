@@ -20,10 +20,13 @@ export async function mountSealedPackPage(root, config) {
     generation = 0,
     operationGeneration = null,
     openingCards = [],
-    openingPackId = null;
+    openingPackId = null,
+    purchaseFocused = false,
+    viewedItems = null;
   const revealed = new Set();
+  const resaleEnabled = config.packResale === true;
   root.querySelector(".packs-title-row p").textContent =
-    "Keep it sealed, trade it, or open it for four traits.";
+    resaleEnabled ? "Keep it sealed, trade it, or open it for four traits." : "Open a pack to find four traits.";
   root.querySelector(".opening-window").replaceChildren();
   root.querySelector(".inventory-window").remove();
   const area = root.querySelector(".opening-window"),
@@ -77,6 +80,38 @@ export async function mountSealedPackPage(root, config) {
     refresh,
     proofPanel,
   );
+  const owned = document.createElement("section");
+  owned.className = "owned-pack";
+  const ownedLabel = text("p", ""), ownedBadge = text("span", "");
+  ownedLabel.className = "owned-pack-label";
+  ownedBadge.className = "owned-pack-count";
+  const ownedArt = document.createElement("button");
+  ownedArt.type = "button";
+  ownedArt.className = "iq-confirmed-seal owned-pack-art";
+  ownedArt.setAttribute("aria-label", "Open pack");
+  const foil = document.createElement("span");
+  foil.className = "rco-pack-wrap";
+  foil.setAttribute("aria-hidden", "true");
+  ownedArt.append(foil);
+  const ownedHint = text("p", "Click the pack to open it.");
+  ownedHint.className = "owned-pack-hint";
+  const ownedPicture = document.createElement("div");
+  ownedPicture.className = "owned-pack-picture";
+  ownedPicture.append(ownedArt, ownedBadge);
+  owned.append(ownedLabel, ownedPicture, ownedHint);
+  grid.before(owned);
+  const history = document.createElement("details"), historySummary = text("summary", "Your openings");
+  history.className = "sealed-history";
+  const historyGrid = document.createElement("div");
+  historyGrid.className = "sealed-history-rows";
+  history.append(historySummary, historyGrid, totals, refresh, proofPanel);
+  area.append(history);
+  heading.hidden = !resaleEnabled;
+  ownedArt.onclick = () => {
+    const pack = data?.packs.find(pack => !pack.opened && pack.owner === account?.address);
+    if (pack) run(() => openOwned(pack));
+  };
+  marketHeading.hidden = listingGrid.hidden = !resaleEnabled;
   const openingStage = document.createElement("div");
   openingStage.className = "library-opening";
   openHost.append(openingStage);
@@ -92,10 +127,13 @@ export async function mountSealedPackPage(root, config) {
       return true;
     },
     () => {
+      opening = null;
+      purchaseFocused = false;
       openingCards = [];
       openingPackId = null;
       revealed.clear();
       renderOpening();
+      render();
       status.textContent = "Your four traits remain in your wallet.";
     },
   );
@@ -167,12 +205,26 @@ export async function mountSealedPackPage(root, config) {
     chain: config.chain,
     purchaseRoot: root.querySelector("#nftp-checkout"),
   });
+  const buyMore = document.createElement("button");
+  buyMore.type = "button";
+  buyMore.className = "quiet-button";
+  buyMore.textContent = "Buy more packs";
+  buyMore.hidden = true;
+  root.querySelector("#nftp-checkout").after(buyMore);
+  buyMore.onclick = () => {
+    if (busy || root.querySelector("#nftp-checkout").getAttribute("aria-busy") === "true") return;
+    purchaseFocused = false;
+    render();
+    root.querySelector('#nftp-checkout button:not([disabled])')?.focus();
+  };
   const priceRefresh = root.querySelector("#nftp-checkout .text-button");
   if (priceRefresh) priceRefresh.hidden = true;
   walletRoot.addEventListener("iqpacks:wallet", async (event) => {
     wallet = event.detail.wallet;
     account = event.detail.account;
     generation++;
+    viewedItems = null;
+    purchaseFocused = false;
     pageBefore = null;
     proofPanel.hidden = true;
     opening = null;
@@ -190,9 +242,9 @@ export async function mountSealedPackPage(root, config) {
     }
   });
   walletRoot.addEventListener("iqpacks:purchase", async () => {
+    purchaseFocused = true;
     pageBefore = null;
-    status.textContent =
-      "Your pack NFT is sealed. Keep it, list it, or open it.";
+    status.textContent = "Your pack is ready. Open it below.";
     try {
       await read();
     } catch (e) {
@@ -216,10 +268,10 @@ export async function mountSealedPackPage(root, config) {
       new Set(value.packs.map((pack) => pack.asset)).size !== value.packs.length
     )
       throw Error("Sealed page exceeds its verified asset bound");
-    const listings = await client.readTensorListings(
+    const listings = resaleEnabled ? await client.readTensorListings(
       connection,
       value.packs.filter((p) => !p.opened).map((p) => p.asset),
-    );
+    ) : [];
     if (disposed || revision !== generation) return;
     data = { ...value, listings };
     applyPackAppearance(
@@ -280,6 +332,12 @@ export async function mountSealedPackPage(root, config) {
     walletRoot.toggleAttribute("inert", busy);
     root.querySelector("#nftp-checkout").toggleAttribute("inert", busy);
     if (!data || disposed) return;
+    const unopened = account ? data.packs.filter(pack => !pack.opened && pack.owner === account.address) : [];
+    const openedPacks = account ? data.packs.filter(pack => pack.opened && pack.opener === account.address) : [];
+    const awaitingDelivery = account && data.packs.some(pack => pack.opened && pack.opener === account.address && !["ready", "refunded"].includes(pack.status));
+    root.querySelector("#nftp-checkout").hidden = !!(purchaseFocused || opening || busy);
+    buyMore.hidden = !account || !purchaseFocused || !!opening || busy;
+    openHost.hidden = openingCards.length === 0 && !!(unopened.length || awaitingDelivery);
     root.querySelector("#nftp-title").textContent = data.name;
     totals.textContent =
       data.unminted +
@@ -290,6 +348,15 @@ export async function mountSealedPackPage(root, config) {
       " opened";
     grid.replaceChildren();
     listingGrid.replaceChildren();
+    historyGrid.replaceChildren();
+    owned.hidden = resaleEnabled || !unopened.length || openingCards.length > 0;
+    ownedLabel.textContent = unopened.length === 1 ? "Your pack" : "Your packs";
+    ownedBadge.textContent = "×" + unopened.length;
+    ownedLabel.textContent += pageBefore !== null || data.pagination?.nextBefore != null ? " on this page" : "";
+    ownedBadge.setAttribute("aria-label", unopened.length + (unopened.length === 1 ? " unopened pack" : " unopened packs") + (pageBefore !== null || data.pagination?.nextBefore != null ? " on this page" : ""));
+    ownedArt.disabled = busy || !!awaitingDelivery;
+    ownedHint.textContent = busy || awaitingDelivery ? "Preparing your opening…" : "Click the pack to open it.";
+    historySummary.textContent = "Your openings" + (openedPacks.length ? " · " + openedPacks.length : "");
     more.hidden = data.pagination?.nextBefore == null;
     older.hidden = pageBefore === null;
     for (const pack of data.packs) {
@@ -334,23 +401,10 @@ export async function mountSealedPackPage(root, config) {
             }),
           );
         listingGrid.append(row);
-      } else if (account && !pack.opened && pack.owner === account.address) {
+      } else if (resaleEnabled && account && !pack.opened && pack.owner === account.address) {
         const row = card(pack);
         row.append(
-          action("Open pack", async () => {
-            status.textContent =
-              "Preparing opening. Approve the required wallet prompts; no second purchase price is charged.";
-            const revision = generation;
-            await buyer.open({
-              wallet,
-              account,
-              asset: pack.asset,
-            });
-            if (disposed || revision !== generation) return;
-            opening = pack.asset;
-            status.textContent = "Preparing randomness…";
-            follow();
-          }),
+          action("Open pack", () => openOwned(pack)),
         );
         const price = document.createElement("input");
         price.type = "text";
@@ -384,9 +438,10 @@ export async function mountSealedPackPage(root, config) {
         const row = card(pack);
         if (pack.status === "ready")
           row.append(
-            action("Show opening", async () => {
-              opening = pack.asset;
-              await showOpening(pack);
+            action(viewedItems?.asset === pack.asset ? "Hide items" : "View items", async () => {
+              if (viewedItems?.asset === pack.asset) { viewedItems = null; return; }
+              const result = await readPackResult(pack);
+              if (result) viewedItems = {asset: pack.asset, cards: result.cards};
             }),
           );
         if (pack.status === "ready")
@@ -421,10 +476,28 @@ export async function mountSealedPackPage(root, config) {
                 : "Preparing randomness…",
             ),
           );
-        grid.append(row);
+        if (viewedItems?.asset === pack.asset) {
+          const items = document.createElement("div");
+          items.className = "pack-history-items";
+          items.setAttribute("aria-label", "Items from pack " + (pack.serial + 1));
+          for (const item of viewedItems.cards) {
+            const figure = document.createElement("figure"), image = document.createElement("img");
+            image.src = item.image;
+            image.alt = item.name;
+            image.loading = "lazy";
+            image.decoding = "async";
+            figure.append(image, text("figcaption", item.name));
+            items.append(figure);
+          }
+          row.append(items);
+        }
+        historyGrid.append(row);
       }
     }
-    if (!grid.children.length)
+    if (!openedPacks.length) historyGrid.append(text("p", "No opened packs yet."));
+    grid.hidden = !resaleEnabled;
+    if (!unopened.length && !openingCards.length && !awaitingDelivery && !opening) {
+      grid.hidden = false;
       grid.append(
         text(
           "p",
@@ -433,8 +506,19 @@ export async function mountSealedPackPage(root, config) {
             : "Connect your wallet to see your packs.",
         ),
       );
+    }
     if (!listingGrid.children.length)
       listingGrid.append(text("p", "No indexed listings on this page."));
+  }
+  async function openOwned(pack) {
+    viewedItems = null;
+    status.textContent = "Preparing opening. Approve the wallet prompts; no second purchase price is charged.";
+    const revision = generation;
+    await buyer.open({wallet, account, asset: pack.asset});
+    if (disposed || revision !== generation) return;
+    opening = pack.asset;
+    status.textContent = "Preparing randomness…";
+    follow();
   }
   async function financial(instructions, asset) {
     if (!wallet || !account) throw Error("Connect a wallet");
@@ -466,7 +550,7 @@ export async function mountSealedPackPage(root, config) {
     if (operationGeneration === generation)
       status.textContent = "Confirmed on chain.";
   }
-  async function showOpening(pack) {
+  async function readPackResult(pack) {
     const revision = generation,
       holder = account?.address;
     if (!holder) return;
@@ -478,19 +562,12 @@ export async function mountSealedPackPage(root, config) {
           x.owner === holder,
       );
     if (disposed || revision !== generation) return;
-    if (!ticket || ticket.status !== "settled") {
-      status.textContent = ticket?.void
-        ? "Opening timed out. Check the original-price refund."
-        : "Preparing randomness…";
-      if (!ticket?.void) follow();
-      return;
-    }
+    if (!ticket || ticket.status !== "settled")
+      throw Error(ticket?.void ? "Opening timed out. Check the original-price refund." : "Confirmed items are not available yet. Refresh and try again.");
     const { packRewards } = await import("./nft_packs.js"),
       rewards = packRewards(current, ticket);
     if (disposed || revision !== generation) return;
-    openingPackId = ticket.address;
-    revealed.clear();
-    openingCards = rewards.map((trait) => ({
+    const cards = rewards.map((trait) => ({
       id: trait.address,
       name: trait.name,
       image: transport.media(trait.image),
@@ -498,7 +575,16 @@ export async function mountSealedPackPage(root, config) {
       creatorTier: current.stock.find((row) => row.id === trait.definition)
         ?.creatorTier,
     }));
+    return {ticket, cards};
+  }
+  async function showOpening(pack) {
+    const result = await readPackResult(pack);
+    if (!result) return;
+    openingPackId = result.ticket.address;
+    revealed.clear();
+    openingCards = result.cards;
     renderOpening();
+    render();
     openHost.scrollIntoView({ block: "center" });
     status.textContent = "Pack ready. Click the pack to reveal your traits.";
   }
