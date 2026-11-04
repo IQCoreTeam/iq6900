@@ -81,8 +81,66 @@ export async function mountPacks() {
     for (const pack of state?.packs ?? []) if (pack.status === 'settled')
       revealed.set(pack.address, new Set(packRewards(state, pack).map(trait => trait.address)));
   }
+  const wardrobeMode = new URL(location.href).searchParams.get('view') === 'wardrobe';
   const liveConfig=window.iqPackConfig;
-  const transport=(await import('./pack-transport.mjs')).createPackPageTransport(liveConfig,location.href);
+  const {createPackPageTransport}=await import('./pack-transport.mjs');
+  if (wardrobeMode) {
+    root.classList.add('packs-wardrobe');
+    root.querySelector('.opening-window').hidden = true;
+    root.querySelector('.purchase-heading').hidden = true;
+    const back = root.querySelector('.packs-nav a');
+    const backURL = new URL(location.href);backURL.searchParams.delete('view');backURL.searchParams.delete('asset');
+    back.href = backURL.pathname + backURL.search;back.textContent = '← PACKS';
+    ui.title.textContent = 'Your outfit';
+    root.querySelector('.packs-title-row p').textContent = 'Choose an NFT and build its outfit.';
+    const selection = document.createElement('section');selection.className='wardrobe-selection';
+    const label=document.createElement('label');label.textContent='Your collection NFT';
+    const select=document.createElement('select');select.setAttribute('aria-label','Your collection NFT');
+    const note=document.createElement('p');note.setAttribute('role','status');
+    label.append(select);
+    const refreshNfts=document.createElement('button');refreshNfts.type='button';refreshNfts.className='text-button';refreshNfts.textContent='Refresh NFTs';
+    selection.append(label,refreshNfts,note,ui.status,ui.error);ui['inventory-title'].parentElement.after(selection);
+    select.onchange=async()=>{
+      if(busy||!select.value)return;
+      const revision=walletRevision,previousTransport=transport,url=new URL(location.href);
+      url.searchParams.set('asset',select.value);busy=true;ui.error.hidden=true;render();
+      try {
+        if(revision!==walletRevision||disposed)return;
+        transport=createPackPageTransport(liveConfig,url.href);
+        await request();
+        if(revision!==walletRevision||disposed)return;
+        window.history.replaceState({},'',url.href);
+        say('Selected NFT updated. Choose a trait.');
+      } catch(error){if(revision===walletRevision){transport=previousTransport;fail(error);}}
+      finally{busy=false;if(!disposed)render();}
+    };
+    let selectionRevision=0, holdingsOwner=null, holdingsPromise=null;
+    async function loadSelection() {
+      const revision=++selectionRevision,holder=owner();select.disabled=true;select.replaceChildren();
+      if(!holder){note.textContent='Connect your wallet to choose an NFT.';return;}
+      note.textContent='Loading your collection NFTs…';
+      try {
+        if(typeof window.iqNft?.getHeld!=='function')throw Error('NFT selection is unavailable. Open Your traits from My NFTs.');
+        if(holdingsOwner!==holder||!holdingsPromise){holdingsOwner=holder;holdingsPromise=window.iqNft.getHeld(holder).catch(error=>{holdingsPromise=null;throw error;});}
+        const held=await holdingsPromise;
+        if(revision!==selectionRevision||holder!==owner()||disposed)return;
+        const items=held.filter(item=>item.slug===state?.collectionSlug);
+        for(const item of items){const option=document.createElement('option');option.value=item.asset;option.textContent=item.name||'NFT #'+item.index;select.append(option);}
+        const selected=state?.avatar.address;
+        if(selected&&!items.some(item=>item.asset===selected)){const option=document.createElement('option');option.value=selected;option.textContent=state.avatar.name||'Selected NFT';select.prepend(option);}
+        select.value=selected||'';select.disabled=busy||!select.options.length;
+        note.textContent=select.options.length?'Traits fit one slot each. Unequip a slot before replacing it.':'No NFT from this collection is held by this wallet.';
+      } catch(error){if(revision===selectionRevision&&holder===owner())note.textContent=error.message;}
+    }
+    refreshNfts.onclick=async()=>{
+      if(busy)return;holdingsPromise=null;busy=true;ui.error.hidden=true;render();
+      try{await request();say('Confirmed wardrobe refreshed.');}catch(error){fail(error);}
+      finally{busy=false;if(!disposed)render();}
+    };
+    root.addEventListener('iqpacks:wallet',()=>{holdingsOwner=null;holdingsPromise=null;queueMicrotask(()=>loadSelection());});
+    root.addEventListener('iqpacks:wardrobe-state',()=>loadSelection());
+  }
+  let transport=createPackPageTransport(liveConfig,location.href);
   if(!root.isConnected)return;
   let proofConnection=null,verifyRandomness=null,proofRequest=0;
   let liveWallet=null,liveAccount=null,liveClient=null,walletDispose=null,disposed=false,openingView=null,readyForNextPack=false,walletRevision=0;
@@ -96,7 +154,7 @@ export async function mountPacks() {
     root.querySelector('.preview-note').textContent=liveConfig.chain==='solana:localnet'?'LOCAL · TEST SOL':liveConfig.chain==='solana:devnet'?'SOLANA DEVNET · TEST SOL':'SOLANA MAINNET';
     ui.owner.textContent='Connect a wallet to see your packs and traits.';
     const walletRoot=document.createElement('section');walletRoot.id='nftp-wallet-controls';walletRoot.className='pack-wallet-controls';walletRoot.setAttribute('aria-label','Pack wallet');root.querySelector('.packs-nav').append(walletRoot);
-    walletRoot.addEventListener('iqpacks:wallet',async event=>{const revision=++walletRevision;pageBefore=null;proofRequest++;ui['randomness-proof'].hidden=true;liveWallet=event.detail.wallet;liveAccount=event.detail.account;selectedId=null;readyForNextPack=false;revealed.clear();ui.error.hidden=true;if(state){state={...state,packs:[],traits:[],receipts:[],avatar:{exists:null,owner:null,definitions:[]}};render();}ui.owner.textContent=liveAccount?'Loading your confirmed packs and traits…':'Connect a wallet to see your packs and traits.';try{await request();if(revision!==walletRevision)return;restoreSettledRewards();choosePack();readyForNextPack=selectedPack()?.status==='settled';render();say(selectedPack()?.status==='settled'?'Your confirmed finds are ready.':liveAccount?'Ready for another pack.':'Connect a wallet to see your packs and traits.');}catch(error){fail(error);}});
+    walletRoot.addEventListener('iqpacks:wallet',async event=>{const revision=++walletRevision;pageBefore=null;proofRequest++;ui['randomness-proof'].hidden=true;liveWallet=event.detail.wallet;liveAccount=event.detail.account;selectedId=null;readyForNextPack=false;revealed.clear();ui.error.hidden=true;if(state){state={...state,packs:[],traits:[],receipts:[],avatar:{exists:null,owner:null,definitions:[]}};render();}ui.owner.textContent=liveAccount?'Loading your confirmed packs and traits…':'Connect a wallet to see your packs and traits.';try{await request();if(revision!==walletRevision)return;restoreSettledRewards();choosePack();readyForNextPack=selectedPack()?.status==='settled';render();say(wardrobeMode?(liveAccount?'Your confirmed traits are ready.':'Connect a wallet to see your traits.'):selectedPack()?.status==='settled'?'Your confirmed finds are ready.':liveAccount?'Ready for another pack.':'Connect a wallet to see your packs and traits.');}catch(error){if(wardrobeMode&&revision===walletRevision){ui.owner.textContent='Could not load this NFT for the connected wallet.';say('Choose an NFT you own or refresh to try again.');}fail(error);}});
     walletRoot.addEventListener('iqpacks:purchase',async event=>{const revision=walletRevision;try{pageBefore=null;const previous=new Set(state?.packs.map(pack=>pack.address)??[]);await request({afterSignature:event.detail.signature});if(revision!==walletRevision)return;const added=state.packs.find(pack=>!previous.has(pack.address)&&pack.owner===owner());selectedId=added?.id??null;readyForNextPack=false;choosePack();render();say('Preparing your pack. This can take a moment.');}catch(error){fail(error);}});
     const moduleURL=new URL(liveConfig.clientModule??'/pack-client.js',location.href);if(moduleURL.origin!==location.origin)throw Error('Pack client must use this site');
     const clientModule=await import(moduleURL.href);
@@ -134,6 +192,7 @@ export async function mountPacks() {
     if(revision!==walletRevision||disposed)throw stale;
     if(state)for(const pack of next.packs)if(pack.status==='settled'&&!revealed.has(pack.address))revealed.set(pack.address,new Set());
     state=next;pageBefore=next.pagination?.before??null;
+    if(wardrobeMode)root.dispatchEvent(new CustomEvent('iqpacks:wardrobe-state'));
   }
   function canContinue() {
     if (root.isConnected) return true;
@@ -238,14 +297,14 @@ export async function mountPacks() {
     const holder='another holder';
     if(ui['restore-original']){ui['restore-original'].hidden=!ownsAvatar||!state.avatar.outfitsEnabled;ui['restore-original'].disabled=busy||equipped.length>0;}
     if(ui['enable-outfits']){ui['outfit-approval'].hidden=state.avatar.exists===false||state.avatar.outfitsEnabled!==false||!ownsAvatar;ui['enable-outfits'].disabled=busy;}
-    if(ui['mint-base']){ui['mint-base'].hidden=state.avatar.exists!==false;ui['mint-base'].href='?menu=nft&nft='+encodeURIComponent(state.collectionSlug??'');}
+    if(ui['mint-base']){ui['mint-base'].hidden=!currentOwner||state.avatar.exists!==false;ui['mint-base'].href='?menu=nft&nft='+encodeURIComponent(state.collectionSlug??'');}
     ui.owner.textContent = !owner()?'Connect a wallet to see your packs and traits.':state.avatar.exists===null?'Loading your confirmed packs and traits…':state.avatar.exists===false ? 'Mint a compatible collection NFT to equip your traits.' : state.avatar.outfitsEnabled===false&&ownsAvatar ? 'Enable outfits before equipping traits on this NFT.' : ownsAvatar ? 'Equip a trait to your NFT.' : 'This NFT is held by ' + holder + '. Connect its current holder to change outfits.';
     let tradeSlot = root.querySelector('#nftp-trade-nft');
     if (!tradeSlot) {
       tradeSlot = document.createElement('div'); tradeSlot.id = 'nftp-trade-nft';
       ui.owner.after(tradeSlot);
     }
-    tradeSlot.hidden = !ownsAvatar;
+    tradeSlot.hidden = !ownsAvatar || (wardrobeMode && !solanaMarketUrl(state.avatar.address, liveConfig.chain));
     tradeSlot.replaceChildren();
     if (ownsAvatar) {
       const market = solanaMarketUrl(state.avatar.address, liveConfig.chain);
@@ -292,7 +351,7 @@ export async function mountPacks() {
         const trade = document.createElement(market ? 'a' : 'button'); trade.className = 'text-button'; trade.textContent = 'Trade trait ↗';
         if (market) { trade.href = market; trade.target = '_blank'; trade.rel = 'noopener noreferrer'; }
         else { trade.type = 'button'; trade.disabled = true; trade.title = 'Trading opens on mainnet'; }
-        copy.append(trade);
+        if(!wardrobeMode || market)copy.append(trade);
       } else if (trait.avatar && !mystery) {
         const note = document.createElement('span'); note.textContent = 'Unequip to trade separately.'; copy.append(note);
       }
@@ -342,8 +401,9 @@ export async function mountPacks() {
   }
   function render() {
     if (!state || !root.isConnected) return;
+    if(wardrobeMode){const select=root.querySelector('.wardrobe-selection select');select.disabled=busy||!owner()||!select.options.length;root.querySelector('.wardrobe-selection button').disabled=busy||!owner();}
     try{applyPackAppearance(root,normalizePackAppearance(state.appearance??(new URL(location.href).searchParams.has('collection')?null:{title:root.dataset.packTitle,subtitle:root.dataset.packSubtitle,collectionName:root.dataset.packSeries,cover:root.dataset.packCover,logo:root.dataset.packLogo}),location.origin));}catch{applyPackAppearance(root,normalizePackAppearance(null,location.origin));}
-    if(state.appearance?.collectionName)ui.title.textContent=state.appearance.collectionName;
+    if(state.appearance?.collectionName)ui.title.textContent=wardrobeMode?'Your outfit':state.appearance.collectionName;
     choosePack();
     const pack = readyForNextPack ? null : selectedPack(), owned = state.packs.filter(item => item.owner === owner());
     const stock = state.stock.reduce((sum, item) => sum + item.remaining, 0);
@@ -444,9 +504,9 @@ export async function mountPacks() {
     catch (error) { if(!error.staleWalletRead){fail(error); say('Could not refresh confirmed state. Try again.');} }
     finally { busy = false; render(); }
   });
-  try { await request(); if(state.sealedPacks&&liveConfig.sealedPacks===true){stop();root.querySelector('#nftp-wallet-controls')?.remove();const {mountSealedPackPage}=await import('./nft_sealed_packs.mjs');await mountSealedPackPage(root,liveConfig);return;} restoreSettledRewards(); choosePack(); readyForNextPack=selectedPack()?.status==='settled'; render(); if (ui.error.hidden) say(selectedPack()?.status === 'settled' ? 'Your confirmed finds are ready.' : 'A sealed pack is waiting to happen.'); }
+  try { await request(); if(!wardrobeMode&&state.sealedPacks&&liveConfig.sealedPacks===true){stop();root.querySelector('#nftp-wallet-controls')?.remove();const {mountSealedPackPage}=await import('./nft_sealed_packs.mjs');await mountSealedPackPage(root,liveConfig);return;} restoreSettledRewards(); choosePack(); readyForNextPack=selectedPack()?.status==='settled'; render(); if (ui.error.hidden) say(wardrobeMode?'Connect a wallet to manage your traits.':selectedPack()?.status === 'settled' ? 'Your confirmed finds are ready.' : 'A sealed pack is waiting to happen.'); }
   catch (error) { if(!error.staleWalletRead){fail(error); say('Confirmed pack state is unavailable. Refresh to try again.');ui.primary.textContent='Unavailable';} }
-  if(state&&root.isConnected){
+  if(!wardrobeMode&&state&&root.isConnected){
     try{
       const {createPackOpening}=await import('/packs-reveal.js');
       if(!root.isConnected)return;

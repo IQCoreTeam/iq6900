@@ -171,6 +171,12 @@ test("actual sealed page preserves separate checkout, holder actions and wallet-
     w.document.querySelector(".opening-window").textContent,
     /Connect your wallet/,
   );
+  const wardrobe=w.document.querySelector('.wardrobe-link');
+  const wardrobeURL=new URL(wardrobe.href);
+  assert.equal(wardrobe.textContent,'Your traits');
+  assert.ok(wardrobe.closest('.packs-nav'),'Wardrobe must be reachable from the top navigation');
+  assert.equal(wardrobeURL.searchParams.get('view'),'wardrobe');
+  assert.equal(wardrobeURL.searchParams.get('collection'),config.collection);
   assert.ok(
     w.document.querySelector(".pack-workspace > .library-opening"),
     "reveal keeps the incumbent full-width inner stage",

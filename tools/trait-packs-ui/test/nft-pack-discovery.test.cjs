@@ -8,7 +8,7 @@ test('My NFTs uses owner holdings and links the supported asset without item-pag
  w.iqNft.getHeld=async wallet=>{calls.push(wallet);return[{slug:'supported',collectionName:col.name,index:401,asset,name:'Edition401'},{slug:'standard',collectionName:'Standard',index:1,asset:'66666666666666666666666666666666',name:'Standard'}];};
  await launch.renderMine();assert.deepEqual(calls,[owner]);
  const links=w.$('#nftl_mine a[href*="menu=packs"]');assert.equal(links.length,1);const url=new URL(links.attr('href'),w.location.href);
- assert.equal(url.searchParams.get('collection'),col.collection);assert.equal(url.searchParams.get('asset'),asset);assert.equal(w.$('#nftl_mine a a').length,0);assert.equal(w.$('#nftl_mine a.mc').length,2);
+ assert.equal(url.searchParams.get('collection'),col.collection);assert.equal(url.searchParams.get('asset'),asset);assert.equal(url.searchParams.get('view'),'wardrobe');assert.equal(w.$('#nftl_mine a a').length,0);assert.equal(w.$('#nftl_mine a.mc').length,2);
  const {solanaMarketUrl}=await import('../../../assets/nft-market-links.mjs');w.iqNft.marketUrl=asset=>solanaMarketUrl(asset,'solana:mainnet');await launch.renderMine();assert.equal(w.$('#nftl_mine a[href^="https://magiceden.io/item-details/"]').length,2);assert.equal(w.$('#nftl_mine a a').length,0);
 });
 

@@ -49,3 +49,12 @@ test('a My NFTs deep link preserves the selected asset and rejects a mismatched 
  value.avatar={address:asset,owner:program};await assert.rejects(()=>transport.read(collection),/ownership/);
  assert.throws(()=>createPackPageTransport(config,base+'&asset=not-a-key'),/Invalid selected NFT/);
 });
+
+test('non-JSON outages show a recovery message and ownership errors stay readable',async t=>{
+ const old=global.fetch;t.after(()=>global.fetch=old);
+ const transport=createPackPageTransport(config,base);
+ global.fetch=async()=>new Response('<!doctype html><h1>Unavailable</h1>',{status:502});
+ await assert.rejects(()=>transport.read(collection),/Could not read confirmed pack data.*Refresh/);
+ global.fetch=async()=>Response.json({error:'Selected NFT is not owned in this collection'},{status:403});
+ await assert.rejects(()=>transport.read(collection),/not owned/);
+});

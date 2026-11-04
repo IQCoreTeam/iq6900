@@ -210,3 +210,12 @@ html:has(#nftp),body:has(#nftp){scroll-behavior:auto}
 #nftp .pack-history-items img{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:var(--ink)}
 #nftp .pack-history-items figcaption{font-size:11px;line-height:1.5;margin-top:7px;overflow-wrap:anywhere}
 @media(max-width:600px){#nftp .pack-history-items{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+#nftp.packs-wardrobe .packs-layout{grid-template-columns:minmax(0,1fr)}
+#nftp.packs-wardrobe .inventory-window{border:1px solid var(--edge);border-radius:12px}
+#nftp.packs-wardrobe .inventory-heading{padding:20px}
+#nftp .wardrobe-selection{padding:0 20px 20px}
+#nftp .wardrobe-selection label{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:13px}
+#nftp .wardrobe-selection select{max-width:100%;min-height:44px;background:var(--ink);color:var(--cream);font:inherit;padding:10px;border:1px solid var(--edge)}
+#nftp .wardrobe-selection p{font-size:12px;color:#bdbbad;line-height:1.5}
+#nftp .packs-nav .wardrobe-link{display:inline-flex;align-items:center;min-height:44px;margin:0}

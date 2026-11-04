@@ -112,6 +112,15 @@ export async function mountSealedPackPage(root, config) {
     if (pack) run(() => openOwned(pack));
   };
   marketHeading.hidden = listingGrid.hidden = !resaleEnabled;
+  const wardrobeLink = document.createElement("a");
+  wardrobeLink.className = "quiet-button wardrobe-link";
+  wardrobeLink.textContent = "Your traits";
+  const wardrobeURL = new URL(location.href);
+  wardrobeURL.searchParams.set("view", "wardrobe");
+  wardrobeURL.searchParams.set("menu", "packs");
+  wardrobeURL.searchParams.set("collection", config.collection);
+  wardrobeLink.href = wardrobeURL.pathname + wardrobeURL.search;
+  root.querySelector('.packs-nav').append(wardrobeLink);
   const openingStage = document.createElement("div");
   openingStage.className = "library-opening";
   openHost.append(openingStage);

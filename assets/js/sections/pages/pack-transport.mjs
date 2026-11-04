@@ -32,7 +32,7 @@ export function createPackPageTransport(config,baseUrl) {
       if(before!==undefined&&before!==null){if(!Number.isSafeInteger(before)||before<1)throw Error('Invalid pack history cursor');url.searchParams.set('before',String(before));}
       if(afterSignature){if(typeof afterSignature!=='string'||!(/^[1-9A-HJ-NP-Za-km-z]{80,90}$/).test(afterSignature))throw Error('Invalid confirmed pack receipt');url.searchParams.set('after',afterSignature);}
       const response=await fetch(url,{credentials:'omit',cache:'no-store',redirect:'error',signal:AbortSignal.timeout(20000)});
-      const next=await response.json();
+      const next=await response.json().catch(()=>{throw Error('Could not read confirmed pack data. Refresh to try again.');});
       if(!response.ok)throw Error(typeof next.error==='string'?next.error:'Confirmed pack state is unavailable');
       if(next.collectionAddress!==config.collection||next.program!==config.program||next.chain!==config.chain)
         throw Error('Pack response does not match the configured network and collection');

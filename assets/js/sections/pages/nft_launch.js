@@ -45,7 +45,7 @@
   // Only the matching backend's finalized capability enables discovery links.
   const packHref = (collection, asset) => {
     if (!window.iqPackCreatorConfig || collection?.traitPacks !== true || (collection.chain || 'solana') !== 'solana' || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(collection.collection || '')) return null;
-    return '?menu=packs&collection=' + encodeURIComponent(collection.collection) + (asset ? '&asset=' + encodeURIComponent(asset) : '');
+    return '?menu=packs&collection=' + encodeURIComponent(collection.collection) + (asset ? '&view=wardrobe&asset=' + encodeURIComponent(asset) : '');
   };
   // Wallet Standard icons are data: image URIs; anything else is not rendered.
   const walletIcon = (icon) => (typeof icon === "string" && /^data:image\/(svg\+xml|png|webp|gif);base64,/.test(icon) ? icon : null);
