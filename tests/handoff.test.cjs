@@ -55,8 +55,14 @@ async function mount(t, opts = {}) {
     getSpeed: () => 'auto', recommendSpeed: () => 'light', connect: () => ({}),
     deriveBurner: async () => { if (opts.burnerPending) await opts.burnerPending.promise; return {}; }, sweep: async () => 0,
     getWallets: () => [{ id: 'fixture-evm', name: 'Fixture wallet', selected: true }],
-    getWalletProvider: () => walletProvider, disconnectWallet: () => {},
+    getWalletProvider: () => chain === 'solana' ? w.phantom.solana : walletProvider, disconnectWallet: () => {},
     connectWallet: async (options = {}) => {
+      if (chain === 'solana') {
+        const { onProvider, ...connectOptions } = options;
+        onProvider?.(w.phantom.solana);
+        const result = await w.phantom.solana.connect(connectOptions);
+        return result?.publicKey?.toString() || null;
+      }
       if (options.onlyIfTrusted) return null;
       assert.ok(options.walletId === undefined || options.walletId === 'fixture-evm');
       connects.push('evm'); if (opts.walletPending) await opts.walletPending.promise; return '0x' + 'b'.repeat(40);
@@ -77,7 +83,22 @@ async function mount(t, opts = {}) {
     if (result) w.FileReader = class { readAsDataURL() { this.result = result; this.onload(); } };
     const input = w.document.querySelector('#ci2_file_file');
     Object.defineProperty(input, 'files', { configurable: true, value: [new w.File([new Uint8Array([1, 2, 3])], name, { type })] });
-    w.$(input).trigger('change'); await pause(20);
+    const originalReader = w.FileReader;
+    let loaded;
+    const completed = new Promise(resolve => { loaded = resolve; });
+    w.FileReader = class extends originalReader {
+      readAsDataURL(file) {
+        const onload = this.onload;
+        this.onload = (...args) => { try { onload?.apply(this, args); } finally { loaded(); } };
+        super.readAsDataURL(file);
+      }
+    };
+    try {
+      w.$(input).trigger('change');
+      await completed;
+    } finally {
+      w.FileReader = originalReader;
+    }
   }
   async function upload() { w.$('#ci2_go').trigger('click'); await pause(20); }
   return { w, sent, alerts, writes, connects, notifications, notificationRows, listeners, boards, adapters, pickFile, upload };

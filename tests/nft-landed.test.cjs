@@ -40,7 +40,7 @@ async function engine({ landedStatuses = [200], throwLanded = false } = {}) {
   };
   const mod = new vm.SourceTextModule(codein("nft.js"), { context });
   await mod.link((name) => {
-    if (name === "./nft_net.js?v=2") return new vm.SourceTextModule(codein("nft_net.js"), { context });
+    if (name === "./nft_net.js?v=packs-refresh-20261101") return new vm.SourceTextModule(codein("nft_net.js"), { context });
     const values = imports[name];
     assert.ok(values, "unexpected " + name);
     return new vm.SyntheticModule(Object.keys(values), function () { for (const [k, v] of Object.entries(values)) this.setExport(k, v); }, { context });
@@ -73,23 +73,30 @@ test("a 202 (bit not visible yet) is retried a few times, and a failing report n
 });
 
 // The bridge (nft_bridge.js) with a connected wallet whose every signature is counted.
-async function bridge() {
+async function bridge({ locks, sweep = async () => {} } = {}) {
   const signs = [], estimates = [], store = new Map();
   const provider = { publicKey: { toBase58: () => "wallet" }, connect: async () => {}, signMessage: async (m) => { signs.push(m); return { signature: new Uint8Array(64) }; } };
   const window = { phantom: { solana: provider }, dispatchEvent() {} };
-  const context = vm.createContext({ window, console, TextEncoder, Uint8Array, Event: class {}, localStorage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) } });
+  const context = vm.createContext({ window, navigator: { locks }, location: { hostname: "localhost" }, console, TextEncoder, Uint8Array, Event: class {}, localStorage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) } });
+  const config = { chain: "solana:localnet", rpc: "http://127.0.0.1:8899" };
   const imports = {
     "@solana/web3.js": { Connection: class {}, PublicKey: class { constructor(s) { this.s = s; } toBase58() { return this.s; } } },
     "@iqlabs-official/solana-sdk": { setRpcUrl() {} },
+    "../../nft-market-links.mjs": { solanaMarketUrl: () => null },
+    "./pack_bootstrap.mjs": { createPackBootstrap: () => async () => ({ enabled: false }), createPackPendingStorage: () => ({}), assertPackRuntime: () => config },
+    "./pack_wallet.mjs": { guardPackCreator: (wallet) => wallet },
+    "./wallets.js?v=1": { listWallets: () => [], connectWallet: async () => "wallet", getWalletProvider: () => provider, disconnectWallet() {} },
+    "./inscribe.js?v=9": { topUp() {}, sweep },
+    "./cost.js?v=6": { estimateCost() {}, getAccountRent() {} },
     "./burner.js": { deriveBurner: async (sign) => { await sign("derive"); return { publicKey: { toBase58: () => "burner-pk" } }; } },
-    "./nft.js?v=9": { estimateMintCost: async (col, conn, burner) => { estimates.push(burner ? burner.publicKey.toBase58() : null); return 7; }, mint: async ({ burner }) => ({ burner: burner.publicKey.toBase58() }), nftApi: () => "" },
-    "./nft_create.js?v=8": { deploy: async () => {}, pendingDeploy: () => null },
+    "./nft.js?v=packs-refresh-20261101": { estimateMintCost: async (col, conn, burner) => { estimates.push(burner ? burner.publicKey.toBase58() : null); return 7; }, mint: async ({ burner }) => ({ burner: burner.publicKey.toBase58() }), nftApi: () => "" },
+    "./nft_create.js?v=packs-refresh-20261101": { deploy: async () => {}, pendingDeploy: () => null },
     "./image_compress.js?v=1": { compressImage: () => {} },
     "./nft_asset.js?v=4": { readAsset() {}, readInscription() {}, viewAssetViaGateway() {}, gatewayMetadata() {} },
   };
   const mod = new vm.SourceTextModule(codein("nft_bridge.js"), { context });
   await mod.link((name) => {
-    if (name === "./nft_net.js?v=2") return new vm.SourceTextModule(codein("nft_net.js"), { context });
+    if (name === "./nft_net.js?v=packs-refresh-20261101") return new vm.SourceTextModule(codein("nft_net.js"), { context });
     const values = imports[name];
     assert.ok(values, "unexpected " + name);
     return new vm.SyntheticModule(Object.keys(values), function () { for (const [k, v] of Object.entries(values)) this.setExport(k, v); }, { context });
@@ -109,4 +116,33 @@ test("opening a collection never asks the wallet to sign: the estimate stays sil
   assert.equal(await b.iqNft.estimateMintCost({}), 7);
   assert.equal(b.signs.length, 1); // still silent afterwards...
   assert.deepEqual(b.estimates, [null, "burner-pk"]); // ...and now rent-aware through the remembered burner key
+});
+
+test("pack media publication and funding refunds share a wallet lock before signing", async () => {
+  const held = new Set();
+  const locks = {
+    async request(key, options, callback) {
+      assert.equal(options.ifAvailable, true);
+      if (held.has(key)) return callback(null);
+      held.add(key);
+      try { return await callback({ name: key }); }
+      finally { held.delete(key); }
+    },
+  };
+  let finishSweep, sweepStarted;
+  const started = new Promise(resolve => { sweepStarted = resolve; });
+  const blocked = new Promise(resolve => { finishSweep = resolve; });
+  const first = await bridge({ locks, sweep: async () => { sweepStarted(); await blocked; } });
+  const second = await bridge({ locks });
+  const sweeping = first.iqNft.sweepPackFunding();
+  await started;
+  try {
+    await assert.rejects(second.iqNft.publishPackMedia({}), /busy in another tab/);
+    assert.deepEqual(second.signs, []);
+  } finally {
+    finishSweep();
+    await sweeping;
+  }
+  await second.iqNft.sweepPackFunding();
+  assert.equal(second.signs.length, 1);
 });

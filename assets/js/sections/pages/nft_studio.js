@@ -6,7 +6,7 @@
 // real: trait files are composited on a canvas (generate), or decoded from the
 // creator's files (hand-craft / upload). Nothing here is mocked.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_studio.html?ver=6";
+  const TEMPLATE = "./html/sections/nft_studio.html?ver=packs-1";
   const COMPOSITE = 512; // deploy images are built at this edge; compressImage downscales to <=512 anyway
   const STAGE_TEXT = {
     compress: "compressing images...",
@@ -62,6 +62,7 @@
 
   $.nft_studio = {
     init: function () {
+      this.packDraft?.dispose(); this.packDraft = null;
       $.get(TEMPLATE, (html) => {
         $("#main_section").show().empty().append($(html));
         this.state = {
@@ -76,9 +77,33 @@
         };
         this.renderEnv();
         this.wire();
+        const studioRoot = document.getElementById("nfts");
+        new Promise(resolve=>bridge(resolve)).then(()=>window.iqPackBootstrap).then(()=>{
+          if(!window.iqPackCreatorConfig||document.getElementById("nfts")!==studioRoot)return null;
+          const packPanel=studioRoot.querySelector('.pack-setup-panel');
+          packPanel.hidden=false;
+          studioRoot.querySelector('#nfts_tab_gen').parentElement.before(packPanel);
+          return import(new URL("./js/sections/pages/nft_pack_creator.js", document.baseURI).href);
+        }).then(module => {
+          if(!module)return;
+          const {createPackDraft}=module;
+          if (document.getElementById("nfts") !== studioRoot) return;
+          this.packDraft = createPackDraft(studioRoot, { onChange: () => {
+            if (document.getElementById("nfts") !== studioRoot) return;
+            const state = this.state;
+            if (!this.packDraft?.enabled && state.packItemsApplied) { state.items = state.packOriginalItems; state.packItemsApplied = false; }
+            this.renderSummary(); this.updateNext();
+          } });
+          this.packDraft.onUse(async () => {
+            if (!this.state.packItemsApplied) this.state.packOriginalItems = this.state.items;
+            this.state.items = await this.packDraft.collectionItems(); this.state.packItemsApplied = true;
+            this.err(""); this.dbg("using " + this.state.items.length + " checked kit images"); this.updateNext(); this.renderSummary();
+          });
+          this.packDraft.setSlug(this.slugClean || "");
+        }).catch(() => { $("#nfts_pack_status").text("Trait pack setup is unavailable. Standard collections still work.").addClass("err"); });
         this.renderSteps();
         this.show(1);
-        bridge(() => { this.dbg("bridge ready"); this.refreshSlug(); });
+        bridge(() => { this.dbg("bridge ready"); this.renderEnv(); this.refreshSlug(); });
       });
     },
 
@@ -90,6 +115,8 @@
       (cls === "e" ? console.error : console.log)("[iqstudio] " + (typeof msg === "string" ? msg : JSON.stringify(msg)));
     },
     renderEnv: async function () {
+      $("#nfts_local_notice").prop("hidden", window.iqNft?.localOnly !== true);
+      if (window.iqNft?.localOnly === true) $("#nfts_hr").text("LOCAL TEST");
       const api = window.iqNft ? window.iqNft.nftApi() : "?", rpc = window.iqNft ? window.iqNft.getRpc() : "?";
       $("#nfts_env").html("env: api <b>" + api + "</b> . rpc <b>" + rpc + "</b> . cluster <b>...</b>");
       try { const h = await window.iqNft.health(); $("#nfts_env").html("env: api <b>" + api + "</b> . rpc <b>" + rpc + "</b> . cluster <b>" + (h.cluster || "?") + "</b> . program <b>" + (h.programId ? h.programId.slice(0, 8) + "..." : "?") + "</b>"); } catch (e) {}
@@ -119,9 +146,13 @@
     // The single primary button. Step 4 hides it (the summary has its own deploy).
     // Step 3 generate tab: "make items" with no items yet, "continue →" + a
     // "regenerate" button once items exist. Everywhere else: "continue →".
+    itemCount: function () {
+      const restored = this.packDraft?.enabled ? this.packDraft.normal?.itemCount : 0;
+      return this.state.items?.length || (Number.isSafeInteger(restored) && restored > 0 ? restored : 0);
+    },
     updateNext: function () {
       const s = this.state;
-      const genEmpty = s.step === 3 && s.itemsMode === "gen" && !(s.items && s.items.length);
+      const genEmpty = s.step === 3 && s.itemsMode === "gen" && !this.itemCount();
       $("#nfts_next").text(s.step === 4 ? "review ↑" : genEmpty ? "make items" : "continue →").toggle(s.step !== 4);
       $("#nfts_regen").toggle(s.step === 3 && s.itemsMode === "gen" && !!(s.items && s.items.length));
     },
@@ -135,7 +166,14 @@
       // To leave NAME you need a valid name + slug + symbol.
       if (target >= 2) { if (!s.name.trim()) return "enter a collection name"; if (!this.slugOk) return "pick a valid, available handle"; if (!s.symbol.trim()) return "enter a symbol"; }
       // To reach MINT LISTS you need produced items.
-      if (target >= 4) { if (!s.items || !s.items.length) return "make at least one item first (step 3)"; }
+      if (target >= 4) {
+        if (document.getElementById("nfts_pack_on")?.checked) {
+          if (!this.packDraft) return "trait pack setup is still loading";
+          const why = this.packDraft.blockingReason(); if (why) return why;
+          if (!this.packDraft.normal && !s.packItemsApplied) return "use the checked kit images before continuing";
+        }
+        if (!this.itemCount()) return "make at least one item first (step 3)";
+      }
       return null;
     },
     err: function (m) { $("#nfts_error").text(m || ""); if (m) this.dbg(m, "e"); },
@@ -148,7 +186,7 @@
       // "continue →" once they do (with "regenerate" alongside). No separate
       // generate button. Other steps: plain continue.
       $("#nfts_next").on("click", () => {
-        if (s.step === 3 && s.itemsMode === "gen" && !(s.items && s.items.length)) { this.generate(); return; }
+        if (s.step === 3 && s.itemsMode === "gen" && !this.itemCount()) { this.generate(); return; }
         this.goto(Math.min(4, s.step + 1));
       });
       $("#nfts_regen").on("click", () => this.generate());
@@ -213,6 +251,7 @@
     refreshSlug: async function () {
       const clean = (this.state.slug || "").toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
       this.slugClean = clean;
+      this.packDraft?.setSlug(clean);
       $("#nfts_sluglink").text("→ iqlabs.dev/collection/" + (clean || "your-handle"));
       const $tag = $("#nfts_slugtag");
       if (!clean) { this.slugOk = false; $tag.attr("class", "muted").text("pick a handle"); return; }
@@ -220,9 +259,11 @@
       $tag.attr("class", "muted").text("checking...");
       try {
         const cols = await window.iqNft.getCollections();
-        const taken = cols.some((c) => c.slug === clean);
-        this.slugOk = !taken;
-        $tag.attr("class", taken ? "tag-bad" : "tag-ok").text(taken ? "already taken" : "available");
+        const existing = cols.find((c) => c.slug === clean);
+        const saved = this.packDraft?.enabled && this.packDraft.normal;
+        const resume = existing && saved && existing.coreCollection === saved.collection && existing.registry === saved.registry;
+        this.slugOk = !existing || !!resume;
+        $tag.attr("class", this.slugOk ? "tag-ok" : "tag-bad").text(resume ? "existing collection · resume pack setup" : existing ? "already taken" : "available");
       } catch (e) { this.slugOk = true; $tag.attr("class", "muted").text("(could not check; will verify at deploy)"); }
     },
 
@@ -247,7 +288,7 @@
     // ---- step 2: network ----
     renderNets: function () {
       const nets = [
-        { k: "solana", label: "SOLANA", sub: "Core + registry", on: true },
+        { k: "solana", label: window.iqNft?.localOnly === true ? "SOLANA · LOCAL TEST" : "SOLANA", sub: "Core + registry", on: true },
         { k: "ethereum", label: "ETHEREUM", sub: "coming soon", off: true },
         { k: "robinhood", label: "ROBINHOOD", sub: "coming soon", off: true },
         { k: "monad", label: "MONAD", sub: "coming soon", off: true },
@@ -375,6 +416,7 @@
       while (dnas.length < want) dnas.push(rollOne(s.layers)); // supply > max: allow repeats (design)
       const snapshot = s.layers.map((l) => ({ name: l.name, traits: l.traits.slice() })); // freeze refs at generate time
       const collName = s.name.trim() || "Item";
+      s.packItemsApplied = false;
       s.items = dnas.map((picks, i) => ({
         name: collName + " #" + (i + 1),
         template: { attributes: snapshot.map((l, li) => ({ trait_type: l.name, value: stripExt(l.traits[picks[li]] ? l.traits[picks[li]].name : "") })) },
@@ -431,6 +473,7 @@
     },
     markHandItems: function () {
       const s = this.state;
+      s.packItemsApplied = false;
       s.items = s.handItems.length ? s.handItems.map((it) => ({ name: it.name, template: { attributes: it.traits }, imageData: () => bitmapToImageData(it.bitmap, COMPOSITE) })) : null;
     },
 
@@ -474,6 +517,7 @@
       }
       s.uploadItems = items;
       s._up = { mediaN: Object.keys(s.upImgs).length, jsonN: Object.keys(s.upJsons).length, errs };
+      s.packItemsApplied = false;
       s.items = items.length ? items.map((it) => ({ index: it.index, name: it.name, template: it.template, imageData: () => bitmapToImageData(it.bitmap, COMPOSITE) })) : null;
       this.renderUpload();
       this.updateNext();
@@ -506,11 +550,13 @@
       };
     },
     renderSummary: function () {
-      const s = this.state; const spec = this.specFromState();
-      const n = s.items ? s.items.length : 0;
+      const s = this.state; const spec = this.packDraft?.enabled && this.packDraft.normal?.spec ? this.packDraft.normal.spec : this.specFromState();
+      const n = this.itemCount();
       $("#nfts_sum_name").text(spec.name || "-");
       $("#nfts_sum_slug").text(spec.slug || "-");
       $("#nfts_sum_items").text(n);
+      $("#nfts_sum_pack_row").prop("hidden", !this.packDraft?.enabled);
+      $("#nfts_sum_pack_price").text(this.packDraft?.enabled ? $("#nfts_pack_price").val() + (window.iqNft?.localOnly ? " test SOL" : " SOL") + " / pack" : "-");
       $("#nfts_sum_price").text(sol(spec.price) + " / " + sol(spec.deposit));
       $("#nfts_sum_roy").text((spec.royaltyBps / 100) + "% / " + (spec.sequential ? "sequential" : "random"));
       // deploy fee = base 0.01 + 0.0003/item (matches the backend constant)
@@ -518,11 +564,21 @@
       $("#nfts_deployfee").text("deploy fee: ~" + fee.toFixed(4) + " SOL (" + n + " items)");
       // reflect connection state on the button
       const addr = (window.iqNft && window.iqNft.connected && window.iqNft.connected()) || this.state.connected;
-      $("#nfts_deploy").text(s.deploying ? "deploying..." : s.deployed ? "DEPLOYED ✓" : addr ? "DEPLOY · 1 SIGNATURE" : "CONNECT WALLET").prop("disabled", !!s.deploying || !!s.deployed);
+      const packs = this.packDraft?.enabled, recovery = packs && this.packDraft.normal, complete = packs ? !!this.packDraft.published : !!s.deployed;
+      const local = window.iqNft?.localOnly === true || this.packDraft?.normal?.localOnly === true;
+      $("#nfts_local_notice").prop("hidden", !local);
+      $("#nfts_hr").text(local ? "LOCAL TEST" : packs ? "4 steps + optional pack setup" : "4 steps, 1 signature");
+      $("#nfts_signing_note").text(packs ? "deploy the collection first, then publish its optional pack setup. additional transactions are required." : "set the mint price and options. one signature deploys the collection and inscribes everything.");
+      $("#nfts_funding_note").text(local ? "local test only · generated signer · local immutable staging · no real SOL or public uploads." : packs ? "the collection deploy fee is separate from trait images, recipes, account rent and pack setup. review every funding amount before signing." : "the creator pays Arweave (via this one-time deploy fee) + inscription + account rent; unused funding sweeps back. one signature.");
+      $("#nfts_deploy").text(s.deploying ? "publishing..." : complete ? "DEPLOYED ✓" : recovery ? "RETRY PACK SETUP" : addr ? packs ? "DEPLOY COLLECTION + SET UP PACKS" : "DEPLOY · 1 SIGNATURE" : "CONNECT WALLET").prop("disabled", !!s.deploying || complete);
     },
     onDeployBtn: async function () {
       const s = this.state;
       if (s.deploying) return;
+      if (document.getElementById("nfts_pack_on")?.checked) {
+        const why = this.packDraft ? this.packDraft.blockingReason() : "trait pack setup is still loading";
+        if (why) { this.status(why, true); return; }
+      }
       const addr = (window.iqNft.connected && window.iqNft.connected());
       if (!addr && !s.connected) {
         try { s.connected = await window.iqNft.connect(); this.dbg("wallet connected: " + s.connected); this.renderSummary(); }
@@ -535,20 +591,23 @@
     setBar: function (p) { $("#nfts_progbar").css("width", Math.max(0, Math.min(100, p)) + "%"); },
     deploy: async function () {
       const s = this.state;
-      const spec = this.specFromState();
-      if (!s.items || !s.items.length) { this.err("no items to deploy"); return; }
+      const spec = this.packDraft?.enabled && this.packDraft.normal?.spec ? this.packDraft.normal.spec : this.specFromState();
+      if ((!s.items || !s.items.length) && !(this.packDraft?.enabled && this.packDraft.normal)) { this.err("no items to deploy"); return; }
       if (spec.deposit > spec.price) { this.err("deposit cannot exceed price"); return; }
       this.status("");
       s.deploying = true; this.renderSummary();
       $("#nfts_progwrap").removeClass("hidden"); this.setBar(2);
       $("#nfts_result").addClass("hidden");
-      this.dbg("DEPLOY start: " + spec.slug + " items=" + s.items.length);
+      const total = this.itemCount();
+      this.dbg("DEPLOY start: " + spec.slug + " items=" + total);
       try {
-        const total = s.items.length;
-        const res = await window.iqNft.deploy({
+        const packs = this.packDraft?.enabled;
+        if (packs) { const why = this.packDraft.blockingReason(); if (why) throw Error(why); }
+        const res = packs && this.packDraft.normal ? this.packDraft.normal : await window.iqNft.deploy({
           spec, items: s.items,
+          ...(packs ? { packDraftId: this.packDraft.draftId } : {}),
           onStage: (st, x) => {
-            this.status(STAGE_TEXT[st] || st);
+            this.status(st === "stage" && window.iqNft.localOnly === true ? "staging your images locally..." : STAGE_TEXT[st] || st);
             if (x) this.dbg("stage:" + st + " " + JSON.stringify(x));
             if (st === "compress" && x) this.setBar(2 + (x.done / Math.max(1, total)) * 58);
             if (st === "stage") this.setBar(x ? 60 + (x.done / Math.max(1, total)) * 12 : 60);
@@ -562,19 +621,23 @@
         });
         this.setBar(100);
         this.dbg("DEPLOY ok: " + JSON.stringify(res));
+        if (packs) this.packDraft.rememberCollection(res, spec);
         this.showResult(res);
+        if (packs) { this.status("collection deployed. publishing optional pack setup..."); await this.packDraft.publish({onProgress:text=>this.status(text)}); this.showResult(res); this.status("collection and pack setup confirmed."); }
       } catch (e) {
         const msg = (e && e.message) || String(e);
-        this.status(msg, true); this.dbg("DEPLOY ERROR: " + msg, "e");
+        this.status((this.packDraft?.enabled && this.packDraft.normal ? "Collection deployed; retry only pack setup. " : "") + msg, true); this.dbg("DEPLOY ERROR: " + msg, "e");
         if (e && e.logs) this.dbg("sim logs: " + e.logs.slice(-4).join(" ; "), "e");
       } finally { s.deploying = false; this.renderSummary(); }
     },
     showResult: function (res) {
       this.state.deployed = true; // lock the deploy button: the collection now exists
+      if (res.localOnly) $("#nfts_local_notice").prop("hidden", false);
       this.status(STAGE_TEXT.done);
       $("#nfts_rescol").text(res.collection);
       const L = $("#nfts_reslinks").empty();
       L.append($("<a>").attr("href", "?menu=nft&nft=" + encodeURIComponent(res.slug)).text("open mint page →"));
+      if (this.packDraft?.enabled && this.packDraft.published?.pool) L.append($("<a>").attr("href", "?menu=packs&collection=" + encodeURIComponent(res.collection)).text("open trait packs →"));
       if (res.deploySig) L.append($("<a>").attr({ href: window.iqNft.solscanTx(res.deploySig), target: "_blank" }).text("deploy tx"));
       $("#nfts_result").removeClass("hidden");
     },

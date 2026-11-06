@@ -1,5 +1,6 @@
 <section id="nfts">
   <style>
+    #nfts #nfts_pack_accept { visibility:visible; width:16px; height:16px; min-width:16px; appearance:auto; }
     #nfts { --bg:#141210; --cream:#efe7d6; --dim:#9a8f79; --green:#8fffb0; --amber:#e0a84e; --red:#ff9a9a; --line:#2b2824; --card:#1b1813;
       color:var(--cream); font-family:"Kode Mono",monospace; max-width:1040px; margin:0 auto; padding:16px; }
     #nfts a { color:var(--green); }
@@ -125,12 +126,29 @@
       #nfts #nfts_combos, #nfts #nfts_deployfee, #nfts .gtile .gn, #nfts .card .cn,
       #nfts .gtile .gx, #nfts .arw, #nfts .log .lh button { font-size:12px; }
     }
+
+    #nfts .pack-setup-panel{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+    #nfts .pack-setup-panel h3{font:600 .85rem "Kode Mono",monospace;margin:0 0 12px;color:var(--cream)}
+    #nfts .pack-optional{font-size:.64rem;color:var(--dim);font-weight:400}
+    #nfts .pack-choice,#nfts .pack-file-actions{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center}
+    #nfts .pack-choice{margin-bottom:12px;font-size:.72rem}
+    #nfts .pack-choice label,#nfts .pack-consent{display:flex;align-items:flex-start;gap:8px;line-height:1.6}
+    #nfts .pack-choice input,#nfts .pack-consent input{accent-color:var(--green);flex:none;margin-top:4px}
+    #nfts .pack-file-actions{margin:12px 0}
+    #nfts .pack-consent{font-size:.7rem;max-width:75ch;color:var(--cream)}
+    #nfts .pack-cover-preview{display:block;width:128px;height:128px;object-fit:contain;margin:12px 0;border:1px solid var(--line);border-radius:5px}
+    #nfts .pack-recovery{margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:5px;min-width:0}
+    #nfts .pack-recovery code{overflow-wrap:anywhere;font-size:.7rem}
+    #nfts .local-notice{padding:10px 12px;border-bottom:1px solid var(--line);color:var(--green);font-size:12px;line-height:1.5}
+    #nfts [hidden]{display:none!important}
+    @media(max-width:600px){#nfts .pack-setup-panel h3{font-size:16px}#nfts .pack-optional,#nfts .pack-recovery code{font-size:12px}#nfts .pack-choice label{min-height:44px;align-items:center}#nfts .pack-choice,#nfts .pack-file-actions{align-items:stretch}#nfts .pack-file-actions .btn2{flex:1 1 130px;min-height:42px}#nfts .pack-consent{font-size:14px}#nfts .pack-choice{font-size:14px}}
   </style>
 
   <div class="exe">
     <div class="bar"><span class="dot g"></span><span class="dot"></span><span class="dot"></span>
       <span class="ttl">launch_collection.exe // inscription NFT</span><span class="r" id="nfts_hr">4 steps, 1 signature</span></div>
     <div class="env" id="nfts_env">env: loading...</div>
+    <div class="local-notice" id="nfts_local_notice" hidden>LOCAL TEST · generated wallets · no real SOL or public uploads</div>
     <div class="body">
       <a id="nfts_back" href="?menu=nft" style="font-size:.7rem">← all collections</a>
       <div class="steps" id="nfts_steps"></div>
@@ -267,12 +285,54 @@
             <div class="cards" id="nfts_upgrid" style="margin-top:10px"></div>
           </div>
         </div>
+
+        <section class="pack-setup-panel" aria-labelledby="nfts_pack_heading" hidden>
+          <h3 id="nfts_pack_heading">trait packs <span class="pack-optional">optional</span></h3>
+          <div class="pack-choice">
+            <label><input type="radio" name="nfts_pack_mode" id="nfts_pack_off" value="off" checked> standard collection</label>
+            <label><input type="radio" name="nfts_pack_mode" id="nfts_pack_on" value="on"> enable trait packs</label>
+          </div>
+          <div id="nfts_pack_setup" hidden>
+            <p class="note">A trait kit contains reusable layers and the recipe for each collection image. A flat image alone cannot become an editable outfit. Use the kit's collection images so its recipes match.</p>
+            <div class="pack-file-actions">
+              <button class="btn2" id="nfts_pack_pick_manifest" type="button">choose recipe .json</button>
+              <button class="btn2" id="nfts_pack_pick_files" type="button">choose images</button>
+              <button class="btn2" id="nfts_pack_pick_folder" type="button">choose kit folder</button>
+            </div>
+            <input type="file" id="nfts_pack_manifest" accept=".json,application/json" hidden>
+            <input type="file" id="nfts_pack_files" accept="image/png,image/webp" multiple hidden>
+            <input type="file" id="nfts_pack_folder" webkitdirectory multiple hidden>
+            <fieldset id="nfts_pack_sealed_options" hidden class="field"><legend class="fl">Pack format</legend><label><input type="checkbox" id="nfts_pack_sealed"> Collectible sealed pack NFTs</label><p class="note">Holders can keep or resell packs before opening. Primary payment stays escrowed until delivery. This mode is set before the first sale.</p><div id="nfts_pack_sealed_fields" hidden><label class="fl" for="nfts_pack_sealed_supply">Fixed pack supply</label><input class="inp" id="nfts_pack_sealed_supply" type="number" min="1" max="250000" step="1"><label class="fl" for="nfts_pack_sealed_name">Pack name (32 UTF-8 bytes)</label><input class="inp" id="nfts_pack_sealed_name" value="Trait booster" maxlength="32"><label class="fl" for="nfts_pack_sealed_uri">Inscribed pack metadata URI</label><input class="inp" id="nfts_pack_sealed_uri" type="url" placeholder="https://gateway…/token-meta/…"><p class="note" id="nfts_pack_sealed_cost">Additional operations collateral and pack-collection rent apply.</p></div></fieldset>
+            <div class="field"><label class="fl" for="nfts_pack_price">pack price (SOL, separate from NFT mint price)</label><input class="inp" id="nfts_pack_price" inputmode="decimal" maxlength="32" placeholder="choose a pack price"><p class="note" id="nfts_pack_price_hint"></p></div>
+            <p class="note" id="nfts_pack_filecount">Only images referenced by the recipe are included. Other folder files stay on your device.</p>
+            <img id="nfts_pack_preview" class="pack-cover-preview" alt="Selected pack cover" hidden>
+            <div class="pack-file-actions">
+              <button class="btn2" id="nfts_pack_validate" type="button" disabled>check kit</button>
+              <button class="btn2" id="nfts_pack_use" type="button" disabled>use kit images</button>
+            </div>
+            <p class="note" id="nfts_pack_summary">Choose a recipe file and its images, then check the kit.</p>
+            <p class="note" id="nfts_pack_cost"></p>
+            <label class="pack-consent"><input type="checkbox" id="nfts_pack_accept"> I understand that publishing on a public network exposes the source layers and recipes. Holders approve outfits separately; this option does not give hidden permission to change their NFTs.</label>
+            <p class="note">Up to 16 trait types, six outfit slots and one pool per collection. Earlier packs and traits remain available through history navigation. Each NFT's creator and current holder must both approve outfit support. Adding outfit support also adds an immutable burn-safety hook; restoring the original image does not remove that hook.</p>
+            <div class="status" id="nfts_pack_status" role="status" aria-live="polite"></div>
+            <label id="nfts_pack_receipt_field" class="field" hidden>
+              <span class="fl">Confirmed inscription signature</span>
+              <input id="nfts_pack_receipt" class="inp" type="text" maxlength="90" autocomplete="off" spellcheck="false">
+              <span class="note">Paste the receipt for the interrupted inscription, then retry pack setup.</span>
+            </label>
+            <p class="note err" id="nfts_pack_storage_warning" hidden></p>
+            <div class="pack-recovery" id="nfts_pack_recovery" hidden>
+              <div class="fl">existing collection</div><code id="nfts_pack_collection"></code>
+              <p class="note" id="nfts_pack_result"></p>
+            </div>
+          </div>
+        </section>
       </div>
 
       <!-- STEP 4 MINT LISTS + DEPLOY -->
       <div class="stepbody hidden" data-step="4">
         <h2>price, then sign</h2>
-        <div class="sub">set the mint price and options. one signature deploys the collection and inscribes everything.</div>
+        <div class="sub" id="nfts_signing_note">set the mint price and options. one signature deploys the collection and inscribes everything.</div>
         <div class="gw">
           <div>
             <div class="field"><div class="fl">mint price (SOL, paid to your wallet)</div><input class="inp" id="nfts_price" value="0.01"></div>
@@ -288,11 +348,12 @@
               <div class="kv"><span class="kk">handle</span><span id="nfts_sum_slug">-</span></div>
               <div class="kv"><span class="kk">items</span><span id="nfts_sum_items">0</span></div>
               <div class="kv"><span class="kk">price / deposit</span><span id="nfts_sum_price">-</span></div>
+              <div class="kv" id="nfts_sum_pack_row" hidden><span class="kk">trait pack price</span><span id="nfts_sum_pack_price">-</span></div>
               <div class="kv"><span class="kk">royalty / assignment</span><span id="nfts_sum_roy">-</span></div>
             </div>
             <div class="deploybox">
               <div style="font-weight:700; color:var(--green)" id="nfts_deployfee">deploy fee: - SOL</div>
-              <div class="note" style="margin:4px 0 0">the creator pays Arweave (via this one-time deploy fee) + inscription + account rent; unused funding sweeps back. one signature.</div>
+              <div class="note" id="nfts_funding_note" style="margin:4px 0 0">the creator pays Arweave (via this one-time deploy fee) + inscription + account rent; unused funding sweeps back. one signature.</div>
               <button class="btn solid" id="nfts_deploy" type="button" style="width:100%; margin-top:10px">CONNECT WALLET</button>
               <div class="prog hidden" id="nfts_progwrap"><i id="nfts_progbar"></i></div>
               <div class="status" id="nfts_status"></div>
