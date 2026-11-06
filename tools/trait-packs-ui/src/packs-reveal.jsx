@@ -6,10 +6,10 @@ import { TIER_COLORS } from '../../../assets/packs-rarity.mjs';
 
 const theme = { ...customTheme('#00ef00','dark'), bg:'#0a0c09', card:'#141310', fg:'#e8e4d6', rarity:TIER_COLORS };
 const tiers = [
-  {id:'common',label:'Common',weight:1,effect:'quiet'},
-  {id:'rare',label:'Rare',weight:1,effect:'quiet'},
-  {id:'epic',label:'Epic',weight:1,effect:'loud'},
-  {id:'legendary',label:'Legendary',weight:1,effect:'legendary'}
+  {id:'common',label:'Common',ko:'일반',weight:1,effect:'quiet'},
+  {id:'rare',label:'Rare',ko:'희귀',weight:1,effect:'quiet'},
+  {id:'epic',label:'Epic',ko:'영웅',weight:1,effect:'loud'},
+  {id:'legendary',label:'Legendary',ko:'전설',weight:1,effect:'legendary'}
 ];
 const unknownCards=Array.from({length:4},(_,id)=>({id:'unrevealed-'+id,name:'Unrevealed trait',rarity:'common'}));
 
@@ -36,8 +36,16 @@ function createCardDetail(ownerDocument){
     open(card,trigger){
       if(typeof dialog.showModal!=='function')return false;
       title.textContent=card.name;category.textContent=card.category||'Trait';image.src=card.image;image.alt=card.name;
-      const known=Object.hasOwn(TIER_COLORS,card.creatorTier);rarity.hidden=!known;rarity.textContent=known?card.creatorTier.charAt(0).toUpperCase()+card.creatorTier.slice(1):'';
-      rarity.style.color=known?TIER_COLORS[card.creatorTier]:'';
+      const tier=tiers.find(({id})=>id===card.creatorTier);
+      rarity.hidden=!tier;
+      rarity.replaceChildren();
+      if(tier){
+        const korean=ownerDocument.createElement('span');
+        korean.lang='ko';
+        korean.textContent=tier.ko;
+        rarity.append(tier.label+' / ',korean);
+        dialog.style.setProperty('--iq-tier',TIER_COLORS[tier.id]);
+      }else dialog.style.removeProperty('--iq-tier');
       opener=trigger;activeId=card.id;if(!dialog.open)dialog.showModal();close.focus({preventScroll:true});return true;
     },
     close(){if(dialog.open)dialog.close();},
@@ -77,7 +85,18 @@ export function createPackOpening(element,onReveal,onProceed) {
       labels={{tear:confirmed&&interactive?'Open pack':confirmed?'Preparing reveal':'Buy a pack first',flip:'Reveal trait',done:'Done',replay:'',hint:({stage,left})=>!confirmed?'Buy a pack to open it.':stage==='sealed'?'Tap to open your pack.':left?`${left} ${left===1?'trait':'traits'} to reveal`:'Your four traits.'}}
       onOpen={id=>{if(confirmed&&interactive&&allowed.has(id))onReveal(id);}}
       onDone={onProceed}
-      renderFace={card=><span className="iq-reveal-face" data-trait-id={card.id} aria-hidden={!seen.includes(card.id)}><img src={card.image} alt={seen.includes(card.id)?card.name:''}/></span>}
+      renderFace={card=>{
+        const revealed=seen.includes(card.id);
+        const tier=revealed?tiers.find(({id})=>id===card.creatorTier):null;
+        return <span className="iq-reveal-face" data-trait-id={card.id} data-tier={tier?.id} aria-hidden={!revealed}
+          style={tier?{'--iq-tier':TIER_COLORS[tier.id]}:undefined}>
+          <img src={card.image} alt=""/>
+          {revealed && <span className="iq-reveal-caption">
+            <span className="iq-reveal-name">{card.name}</span>
+            {tier && <span className="iq-reveal-tier">{tier.label}<span lang="ko">{tier.ko}</span></span>}
+          </span>}
+        </span>;
+      }}
       renderBack={()=><span className="iq-reveal-back" aria-hidden="true"><img src="/img/green_logo.webp" alt="IQ Labs"/><span>REVEAL</span><small lang="ko">열어봐요</small></span>}
       readingOf={card=>[card.name,card.category,card.creatorTier?`${card.creatorTier} creator tier`:'Confirmed trait']}
     /></div>);

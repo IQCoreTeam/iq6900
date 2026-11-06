@@ -315,6 +315,11 @@
             <label class="pack-consent"><input type="checkbox" id="nfts_pack_accept"> I understand that publishing on a public network exposes the source layers and recipes. Holders approve outfits separately; this option does not give hidden permission to change their NFTs.</label>
             <p class="note">Up to 16 trait types, six outfit slots and one pool per collection. Earlier packs and traits remain available through history navigation. Each NFT's creator and current holder must both approve outfit support. Adding outfit support also adds an immutable burn-safety hook; restoring the original image does not remove that hook.</p>
             <div class="status" id="nfts_pack_status" role="status" aria-live="polite"></div>
+            <label id="nfts_pack_receipt_field" class="field" hidden>
+              <span class="fl">Confirmed inscription signature</span>
+              <input id="nfts_pack_receipt" class="inp" type="text" maxlength="90" autocomplete="off" spellcheck="false">
+              <span class="note">Paste the receipt for the interrupted inscription, then retry pack setup.</span>
+            </label>
             <p class="note err" id="nfts_pack_storage_warning" hidden></p>
             <div class="pack-recovery" id="nfts_pack_recovery" hidden>
               <div class="fl">existing collection</div><code id="nfts_pack_collection"></code>

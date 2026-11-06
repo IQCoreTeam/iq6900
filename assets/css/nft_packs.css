@@ -94,7 +94,7 @@ html:has(#nftp),body:has(#nftp){scroll-behavior:auto}
 #nftp .avatar-preview{margin:0 22px 20px}#nftp .avatar-preview img{width:100%;max-width:230px;height:auto;display:block;border-radius:4px}#nftp .avatar-preview figcaption{font-size:11px;line-height:1.5;color:#c9c7ba;margin-top:9px}
 
 /* Only the reveal island uses the library. It receives confirmed asset IDs. */
-#nftp .library-opening{width:100%;min-width:0}
+#nftp .library-opening{width:100%;min-width:0;container-type:inline-size}
 #nftp .iq-confirmed-pack{width:100%;max-width:100%;background:transparent;border:0;border-radius:0;--rco-pack-width:780px;--rco-pack-size:164px}
 #nftp .iq-confirmed-pack .rco-pack-hint{font:400 12px/1.6 'Kode Mono',monospace;text-align:center}
 #nftp .iq-confirmed-pack .rco-pack-table{min-height:400px}
@@ -108,13 +108,37 @@ html:has(#nftp),body:has(#nftp){scroll-behavior:auto}
 #nftp .iq-confirmed-pack .rco-pack-seat:not([data-up]),#nftp .iq-confirmed-pack .rco-pack-seat:not([data-up]) .rco-card{--rco-tone:#00ef00!important}
 #nftp .iq-confirmed-pack .rco-pack-press:is(:hover,:focus-visible) .rco-card{--rco-tone:#00ef00!important}
 #nftp .iq-confirmed-pack .rco-pack-press:is(:hover,:focus-visible) .rco-back{box-shadow:inset 0 0 0 2px #00ef00,0 0 30px 3px #00ef0040!important}
-.iq-reveal-face{height:100%;width:100%;display:block;padding:8px;background:#d8dbcb}
-.iq-reveal-face img{display:block;width:100%;height:100%;object-fit:contain;background:#b9c3aa}
+.iq-reveal-face{height:100%;width:100%;display:grid;grid-template-rows:minmax(0,1fr) auto;position:relative;padding:5px;background:#101510;border:1px solid var(--iq-tier,#516348)}
+.iq-reveal-face img{min-height:0}
+.iq-reveal-caption{display:grid;gap:4px;min-width:0;padding:6px 3px 3px;text-align:left}
+.iq-reveal-name{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  overflow-wrap:anywhere;
+  color:#e8e4d6;
+  font:600 12px/1.25 'Kode Mono',monospace;
+}
+.iq-reveal-tier{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1px 5px;color:var(--iq-tier);font:600 9px/1.3 'Kode Mono',monospace;text-transform:uppercase}
+.iq-reveal-tier [lang="ko"]{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif}
+.iq-reveal-face[data-tier]::after{content:"";position:absolute;inset:0;pointer-events:none}
+.iq-reveal-face[data-tier="common"]::after{animation:iq-reveal-fade .45s ease-out}
+.iq-reveal-face[data-tier="rare"]::after{background:linear-gradient(transparent 43%,#5aa9ff55 50%,transparent 57%);animation:iq-reveal-scan .65s ease-out both}
+.iq-reveal-face[data-tier="epic"]::after{animation:iq-reveal-glow .85s ease-out}
+.iq-reveal-face[data-tier="legendary"]::after{background:linear-gradient(115deg,transparent 37%,#ffb34780 50%,transparent 63%);animation:iq-reveal-sweep 1.15s ease-out both}
+@keyframes iq-reveal-fade{from{box-shadow:inset 0 0 12px var(--iq-tier)}to{box-shadow:none}}
+@keyframes iq-reveal-scan{from{clip-path:inset(0 0 90%);background-position:0 -90px}to{clip-path:inset(90% 0 0);background-position:0 90px;opacity:0}}
+@keyframes iq-reveal-glow{0%,45%{box-shadow:inset 0 0 20px var(--iq-tier)}25%,100%{box-shadow:none}}
+@keyframes iq-reveal-sweep{from{clip-path:inset(0 90% 0 0);background-position:-70px 0}to{clip-path:inset(0 0 0 90%);background-position:70px 0;opacity:0}}
+@media(prefers-reduced-motion:reduce){.iq-reveal-face[data-tier]::after{animation:none;background:none}}
+
+.iq-reveal-face img{display:block;width:100%;height:100%;object-fit:contain;background:#0b100b}
 .iq-reveal-back{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#0b130a;color:#e8e4d6}
 .iq-reveal-back img{width:52%;height:auto;object-fit:contain}
 .iq-reveal-back>span{font-size:11px;letter-spacing:.08em}
 .iq-reveal-back small{font:400 11px 'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#b3c5a9}
-@media(max-width:760px){#nftp .iq-confirmed-seal{width:222px;aspect-ratio:222/340}.iq-reveal-face{padding:8px}}
+@media(max-width:760px){#nftp .iq-confirmed-seal{width:222px;aspect-ratio:222/340}.iq-reveal-face{padding:4px}}
 
 #nftp .pool-supply{padding:20px 0 0}
 #nftp .supply-columns{display:flex;justify-content:space-between;font-size:11px;color:#bdbbad;padding-bottom:8px}
@@ -219,3 +243,10 @@ html:has(#nftp),body:has(#nftp){scroll-behavior:auto}
 #nftp .wardrobe-selection select{max-width:100%;min-height:44px;background:var(--ink);color:var(--cream);font:inherit;padding:10px;border:1px solid var(--edge)}
 #nftp .wardrobe-selection p{font-size:12px;color:#bdbbad;line-height:1.5}
 #nftp .packs-nav .wardrobe-link{display:inline-flex;align-items:center;min-height:44px;margin:0}
+
+@container (width <= 520px) {
+  .iq-reveal-name {
+    -webkit-line-clamp: 3;
+    font-size: 11px;
+  }
+}

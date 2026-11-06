@@ -576,14 +576,17 @@ export async function mountSealedPackPage(root, config) {
     const { packRewards } = await import("./nft_packs.js"),
       rewards = packRewards(current, ticket);
     if (disposed || revision !== generation) return;
-    const cards = rewards.map((trait) => ({
-      id: trait.address,
-      name: trait.name,
-      image: transport.media(trait.image),
-      category: "Trait",
-      creatorTier: current.stock.find((row) => row.id === trait.definition)
-        ?.creatorTier,
-    }));
+    const cards = rewards.map((trait) => {
+      const creatorTier = current.stock.find((row) => row.id === trait.definition)?.creatorTier;
+      return {
+        id: trait.address,
+        name: trait.name,
+        image: transport.media(trait.image),
+        category: "Trait",
+        rarity: creatorTier ?? "common",
+        creatorTier,
+      };
+    });
     return {ticket, cards};
   }
   async function showOpening(pack) {

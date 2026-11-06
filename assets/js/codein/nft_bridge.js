@@ -73,6 +73,19 @@ function packSession() {
   const config=packConfig();
   return {config,connection:new Connection(config.rpc,'confirmed'),check(){if(packConfig()!==config)throw Error('Pack configuration changed; review it again before signing');}};
 }
+// These actions share a burner per creator on each chain. Hold the lock
+// through funding and checkpoint writes so another tab cannot act on stale state.
+async function withPackMediaLock(chain, owner, action) {
+  if (!navigator.locks) throw Error('Pack publication requires a browser with cross-tab locking');
+  return navigator.locks.request(
+    ['iq-pack-media', chain, owner].join(':'),
+    { ifAvailable: true },
+    lock => {
+      if (!lock) throw Error('Pack media is busy in another tab. Finish that action, then try again.');
+      return action();
+    },
+  );
+}
 async function packMediaBudget(kit,signer,session) {
   const {mediaFundingBudget}=await import('/pack-client.js');
   const rent=await getAccountRent(session.connection,signer.publicKey);session.check();
@@ -153,25 +166,81 @@ window.iqNft = Object.assign({}, nft, {
     return {mediaFundingLamports:await packMediaBudget(kit,burner,session)};
   },
   async sweepPackFunding() {
-    const session=packSession(),provider=guardPackCreator(await ensureConnected()),burner=await burnerFor(provider);session.check();
-    await sweep(session.connection,burner,provider.publicKey);session.check();
+    const session = packSession();
+    const provider = guardPackCreator(await ensureConnected());
+    const owner = provider.publicKey;
+    const address = owner.toBase58();
+    return withPackMediaLock(session.config.chain, address, async () => {
+      const burner = await burnerFor(provider);
+      session.check();
+      if (provider.publicKey?.toBase58() !== address || provider.isConnected === false)
+        throw Error('Creator wallet changed; reconnect before continuing');
+      await sweep(session.connection, burner, owner);
+      session.check();
+    });
   },
-  async publishPackMedia({kit,draftId,collection,readSource,maxFundingLamports,onProgress}) {
-    const session=packSession(),config=session.config,provider=guardPackCreator(await ensureConnected()),burner=await burnerFor(provider);session.check();
-    const original=provider.publicKey.toBase58(),budget=await packMediaBudget(kit,burner,session);
-    if(!Number.isSafeInteger(maxFundingLamports)||budget>maxFundingLamports)throw Error('Check and review the pack media funding estimate again');
-    session.check();await topUp(session.connection,provider,burner.publicKey,budget);session.check();
-    const signer={publicKey:burner.publicKey,async signTransaction(tx){
-      session.check();if(!provider.publicKey||provider.publicKey.toBase58()!==original||provider.isConnected===false)throw Error('Creator wallet changed; reconnect before continuing');
-      tx.partialSign(burner);return tx;
-    }};
-    const {createIqMediaContext,publishKitArtifacts}=await import('/pack-client.js');
-    const sdk=await import('@iqlabs-official/solana-sdk');session.check();setRpcUrl(session.connection.rpcEndpoint);
-    const key=['iq-pack-publication',config.chain,original,collection,draftId].join(':');
-    const checkpoint=JSON.parse(localStorage.getItem(key)||'{}');
-    const context=await createIqMediaContext({sdk:sdk.default??sdk,connection:session.connection,signer,owner:original,chain:config.chain,localGenesis:config.localGenesis,gateway:config.gateway,saveCheckpoint:async value=>localStorage.setItem(key,JSON.stringify(value)),onProgress:typeof onProgress==='function'?progress=>onProgress({...progress,file:checkpoint.pending?.key?.startsWith('image:')?checkpoint.pending.key.slice(6):progress.name}):undefined});
-    await publishKitArtifacts(kit,readSource,context,checkpoint);session.check();
-    return checkpoint;
+  async publishPackMedia({kit,draftId,collection,readSource,maxFundingLamports,onProgress,recoveredSignature}) {
+    const session = packSession();
+    const { config } = session;
+    const provider = guardPackCreator(await ensureConnected());
+    const original = provider.publicKey.toBase58();
+    const check = () => {
+      session.check();
+      if (provider.publicKey?.toBase58() !== original || provider.isConnected === false)
+        throw Error('Creator wallet changed; reconnect before continuing');
+    };
+    return withPackMediaLock(config.chain, original, async () => {
+      check();
+      const burner = await burnerFor(provider);
+      const budget = await packMediaBudget(kit, burner, session);
+      if (!Number.isSafeInteger(maxFundingLamports) || budget > maxFundingLamports)
+        throw Error('Check and review the pack media funding estimate again');
+      const { createIqMediaContext, publishKitArtifacts } = await import('/pack-client.js');
+      const sdk = await import('@iqlabs-official/solana-sdk');
+      check();
+
+      const key = ['iq-pack-publication', config.chain, original, collection, draftId].join(':');
+      const checkpoint = JSON.parse(localStorage.getItem(key) || '{}');
+      const signer = {
+        publicKey: burner.publicKey,
+        async signTransaction(tx) {
+          check();
+          tx.partialSign(burner);
+          return tx;
+        },
+      };
+      const context = await createIqMediaContext({
+        sdk: sdk.default ?? sdk,
+        connection: session.connection,
+        signer,
+        owner: original,
+        chain: config.chain,
+        localGenesis: config.localGenesis,
+        gateway: config.gateway,
+        saveCheckpoint: async value => localStorage.setItem(key, JSON.stringify(value)),
+        onProgress: typeof onProgress === 'function' ? progress => {
+          const pendingKey = checkpoint.pending?.key;
+          const file = pendingKey?.startsWith('image:') ? pendingKey.slice(6) : progress.name;
+          onProgress({ ...progress, file });
+        } : undefined,
+      });
+      context.recoveredSignature = recoveredSignature;
+      let funded = false;
+      context.beforeWrite = async () => {
+        check();
+        if (!funded) {
+          await topUp(session.connection, provider, burner.publicKey, budget);
+          check();
+          funded = true;
+        }
+        setRpcUrl(session.connection.rpcEndpoint);
+      };
+      check();
+      setRpcUrl(session.connection.rpcEndpoint);
+      await publishKitArtifacts(kit, readSource, context, checkpoint);
+      check();
+      return checkpoint;
+    });
   },
   // Creator deploy: same wallet/burner wiring as mint. compressImage is exposed
   // so the creator page can preview a compressed size before deploying.

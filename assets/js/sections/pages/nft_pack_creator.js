@@ -172,7 +172,9 @@ export function createPackDraft(root, { onChange }) {
   return {
     get enabled() { return enabled(); }, get draftId() { return draftId; }, get normal() { return normal; }, get published() { return published; }, get summary() { return summary; },
     setSlug(slug) {
-      if (slug === activeSlug) return; activeSlug = slug; normal = null; published = null; fundingRefundPending=false;
+      if (slug === activeSlug) return;
+      if (ui.receipt_field) { ui.receipt_field.hidden = true; ui.receipt.value = ''; }
+      activeSlug = slug; normal = null; published = null; fundingRefundPending=false;
       try { const saved = JSON.parse(localStorage.getItem('iqstudio:pack-recovery:' + slug) || 'null'); if (saved) { draftId = saved.draftId; summary = saved.summary; cost = saved.cost; normal = saved.normal; published = saved.published; fundingRefundPending=!!saved.fundingRefundPending; if(supportsSealed&&saved.sealedRelease){ui.sealed.checked=true;ui.sealed_supply.value=saved.sealedRelease.supply;ui.sealed_name.value=saved.sealedRelease.name;ui.sealed_uri.value=saved.sealedRelease.uri;ui.sealed_fields.hidden=false;} if (typeof saved.priceSol === 'string') ui.price.value = saved.priceSol; if (saved.enabled) root.querySelector('#nfts_pack_on').checked = true; } } catch { /* Keep the in-memory draft if recovery storage is unavailable. */ }
       render();
     },
@@ -193,8 +195,9 @@ export function createPackDraft(root, { onChange }) {
           const moduleURL=new URL(window.iqPackCreatorConfig?.clientModule??'/pack-client.js',location.href);if(moduleURL.origin!==location.origin)throw Error('Pack client must use this site');
           const {assertReviewedKit}=await import(moduleURL.href);assertReviewedKit(manifest,checked.publicationKit);
           const allowed=referencedFiles(manifest);
-          publicationCheckpoint=await publishMedia({kit:checked.publicationKit,draftId,collection:normal.collection,maxFundingLamports:cost.mediaFundingLamports,onProgress:progress=>message(progress.phase==='checking-gateway-copy'?'Checking the gateway copy… This can take up to 2 minutes.':'Inscribing '+(progress.file??progress.name)+' · '+progress.percent+'%'),readSource:async name=>{if(!allowed.has(name))throw Error('This image was not in the reviewed recipe');const file=files.get(name);if(!file)throw Error('Reselect the reviewed kit image: '+name);return new Uint8Array(await file.arrayBuffer());}});
+          publicationCheckpoint=await publishMedia({kit:checked.publicationKit,draftId,collection:normal.collection,maxFundingLamports:cost.mediaFundingLamports,recoveredSignature:ui.receipt?.value.trim() || undefined,onProgress:progress=>message(progress.phase==='checking-gateway-copy'?'Checking the gateway copy… This can take up to 2 minutes.':'Inscribing '+(progress.file??progress.name)+' · '+progress.percent+'%'),readSource:async name=>{if(!allowed.has(name))throw Error('This image was not in the reviewed recipe');const file=files.get(name);if(!file)throw Error('Reselect the reviewed kit image: '+name);return new Uint8Array(await file.arrayBuffer());}});
         }
+        if (ui.receipt_field) { ui.receipt_field.hidden = true; ui.receipt.value = ''; }
         message('Confirming pack setup…');
         const publishBody={ draftId, collection: normal.collection, registry: normal.registry, collectionReceipt: normal.deploySig, normalId: normal.normalId, settings,...(publicationCheckpoint?{publicationCheckpoint}:{}) };
         let result=await request('/creator/packs/publish',publishBody);
@@ -204,6 +207,13 @@ export function createPackDraft(root, { onChange }) {
           result=await request('/creator/packs/finalize',publishBody);
         }
         if (typeof result.pool !== 'string' || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(result.pool) || typeof result.renderKit !== 'string' || !/^[1-9A-HJ-NP-Za-km-z]{80,90}$/.test(result.renderKit)) throw Error('No confirmed pack setup receipt was returned.'); published = result; fundingRefundPending=typeof window.iqNft?.sweepPackFunding==='function';save();message('Pack setup confirmed.');await returnUnusedFunding();return result; }
+      catch (error) {
+        if (error.code === 'PACK_MEDIA_RECEIPT_REQUIRED' && ui.receipt_field) {
+          ui.receipt_field.hidden = false;
+          ui.receipt.focus();
+        }
+        throw error;
+      }
       finally { busy = false; controller = null; publicationProgress = null; render(); }
     },
     onUse(callback) { ui.use.addEventListener('click', () => callback().catch(error => message(error.message, true))); },
