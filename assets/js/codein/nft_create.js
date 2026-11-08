@@ -16,7 +16,7 @@
 import { notifyNftFeedRow } from "./nft_notify.js?v=1";
 import { Keypair, Transaction } from "@solana/web3.js";
 import { writer } from "@iqlabs-official/solana-sdk";
-import { api, bytesToBase64, base64ToBytes } from "./nft.js?v=9";
+import { api, bytesToBase64, base64ToBytes } from "./nft.js?v=packs-refresh-20261101";
 import { topUp, sweep, confirmOrCheck, writeFeedRow } from "./inscribe.js?v=9";
 import { estimateCost, getAccountRent } from "./cost.js?v=6";
 import { compressImage } from "./image_compress.js?v=1";
@@ -101,9 +101,11 @@ export async function deploy({ connection, wallet, burner, spec, items, onStage 
       stage("compress", { done: i, total: items.length });
       // imageData may be a thunk (generative sets build one composite at a time,
       // so thousands of raw bitmaps never sit in memory at once).
-      const src = items[i].imageData;
-      const imageData = typeof src === "function" ? await src() : src;
-      const { bytes, mime } = await compressImage(imageData, spec.compress);
+      // Reviewed pack-kit bytes retain their validated hash; ordinary images
+      // keep compression. Both paths feed the same bounded upload batches.
+      const imageData = items[i].sourceBytes ? null : (typeof items[i].imageData === "function" ? await items[i].imageData() : items[i].imageData);
+      const { bytes, mime } = items[i].sourceBytes ? await items[i].sourceBytes() : await compressImage(imageData, spec.compress);
+      if (!(bytes instanceof Uint8Array) || !['image/png', 'image/webp'].includes(mime) || bytes.length > 20000000) throw Error('Unsupported reviewed NFT image');
       batch.push({ index: items[i].index ?? i + 1, name: items[i].name, mime, imageBase64: bytesToBase64(bytes), template: items[i].template || {} });
       await tick(); // paint the bar + stay responsive between images
       if (batch.length >= STAGE_BATCH) await flush();

@@ -1,0 +1,7 @@
+# Sealed wardrobe follow-up — November 4, 2026
+
+Sealed pack pages expose Your traits in their top navigation. Supported My NFTs→Manage outfit links preserve the selected asset and open the same wardrobe. The view reuses the existing inventory renderer, validated state reader, wallet session and consent/equipment/restore client. It does not duplicate the equip engine, add contract logic or require a general marketplace.
+
+Validation:59 pack UI and146 site tests; unchanged companion client74 tests. Offline Surfpool13-case compatibility proof rejects occupied slots, body masks, missing/wrong prerequisites, dependency-breaking removal, wrong holders and mismatched issuance records without changing loadouts. Native browser fixture published neutral synthetic layer data using IQ, initialized a sealed release, purchased/opened a Core pack and delivered4Core traits. Two actual IQ collection NFTs support selection, generated creator+holder consent, equip/unequip/restore, refresh and wrong-wallet isolation. All trait/outfit images loaded at390px with no horizontal overflow. Original local receipts identify source and binary hashes; no mainnet or personal wallet was used.
+
+Screenshots show neutral16px QA artwork, not Nubbies collection assets. The local native signer/fixture hosts are excluded from the shipping diff. Physical-wallet/provider acceptance and production setup remain unproven. Fixed6-slot/8-body-class rules apply; arbitrary exclusion graphs, configurable smaller trait caps and future seasons are outside scope.

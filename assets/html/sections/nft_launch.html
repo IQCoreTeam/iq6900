@@ -46,7 +46,7 @@
     #nftl .tab{border:1px solid rgba(232,228,214,.5);border-radius:4px;padding:7px 16px;opacity:.6;cursor:pointer;transition:all .3s}
     #nftl .tab.on{background:#e8e4d6;color:#1b1a17;padding:8px 16px;font-weight:700;opacity:1;border-color:#e8e4d6}
     #nftl .seg{display:flex;border:1px solid rgba(232,228,214,.5);border-radius:5px;overflow:hidden;margin-bottom:12px}
-    #nftl .seg div{flex:1;text-align:center;padding:8px 0;cursor:pointer;transition:background .3s;opacity:.55}
+    #nftl .seg div{flex:1;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;align-content:center;gap:0 6px;text-align:center;padding:8px 4px;cursor:pointer;transition:background .3s;opacity:.55}
     #nftl .seg div+div{border-left:1px solid rgba(232,228,214,.3)}
     #nftl .seg div.on{background:#e8e4d6;color:#1b1a17;opacity:1}
     #nftl .seg div.soon{opacity:.3;cursor:not-allowed}
@@ -172,7 +172,7 @@
     #nftl .ccov img{width:100%;height:100%;object-fit:cover;display:block}
     #nftl .ccov .none{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 9.5px 'Kode Mono',monospace;color:#2BD52D;background:repeating-linear-gradient(135deg,rgba(232,228,214,.07) 0 6px,rgba(0,0,0,.25) 6px 12px)}
     #nftl .ctitle{font:400 24px 'Zen Dots',monospace;min-width:0;word-break:break-word}
-    #nftl .itemgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px;max-height:calc(100vh - 430px);min-height:220px;overflow-y:auto;padding:2px 6px 2px 2px;scrollbar-width:thin;scrollbar-color:rgba(232,228,214,.35) transparent}
+    #nftl .itemgrid{display:grid;align-content:start;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px;max-height:calc(100vh - 430px);min-height:220px;overflow-y:auto;padding:2px 6px 2px 2px;scrollbar-width:thin;scrollbar-color:rgba(232,228,214,.35) transparent}
     #nftl .legend{display:flex;gap:12px;margin-top:10px;font:600 8.5px 'Kode Mono',monospace;letter-spacing:.12em;opacity:.8;flex-wrap:wrap}
     #nftl .c-common{color:rgba(232,228,214,.55)}#nftl .c-rare{color:#5aa9ff}#nftl .c-epic{color:#c77dff}#nftl .c-legendary{color:#ffb347}
     @keyframes nftl_legend{0%,100%{box-shadow:0 0 0 1px rgba(255,179,71,.45),0 0 14px rgba(255,179,71,.3)}50%{box-shadow:0 0 0 1px rgba(255,179,71,.85),0 0 26px rgba(255,179,71,.55),0 0 50px rgba(255,179,71,.2)}}
@@ -325,7 +325,7 @@
         <div class="lpbody">
           <div class="seg lab" id="nftl_chains"><div class="on" data-chain="all"><span class="lfull">ALL CHAINS</span><span class="lshort">ALL</span></div><div data-chain="solana">&#9678; <span class="lfull">SOLANA</span><span class="lshort">SOL</span></div><div class="soon" title="coming soon">&#9650; <span class="lfull">ROBINHOOD</span><span class="lshort">RH</span><small><span class="lfull">COMING SOON</span><span class="lshort">SOON</span></small></div></div>
           <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-            <div style="display:flex;gap:8px" class="lab" id="nftl_tabs"><div class="tab on" data-tab="cols">COLLECTIONS</div><div class="tab" data-tab="market">MARKET</div><div class="tab" data-tab="mine">MY NFTS</div></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap" class="lab" id="nftl_tabs"><div class="tab on" data-tab="cols">COLLECTIONS</div><div class="tab" data-tab="market">MARKET</div><div class="tab" data-tab="mine">MY NFTS</div></div>
             <a href="?menu=nft-create" class="btn">+ LAUNCH A COLLECTION</a>
           </div>
           <p class="cm" id="nftl_desk_cap" style="margin:12px 0 14px">// collections launched from this board. each one = a core collection + N inscriptions. pick one, mint one.</p>

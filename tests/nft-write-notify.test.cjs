@@ -118,7 +118,7 @@ async function engine({
     { context },
   );
   await mod.link((name) => {
-    if (name === "./nft_net.js?v=2") {
+    if (name === "./nft_net.js?v=packs-refresh-20261101") {
       return new vm.SourceTextModule(
         fs.readFileSync(path.join(__dirname, "../assets/js/codein/nft_net.js"), "utf8"),
         { context },
@@ -231,7 +231,7 @@ test("creator notifies logo/banner feed writes but not manifest, collection meta
         },
       },
     },
-    "./nft.js?v=9": {
+    "./nft.js?v=packs-refresh-20261101": {
       api: async (path) => ({
         status: 200,
         json:

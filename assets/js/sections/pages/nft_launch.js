@@ -4,7 +4,7 @@
 // collection's buyer page (collection.exe), the on-chain viewer (nft.exe) and
 // the single-mint page. Markup + geometry follow NFT Launchpad Flow.dc.html.
 (function ($) {
-  const TEMPLATE = "./html/sections/nft_launch.html?ver=27";
+  const TEMPLATE = "./html/sections/nft_launch.html?ver=packs-refresh-20261101";
   const PER_PAGE = 6; // design: 6 collections per registry page
   const ITEMS_PAGE = 500; // items per request on a collection page (the backend caps at 500)
   const STAGE_TEXT = {
@@ -42,6 +42,11 @@
   };
   const esc = (s) => $("<i>").text(s == null ? "" : String(s)).html();
   const link = (text, href, cls) => $("<a>").addClass(cls || "btn2").css("padding", "6px 12px").attr({ href, target: /^https?:/.test(href) ? "_blank" : null }).text(text);
+  // Only the matching backend's finalized capability enables discovery links.
+  const packHref = (collection, asset) => {
+    if (!window.iqPackCreatorConfig || collection?.traitPacks !== true || (collection.chain || 'solana') !== 'solana' || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(collection.collection || '')) return null;
+    return '?menu=packs&collection=' + encodeURIComponent(collection.collection) + (asset ? '&view=wardrobe&asset=' + encodeURIComponent(asset) : '');
+  };
   // Wallet Standard icons are data: image URIs; anything else is not rendered.
   const walletIcon = (icon) => (typeof icon === "string" && /^data:image\/(svg\+xml|png|webp|gif);base64,/.test(icon) ? icon : null);
   // The sealed tile: unminted art is never shown, the design's bold "?" stands in.
@@ -175,13 +180,21 @@
       const cols = await window.iqNft.getCollections();
       this.dbg("home: " + cols.length + " collection(s)");
       this.cols = cols;
+      if (cols.some(c => packHref(c)) && !$("#nftl_tabs [data-tab='packs']").length)
+        $("<div class='tab' data-tab='packs'>").text("PACKS").on("click", () => this.homeTab("packs")).insertAfter("#nftl_tabs [data-tab='cols']");
       this.renderCols();
       this.renderMintedFeed(cols); // async, fills the right window as it goes
+      if (param("view") === "packs" && cols.some(c => packHref(c))) this.homeTab("packs");
     },
     homeTab: function (tab) {
+      this.collectionNote ||= $("#nftl_cols > .cm").text();
+      $("#nftl_cols > .cm").text(tab === 'packs' ? 'Each collection has its own packs, price and available traits.' : this.collectionNote);
       this.tab = tab;
+      $("#nftl_desk").css('grid-template-columns', tab === 'packs' ? 'minmax(0,1fr)' : '');
+      $("#nftl_mw").css('display', tab === 'packs' ? 'none' : '');
+      $("#nftl_colgrid").css('grid-template-columns', tab === 'packs' ? 'repeat(auto-fit,minmax(min(260px,100%),1fr))' : '');
       $("#nftl_tabs .tab").removeClass("on").filter("[data-tab='" + tab + "']").addClass("on");
-      $("#nftl_cols").css("display", tab === "cols" ? "flex" : "none");
+      $("#nftl_cols").css("display", (tab === "cols" || tab === "packs") ? "flex" : "none");
       $("#nftl_market").css("display", tab === "market" ? "flex" : "none");
       $("#nftl_mine").css("display", tab === "mine" ? "flex" : "none");
       // no caption on MY NFTS (the gallery header carries the context)
@@ -189,6 +202,8 @@
         ? "// collections launched from this board. each one = a core collection + N inscriptions. pick one, mint one."
         : tab === "market" ? "// secondary trading. every item is a standard on-chain asset, so it trades on the open marketplaces."
         : "");
+      if (tab === "cols" || tab === "packs") { this.page = 1; this.renderCols(); }
+      if (tab === "packs") $("#nftl_desk_cap").text("Choose a collection to open its trait packs.");
       if (tab === "market") this.renderMarket();
       if (tab === "mine") this.renderMine();
     },
@@ -214,7 +229,7 @@
       $("#nftl_pager").empty().append($("<span>").text("// reading the registry…"));
     },
     visibleCols: function () {
-      return (this.cols || []).filter((c) => this.chain === "all" || (c.chain || "solana") === this.chain); // backend order = latest mint first
+      return (this.cols || []).filter((c) => (this.tab !== "packs" || packHref(c)) && (this.chain === "all" || (c.chain || "solana") === this.chain)); // backend order = latest mint first
     },
     loadMore: function () {
       const total = this.visibleCols().length;
@@ -230,7 +245,29 @@
         $("#nftl_pager").empty();
         return;
       }
-      shown.forEach((c) => $g.append(this.card(c)));
+      shown.forEach((c) => {
+        if (this.tab !== 'packs') { $g.append(this.card(c)); return; }
+        const entry = $("<a class='card'>").attr('href', packHref(c));
+        const cover = $("<div class='cov'>");
+        coverInto(cover, c.coverSig ? window.iqNft.imgUrl(c.coverSig) : '/img/green_logo.webp', c.banner);
+        entry.append(cover).append($("<div class='cn'>").text(c.name || c.slug))
+          .append($("<div class='cdesc'>").text('Four traits per pack. See price and availability.'))
+          .append($("<div class='band'>").append($("<div class='btext'>").text('OPEN PACKS →')));
+        $g.append(entry);
+        const cfg = window.iqPackCreatorConfig || window.iqPackConfig;
+        const program = cfg?.deployment?.program || cfg?.program;
+        if (cfg && program) {
+          this.packPreviews ||= new Map();
+          const key = [cfg.chain, cfg.apiBase, program, c.collection].join(':');
+          if (!this.packPreviews.has(key)) this.packPreviews.set(key, import(new URL('./js/sections/pages/pack-transport.mjs', document.baseURI).href).then(({createPackPageTransport}) => {
+            const transport = createPackPageTransport({...cfg, program, collection:c.collection}, location.href);
+            return transport.read().then(data => ({cover:transport.media(data.appearance?.cover)}));
+          }).catch(() => null));
+          this.packPreviews.get(key).then(preview => {
+            if (preview?.cover && entry[0].isConnected) { cover.empty(); coverInto(cover, preview.cover); }
+          });
+        }
+      });
       // fill the gauges: a reflow commits the dim state as the transition start,
       // then setting each on-segment to its color animates it (staggered via the
       // per-segment transition-delay) regardless of frame timing
@@ -281,8 +318,17 @@
         .append($("<div class='btext'>")
           .append($("<span class='bprice'>").text(price))
           .append($("<span class='bcta'>").append(document.createTextNode(cta + " ")).append($("<span class='barr'>").text("→"))));
-      return $card.append($cov).append($("<div class='cn'>").text(c.name || c.slug)).append($segwrap)
+      $card.append($cov).append($("<div class='cn'>").text(c.name || c.slug)).append($segwrap)
         .append($("<p class='cdesc'>").text(desc)).append($stats).append($chain).append($band);
+      const packs = packHref(c);
+      if (!packs) return $card;
+      // Separate links share one visual card; never nest an action inside its anchor.
+      const $entry = $("<div>").attr('class', $card.attr('class'));
+      $band.detach();
+      $card.attr('class', 'card-main').css({ display: 'flex', 'flex-direction': 'column', color: 'inherit', 'min-width': 0 });
+      $band.find('.bcta').replaceWith(link(cta + ' →', $card.attr('href'), 'bcta').css('padding', '0'));
+      $band.find('.btext').css('flex-wrap', 'wrap').append(link('TRAIT PACKS', packs, 'bcta').css({ padding: '0', 'margin-left': '0' }));
+      return $entry.append($card).append($band);
     },
     // Every item is a standard on-chain asset, so secondary trading happens on
     // the open marketplaces, not a native program. External markets are mainnet
@@ -302,6 +348,7 @@
           ? "// every item is a standard on-chain asset, so it trades on the open marketplaces. these open at mainnet launch."
           : "// every item is a standard on-chain asset, so it trades on the open marketplaces below."));
       const $row = $("<div style='display:flex;gap:10px;flex-wrap:wrap'>");
+      if ((this.cols || []).some(c => packHref(c))) $row.append(link('OPEN TRAIT PACKS →', '?menu=nft&view=packs'));
       markets.forEach((mk) => {
         const label = "TRADE ON " + mk.name.toUpperCase();
         if (devnet) $row.append($("<div class='btn' style='opacity:.4;cursor:not-allowed' title='available at mainnet'>").text(label));
@@ -326,7 +373,7 @@
         return;
       }
       const token = (this.mineToken = (this.mineToken || 0) + 1);
-      // loading skeleton (same mc shape) while we read every collection
+      // loading skeleton (same mc shape) while we read the owner holdings
       const skbar = (w, h) => $("<span class='sk'>").css({ width: w, height: h });
       const $sk = $("<div class='minegrid'>");
       for (let i = 0; i < 8; i++) $sk.append($("<div class='mc skel'>")
@@ -336,8 +383,13 @@
         .append($("<div class='mfoot'>").append(skbar("30%", "9px"))));
       $m.append($sk);
       const held = await window.iqNft.getHeld(addr).catch(() => []);
-      if (token !== this.mineToken) return; // a newer render (tab switch / reconnect) took over
-      const mine = held.map((h) => ({ it: { index: h.index, name: h.name, asset: h.asset, inscriptionSig: h.inscriptionSig, rarity: h.rarity, owner: addr, minted: true }, slug: h.slug, colName: h.collectionName || h.slug }));
+      if (token !== this.mineToken) return;
+      // Finalized collection capabilities come from the existing cached list.
+      // Holdings always use /owner; never rescan every collection's items.
+      const cols = window.iqPackCreatorConfig ? (this.cols || await window.iqNft.getCollections().catch(() => [])) : [];
+      if (token !== this.mineToken) return;
+      const collections = new Map(cols.map((c) => [c.slug, c]));
+      const mine = held.map((h) => ({ it: { index: h.index, name: h.name, asset: h.asset, inscriptionSig: h.inscriptionSig, rarity: h.rarity, owner: addr, minted: true }, slug: h.slug, colName: h.collectionName || h.slug, collection: collections.get(h.slug) }));
       const tierOf = (x) => (x.it.rarity && x.it.rarity.tier) || "common";
       const counts = ["legendary", "epic", "rare", "common"].map((t) => [t, mine.filter((x) => tierOf(x) === t).length]).filter((e) => e[1]);
       $m.empty().append($("<div class='minehead'>")
@@ -351,7 +403,7 @@
         return;
       }
       const $grid = $("<div class='minegrid'>");
-      mine.forEach(({ it, slug, colName }) => {
+      mine.forEach(({ it, slug, colName, collection }) => {
         const tier = (it.rarity && it.rarity.tier) || "common";
         const $cell = $("<a class='mc'>").addClass("r-" + tier).attr("href", "?menu=nft&asset=" + it.asset)
           .on("click", (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.which === 2) return; e.preventDefault(); this.openViewer(it.asset, slug); });
@@ -361,8 +413,15 @@
         $cell.append($im)
           .append($("<div class='mnm'>").text(it.name || (colName + " #" + it.index)))
           .append($("<div class='msub'>").text(colName))
-          .append($("<div class='mfoot'>").append($("<span>").text("VIEW")).append($("<span class='lst'>").text("LIST →")));
-        $grid.append($cell);
+          .append($("<div class='mfoot'>").append($("<span>").text("VIEW")).append($("<span class='lst'>").text("→")));
+        const packs = packHref(collection, it.asset);
+        const market = window.iqNft.marketUrl?.(it.asset);
+        if (packs || market) {
+          const $entry = $("<div style='min-width:0'>").append($cell);
+          if (packs) $entry.append(link('MANAGE OUTFIT', packs).css('margin-top','8px'));
+          if (market) $entry.append(link('TRADE NFT ↗', market).attr('rel','noopener noreferrer').css('margin-top','8px'));
+          $grid.append($entry);
+        } else $grid.append($cell);
       });
       $m.append($grid);
     },
@@ -434,6 +493,8 @@
         .append(link("COLLECTION ON CHAIN", "https://solscan.io/account/" + col.collection + dev))
         .append(link("REGISTRY", "https://solscan.io/account/" + col.registry + dev))
         .append(link("CREATOR", "https://solscan.io/account/" + col.creator + dev));
+      const packs = packHref(col);
+      if (packs) $("#nftl_clinks").append(link('TRAIT PACKS', packs));
       $("#nftl_price").text(solNum(col.priceLamports));
       $("#nftl_fee").text([Number(col.depositLamports) > 0 ? "+ " + solNum(col.depositLamports) + " deposit at reserve" : "", "+ platform fee", "+ inscription rent", "leftover returns"].filter(Boolean).join(" · "));
       $("#nftl_items_lab").text("// ITEMS · " + (col.sequential ? "sequential (#1, #2, #3 …)" : "random (shuffled at launch)"));

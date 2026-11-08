@@ -16,6 +16,11 @@ async function mount(t, connect, boardRows = [], evm) {
  const row={kind:'image',body:'data:image/png;base64,AA==',who:'test-wallet',__txSignature:'2'.repeat(88)};
  w.iqCodein={hasOwnRpc:()=>false,estimateCost:()=>({chunks:1,total:1}),readBoard:async()=>({rows:boardRows}),readMine:async()=>({rows:[row]}),viewUrl:s=>'https://iqlabs.dev/?menu=codein&post='+s,metaUrl:s=>'https://gateway.iqlabs.dev/token-meta/'+s,connect:()=>({}),deriveBurner:async()=>({}),inscribeMeta:async()=>{metadata++;return {sig:'meta'};},inscribe:async()=>{registrations++;return {sig:'registry'};},notify:async()=>{},imgUrl:s=>'https://gateway.iqlabs.dev/img/'+s,renderUrl:s=>'https://gateway.iqlabs.dev/render/'+s,market:{enrich:async()=>[],embedUrl:()=>'',siteUrl:()=>'',tradeUrl:()=>'',tradeLabel:'Pump',siteLabel:'DEX',attribution:'test'},getSpeed:()=> 'light'};
  w.iqTokenLaunch={GATEWAY:'https://gateway.iqlabs.dev',FEE_SOL:.069,launch:async()=>{launches++;return {mint:'mint',sig:'create'};}};
+ Object.assign(w.iqCodein,{
+  getWallets:()=>[{id:'fixture-solana',name:'Fixture Solana',selected:true}],
+  getWalletProvider:()=>w.phantom.solana,disconnectWallet:()=>{},
+  connectWallet:async({onProvider,...options}={})=>{onProvider?.(w.phantom.solana);const result=await w.phantom.solana.connect(options);return result?.publicKey?.toString()||null;}
+ });
  if (evm) w.iqCodeinChains={evm:{...w.iqCodein,meta:{boardTitle:'HOOD IN',connLabel:'Robinhood RPC',scanLabel:'EXPLORER',maxSigs:25},getWallets:()=>[],getWalletProvider:()=>null,...evm}};
  w.$.ajax=({success})=>success(fs.readFileSync(path.resolve(__dirname, '../assets/html/sections/code_in_v2.html'),'utf8'));
  w.eval(fs.readFileSync(path.resolve(__dirname, '../assets/js/sections/pages/code_in_v2.js'),'utf8'));w.$.code_in_v2.init(null,evm?'evm':'solana');await tick();

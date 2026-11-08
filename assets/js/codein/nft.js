@@ -17,7 +17,7 @@ import { writer } from "@iqlabs-official/solana-sdk";
 import { notifyNftFeedRow } from "./nft_notify.js?v=1";
 import { writeFeedRow, topUp, sweep, confirmOrCheck } from "./inscribe.js?v=9";
 import { estimateCost, getAccountRent } from "./cost.js?v=6";
-import { preset } from "./nft_net.js?v=2";
+import { preset } from "./nft_net.js?v=packs-refresh-20261101";
 
 // The backend service. Separate from the gateway (which only serves reads). The
 // per-network default lives in nft_net.js; a localStorage override lets a dev
