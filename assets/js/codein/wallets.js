@@ -5,7 +5,7 @@
 // and window.solana handles, as one list. A Wallet Standard wallet is wrapped
 // into the small provider shape the engines already use (publicKey, connect,
 // signMessage, signTransaction, signAndSendTransaction, on/removeListener), so
-// inscribe.js, nft.js and token_launch.js do not know which kind they hold.
+// inscribe.js does not know which kind it holds.
 // Phantom and Backpack keep their own injected providers (the path every
 // existing user's burner was derived through); a wallet that is both injected
 // and registered is listed once.

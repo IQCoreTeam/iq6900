@@ -14,12 +14,6 @@
 #ci2_xchain:hover{opacity:1;background:rgba(43,213,45,.1)}
 #ci2.hood #ci2_xchain{color:#e8e4d6;border-color:rgba(232,228,214,.45)}
 #ci2.hood #ci2_xchain:hover{background:rgba(232,228,214,.1)}
-/* "powered by" launchpad credit, shown in the markets.exe bar (pump.fun on
-   code-in, Pons on hood-in). Set per chain in applyHoodTheme. The logos read
-   on the dark markets panel in both skins. */
-#ci2 #ci2_mk_powered{display:inline-flex;align-items:center;gap:5px;margin-left:12px;font-size:9.5px;letter-spacing:.04em;text-decoration:none;color:var(--fg);opacity:.6;transition:opacity .3s}
-#ci2 #ci2_mk_powered:hover{opacity:1}
-#ci2 #ci2_mk_powered img{height:15px;width:auto;display:block}
 #ci2{font-family:'Kode Mono',monospace;color:var(--fg);padding:14px 16px 40px;width:100%;box-sizing:border-box}
 #ci2 #ci2_scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:4px}
 #ci2 .bar{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--fg35);padding:11px 16px;font-size:12px;letter-spacing:.14em}
@@ -56,28 +50,6 @@
 #ci2 .prog span{position:absolute;inset:0;text-align:center;line-height:26px;font-size:11px;font-weight:700;color:var(--fg);text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 0 4px #000}
 #ci2 .btn:disabled{opacity:.4;cursor:not-allowed}
 #ci2 .rpcbox input{flex:1;box-sizing:border-box;background:rgba(0,0,0,.35);color:var(--fg);border:1px solid var(--fg50);border-radius:4px;font:500 11px 'Kode Mono',monospace;padding:8px 10px}
-#ci2 .tk_in{width:100%;box-sizing:border-box;background:rgba(0,0,0,.35);color:var(--fg);border:1px solid var(--fg50);border-radius:4px;font:500 12px 'Kode Mono',monospace;padding:9px 10px}
-#ci2 .tk_row{display:flex;gap:10px;margin-bottom:10px}
-#ci2 .tk_row>div{flex:1;min-width:0}
-#ci2 .tk_lbl{display:block;font-size:10px;opacity:.55;margin:0 0 4px;letter-spacing:.1em}
-#ci2 #ci2_tk_prev img{max-width:120px;max-height:120px;border:1px solid var(--fg40);border-radius:5px;display:block}
-#ci2 #ci2_tk_inv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:300px;overflow-y:auto}
-#ci2 #ci2_tk_inv .rec{cursor:pointer}
-#ci2 #ci2_tk_inv .rec.dim{opacity:.32;cursor:default}
-#ci2 #ci2_tk_inv .rec.picked{border:2px solid var(--hi);box-shadow:0 0 12px rgba(43,213,45,.25)}
-#ci2 .tk_step{font-size:10px;letter-spacing:.14em;color:var(--hi);margin:0 0 10px}
-/* option rows (rewards radios, buyback) need an explicit small size or the bare
-   label inherits the page default and renders huge */
-#ci2 .tk_opt{display:block;font-size:11px;line-height:1.55;margin:5px 0;cursor:pointer;opacity:.9}
-#ci2 .tk_opt input{accent-color:var(--hi);margin-right:8px}
-/* two-column pick cards (hood rewards + buyback): each side is a selectable
-   card that lights up when its radio is chosen (.on class or :has fallback) */
-#ci2 .tk_split{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}
-#ci2 .tk_pick{display:block;padding:9px 11px;border:1px solid var(--fg40);border-radius:5px;cursor:pointer;transition:border-color .12s,background .12s}
-#ci2 .tk_pick input{position:absolute;width:0;height:0;opacity:0}
-#ci2 .tk_pick.on,#ci2 .tk_pick:has(input:checked){border-color:var(--hi);background:rgba(255,255,255,.05)}
-#ci2 .tk_pick_h{display:block;font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--hi)}
-#ci2 .tk_pick_d{display:block;font-size:11px;line-height:1.5;margin-top:3px;opacity:.72}
 /* a hidden meter row: .meter div sets display:flex at higher specificity than
    .hide, so name the div explicitly to actually hide it (e.g. dev buy on hood) */
 #ci2 .meter div.hide{display:none}
@@ -131,6 +103,8 @@
 #ci2 #ci2_view_body .vpre{margin:0;border:1px solid var(--fg35);border-radius:5px;padding:16px;min-height:90px;color:var(--hi);white-space:pre;overflow:auto;background:rgba(0,0,0,.3);font:500 12px/1.5 'Kode Mono',monospace}
 #ci2 .vbtn{border:1px solid var(--fg50);border-radius:4px;padding:6px 12px;cursor:pointer;transition:all .3s;white-space:nowrap}
 #ci2 .vbtn:hover{border-color:var(--fg);background:var(--fg10)}
+#ci2 a.vbtn,#ci2 a.btn{text-decoration:none}
+#ci2 a.vbtn{color:inherit}
 #ci2 .rec .tag{border:1px solid var(--fg40);border-radius:3px;padding:1px 6px;letter-spacing:.08em}
 /* Mobile header: the narrow bar could not hold every item on one line, so the
    CONNECT WALLET button jutted out of the viewport. Let the bar wrap (safety
@@ -150,32 +124,8 @@
 #ci2 #ci2_desk{display:flex;gap:14px;align-items:stretch;height:calc(100vh - 114px);min-height:420px}
 #ci2 #ci2_board_panel{flex:1.45;min-width:0;display:flex;flex-direction:column}
 #ci2 #ci2_board_panel .body{display:flex;flex-direction:column;flex:1;min-height:0}
-#ci2 #ci2_markets_panel{flex:1;min-width:0;display:flex;flex-direction:column}
-#ci2 #ci2_markets_panel .body{padding:0;display:flex;flex-direction:column;flex:1;min-height:0;background:rgba(0,0,0,.28)}
-#ci2 .mkhead,#ci2 .mkrow{display:grid;grid-template-columns:minmax(0,1.7fr) 1fr .8fr 1fr .9fr;gap:10px;padding:11px 14px;align-items:center}
-#ci2 .mkhead{font-size:9.5px;letter-spacing:.06em;opacity:.55;border-bottom:1px solid var(--fg25)}
-#ci2 .mkhead .cap,#ci2 .mkhead .act{text-align:right}
-#ci2 .mkhead .cap{opacity:1}
-#ci2 .mkrow{font-size:11.5px;border-bottom:1px solid var(--fg10);cursor:pointer;transition:background .25s}
-#ci2 .mkrow:hover{background:var(--fg05)}
-#ci2 .mkcoin{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden}
-#ci2 .mklogo{width:26px;height:26px;border-radius:50%;border:1px solid var(--fg35);display:grid;place-items:center;font:700 9px 'Kode Mono',monospace;color:var(--hi);background:rgba(0,0,0,.35);flex:none;overflow:hidden}
-#ci2 .mklogo img{width:100%;height:100%;object-fit:cover}
-#ci2 .mksym{font-weight:700;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#ci2 .mkname{opacity:.4;font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#ci2 .mkchg.up{color:#2BD52D} #ci2 .mkchg.down{color:#e0554e}
-#ci2 .mkcap{text-align:right}
-#ci2 .mkact{text-align:right;font-size:9.5px;opacity:.6}
-#ci2 .mkact .pumpgo:hover{opacity:1;text-decoration:underline}
-#ci2 #ci2_mk_rows{overflow-y:auto;flex:1;min-height:0}
-#ci2 #ci2_mk_soon{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 24px;gap:14px}
-/* the two-id rule above outranks .hide, so give hide an equal-specificity win:
-   COMING SOON is hood-only, hidden on the solana board where the list shows */
-#ci2 #ci2_mk_soon.hide{display:none}
-#ci2 #ci2_chart_box{position:relative;height:440px;background:rgba(0,0,0,.28)}
-#ci2 #ci2_chart_box iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-#ci2 #ci2_chart_hold{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}
-@media (max-width:900px){#ci2 #ci2_desk{flex-direction:column;height:auto;min-height:0}#ci2 #ci2_markets_panel{flex:none}#ci2 #ci2_scroll{max-height:68vh}#ci2 #ci2_mk_rows{max-height:44vh}}
+#ci2 #ci2_launch_panel{flex:0 0 320px;min-width:0;display:flex;flex-direction:column}
+@media (max-width:900px){#ci2 #ci2_desk{flex-direction:column;height:auto;min-height:0}#ci2 #ci2_launch_panel{flex:none}#ci2 #ci2_scroll{max-height:68vh}}
 </style>
 
   <div id="ci2_hdr" class="bar" style="border:1px solid var(--fg);border-radius:8px;margin-bottom:14px;background:var(--panel2)">
@@ -209,24 +159,19 @@
     </div>
   </div>
 
-  <!-- markets.exe: coins launched from this board, dexscreener-priced. hood shows
-       COMING SOON here until robinhood launches open. -->
-  <div id="ci2_markets_panel" class="panel">
-    <div class="bar"><span id="ci2_mk_title" style="opacity:.8">markets.exe</span>
-      <a id="ci2_mk_powered" href="https://pump.fun" target="_blank" rel="noopener noreferrer" title="token launches powered by pump.fun"><span>powered by</span><img src="img/pump-logomark.svg" alt="pump.fun"></a>
-      <button id="ci2_mk_launch" class="btn" style="margin-left:auto;padding:7px 12px">LAUNCH A TOKEN</button>
-    </div>
+  <!-- launch.exe: launching moved to inscribe.codes. The board stays here;
+       a coin or an NFT made from an inscription is made over there. -->
+  <div id="ci2_launch_panel" class="panel">
+    <div class="bar"><span style="opacity:.8">launch.exe</span><span style="margin-left:auto;opacity:.5;font-size:9.5px;letter-spacing:.06em">INSCRIBE.CODES</span></div>
     <div class="body">
-      <div id="ci2_mk_live">
-        <div class="mkhead"><span>NAME</span><span>PRICE</span><span>24H</span><span class="cap">MCAP &#9662;</span><span class="act">ACTION</span></div>
-        <div id="ci2_mk_rows"></div>
-        <p id="ci2_mk_empty" class="muted" style="text-align:center;padding:26px 12px">loading...</p>
-        <p class="muted" style="padding:10px 14px;border-top:1px solid var(--fg10)">// coins launched from this board, sorted by market cap, refreshed every 30s. a fresh launch reads "indexing" until picked up.</p>
+      <div style="font:400 20px 'Zen Dots',monospace;color:var(--fg);letter-spacing:.04em;line-height:1.3">TOKENIZE YOUR INSCRIPTION</div>
+      <p class="muted" style="margin:12px 0 0;line-height:2;font-size:11px">launching lives on inscribe.codes now. inscribe here, then make a coin or a 1 of 1 NFT from it there: pick it under MY INSCRIPTIONS, name it, launch. the coin page links back to your on-chain original forever.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+        <a id="ci2_launch_token" class="btn" href="https://inscribe.codes/?view=token" target="_blank" rel="noopener noreferrer" style="text-align:center">LAUNCH A TOKEN &rarr;</a>
+        <a id="ci2_launch_nft" class="btn ghost" href="https://inscribe.codes/?view=nft" target="_blank" rel="noopener noreferrer" style="text-align:center">MINT AS NFT &rarr;</a>
+        <a id="ci2_launch_markets" class="btn ghost" href="https://inscribe.codes/?view=token" target="_blank" rel="noopener noreferrer" style="text-align:center">VIEW MARKETS &rarr;</a>
       </div>
-      <div id="ci2_mk_soon" class="hide">
-        <div style="font:400 22px 'Zen Dots',monospace;color:var(--fg);letter-spacing:.06em">MARKETS &middot; COMING SOON</div>
-        <p class="muted" style="max-width:360px;line-height:2;font-size:11px">token launches on Robinhood Chain are on the way. inscribe on hood-in today; when launches open, the coins made from these inscriptions chart right here, dexscreener-style.</p>
-      </div>
+      <p class="muted" style="margin:14px 0 0;opacity:.55">// coins launched from this board still show up as cards in the feed. open one for its trade link.</p>
     </div>
   </div>
   </div>
@@ -306,7 +251,7 @@
           <p id="ci2_donenote" class="muted" style="margin-top:6px;opacity:.55">// the one-time account rent is paid once - your next inscriptions cost far less.</p>
           <p class="muted" style="margin-top:4px;opacity:.55">// your inscription is on chain now; the board can take a few minutes to catch up.</p>
           <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap">
-            <button id="ci2_launch_after" class="btn hide">LAUNCH IT AS TOKEN</button>
+            <a id="ci2_launch_after" class="btn hide" href="https://inscribe.codes/?view=token" target="_blank" rel="noopener noreferrer">LAUNCH IT ON INSCRIBE.CODES &rarr;</a>
             <button id="ci2_view" class="btn ghost">VIEW ON BOARD</button>
             <button id="ci2_again" class="btn ghost">INSCRIBE AGAIN</button>
           </div>
@@ -327,11 +272,11 @@
       <div class="body">
         <p id="ci2_view_file_notice" class="file-notice hide">files here are inscribed by anyone on the internet. be careful with what you download.</p>
         <div id="ci2_view_body"></div>
-        <div id="ci2_view_coins" class="hide" aria-live="polite"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:14px;font:500 10px 'Kode Mono',monospace">
           <span id="ci2_view_meta" style="opacity:.55"></span>
           <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-            <span id="ci2_view_token" class="vbtn hide">MAKE IT A TOKEN</span>
+            <a id="ci2_view_token" class="vbtn hide" target="_blank" rel="noopener noreferrer">MAKE IT A TOKEN &rarr;</a>
+            <a id="ci2_view_nft" class="vbtn hide" target="_blank" rel="noopener noreferrer">MINT AS NFT &rarr;</a>
             <span id="ci2_view_x" class="vbtn">SHARE TO X</span>
             <span id="ci2_view_copy" class="vbtn">COPY LINK</span>
             <span id="ci2_view_scan" class="vbtn">SOLSCAN</span>
@@ -341,31 +286,6 @@
     </div>
   </div>
 
-  <!-- chart.exe: the live dexscreener chart for a coin picked in markets.exe -->
-  <div id="ci2_chart_modal" class="modal mcenter hide">
-    <div class="panel" style="width:860px;max-width:100%">
-      <div class="bar">
-        <span id="ci2_chart_dot" class="dot" style="background:#e0554e;cursor:pointer"></span><span class="dot" style="background:#e0a84e"></span><span class="dot" style="background:#2BD52D"></span>
-        <span style="margin-left:6px;opacity:.8">chart.exe</span>
-        <span id="ci2_chart_sym" style="margin-left:12px;color:var(--hi)"></span>
-        <span id="ci2_chart_close" style="margin-left:auto;cursor:pointer;opacity:.7">[ x ]</span>
-      </div>
-      <div class="body" style="padding:0">
-        <div style="display:flex;align-items:baseline;gap:14px;padding:14px 16px;border-bottom:1px solid var(--fg25);flex-wrap:wrap">
-          <span id="ci2_chart_price" style="font-size:20px;font-weight:700"></span>
-          <span id="ci2_chart_chg" style="font-size:12px"></span>
-          <span id="ci2_chart_stats" class="muted" style="margin-left:auto"></span>
-        </div>
-        <div id="ci2_chart_box"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--fg25)">
-          <a id="ci2_chart_pump" class="btn" target="_blank" rel="noopener" style="text-decoration:none">VIEW ON PUMP.FUN</a>
-          <a id="ci2_chart_dexs" class="btn ghost hide" target="_blank" rel="noopener" style="text-decoration:none">OPEN ON DEXSCREENER</a>
-          <span id="ci2_chart_copy" class="btn ghost">COPY MINT</span>
-          <span id="ci2_chart_post" class="btn ghost hide">VIEW LAUNCH POST</span>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- how-to-view help (our inscription format + reading it on Solscan) -->
   <div id="ci2_help_modal" class="modal mcenter hide">
@@ -489,105 +409,4 @@ await writer.writeRow(conn, signer,
     </div>
   </div>
 
-  <!-- make it as token: pump.fun launcher (solana only) -->
-  <div id="ci2_tk_modal" class="modal hide">
-    <div class="panel" style="width:640px;max-width:100%">
-      <div class="bar"><span id="ci2_tk_win" style="opacity:.8">token_launch.exe</span>
-        <span id="ci2_tk_close" class="tab" style="margin-left:auto;opacity:.7">x</span>
-      </div>
-      <div class="body">
-        <!-- step 1: pick an inscription from your inventory -->
-        <div id="ci2_tk_pick">
-          <p class="tk_step" id="ci2_tk_pick_step">// STEP 1 OF 2 - PICK YOUR INSCRIPTION</p>
-          <p class="muted" style="margin:0 0 12px;font-size:11px">a coin from this board starts as YOUR inscription. pick one from your inventory: an image becomes the coin image as-is; text and ascii use a rendered card; audio and files let you choose a coin image next. the coin page links back to the on-chain original.</p>
-          <div id="ci2_tk_inv"></div>
-          <p id="ci2_tk_inv_load" class="muted" style="text-align:center;padding:16px 0">loading your inventory...</p>
-          <div id="ci2_tk_noinv" class="hide" style="text-align:center;padding:10px 0 4px">
-            <div style="font:400 20px 'Zen Dots',monospace;color:var(--hi)">NO INSCRIPTIONS YET</div>
-            <p id="ci2_tk_noinv_txt" class="muted" style="margin:10px 0 0;font-size:11px;line-height:1.7">your inventory is empty. put your image or text on solana first, then launch it as a token.</p>
-          </div>
-          <p id="ci2_tk_onlyimg" class="muted hide" style="margin:10px 2px 0;opacity:.5">image, text, ascii, audio and file inscriptions are selectable. token registry entries are excluded.</p>
-          <button id="ci2_tk_continue" class="btn" style="width:100%;margin-top:12px" disabled>PICK AN INSCRIPTION TO CONTINUE</button>
-          <button id="ci2_tk_makenew" class="btn ghost" style="width:100%;margin-top:8px">+ MAKE A NEW INSCRIPTION</button>
-        </div>
-        <!-- step 2: the launch form -->
-        <div id="ci2_tk_form" class="hide">
-          <p class="tk_step">// STEP 2 OF 2 - NAME IT AND LAUNCH</p>
-          <div class="tk_row">
-            <div><span class="tk_lbl">NAME</span><input id="ci2_tk_name" class="tk_in" maxlength="32" placeholder="my token"></div>
-            <div style="flex:0 0 140px"><span class="tk_lbl">SYMBOL</span><input id="ci2_tk_symbol" class="tk_in" maxlength="10" placeholder="TICKER" style="text-transform:uppercase"></div>
-          </div>
-          <span class="tk_lbl">DESCRIPTION</span>
-          <textarea id="ci2_tk_desc" style="min-height:64px" placeholder="what is this coin. the link to your on-chain original is appended automatically."></textarea>
-          <div class="upl_row" style="margin-top:10px;align-items:flex-start">
-            <div id="ci2_tk_prev"></div>
-            <div style="flex:1;min-width:0">
-              <div id="ci2_tk_coins" class="hide" aria-live="polite"></div>
-              <span id="ci2_tk_src" class="muted" style="display:block"></span>
-              <span id="ci2_tk_pickimg" class="muted hide" style="text-decoration:underline;cursor:pointer;display:block;margin-top:4px">choose a coin image</span>
-              <span id="ci2_tk_repick" class="muted" style="text-decoration:underline;cursor:pointer;display:block;margin-top:4px">pick a different inscription</span>
-            </div>
-          </div>
-          <div class="tk_row">
-            <div><span class="tk_lbl">X LINK (OPTIONAL)</span><input id="ci2_tk_x" class="tk_in" placeholder="https://x.com/..."></div>
-            <div><span class="tk_lbl">WEBSITE (OPTIONAL)</span><input id="ci2_tk_web" class="tk_in" placeholder="defaults to your launch post"></div>
-          </div>
-          <div id="ci2_tk_onchainlink" class="hide" style="margin-top:8px">
-            <button id="ci2_tk_onchainlink_btn" class="btn ghost" style="font-size:11px;padding:7px 12px">USE MY ON-CHAIN LINK</button>
-            <p class="muted" style="margin:6px 2px 0;font-size:10.5px;line-height:1.6">fills WEBSITE with your inscription's on-chain viewer link (no need to copy it from the board). it is saved on-chain in the launch either way. note: the pons coin page shows X and telegram links, not website, so add those above to appear on pons.</p>
-          </div>
-          <div class="tk_row" id="ci2_tk_buyrow">
-            <div style="flex:0 0 180px"><span class="tk_lbl">INITIAL DEV BUY (SOL)</span><input id="ci2_tk_buy" class="tk_in" type="number" min="0" step="0.001" value="0.01"></div>
-          </div>
-          <div style="margin-top:10px" id="ci2_tk_rw_sol">
-            <span class="tk_lbl">TRADING FEE REWARDS</span>
-            <label class="tk_opt"><input type="radio" name="ci2rw" value="holders" checked>TOKEN HOLDERS - every trade's fee streams to the coin's holders (pump.fun holder rewards). permanent.</label>
-            <label class="tk_opt"><input type="radio" name="ci2rw" value="creator">CREATOR - trade fees go to you instead (classic mode).</label>
-          </div>
-          <div style="margin-top:10px" id="ci2_tk_rw_hood" class="hide">
-            <span class="tk_lbl">REWARDS - every default is set; edit only if you want to</span>
-            <div class="tk_split">
-              <label class="tk_pick on"><input type="radio" name="ci2rw_hood" value="holders" checked><span class="tk_pick_h">HOLDERS</span><span class="tk_pick_d">you take no cut; the buyback below backs the coin for holders.</span></label>
-              <label class="tk_pick"><input type="radio" name="ci2rw_hood" value="creator"><span class="tk_pick_h">CREATOR</span><span class="tk_pick_d">you earn a percent of every trade.</span></label>
-            </div>
-            <div id="ci2_tk_cr_fields" class="hide" style="margin:4px 0 2px">
-              <div class="upl_row" style="margin:0 0 8px"><span class="tk_lbl" style="margin:0 8px 0 0">FEE</span><input id="ci2_tk_crfee" class="num" type="number" min="0" max="10" step="0.5" value="1" style="width:64px"><span class="muted" style="font-size:11px">% of every trade (0 to 10)</span></div>
-              <span class="tk_lbl">FEE WALLET</span>
-              <input id="ci2_tk_crwallet" class="tk_in" placeholder="defaults to your connected wallet">
-            </div>
-            <span class="tk_lbl" style="display:block;margin-top:12px">BUYBACK - a 5-year locked vault buys the coin back (pons). permanent once launched.</span>
-            <div class="tk_split">
-              <label class="tk_pick on"><input type="radio" name="ci2bb_hood" value="on" checked><span class="tk_pick_h">ON</span><span class="tk_pick_d">a slice of every trade buys the coin back into the 5-year vault.</span></label>
-              <label class="tk_pick"><input type="radio" name="ci2bb_hood" value="off"><span class="tk_pick_h">OFF</span><span class="tk_pick_d">no buyback; trades just flow normally.</span></label>
-            </div>
-          </div>
-          <div class="meter" style="border:1px solid var(--fg40);border-radius:5px;margin-top:6px">
-            <div><span class="muted" style="font-size:12px;opacity:.6" id="ci2_tk_feelbl">platform fee</span><span id="ci2_tk_feeshow">0.069 SOL</span></div>
-            <div id="ci2_tk_buymeter"><span class="muted" style="font-size:12px;opacity:.6">dev buy</span><span id="ci2_tk_buyshow">0.01 SOL</span></div>
-          </div>
-          <p id="ci2_tk_feenote" class="muted" style="margin:8px 2px 0;opacity:.5">the fee rides inside the create transaction itself: if the launch does not land, nothing is paid. pump.fun trading fees apply to the dev buy.</p>
-          <p id="ci2_tk_permnote" class="muted" style="margin:6px 2px 0;opacity:.5">permanence: the coin metadata is ITSELF inscribed on solana first (~0.001 SOL), and the token's uri path is that inscription's tx. even if this site ever disappears, everything reassembles from chain with the IQ SDK.</p>
-          <button id="ci2_tk_go" class="btn" style="width:100%;margin-top:12px" disabled>INSCRIBE METADATA + LAUNCH ON PUMP.FUN</button>
-        </div>
-        <!-- progress -->
-        <div id="ci2_tk_prog" class="hide">
-          <p id="ci2_tk_proghead" class="muted" style="letter-spacing:.2em">// LAUNCHING ON PUMP.FUN - keep this tab open</p>
-          <div class="prog" style="margin-top:14px"><i id="ci2_tk_bar"></i><span id="ci2_tk_pct">starting</span></div>
-          <p id="ci2_tk_log" class="muted" style="margin-top:12px"></p>
-          <button id="ci2_tk_retry" class="btn hide" style="margin-top:10px">RETRY</button>
-        </div>
-        <!-- done -->
-        <div id="ci2_tk_done" class="hide" style="text-align:center;padding:14px 0">
-          <div style="font:400 30px 'Zen Dots',monospace;color:var(--hi)">LAUNCHED.</div>
-          <p id="ci2_tk_mint" class="muted" style="margin-top:12px;word-break:break-all"></p>
-          <p id="ci2_tk_regnote" class="muted" style="margin-top:6px;opacity:.55">Token created. IQ board registration is a separate step.</p>
-          <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap">
-            <a id="ci2_tk_pump" class="btn" target="_blank" rel="noopener" style="text-decoration:none">VIEW ON PUMP.FUN</a>
-            <button id="ci2_tk_chart" class="btn ghost">OPEN CHART</button>
-            <button id="ci2_tk_reg_retry" class="btn ghost hide">REGISTER ON IQ BOARD</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>

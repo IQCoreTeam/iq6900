@@ -23,10 +23,15 @@ $(document).ready(function() {
             $.generatePage.init();
         }else if(menu == "codein"){
             $.code_in_v2.init(post);
-        }else if(menu == "nft"){
-            $.nft_launch.init(post); // inscription NFT launchpad (?nft=<slug>)
-        }else if(menu == "nft-create"){
-            $.nft_studio.init(); // creator wizard: launch a collection
+        }else if(menu == "nft" || menu == "nft-create"){
+            // The NFT launchpad moved to inscribe.codes. Old links are in the
+            // wild and inside on-chain metadata, so this redirect stays.
+            const p = new URLSearchParams(window.location.search);
+            const q = new URLSearchParams({ view: "nft" });
+            if (p.get("single")) q.set("single", p.get("single"));
+            else if (p.get("asset")) q.set("asset", p.get("asset"));
+            else if (p.get("nft")) q.set("c", p.get("nft"));
+            window.location.replace("https://inscribe.codes/?" + q.toString());
         }else if(menu == "hoodin"){
             $.code_in_v2.init(post, "evm"); // same page, robinhood adapter + hood theme
         }

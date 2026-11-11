@@ -12,7 +12,6 @@ import { inscribe, inscribeMeta, sweep } from "./inscribe.js?v=9";
 import { feedTablePda, programId } from "./feed.js";
 import { toAscii } from "./ascii.js?v=1";
 import { notifyGateways } from "./gateway_notify.js?v=1";
-import { marketRows } from "./market.js?v=1";
 
 // Live default write RPC. NOTE: api.mainnet-beta.solana.com 403s every browser
 // request (it blocks any call carrying an Origin header), so it cannot be the
@@ -97,14 +96,13 @@ window.iqCodein = {
   imgUrl: (sig) => GATEWAYS[0] + "/img/" + sig + ".png",
   renderUrl: (sig) => GATEWAYS[0] + "/render/" + sig,
 
-  // The market panel and chart are one render path; each chain plugs its
-  // launchpad link in here, and its price rows come from the shared source.
+  // Trade link for a launch registry row shown on the board (markets and
+  // launching themselves live on inscribe.codes).
   market: {
     tradeLabel: "VIEW ON PUMP.FUN",
     tradeShort: "Pump",
     tradeName: "pump.fun",
     tradeUrl: (mint) => "https://pump.fun/coin/" + mint,
-    enrich: (mints) => marketRows("solana", mints),
   },
   // board = the global feed table rows; mine = the user's assets (the gateway
   // resolves the inventory PDA our writes reference). The SDK reader returns the
