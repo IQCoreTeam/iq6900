@@ -6,7 +6,7 @@
     function mainPage() {
         let $mainPageElement;
         let $wWidth = screen.width;
-        const $mainPageTemplateUrl = "./html/sections/main_page.html?ver=20261101a";
+        const $mainPageTemplateUrl = "./html/sections/main_page.html?ver=20261111";
         function init() {
             loadMainPageTemplate();
         }
