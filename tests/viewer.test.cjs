@@ -8,7 +8,7 @@ const jquery = require('jquery');
 const assets = path.resolve(__dirname, '../assets');
 const source = (file) => fs.readFileSync(path.join(assets, file), 'utf8');
 
-async function viewer(t, row) {
+async function viewer(t, row, extra) {
   const dom = new JSDOM('<div id="main_section"></div>', {
     url: 'http://localhost/?menu=codein', runScripts: 'outside-only',
   });
@@ -22,6 +22,7 @@ async function viewer(t, row) {
     estimateCost: () => ({ chunks: 1, total: 1 }),
     readBoard: async () => ({ rows: [row], nextCursor: null }),
     readOne: async () => row,
+    ...extra,
   };
   w.$.ajax = ({ success }) => success(source('html/sections/code_in_v2.html'));
   w.eval(source('js/sections/pages/code_in_v2.js'));
@@ -58,6 +59,24 @@ test('text inscriptions remain inert text', async (t) => {
   const w = await viewer(t, { kind: 'text', body });
   assert.equal(w.document.querySelector('#ci2_view_body pre').textContent, body);
   assert.equal(w.document.querySelector('#ci2_view_body script'), null);
+});
+
+test('check-profile links to the author wallet when the adapter supports it', async (t) => {
+  const profileUrl = (wallet) => 'https://browser.iqlabs.dev/' + wallet;
+  const w = await viewer(t, { kind: 'text', body: 'hi', who: 'ownerWallet123' }, { profileUrl });
+  const btn = w.document.querySelector('#ci2_view_profile');
+  assert.equal(btn.classList.contains('hide'), false);
+  assert.equal(btn.getAttribute('href'), 'https://browser.iqlabs.dev/ownerWallet123');
+});
+
+test('check-profile stays hidden without an owner or a profile-capable adapter', async (t) => {
+  const profileUrl = (wallet) => 'https://browser.iqlabs.dev/' + wallet;
+  // owner present but adapter has no profileUrl (e.g. hood-in / EVM)
+  const noProfile = await viewer(t, { kind: 'text', body: 'hi', who: 'ownerWallet123' });
+  assert.equal(noProfile.document.querySelector('#ci2_view_profile').classList.contains('hide'), true);
+  // profileUrl present but the row has no owner
+  const noOwner = await viewer(t, { kind: 'text', body: 'hi' }, { profileUrl });
+  assert.equal(noOwner.document.querySelector('#ci2_view_profile').classList.contains('hide'), true);
 });
 
 test('legacy music does not request chain data on unrelated pages', async (t) => {

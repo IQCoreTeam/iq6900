@@ -105,6 +105,8 @@
 #ci2 .vbtn:hover{border-color:var(--fg);background:var(--fg10)}
 #ci2 a.vbtn,#ci2 a.btn{text-decoration:none}
 #ci2 a.vbtn{color:inherit}
+/* the sig/owner line is long; drop it on narrow screens so the actions stay clean */
+@media (max-width:560px){#ci2 #ci2_view_meta{display:none}}
 #ci2 .rec .tag{border:1px solid var(--fg40);border-radius:3px;padding:1px 6px;letter-spacing:.08em}
 /* Mobile header: the narrow bar could not hold every item on one line, so the
    CONNECT WALLET button jutted out of the viewport. Let the bar wrap (safety
@@ -277,6 +279,7 @@
           <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
             <a id="ci2_view_token" class="vbtn hide" target="_blank" rel="noopener noreferrer">MAKE IT A TOKEN &rarr;</a>
             <a id="ci2_view_nft" class="vbtn hide" target="_blank" rel="noopener noreferrer">MINT AS NFT &rarr;</a>
+            <a id="ci2_view_profile" class="vbtn hide" target="_blank" rel="noopener noreferrer">CHECK PROFILE</a>
             <span id="ci2_view_x" class="vbtn">SHARE TO X</span>
             <span id="ci2_view_copy" class="vbtn">COPY LINK</span>
             <span id="ci2_view_scan" class="vbtn">SOLSCAN</span>

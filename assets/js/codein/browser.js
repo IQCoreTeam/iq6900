@@ -177,6 +177,10 @@ window.iqCodein = {
     return url.href;
   },
   solscanUrl: (sig) => `https://solscan.io/tx/${sig}${CLUSTER === "devnet" ? "?cluster=devnet" : ""}`,
+  // The IQ browser page for a wallet: every inscription that wallet owns. The
+  // row's `who` is the user's main wallet (the burner only signs), so this is
+  // the real profile, not the throwaway signer.
+  profileUrl: (wallet) => `https://browser.iqlabs.dev/${wallet}`,
   cluster: CLUSTER,
   toAscii, // shared image -> ASCII port of the art generator (ascii.js)
   // Shrink a decoded image (canvas ImageData) to WebP via the SAME compressor the

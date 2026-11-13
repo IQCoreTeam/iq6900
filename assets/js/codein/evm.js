@@ -381,6 +381,10 @@ const surface = {
     return url.href;
   },
   solscanUrl: (hash) => EXPLORER_TX + hash, // same surface name; Blockscout target
+  // The IQ browser page for a wallet. browser.iqlabs.dev reads a 0x address as a
+  // Robinhood wallet, so this resolves to that wallet's hood-in inscriptions. The
+  // row's `who` is the user's main wallet (the burner only signs), not the signer.
+  profileUrl: (wallet) => `https://browser.iqlabs.dev/${wallet}`,
 
   // Gateway views of a post, network-tagged so the resolver reads Robinhood
   // txs. The path carries the tx hash itself, so the pointer outlives us.

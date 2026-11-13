@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=70";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=71";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -110,7 +110,7 @@
         if (chains().evm) { window.iqCodein = chains().evm; cb(); return; }
         // import() in a classic script resolves against THIS script's URL, so
         // anchor the specifier to the document instead.
-        import(new URL("js/codein/evm.js?v=17", document.baseURI).href)
+        import(new URL("js/codein/evm.js?v=18", document.baseURI).href)
           .then(() => { window.iqCodein = chains().evm; cb(); })
           .catch((e) => { console.error("[hood-in] adapter load failed:", e); $("#ci2_empty").text("could not load the robinhood module. refresh to retry."); });
         return;
@@ -595,6 +595,11 @@
       // 1 of 1 NFT (solana). Only the owner sees the hand-off; the launchpad
       // re-checks ownership on its side.
       const mine = !!who && owner === who;
+      // Anyone can jump to the author's IQ browser profile (every inscription
+      // that wallet owns). Only chains whose adapter exposes profileUrl show it;
+      // browser.iqlabs.dev is Solana-only, so hood-in leaves this hidden.
+      const profileUrl = owner && window.iqCodein.profileUrl ? window.iqCodein.profileUrl(owner) : "";
+      $("#ci2_view_profile").toggleClass("hide", !profileUrl).attr("href", profileUrl || "#");
       $("#ci2_view_token").toggleClass("hide", !(mine && launchable(obj.kind, body))).attr("href", LAUNCH_SITE + "?view=token");
       $("#ci2_view_nft").toggleClass("hide", !(mine && !isEvm())).attr("href", LAUNCH_SITE + "?view=nft&single=" + encodeURIComponent(sig));
     }
