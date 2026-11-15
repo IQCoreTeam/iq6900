@@ -39,7 +39,11 @@ function base58(bytes) {
   return out;
 }
 
-const chainOf = (cluster) => (cluster === "devnet" ? "solana:devnet" : "solana:mainnet");
+const chainOf = (cluster) => {
+  if (cluster === "devnet") return "solana:devnet";
+  if (cluster === "mainnet" || cluster === "mainnet-beta") return "solana:mainnet";
+  throw new Error("Unsupported Solana network: " + cluster);
+};
 
 // Wrap a Wallet Standard wallet as a legacy-shaped provider. One adapter per
 // wallet and cluster, so the connected account survives repeated listing.
@@ -49,34 +53,51 @@ function adapt(wallet, cluster) {
   if (adapters.has(key)) return adapters.get(key);
   const chain = chainOf(cluster);
   const feature = (name) => wallet.features[name];
-  const onChain = (wallet.chains || []).includes(chain);
   let account = null;
+  let connectGeneration = 0;
+  let accountRevision = 0;
   const listeners = new Map();
   const emit = (ev, ...args) => { for (const f of listeners.get(ev) || []) { try { f(...args); } catch (e) {} } };
-  const pick = (accounts) => (accounts || []).find((a) => !a.chains || a.chains.includes(chain)) || (accounts || [])[0] || null;
+  const pick = (accounts) => (accounts || []).find((a) => a.chains?.includes(chain)) || null;
   const serialize = (tx) => (tx instanceof VersionedTransaction ? tx.serialize() : tx.serialize({ requireAllSignatures: false, verifySignatures: false }));
-  const input = (tx) => Object.assign({ account, transaction: serialize(tx) }, onChain ? { chain } : {});
+  const input = (tx) => {
+    if (!account || !account.chains.includes(chain)) throw new Error("Reconnect your wallet on " + chain);
+    return { account, transaction: serialize(tx), chain };
+  };
   const provider = {
     name: wallet.name,
     icon: wallet.icon || null,
     get publicKey() { return account ? new PublicKey(account.publicKey) : null; },
     connect: async (opts) => {
+      const generation = ++connectGeneration, revision = accountRevision, attempt = connectionAttempt;
       const out = await feature("standard:connect").connect(opts && opts.onlyIfTrusted ? { silent: true } : undefined);
-      account = pick(out && out.accounts) || pick(wallet.accounts);
-      if (!account) throw new Error(wallet.name + " did not return an account");
+      const next = pick(out && out.accounts);
+      if (generation !== connectGeneration || attempt !== connectionAttempt) throw new Error("Wallet connection changed; try again");
+      if (revision !== accountRevision && (!account || !next || next.address !== account.address)) throw new Error("Wallet account changed; try again");
+      if (!next) throw new Error(wallet.name + " did not return an account for " + chain);
+      if (revision === accountRevision) account = next;
       return { publicKey: provider.publicKey };
     },
     disconnect: async () => {
+      connectGeneration++;
+      accountRevision++;
       account = null;
       const d = feature("standard:disconnect");
       if (d) await d.disconnect();
     },
     signMessage: async (message) => {
+      if (!account) throw new Error("Reconnect your wallet on " + chain);
+      const signingAccount = account, attempt = connectionAttempt;
       const [out] = await feature("solana:signMessage").signMessage({ account, message });
+      if (attempt !== connectionAttempt) throw new Error("Wallet connection changed; try again");
+      if (account?.address !== signingAccount.address) throw new Error("Wallet account changed; try again");
       return { signature: out.signature, publicKey: provider.publicKey };
     },
     signTransaction: async (tx) => {
-      const [out] = await feature("solana:signTransaction").signTransaction(input(tx));
+      const request = input(tx), attempt = connectionAttempt;
+      const [out] = await feature("solana:signTransaction").signTransaction(request);
+      if (attempt !== connectionAttempt) throw new Error("Wallet connection changed; try again");
+      if (account?.address !== request.account.address) throw new Error("Wallet account changed; try again");
       return tx instanceof VersionedTransaction ? VersionedTransaction.deserialize(out.signedTransaction) : Transaction.from(out.signedTransaction);
     },
     signAndSendTransaction: async (tx) => {
@@ -94,9 +115,11 @@ function adapt(wallet, cluster) {
     const events = feature("standard:events");
     if (events) events.on("change", (props) => {
       if (!props || !("accounts" in props)) return;
+      accountRevision++;
       const next = pick(props.accounts), before = account && account.address;
       if (!next) { if (before) { account = null; emit("disconnect"); } return; }
-      if (next.address !== before) { account = next; emit("accountChanged", provider.publicKey); }
+      account = next;
+      if (next.address !== before) emit("accountChanged", provider.publicKey);
     });
   } catch (e) {}
   adapters.set(key, provider);
@@ -118,10 +141,11 @@ function injected() {
 // Every usable wallet right now: injected first, then standard-registered ones
 // not already listed by name, then the bare window.solana as a last resort.
 export function listWallets(cluster = "mainnet") {
+  const chain = chainOf(cluster);
   const out = injected();
   const seen = new Set(out.map((w) => w.name));
   for (const w of standard.values()) {
-    if (seen.has(w.name)) continue;
+    if (seen.has(w.name) || !w.chains?.includes(chain)) continue;
     seen.add(w.name);
     out.push({ id: w.name, name: w.name, icon: w.icon || null, provider: adapt(w, cluster) });
   }
@@ -142,9 +166,11 @@ async function waitForWallets(cluster, ms) {
 }
 
 let active = null; // the provider the page is connected through
+let connectionAttempt = 0;
 let disconnected = false;
 export function getWalletProvider() { return active; }
 export function disconnectWallet() {
+  connectionAttempt++;
   const p = active;
   active = null;
   disconnected = true;
@@ -162,6 +188,7 @@ export const CHOOSE_WALLET = "Choose a Solana wallet first.";
 // provider before its connect is awaited, so the page can bind account-change
 // listeners that outrank a late silent reconnect.
 export async function connectWallet({ onlyIfTrusted = false, walletId, cluster = "mainnet", onProvider } = {}) {
+  const attempt = onlyIfTrusted ? connectionAttempt : ++connectionAttempt;
   const options = await waitForWallets(cluster, onlyIfTrusted ? 300 : 2000);
   let saved;
   try { saved = localStorage.getItem(LAST_KEY); } catch (e) {}
@@ -173,6 +200,10 @@ export async function connectWallet({ onlyIfTrusted = false, walletId, cluster =
     throw new Error(options.length ? CHOOSE_WALLET : NO_WALLET);
   }
   const p = choice.provider;
+  if (attempt !== connectionAttempt) {
+    if (onlyIfTrusted) return null;
+    throw new Error("Wallet connection changed; try again");
+  }
   if (onProvider) onProvider(p);
   if (onlyIfTrusted) {
     if (!p.publicKey) {
@@ -182,6 +213,10 @@ export async function connectWallet({ onlyIfTrusted = false, walletId, cluster =
   } else {
     await p.connect();
     if (!p.publicKey) throw new Error(choice.name + " did not connect");
+  }
+  if (attempt !== connectionAttempt) {
+    if (onlyIfTrusted) return null;
+    throw new Error("Wallet connection changed; try again");
   }
   active = p;
   disconnected = false;

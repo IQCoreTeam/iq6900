@@ -55,10 +55,11 @@ async function mount(t, opts = {}) {
     getSpeed: () => 'auto', recommendSpeed: () => 'light', connect: () => ({}),
     deriveBurner: async () => { if (opts.burnerPending) await opts.burnerPending.promise; return {}; }, sweep: async () => 0,
     getWallets: () => [{ id: 'fixture-evm', name: 'Fixture wallet', selected: true }],
-    getWalletProvider: () => walletProvider, disconnectWallet: () => {},
+    getWalletProvider: () => chain === 'solana' ? w.phantom.solana : walletProvider, disconnectWallet: () => {},
     connectWallet: async (options = {}) => {
       if (options.onlyIfTrusted) return null;
       assert.ok(options.walletId === undefined || options.walletId === 'fixture-evm');
+      if (chain === 'solana') return (await w.phantom.solana.connect(options)).publicKey;
       connects.push('evm'); if (opts.walletPending) await opts.walletPending.promise; return '0x' + 'b'.repeat(40);
     },
     checkWalletRpc: async () => opts.healthPending ? opts.healthPending.promise : { ok: true },
