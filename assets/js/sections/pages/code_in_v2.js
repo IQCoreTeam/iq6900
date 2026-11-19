@@ -9,7 +9,7 @@
   const CAP_KB = 256; // solana: mainnet-measured on the default free RPC (publicnode): 32-512KB all landed with 0 rpc errors; 256KB ~51s is the wait we accept, above it recommend own RPC / SDK
 
   function CodeInV2() {
-    const templateUrl = "./html/sections/code_in_v2.html?ver=71";
+    const templateUrl = "./html/sections/code_in_v2.html?ver=72";
     let chain = "solana";  // "solana" | "evm" - set by init from the route
     const isEvm = () => chain === "evm";
     let bigAck = false;    // hoodin: user accepted the many-signatures flow
@@ -21,6 +21,8 @@
     let asciiSrc = "";     // last image data URL, re-rendered when detail changes
     let asciiBody = "";    // ascii result (the inscribed body for kind=ascii)
     let uploadBody = "";   // base64 data URL for kind=image | file
+    let uploadGeneration = 0; // Only the latest file/encoding choice may update the payload.
+    let lastImageFile = null;
     let currentSig = "";   // post shown in the view modal, for the share link
     let boardCursor = null; // gateway nextCursor for pagination
     let boardLoading = false; // guard so scroll + button don't double-fetch a page
@@ -83,6 +85,9 @@
       chain = attachment ? attachment.chain : (chainName === "evm" ? "evm" : "solana");
       who = null; burner = null; bigAck = false; // route switch = fresh wallet state
       pendingInscription = null;
+      // Replacing the template clears its file inputs; discard their payloads and pending work too.
+      uploadGeneration++;
+      kind = "text"; uploadBody = ""; lastImageFile = null; asciiSrc = ""; asciiBody = "";
       // Keep the route in the URL so refreshing stays on this board instead of
       // falling back to the home page (stack cards call init() directly).
       try {
@@ -682,8 +687,12 @@
       return dataUrl.slice(0, at) + ";name=" + encodeURIComponent(name) + dataUrl.slice(at);
     }
     function readUpload(file, done) {
+      const generation = ++uploadGeneration;
       const r = new FileReader();
-      r.onload = () => { uploadBody = withName(r.result, file.name); done(); refreshCost(); };
+      r.onload = () => {
+        if (generation !== uploadGeneration) return;
+        uploadBody = withName(r.result, file.name); done(); refreshCost();
+      };
       r.readAsDataURL(file);
     }
     // Auto-shrink an uploaded image to WebP so a big photo becomes a few-KB
@@ -705,23 +714,24 @@
       const dataUrl = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
       return { dataUrl, name: file.name.replace(/\.[^.]+$/, "") + ".webp", outSize: blob.size };
     }
-    let lastImageFile = null;
     function onImageFile() {
       const f = this && this.files ? this.files[0] : lastImageFile;
       if (!f) return;
+      const generation = ++uploadGeneration;
       lastImageFile = f;
       const prev = () => $("#ci2_image_prev").html($("<img>").attr("src", uploadBody));
       const raw = () => readUpload(f, () => { prev(); $("#ci2_image_size").html(kB(f.size)); });
       const wantCompress = $("#ci2_image_compress").prop("checked") && f.type.indexOf("image/") === 0 && f.type !== "image/gif";
       if (!wantCompress) { raw(); return; }
       compressToWebp(f).then(({ dataUrl, name, outSize }) => {
+        if (generation !== uploadGeneration) return;
         if (outSize >= f.size) { raw(); return; } // never grow a file
         uploadBody = withName(dataUrl, name);
         prev();
         const saved = Math.round((1 - outSize / f.size) * 100);
         $("#ci2_image_size").html(kB(f.size) + " &rarr; <b>" + kB(outSize) + "</b> (-" + saved + "%)");
         refreshCost();
-      }).catch(raw); // any decode/encode failure keeps the original
+      }).catch(() => { if (generation === uploadGeneration) raw(); }); // Only the current selection may fall back to its original.
     }
     function onFileFile() {
       const f = this.files[0]; if (!f) return;

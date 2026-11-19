@@ -10,9 +10,9 @@ const signatures = { solana: '2'.repeat(88), evm: '0x' + 'a'.repeat(64) };
 const tick = () => new Promise(setImmediate);
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 function deferred() {
-  let resolve;
-  const promise = new Promise(done => { resolve = done; });
-  return { promise, resolve };
+  let resolve, reject;
+  const promise = new Promise((done, fail) => { resolve = done; reject = fail; });
+  return { promise, resolve, reject };
 }
 
 // Only the page script and template are real. Adapters/wallets are controlled
@@ -55,10 +55,11 @@ async function mount(t, opts = {}) {
     getSpeed: () => 'auto', recommendSpeed: () => 'light', connect: () => ({}),
     deriveBurner: async () => { if (opts.burnerPending) await opts.burnerPending.promise; return {}; }, sweep: async () => 0,
     getWallets: () => [{ id: 'fixture-evm', name: 'Fixture wallet', selected: true }],
-    getWalletProvider: () => walletProvider, disconnectWallet: () => {},
+    getWalletProvider: () => chain === 'solana' ? w.phantom.solana : walletProvider, disconnectWallet: () => {},
     connectWallet: async (options = {}) => {
       if (options.onlyIfTrusted) return null;
       assert.ok(options.walletId === undefined || options.walletId === 'fixture-evm');
+      if (chain === 'solana') return (await w.phantom.solana.connect(options)).publicKey;
       connects.push('evm'); if (opts.walletPending) await opts.walletPending.promise; return '0x' + 'b'.repeat(40);
     },
     checkWalletRpc: async () => opts.healthPending ? opts.healthPending.promise : { ok: true },
@@ -324,4 +325,42 @@ test('failed Solana attachment retains the submitting adapter refund path', asyn
   assert.equal(refunds, 1); assert.equal(f.sent.length, 1);
   assert.match(f.w.$('#ci2_log').text(), /went back to your wallet/);
   assert.equal(f.w.$('#ci2_retry').hasClass('hide'), false);
+});
+
+// Exercise asynchronous selection state only; real browser QA covers the codec.
+for (const outcome of ['resolve', 'reject']) test(`pending compression ${outcome} cannot replace a newer uncompressed image`, async t => {
+  const f = await mount(t, { attached: false });
+  const pending = deferred();
+  f.w.createImageBitmap = async () => ({ width: 1, height: 1, close() {} });
+  f.w.HTMLCanvasElement.prototype.getContext = () => ({ drawImage() {}, getImageData: () => ({ width: 1, height: 1, data: new Uint8ClampedArray(4) }) });
+  f.adapters.solana.compressImage = () => pending.promise;
+  f.w.$('#ci2_modal .tab[data-kind="image"]').trigger('click');
+  const input = f.w.document.querySelector('#ci2_image_file');
+  Object.defineProperty(input, 'files', { configurable: true, value: [new f.w.File([new Uint8Array(2048)], 'earlier.png', { type: 'image/png' })] });
+  f.w.$(input).trigger('change');
+  await tick();
+  f.w.$('#ci2_image_compress').prop('checked', false).trigger('change');
+  Object.defineProperty(input, 'files', { configurable: true, value: [new f.w.File([new Uint8Array(1024)], 'latest.png', { type: 'image/png' })] });
+  f.w.$(input).trigger('change');
+  await pause(30);
+  if (outcome === 'resolve') pending.resolve({ bytes: new Uint8Array(8), mime: 'image/webp' });
+  else pending.reject(new Error('Earlier encoding failed'));
+  await pause(30);
+  assert.equal(f.w.document.querySelector('#ci2_image_compress').checked, false);
+  assert.match(f.w.document.querySelector('#ci2_image_prev img').getAttribute('src'), /^data:image\/png;name=latest\.png;base64,/);
+  assert.equal(f.w.document.querySelector('#ci2_image_size').textContent, '1.0 KB');
+  assert.equal(f.writes.length, 0);
+});
+
+test('rebuilt composer cannot keep a payload behind a fresh empty file picker', async t => {
+  const f = await mount(t, { attached: false });
+  f.w.$('#ci2_modal .tab[data-kind="file"]').trigger('click');
+  await f.pickFile();
+  assert.equal(f.w.$('#ci2_go').prop('disabled'), false);
+  f.w.$('#ci2_xchain').trigger('click');
+  await tick();
+  f.w.$('#ci2_modal .tab[data-kind="image"]').trigger('click');
+  assert.equal(f.w.document.querySelector('#ci2_image_file').files.length, 0);
+  assert.equal(f.w.$('#ci2_go').prop('disabled'), true);
+  assert.equal(f.w.$('#ci2_size').text(), '0.0 KB');
 });
